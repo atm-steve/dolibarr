@@ -1,0 +1,12 @@
+UnknownExportFormat=Format d'export inconnu
+UnknownExportType=Type d'export inconnu
+NoExportSelected=Pas d'export sélectionné
+EmptyExport=Export vide
+AccountancyExports=Exports comptables
+AccountancyExportsInFormattedFile=Exports comptables en fichiers prédéfinis
+FormatAndType=Format et type d'export
+ExportFormat=Format d'export
+ExportType=Type d'export
+StartDate=Date de début
+EndDate=Date de fin
+DoExport=Exporter
