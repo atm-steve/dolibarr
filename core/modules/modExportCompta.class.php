@@ -51,7 +51,7 @@ class modExportCompta extends DolibarrModules
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
 		$this->numero = 10050;
 		// Key text used to identify module (for permissions, menus, etc...)
-		$this->rights_class = 'exportCompta';
+		$this->rights_class = 'exportcompta';
 
 		// Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
 		// It is used to group modules in module setup page
@@ -83,14 +83,14 @@ class modExportCompta extends DolibarrModules
 //		$this->style_sheet = '/css/style.css';
 
 		// Config pages. Put here list of php page names stored in admmin directory used to setup module.
-		$this->config_page_url = '';
+		$this->config_page_url = 'admin.php@export-compta';
 
 		// Dependencies
 		$this->depends = array();		// List of modules id that must be enabled if this module is enabled
 		$this->requiredby = array();	// List of modules id to disable if this one is disabled
 		$this->phpmin = array(5,0);					// Minimum version of PHP required by module
 		$this->need_dolibarr_version = array(3,0);	// Minimum version of Dolibarr required by module
-		$this->langfiles = array("exportCompta@exportCompta");
+		$this->langfiles = array("export-compta@export-compta");
 
 		// Constants
 		// List of particular constants to add when module is enabled (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive)
@@ -171,7 +171,7 @@ class modExportCompta extends DolibarrModules
 			'mainmenu'=>'accountancy',
 			'leftmenu'=>'export',
 			'url'=>'/export-compta/export.php',
-			'langs'=>'exportCompta',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'langs'=>'export-compta',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>100,
 			'enabled'=>'1',			// Define condition to show or hide menu entry. Use '$conf->monmodule->enabled' if entry must be visible if module is enabled.
 			'perms'=>'1',			// Use 'perms'=>'$user->rights->monmodule->level1->level2' if you want your menu with a permission rules

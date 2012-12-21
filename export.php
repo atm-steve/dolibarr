@@ -41,12 +41,7 @@
 $res=@include("../main.inc.php");					// For root directory
 if (! $res) $res=@include("../../main.inc.php");	// For "custom" directory
 
-dol_include_once("/export-compta/class/class.export.php");
-
-if (!$user->rights->exportCompta->generate)
-{
-	accessforbidden();
-}
+if (!$user->rights->exportcompta->generate) accessforbidden();
 
 $langs->load('main');
 $langs->load('export-compta@export-compta');
@@ -66,15 +61,20 @@ if(isset($_POST['submitBtn'])) {
 
 $langs->load('bills');
 $error = '';
+$format_export = $conf->global->EXPORT_COMPTA_FORMAT_EXPORT;
 
 if(!empty($action) && $action == 'export') {	
 	$fileName = $format_export.date('YmdHis').".txt";
 	$fileContent = '';
 	
-	if(isset($format_export)) {
+	if(!empty($format_export)) {
+		dol_include_once('/export-compta/class/export_'.$format_export.'.class.php');
 		switch ($format_export) {
 			case 'quadratus':
-				$export = new TExportComptaQuadratus();
+				$export = new ExportComptaQuadratus();
+				break;
+			case 'quadratus':
+				$export = new ExportComptaSage();
 				break;
 			default:
 				$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportFormat'). ' : ' . $format_export;
@@ -116,8 +116,7 @@ if(!empty($action) && $action == 'export') {
 		print $fileContent;
 		
 		exit();
-	}
-	else {
+	} else if(empty($error)) {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('EmptyExport');
 	}
 }
@@ -127,6 +126,12 @@ if(!empty($action) && $action == 'export') {
 *
 * Put here all code to build page
 ****************************************************/
+
+$list_type_export = array();
+if($conf->facture->enabled) $list_type_export[] = 'ecritures_comptables_vente';
+if($conf->fournisseur->enabled) $list_type_export[] = 'ecritures_comptables_achat';
+if($conf->facture->enabled) $list_type_export[] = 'reglement_tiers';
+if($conf->banque->enabled) $list_type_export[] = 'ecritures_bancaires';
 
 llxHeader('',$langs->trans('AccountancyExports'),'');
 
@@ -145,9 +150,7 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 		<tr class="impair">
 			<td><?php echo $langs->trans('ExportFormat') ?></td>
 			<td>
-				<select name="format_export">
-					<option value="quadratus" <?php echo ($format_export == 'quadratus') ? 'selected' : ''; ?>>Quadratus</option>
-				</select>
+				<?php echo $langs->trans($conf->global->EXPORT_COMPTA_FORMAT_EXPORT) ?>
 			</td>
 			<td><?php echo $langs->trans('StartDate') ?></td>
 			<td>
@@ -160,10 +163,10 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 		<tr class="impair">
 			<td><?php echo $langs->trans('ExportType') ?></td>
 			<td>
-				<select name="type_export">
-					<option value="ecritures_comptables_vente" <?php echo ($type_export == 'ecritures_comptables_vente') ? 'selected' : ''; ?>>Ecritures comptables ventes</option>
-					<option value="ecritures_comptables_achat" <?php echo ($type_export == 'ecritures_comptables_achat') ? 'selected' : ''; ?>>Ecritures comptables achats</option>
-					<option value="reglement_tiers" <?php echo ($type_export == 'reglement_tiers') ? 'selected' : ''; ?>>R&egrave;glements tiers</option>
+				<select name="type_export" class="flat">
+					<?php foreach ($list_type_export as $type) { ?>
+					<option value="<?php echo $type ?>" <?php echo ($type_export == $type) ? 'selected' : ''; ?>><?php echo $langs->trans($type) ?></option>
+					<?php } ?>
 				</select>
 			</td>
 			<td><?php echo $langs->trans('EndDate') ?></td>
