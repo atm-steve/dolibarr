@@ -73,7 +73,7 @@ if(!empty($action) && $action == 'export') {
 			case 'quadratus':
 				$export = new ExportComptaQuadratus();
 				break;
-			case 'quadratus':
+			case 'sage':
 				$export = new ExportComptaSage();
 				break;
 			default:
