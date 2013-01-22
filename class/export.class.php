@@ -13,7 +13,7 @@ class ExportCompta {
 	function get_journal_vente(&$db, &$conf, $dt_deb, $dt_fin) {
 		// Requête de récupération des factures
 		$sql = "SELECT f.rowid as fact_rowid, f.facnumber as fact_facnumber, f.datef as fact_datef, f.date_lim_reglement as fact_date_lim_reglement, f.total_ttc as fact_total_ttc,"; 
-		$sql.= " f.tva as fact_tva, f.type as fact_type,";
+		$sql.= " f.tva as fact_tva, f.type as fact_type, f.fk_mode_reglement as mode_rglt, f.entity as entity,";
 		$sql.= " fd.total_ht as ligne_total_ht, fd.total_tva as ligne_total_tva, fd.total_ttc as ligne_total_ttc,";
 		$sql.= " p.accountancy_code_sell as prod_accountancy_code_sell, p.fk_product_type as prod_fk_product_type,";
 		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom";
@@ -44,6 +44,8 @@ class ExportCompta {
 				$TFactures[$idFact]['facture']['tva'] = $obj->fact_tva;
 				$TFactures[$idFact]['facture']['total_ttc'] = $obj->fact_total_ttc;
 				$TFactures[$idFact]['facture']['type'] = $obj->fact_type;
+				$TFactures[$idFact]['facture']['mode_rglt'] = $obj->mode_rglt;
+				$TFactures[$idFact]['facture']['entity'] = $obj->entity;
 			}
 			
 			if(empty($TFactures[$idFact]['lignes'])) $TFactures[$idFact]['lignes'] = array();

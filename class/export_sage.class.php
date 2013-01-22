@@ -80,8 +80,7 @@ class ExportComptaSage extends ExportCompta {
 				'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($facture['total_ttc'] * 100)),
 				'montant_credit'				=> ($facture['type'] == 2 ? abs($facture['total_ttc'] * 100) : 0),
 				
-				'numero_plan'					=> '01',
-				'numero_section'				=> ''
+				'numero_plan'					=> '01'
 			);
 			
 			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
@@ -106,8 +105,7 @@ class ExportComptaSage extends ExportCompta {
 				'montant_debit'					=> ($facture['type'] == 2 ? abs($facture['tva'] * 100) : 0),
 				'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($facture['tva'] * 100)),
 				
-				'numero_plan'					=> '01',
-				'numero_section'				=> ''
+				'numero_plan'					=> '01'
 			);
 			
 			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
@@ -134,7 +132,7 @@ class ExportComptaSage extends ExportCompta {
 					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($ligne['total_ht'] * 100)),
 					
 					'numero_plan'					=> '01',
-					'numero_section'				=> ''
+					'numero_section'				=> $facture['entity']
 				);
 				
 				$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
