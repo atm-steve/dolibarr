@@ -10,7 +10,7 @@ ExportType=Type d'export
 StartDate=Date de début
 EndDate=Date de fin
 DoExport=Exporter
-ExportComptaSetup=Configuration de l'export comptables
+ExportComptaSetup=Configuration de l'export comptable
 ExportFormat=Format d'export
 quadratus=Quadratus
 sage=Sage
@@ -18,3 +18,12 @@ ecritures_bancaires=Ecritures bancaires
 reglement_tiers=Règlements tiers
 ecritures_comptables_vente=Ecritures comptables ventes
 ecritures_comptables_achat=Ecritures comptables achats
+
+#ADMIN
+ExportAllEntities=Exporter les données de toutes les entités dans un même fichier
+BaseDateForSellings=Date utilisée pour l'export des ventes
+LogicielExport=Export pour le logiciel
+TypeExport=Type d'export
+DateFacture=Date de la facture
+DateValid=Date de validation de la facture
+Display=Afficher

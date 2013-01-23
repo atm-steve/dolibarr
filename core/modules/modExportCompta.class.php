@@ -97,7 +97,11 @@ class modExportCompta extends DolibarrModules
 		// Example: $this->const=array(0=>array('MYMODULE_MYNEWCONST1','chaine','myvalue','This is a constant to add',1),
 		//                             1=>array('MYMODULE_MYNEWCONST2','chaine','myvalue','This is another constant to add',0) );
 		//                             2=>array('MAIN_MODULE_MYMODULE_NEEDSMARTY','chaine',1,'Constant to say module need smarty',1)
-		$this->const = array();
+		$this->const = array(
+			0=>array('EXPORT_COMPTA_ALL_ENTITIES','chaine','0','Acccountancy export made across multi-companies', 1, 'current', 1),
+			1=>array('EXPORT_COMPTA_DATE_VENTES','chaine','datef','Date on which acccountancy export will be based for sales', 1, 'current', 1),
+			2=>array('EXPORT_COMPTA_DATE_ACHATS','chaine','datef','Date on which acccountancy export will be based for purchases', 1, 'current', 1)
+		);
 
 		// Array to add new pages in new tabs
 		// Example: $this->tabs = array('objecttype:+tabname1:Title1:@mymodule:$user->rights->mymodule->read:/mymodule/mynewtab1.php?id=__ID__',  // To add a new tab identified by code tabname1
