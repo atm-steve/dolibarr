@@ -48,15 +48,23 @@ class ExportCompta {
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		$sql.= " AND f.fk_statut IN (1,2,3)";
 		$sql.= " ORDER BY f.".$datefield." ASC";
-		
+
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
+		$TIdFactures = array();
+		while($obj = $db->fetch_object($resql)) {
+			$TIdFactures[] = array(
+				'rowid' => $obj->rowid
+				,'entity' => $obj->entity
+			);
+		}
+		
 		$i = 0;
 		$TFactures = array();
-		while($obj = $db->fetch_object($resql)) {
+		foreach($TIdFactures as $idFacture) {
 			$facture = new Facture($db);
-			$facture->fetch($obj->rowid);
+			$facture->fetch($idFacture['rowid']);
 			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
@@ -71,7 +79,7 @@ class ExportCompta {
 			// Récupération entity
 			if($conf->multicompany->enabled) {
 				$entity = new DaoMulticompany($db);
-				$entity->fetch($obj->entity);
+				$entity->fetch($idFacture['entity']);
 				$TFactures[$facture->id]['entity'] = get_object_vars($entity);
 			}
 			
