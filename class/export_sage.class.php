@@ -24,16 +24,18 @@ class ExportComptaSage extends ExportCompta {
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
-			
+
+			if(!empty($infosFacture['entity'])) $entity = $infosFacture['entity'];
+
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> "41100000",
-					'numero_compte_tiers'			=> empty($code_compta) ? "DIVERS" : $code_compta,
+					'numero_compte_tiers'			=> empty($code_compta) ? (isset($entity) ? $entity['description'] : '') : $code_compta,
 	
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> isset($entity) ? 'FC '.$entity['label'].' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant * 100)),
