@@ -5,161 +5,193 @@
  *  - EXPORT DES REGLEMENTS
  *  - EXPORT DES FACTURES ACHAT + NOTE DE FRAIS
  *************************************************************************************************************************************************/
-class ExportCompta {	
+
+require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
+require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+
+class ExportCompta {
+	
+	function __construct(&$db) {
+		$this->TTVA = array();
+		
+		// Requête de récupération des codes tva
+		$sql = "SELECT t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
+		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t";
+		
+		$resql = $db->query($sql);
+		
+		while($obj = $db->fetch_object($resql)) {
+			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
+			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
+		}
+	}
+	
 	/* 
 	 * Récupération dans Dolibarr de la liste des factures clients avec détails ligne + produit + client
 	 * Toutes les factures validées, payées, abandonnées, pour l'entité concernée, avec date de facture entre les bornes sélectionnées
 	 */
-	function get_journal_vente(&$db, &$conf, $dt_deb, $dt_fin) {
+	function get_journal_ventes($dt_deb, $dt_fin) {
+		global $db, $conf, $user;
+		
+		$datefield=$conf->global->EXPORT_COMPTA_DATE_VENTES;
+		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
+		
+		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+		$idpays = $p[0];
+		
 		// Requête de récupération des factures
-		$sql = "SELECT f.rowid as fact_rowid, f.facnumber as fact_facnumber, f.datef as fact_datef, f.date_lim_reglement as fact_date_lim_reglement, f.total_ttc as fact_total_ttc,"; 
-		$sql.= " f.tva as fact_tva, f.type as fact_type, f.fk_mode_reglement as mode_rglt, f.entity as entity,";
-		$sql.= " fd.total_ht as ligne_total_ht, fd.total_tva as ligne_total_tva, fd.total_ttc as ligne_total_ttc,";
-		$sql.= " p.accountancy_code_sell as prod_accountancy_code_sell, p.fk_product_type as prod_fk_product_type,";
-		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom";
-		$sql.= " FROM llx_facture f";
-		$sql.= " LEFT JOIN llx_facturedet fd ON fd.fk_facture = f.rowid";
-		$sql.= " LEFT JOIN llx_product p ON p.rowid = fd.fk_product";
-		$sql.= " LEFT JOIN llx_societe s ON s.rowid = f.fk_soc";
-		$sql.= " WHERE f.datef BETWEEN '$dt_deb' AND '$dt_fin'";
-		$sql.= " AND f.entity = {$conf->entity}";
+		$sql = "SELECT f.rowid, f.entity";
+		$sql.= " FROM ".MAIN_DB_PREFIX."facture f";
+		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
+		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		$sql.= " AND f.fk_statut IN (1,2,3)";
-		$sql.= " AND fd.total_ht != 0";
-		$sql.= " ORDER BY f.datef, fd.rang ASC";
-		//echo $sql;
+		$sql.= " ORDER BY f.".$datefield." ASC";
+		
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
+		$i = 0;
 		$TFactures = array();
 		while($obj = $db->fetch_object($resql)) {
-			$idFact = $obj->fact_rowid;
+			$facture = new Facture($db);
+			$facture->fetch($obj->rowid);
 			
-			if(empty($TFactures[$idFact])) $TFactures[$idFact] = array();
+			$TFactures[$facture->id] = array();
+			$TFactures[$facture->id]['compteur']['piece'] = $i;
 			
-			if(empty($TFactures[$idFact]['facture'])) {
-				$TFactures[$idFact]['facture'] = array();
-				$TFactures[$idFact]['facture']['facnumber'] = $obj->fact_facnumber;
-				$TFactures[$idFact]['facture']['datef'] = $obj->fact_datef;
-				$TFactures[$idFact]['facture']['date_lim_reglement'] = $obj->fact_date_lim_reglement;
-				$TFactures[$idFact]['facture']['tva'] = $obj->fact_tva;
-				$TFactures[$idFact]['facture']['total_ttc'] = $obj->fact_total_ttc;
-				$TFactures[$idFact]['facture']['type'] = $obj->fact_type;
-				$TFactures[$idFact]['facture']['mode_rglt'] = $obj->mode_rglt;
-				$TFactures[$idFact]['facture']['entity'] = $obj->entity;
-			}
-			
-			if(empty($TFactures[$idFact]['lignes'])) $TFactures[$idFact]['lignes'] = array();
-			
-			$codeComptableProduit = $obj->prod_accountancy_code_sell;
-			if($codeComptableProduit == '') {
-				if($obj->prod_fk_product_type == 0) {
-					$codeComptableProduit = $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
-				} else {
-					$codeComptableProduit = $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
-				}
-			}
-			
-			if(empty($TFactures[$idFact]['lignes'][$codeComptableProduit])) {
-				$TFactures[$idFact]['lignes'][$codeComptableProduit] = array();
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['code_compta'] = $codeComptableProduit;
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ht'] = floatval($obj->ligne_total_ht);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_tva'] = floatval($obj->ligne_total_tva);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ttc'] = floatval($obj->ligne_total_ttc);
-			} else {
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ht'] += floatval($obj->ligne_total_ht);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_tva'] += floatval($obj->ligne_total_tva);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ttc'] += floatval($obj->ligne_total_ttc);
-			}
-			
-			if(empty($TFactures[$idFact]['client'])) {
-				$TFactures[$idFact]['client'] = array();
-				$TFactures[$idFact]['client']['code_compta'] = $obj->client_code_compta == '' ? $conf->global->COMPTA_ACCOUNT_CUSTOMER : $obj->client_code_compta;
-				$TFactures[$idFact]['client']['nom'] = $obj->client_nom;
-			}
+			// Récupération en-tête facture
+			$TFactures[$facture->id]['facture'] = get_object_vars($facture);
 
-			if(empty($TFactures[$idFact]['divers'])) {
-				$TFactures[$idFact]['divers'] = array();
-				$TFactures[$idFact]['divers']['code_compta_tva'] = $conf->global->COMPTA_VAT_ACCOUNT;
+			// Récupération client
+			$facture->fetch_thirdparty();
+			$TFactures[$facture->id]['tiers'] = get_object_vars($facture->thirdparty);
+			
+			// Récupération entity
+			if($conf->multicompany->enabled) {
+				$entity = new DaoMulticompany($db);
+				$entity->fetch($obj->entity);
+				$TFactures[$facture->id]['entity'] = get_object_vars($entity);
 			}
-		}	
+			
+			// Définition des codes comptables
+			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $facture->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+			
+			// Récupération lignes de facture
+			$facture->fetch_lines();
+			foreach ($facture->lines as $ligne) {
+				// Code compta produit 
+				if(!empty($ligne->fk_product)) {
+					$produit = new Product($db);
+					$produit->fetch($ligne->fk_product);
+					$codeComptableProduit = $produit->accountancy_code_sell;
+				}
+				
+				if(empty($codeComptableProduit)) {
+					if($ligne->fk_product_type == 0) {
+						$codeComptableProduit = $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
+					} else if($ligne->fk_product_type == 1) {
+						$codeComptableProduit = $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
+					}
+				}
+				
+				// Code compta TVA
+				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf->global->COMPTA_VAT_ACCOUNT;
+
+				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
+				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
+				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA])) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
+				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
+				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
+				$TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+			
+			$i++;
+		}
 		
 		return $TFactures;
 	}
 
 	/* 
 	 * Récupération dans Dolibarr de la liste des factures fournisseur avec détails ligne + produit + fournisseur
-	 * Toutes les factures validées, payées, abandonnées, pour l'entité concernée, avec date de facture entre les bornes sélectionnées
+	 * Toutes les factures validées, payées, abandonnées, pour l'entité concernée, avec date entre les bornes sélectionnées
 	 */
-	function get_journal_achat(&$db, &$conf, $dt_deb, $dt_fin) {
+	function get_journal_achats($dt_deb, $dt_fin) {
+		global $db, $conf, $user;
+		
+		$datefield=$conf->global->EXPORT_COMPTA_DATE_ACHATS;
+		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
+		
 		// Requête de récupération des factures
-		$sql = "SELECT f.rowid as fact_rowid, f.facnumber as fact_facnumber, f.datef as fact_datef, f.date_lim_reglement as fact_date_lim_reglement, f.total_ttc as fact_total_ttc,"; 
-		$sql.= " f.tva as fact_tva, f.type as fact_type,";
-		$sql.= " fd.total_ht as ligne_total_ht, fd.tva as ligne_total_tva, fd.total_ttc as ligne_total_ttc,";
-		$sql.= " p.accountancy_code_sell as prod_accountancy_code_sell, p.fk_product_type as prod_fk_product_type,";
-		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom";
-		$sql.= " FROM llx_facture_fourn f";
-		$sql.= " LEFT JOIN llx_facture_fourn_det fd ON fd.fk_facture_fourn = f.rowid";
-		$sql.= " LEFT JOIN llx_product p ON p.rowid = fd.fk_product";
-		$sql.= " LEFT JOIN llx_societe s ON s.rowid = f.fk_soc";
-		$sql.= " WHERE f.datef BETWEEN '$dt_deb' AND '$dt_fin'";
-		$sql.= " AND f.entity = {$conf->entity}";
+		$sql = "SELECT f.rowid, f.entity";
+		$sql.= " FROM ".MAIN_DB_PREFIX."facture_fourn f";
+		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
+		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		$sql.= " AND f.fk_statut IN (1,2,3)";
-		$sql.= " AND fd.total_ht != 0";
-		$sql.= " ORDER BY f.datef ASC";
-		//echo $sql;
+		$sql.= " ORDER BY f.".$datefield." ASC";
+
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
+		$i = 0;
 		$TFactures = array();
 		while($obj = $db->fetch_object($resql)) {
-			$idFact = $obj->fact_rowid;
+			$facture = new FactureFournisseur($db);
+			$facture->fetch($obj->rowid);
 			
-			if(empty($TFactures[$idFact])) $TFactures[$idFact] = array();
+			$TFactures[$facture->id] = array();
+			$TFactures[$facture->id]['compteur']['piece'] = $i;
 			
-			if(empty($TFactures[$idFact]['facture'])) {
-				$TFactures[$idFact]['facture'] = array();
-				$TFactures[$idFact]['facture']['facnumber'] = $obj->fact_facnumber;
-				$TFactures[$idFact]['facture']['datef'] = $obj->fact_datef;
-				$TFactures[$idFact]['facture']['date_lim_reglement'] = $obj->fact_date_lim_reglement;
-				$TFactures[$idFact]['facture']['tva'] = $obj->fact_tva;
-				$TFactures[$idFact]['facture']['total_ttc'] = $obj->fact_total_ttc;
-				$TFactures[$idFact]['facture']['type'] = $obj->fact_type;
-			}
-			
-			if(empty($TFactures[$idFact]['lignes'])) $TFactures[$idFact]['lignes'] = array();
-			
-			$codeComptableProduit = $obj->prod_accountancy_code_sell;
-			if($codeComptableProduit == '') {
-				if($obj->prod_fk_product_type == 0) {
-					$codeComptableProduit = $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
-				} else {
-					$codeComptableProduit = $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
-				}
-			}
-			
-			if(empty($TFactures[$idFact]['lignes'][$codeComptableProduit])) {
-				$TFactures[$idFact]['lignes'][$codeComptableProduit] = array();
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['code_compta'] = $codeComptableProduit;
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ht'] = floatval($obj->ligne_total_ht);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_tva'] = floatval($obj->ligne_total_tva);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ttc'] = floatval($obj->ligne_total_ttc);
-			} else {
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ht'] += floatval($obj->ligne_total_ht);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_tva'] += floatval($obj->ligne_total_tva);
-				$TFactures[$idFact]['lignes'][$codeComptableProduit]['total_ttc'] += floatval($obj->ligne_total_ttc);
-			}
-			
-			if(empty($TFactures[$idFact]['client'])) {
-				$TFactures[$idFact]['client'] = array();
-				$TFactures[$idFact]['client']['code_compta'] = $obj->client_code_compta == '' ? $conf->global->COMPTA_ACCOUNT_CUSTOMER : $obj->client_code_compta;
-				$TFactures[$idFact]['client']['nom'] = $obj->client_nom;
-			}
+			// Récupération en-tête facture
+			$TFactures[$facture->id]['facture'] = get_object_vars($facture);
 
-			if(empty($TFactures[$idFact]['divers'])) {
-				$TFactures[$idFact]['divers'] = array();
-				$TFactures[$idFact]['divers']['code_compta_tva'] = $conf->global->COMPTA_VAT_ACCOUNT;
+			// Récupération client
+			$facture->fetch_thirdparty();
+			$idpays = $facture->thirdparty->country_id;
+			$TFactures[$facture->id]['tiers'] = get_object_vars($facture->thirdparty);
+			
+			// Récupération entity
+			if($conf->multicompany->enabled) {
+				$entity = new DaoMulticompany($db);
+				$entity->fetch($obj->entity);
+				$TFactures[$facture->id]['entity'] = get_object_vars($entity);
 			}
-		}	
+			
+			// Définition des codes comptables
+			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $facture->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+			
+			// Récupération lignes de facture
+			$facture->fetch_lines();
+			foreach ($facture->lines as $ligne) {
+				// Code compta produit 
+				if(!empty($ligne->fk_product)) {
+					$produit = new Product($db);
+					$produit->fetch($ligne->fk_product);
+					$codeComptableProduit = $produit->accountancy_code_sell;
+				}
+				
+				if(empty($codeComptableProduit)) {
+					if($ligne->fk_product_type == 0) {
+						$codeComptableProduit = $conf->global->COMPTA_SERVICE_BUY_ACCOUNT;
+					} else if($ligne->fk_product_type == 1) {
+						$codeComptableProduit = $conf->global->COMPTA_PRODUCT_BUY_ACCOUNT;
+					}
+				}
+				
+				// Code compta TVA
+				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+
+				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
+				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
+				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA])) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
+				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
+				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
+				$TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+			
+			$i++;
+		}
 		
 		return $TFactures;
 	}
@@ -168,7 +200,9 @@ class ExportCompta {
 	 * Récupération dans Dolibarr de la liste des règlements clients avec détails facture + ligne + produit + client
 	 * Tous les règlement pour l'entité concernée, avec date de règlement entre les bornes sélectionnées
 	 */
-	function get_reglement_tiers(&$db, &$conf, $dt_deb, $dt_fin) {
+	function get_reglement_tiers($dt_deb, $dt_fin) {
+		global $db, $conf;
+
 		// Requête de récupération des règlements
 		$sql = "SELECT r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
 		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom";
@@ -211,10 +245,18 @@ class ExportCompta {
 		return $TReglements;
 	}
 	
-	static function get_line(&$format, $ligneFichier) {		
+	function get_line(&$format, $dataline) {		
 		$ligneFichierTxtFixe = '';
 		foreach($format as $fmt) {
-			$valeur = empty($ligneFichier[$fmt['name']]) ? '' : $ligneFichier[$fmt['name']];
+			$valeur = '';
+			if($fmt['type_value'] == 'data') {
+				$valeur = $dataline[$fmt['name']];
+			} else if($fmt['type_value'] == 'php') {
+				$valeur = eval('return '.$fmt['value'].';');
+			} else if($fmt['type_value'] == 'dur') {
+				$valeur = $fmt['value'];
+			}
+			
 			if($valeur == '') $valeur = $fmt['default'];
 			if($fmt['type'] == 'date' && !empty($valeur)) $valeur = date($fmt['format'], $valeur);
 			if(strlen($valeur) < $fmt['length']) {
@@ -227,6 +269,5 @@ class ExportCompta {
 		}
 		return $ligneFichierTxtFixe;
 	}
-	
 }
 ?>
