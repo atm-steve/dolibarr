@@ -270,10 +270,11 @@ class ExportCompta {
 			}
 			
 			if($valeur == '') $valeur = $fmt['default'];
-			if($fmt['type'] == 'date' && !empty($valeur)) $valeur = date($fmt['format'], $valeur);
+			if($fmt['type'] == 'date' && !empty($valeur) && !empty($fmt['format'])) $valeur = date($fmt['format'], $valeur);
 			if(strlen($valeur) < $fmt['length']) {
 				$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
-				$valeur = str_pad($valeur, $fmt['length'], $pad_string, STR_PAD_LEFT);
+				$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
+				$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
 			} else if(strlen($valeur) > $fmt['length']) {
 				$valeur = substr($valeur, 0, $fmt['length']);
 			}

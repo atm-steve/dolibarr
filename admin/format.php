@@ -102,6 +102,7 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 	print '<td>'.$langs->trans("Default").'</td>';
 	print '<td>'.$langs->trans("Type").'</td>';
 	print '<td>'.$langs->trans("Format").'</td>';
+	print '<td>'.$langs->trans("Padding").'</td>';
 	print "</tr>\n";
 	$var=true;
 	$i = 0;
@@ -124,6 +125,13 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 		print '<td><input type="text" name="format['.$i.'][type]" class="flat" value="'.$colonne['type'].'" /></td>';
 		print '<td><input type="text" name="format['.$i.'][format]" class="flat" value="'.$colonne['format'].'" /></td>';
 		print '</td>';
+		print '<td>';
+		print '<select name="format['.$i.'][pad_type]" class="flat">';
+		print '<option value="0"'.($colonne['pad_type'] == '0' ? ' selected' : '').'>Gauche</option>';
+		print '<option value="1"'.($colonne['pad_type'] == '1' ? ' selected' : '').'>Droite</option>';
+		print '<option value="2"'.($colonne['pad_type'] == '2' ? ' selected' : '').'>Les deux</option>';
+		print '</select>';
+		print '</td>';
 		print '</tr>';
 		
 		$i++;
@@ -142,6 +150,13 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 	print '<td><input type="text" name="format['.$i.'][default]" class="flat" /></td>';
 	print '<td><input type="text" name="format['.$i.'][type]" class="flat" /></td>';
 	print '<td><input type="text" name="format['.$i.'][format]" class="flat" /></td>';
+	print '<td>';
+	print '<select name="format['.$i.'][pad_type]" class="flat">';
+	print '<option value="0"'.($colonne['pad_type'] == 'data' ? ' selected' : '').'>Gauche</option>';
+	print '<option value="1"'.($colonne['pad_type'] == 'php' ? ' selected' : '').'>Droite</option>';
+	print '<option value="2"'.($colonne['pad_type'] == 'dur' ? ' selected' : '').'>Les deux</option>';
+	print '</select>';
+	print '</td>';
 	print '</tr>';
 	
 	print '</table>';
