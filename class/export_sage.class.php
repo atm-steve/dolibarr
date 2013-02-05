@@ -29,7 +29,7 @@ class ExportComptaSage extends ExportCompta {
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $facture['facnumber'],
+					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> "41100000",
 					'numero_compte_tiers'			=> empty($code_compta) ? "DIVERS" : $code_compta,
 	
@@ -49,7 +49,7 @@ class ExportComptaSage extends ExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_compte_general'			=> $code_compta,
-					'numero_piece'					=> $facture['facnumber'],
+					'numero_piece'					=> $facture['ref'],
 					
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
@@ -68,7 +68,7 @@ class ExportComptaSage extends ExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_compte_general'			=> $code_compta,
-					'numero_piece'					=> $facture['facnumber'],
+					'numero_piece'					=> $facture['ref'],
 					
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
