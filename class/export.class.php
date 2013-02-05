@@ -64,7 +64,7 @@ class ExportCompta {
 		$TFactures = array();
 		foreach($TIdFactures as $idFacture) {
 			$facture = new Facture($db);
-			$facture->fetch($idFacture['rowid']);
+			$facture->fetch($idFacture['rowid']); // TODO : le fetch ne fonctionnera pas pour du multi entité
 			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
