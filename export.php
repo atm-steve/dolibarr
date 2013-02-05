@@ -105,7 +105,7 @@ if(!empty($action) && $action == 'export') {
 	}
 
 	if($fileContent != '') {
-		/*$size = strlen($fileContent);
+		$size = strlen($fileContent);
 		
 		header("Content-Type: application/force-download; name=\"$fileName\"");
 		header("Content-Transfer-Encoding: binary");
@@ -117,7 +117,7 @@ if(!empty($action) && $action == 'export') {
 		
 		print $fileContent;
 		
-		exit();*/
+		exit();
 	} else if(empty($error)) {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('EmptyExport');
 	}
