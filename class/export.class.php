@@ -59,10 +59,12 @@ class ExportCompta {
 				,'entity' => $obj->entity
 			);
 		}
+		$trueEntity = $conf->entity;
 		
 		$i = 0;
 		$TFactures = array();
 		foreach($TIdFactures as $idFacture) {
+			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']); // TODO : le fetch ne fonctionnera pas pour du multi entité
 			
@@ -117,6 +119,7 @@ class ExportCompta {
 			
 			$i++;
 		}
+		$conf->entity = $trueEntity;
 		
 		return $TFactures;
 	}
