@@ -35,7 +35,7 @@ class ExportComptaSage extends ExportCompta {
 					'numero_compte_general'			=> "41100000",
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($entity) ? $entity['description'] : '') : $code_compta,
 	
-					'libelle'						=> isset($entity) ? 'FC '.$entity['label'].' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> isset($entity) ? 'FC '.substr($entity['label'],0,15).' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant * 100)),
@@ -53,7 +53,7 @@ class ExportComptaSage extends ExportCompta {
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
 					
-					'libelle'						=> isset($entity) ? 'FC '.$entity['label'].' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> isset($entity) ? 'FC '.substr($entity['label'],0,15).' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant * 100) : 0),
@@ -72,7 +72,7 @@ class ExportComptaSage extends ExportCompta {
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
 					
-					'libelle'						=> isset($entity) ? 'FC '.$entity['label'].' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> isset($entity) ? 'FC '.substr($entity['label'],0,15).' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant * 100) : 0),
