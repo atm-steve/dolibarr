@@ -271,12 +271,12 @@ class ExportCompta {
 			
 			if($valeur == '') $valeur = $fmt['default'];
 			if($fmt['type'] == 'date' && !empty($valeur) && !empty($fmt['format'])) $valeur = date($fmt['format'], $valeur);
-			if(strlen($valeur) < $fmt['length']) {
+			if(mb_strlen($valeur, 'UTF-8') < $fmt['length']) {
 				$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
 				$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
 				$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
-			} else if(strlen($valeur) > $fmt['length']) {
-				$valeur = substr($valeur, 0, $fmt['length']);
+			} else if(mb_strlen($valeur,'UTF-8') > $fmt['length']) {
+				$valeur = mb_substr($valeur, 0, $fmt['length'],'UTF-8');
 			}
 			$ligneFichierTxtFixe .= $valeur;
 		}
