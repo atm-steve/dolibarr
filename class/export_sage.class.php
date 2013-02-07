@@ -25,7 +25,12 @@ class ExportComptaSage extends ExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 
-			if(!empty($infosFacture['entity'])) $entity = $infosFacture['entity'];
+			if(!empty($infosFacture['entity'])) {
+				$entity = $infosFacture['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
@@ -33,7 +38,7 @@ class ExportComptaSage extends ExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> "41100000",
-					'numero_compte_tiers'			=> empty($code_compta) ? (isset($entity) ? $entity['description'] : '') : $code_compta,
+					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
@@ -52,13 +57,14 @@ class ExportComptaSage extends ExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
+					'numero_plan'					=> '01',
+					'numero_section'				=> $codeAnalytique,
 					
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
-					'numero_section'				=> $infosFacture['entity']['id']
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant))
 				);
 				
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
