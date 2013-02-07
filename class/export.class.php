@@ -274,7 +274,7 @@ class ExportCompta {
 			if(mb_strlen($valeur, 'UTF-8') < $fmt['length']) {
 				$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
 				$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
-				$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
+				$valeur = str_pad($valeur, $fmt['length']+(strlen($valeur)-mb_strlen($valeur)), $pad_string, $pad_type);
 			} else if(mb_strlen($valeur,'UTF-8') > $fmt['length']) {
 				$valeur = mb_substr($valeur, 0, $fmt['length'],'UTF-8');
 			}
