@@ -37,6 +37,7 @@ class ExportComptaSage extends ExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
+					'numero_plan'					=> '0',
 					'numero_compte_general'			=> "41100000",
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
@@ -77,6 +78,7 @@ class ExportComptaSage extends ExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
+					'numero_plan'					=> '0',
 					
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
