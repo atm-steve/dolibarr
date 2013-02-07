@@ -38,8 +38,8 @@ class ExportComptaSage extends ExportCompta {
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant * 100)),
-					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant * 100) : 0)
+					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant) : 0)
 				);
 				
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
@@ -56,8 +56,8 @@ class ExportComptaSage extends ExportCompta {
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant * 100) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant * 100)),
+					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
 					'numero_section'				=> $infosFacture['entity']['id']
 				);
 				
@@ -75,8 +75,8 @@ class ExportComptaSage extends ExportCompta {
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant * 100) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant * 100)),
+					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
 					'numero_section'				=> $infosFacture['entity']['id']
 				);
 				
