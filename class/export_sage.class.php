@@ -82,8 +82,7 @@ class ExportComptaSage extends ExportCompta {
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
-					'numero_section'				=> $infosFacture['entity']['id']
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant))
 				);
 				
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
