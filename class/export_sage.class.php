@@ -45,9 +45,15 @@ class ExportComptaSage extends ExportCompta {
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant)),
-					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant) : 0)
+					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'type_ecriture'					=> 'G'
 				);
 				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				$ligneFichier['type_ecriture'] = 'A';
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
@@ -65,9 +71,15 @@ class ExportComptaSage extends ExportCompta {
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant))
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'type_ecriture'					=> 'G'
 				);
 				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				$ligneFichier['type_ecriture'] = 'A';
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
@@ -84,9 +96,15 @@ class ExportComptaSage extends ExportCompta {
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant))
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'type_ecriture'					=> 'G'
 				);
 				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				$ligneFichier['type_ecriture'] = 'A';
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
