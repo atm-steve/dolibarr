@@ -51,10 +51,6 @@ class ExportComptaSage extends ExportCompta {
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
-				
-				// Ecriture analytique
-				$ligneFichier['type_ecriture'] = 'A';
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
 			
@@ -101,10 +97,6 @@ class ExportComptaSage extends ExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
-				
-				// Ecriture analytique
-				$ligneFichier['type_ecriture'] = 'A';
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
