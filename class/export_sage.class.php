@@ -60,7 +60,7 @@ class ExportComptaSage extends ExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
-					'numero_plan'					=> '1',
+					'numero_plan'					=> '2',
 					'numero_section'				=> $codeAnalytique,
 					
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
