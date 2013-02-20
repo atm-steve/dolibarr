@@ -111,36 +111,44 @@ class ExportComptaSage extends ExportCompta {
 		global $conf;
 
 		$TabFactures = parent::get_journal_achats($dt_deb, $dt_fin);
+		$TabNDF = parent::get_note_de_frais($dt_deb, $dt_fin);
+		$TabGlobal = array_merge($TabFactures, $TabNDF);
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
+		$numEcriture = 1;
 		$numLignes = 1;
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
-			
+
+			if(!empty($infosFacture['entity'])) {
+				$entity = $infosFacture['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
+
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $infosFacture['compteur']['piece'],
-					'numero_facture'				=> $facture['facnumber'],
-					'numero_compte_tiers'			=> $code_compta,
+					'numero_piece'					=> $facture['ref'],
+					'numero_plan'					=> '0',
+					'numero_compte_general'			=> "41100000",
+					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_devise'				=> abs($montant * 100),
-					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-	
-					'montant'						=> abs($montant * 100),
-					'montant_signe'					=> abs($montant * 100),
-					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant * 100)),
-					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant * 100) : 0)
+					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'type_ecriture'					=> 'G'
 				);
 				
+				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
@@ -149,23 +157,24 @@ class ExportComptaSage extends ExportCompta {
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_compte'					=> $code_compta,
-					'numero_piece'					=> $infosFacture['compteur']['piece'],
-					'numero_facture'				=> $facture['facnumber'],
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> $facture['ref'],
+					'numero_plan'					=> '2',
+					'numero_section'				=> $codeAnalytique,
 					
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_devise'				=> abs($montant * 100),
-					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-
-					'montant'						=> abs($montant * 100),
-					'montant_signe'					=> abs($montant * 100),
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant * 100) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant * 100)),
-					'numero_section'				=> $infosFacture['entity']['id']
+					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'type_ecriture'					=> 'G'
 				);
 				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				$ligneFichier['type_ecriture'] = 'A';
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
@@ -174,22 +183,19 @@ class ExportComptaSage extends ExportCompta {
 			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_compte'					=> $code_compta,
-					'numero_piece'					=> $infosFacture['compteur']['piece'],
-					'numero_facture'				=> $facture['facnumber'],
-				
-					'libelle'						=> $tiers['nom'],
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> $facture['ref'],
+					'numero_plan'					=> '0',
+					
+					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_devise'				=> abs($montant * 100),
-					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-	
-					'montant'						=> abs($montant * 100),
-					'montant_signe'					=> abs($montant * 100),
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant * 100) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant * 100))
+					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'type_ecriture'					=> 'G'
 				);
 				
+				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}

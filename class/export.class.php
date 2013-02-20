@@ -36,6 +36,8 @@ class ExportCompta {
 	function get_journal_ventes($dt_deb, $dt_fin) {
 		global $db, $conf, $user;
 		
+		if(!$conf->facture->enabled) return array();
+		
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_VENTES;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
@@ -92,7 +94,8 @@ class ExportCompta {
 			// Récupération lignes de facture
 			$facture->fetch_lines();
 			foreach ($facture->lines as $ligne) {
-				// Code compta produit 
+				// Code compta produit
+				$codeComptableProduit = ''; 
 				if(!empty($ligne->fk_product)) {
 					$produit = new Product($db);
 					$produit->fetch($ligne->fk_product);
@@ -100,10 +103,12 @@ class ExportCompta {
 				}
 				
 				if(empty($codeComptableProduit)) {
-					if($ligne->fk_product_type == 0) {
+					if($ligne->product_type == 0) {
 						$codeComptableProduit = $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
-					} else if($ligne->fk_product_type == 1) {
+					} else if($ligne->product_type == 1) {
 						$codeComptableProduit = $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
+					} else {
+						$codeComptableProduit = 'NOCODE';
 					}
 				}
 				
@@ -132,10 +137,12 @@ class ExportCompta {
 	function get_journal_achats($dt_deb, $dt_fin) {
 		global $db, $conf, $user;
 		
+		if(!$conf->fournisseur->enabled) return array();
+		
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_ACHATS;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
-		// Requête de récupération des factures
+		// Requête de récupération des factures fournisseur
 		$sql = "SELECT f.rowid, f.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."facture_fourn f";
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
@@ -200,6 +207,90 @@ class ExportCompta {
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				$TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+			
+			$i++;
+		}
+		
+		return $TFactures;
+	}
+
+	/* 
+	 * Récupération dans Dolibarr de la liste des notes de frais
+	 */
+	function get_note_de_frais($dt_deb, $dt_fin) {
+		global $db, $conf, $user;
+		
+		if(!$conf->ndfp->enabled) return array();
+		
+		$datefield=$conf->global->EXPORT_COMPTA_DATE_NDF;
+		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
+		
+		// Requête de récupération des notes de frais
+		$sql = "SELECT n.rowid, n.entity";
+		$sql.= " FROM ".MAIN_DB_PREFIX."ndfp n";
+		$sql.= " WHERE n.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
+		if(!$allEntities) $sql.= " AND n.entity = {$conf->entity}";
+		$sql.= " AND n.fk_statut IN (1,2,3)";
+		$sql.= " ORDER BY n.".$datefield." ASC";
+echo $sql;return;
+		$resql = $db->query($sql);
+		
+		// Construction du tableau de données
+		$i = 0;
+		$TFactures = array();
+		while($obj = $db->fetch_object($resql)) {
+			$ndfp = new FactureFournisseur($db);
+			$ndfp->fetch($obj->rowid);
+			
+			$TFactures[$ndfp->id] = array();
+			$TFactures[$ndfp->id]['compteur']['piece'] = $i;
+			
+			// Récupération en-tête facture
+			$TFactures[$ndfp->id]['facture'] = get_object_vars($ndfp);
+
+			// Récupération client
+			$ndfp->fetch_thirdparty();
+			$idpays = $ndfp->thirdparty->country_id;
+			$TFactures[$ndfp->id]['tiers'] = get_object_vars($ndfp->thirdparty);
+			
+			// Récupération entity
+			if($conf->multicompany->enabled) {
+				$entity = new DaoMulticompany($db);
+				$entity->fetch($obj->entity);
+				$TFactures[$ndfp->id]['entity'] = get_object_vars($entity);
+			}
+			
+			// Définition des codes comptables
+			$codeComptableClient = !empty($ndfp->thirdparty->code_compta) ? $ndfp->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+			
+			// Récupération lignes de facture
+			$ndfp->fetch_lines();
+			foreach ($ndfp->lines as $ligne) {
+				// Code compta produit 
+				if(!empty($ligne->fk_product)) {
+					$produit = new Product($db);
+					$produit->fetch($ligne->fk_product);
+					$codeComptableProduit = $produit->accountancy_code_sell;
+				}
+				
+				if(empty($codeComptableProduit)) {
+					if($ligne->fk_product_type == 0) {
+						$codeComptableProduit = $conf->global->COMPTA_SERVICE_BUY_ACCOUNT;
+					} else if($ligne->fk_product_type == 1) {
+						$codeComptableProduit = $conf->global->COMPTA_PRODUCT_BUY_ACCOUNT;
+					}
+				}
+				
+				// Code compta TVA
+				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+
+				if(empty($TFactures[$ndfp->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$ndfp->id]['ligne_tiers'][$codeComptableClient] = 0;
+				if(empty($TFactures[$ndfp->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$ndfp->id]['ligne_produit'][$codeComptableProduit] = 0;
+				if(empty($TFactures[$ndfp->id]['ligne_tva'][$codeComptableTVA])) $TFactures[$ndfp->id]['ligne_tva'][$codeComptableTVA] = 0;
+				$TFactures[$ndfp->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
+				$TFactures[$ndfp->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
+				$TFactures[$ndfp->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
 			}
 			
 			$i++;
