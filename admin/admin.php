@@ -16,8 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-$res=@include("../../main.inc.php");					// For root directory
-if (! $res) $res=@include("../../../main.inc.php");	// For "custom" directory
+require('../config.php');
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 dol_include_once('/export-compta/lib/export-compta.lib.php');
 
