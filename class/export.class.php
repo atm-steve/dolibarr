@@ -282,6 +282,9 @@ class TExportCompta extends TObjetStd {
 		while($obj = $db->fetch_object($resql)) {
 			$ndfp = new Ndfp($db);
 			$ndfp->fetch($obj->rowid);
+			$ndfp->fetch_lines();
+			
+			if(empty($ndfp->lines)) continue;
 			
 			$TNDF[$ndfp->id] = array();
 			$TNDF[$ndfp->id]['compteur']['piece'] = $i;
@@ -305,7 +308,7 @@ class TExportCompta extends TObjetStd {
 			$codeComptableClient = !empty($ndfp->thirdparty->code_compta) ? $ndfp->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
 			
 			// Récupération lignes de facture
-			$ndfp->fetch_lines();
+			
 			foreach ($ndfp->lines as $ligne) {
 				// Code compta produit 
 				if(!empty($ligne->fk_exp)) {
