@@ -216,11 +216,11 @@ class TExportComptaSage extends TExportCompta {
 		$numLignes = 1;
 		
 		foreach ($TabNDF as $id_ndf => $infosNDF) {
-			$tiers = &$infosFacture['tiers'];
-			$ndf = &$infosFacture['ndf'];
+			$tiers = &$infosNDF['tiers'];
+			$ndf = &$infosNDF['ndf'];
 
-			if(!empty($infosFacture['entity'])) {
-				$entity = $infosFacture['entity'];
+			if(!empty($infosNDF['entity'])) {
+				$entity = $infosNDF['entity'];
 				$tmp = explode(";", $entity['description']);
 				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
