@@ -5,7 +5,7 @@
 
 dol_include_once("/export-compta/class/export.class.php");
 
-class ExportComptaSage extends ExportCompta {
+class TExportComptaSage extends TExportCompta {
 	function __construct(&$db) {
 		parent::__construct($db);
 	}
@@ -13,7 +13,7 @@ class ExportComptaSage extends ExportCompta {
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
 		global $conf;
 
-		$TabFactures = parent::get_journal_ventes($dt_deb, $dt_fin);
+		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
@@ -110,9 +110,7 @@ class ExportComptaSage extends ExportCompta {
 	function get_file_ecritures_comptables_achats($format, $dt_deb, $dt_fin) {
 		global $conf;
 
-		$TabFactures = parent::get_journal_achats($dt_deb, $dt_fin);
-		$TabNDF = parent::get_note_de_frais($dt_deb, $dt_fin);
-		$TabGlobal = array_merge($TabFactures, $TabNDF);
+		$TabFactures = parent::get_factures_fournisseur($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
@@ -192,6 +190,100 @@ class ExportComptaSage extends ExportCompta {
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
 					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
+	function get_file_ecritures_comptables_ndf($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabNDF = parent::get_notes_de_frais($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabNDF as $id_ndf => $infosNDF) {
+			$tiers = &$infosFacture['tiers'];
+			$ndf = &$infosFacture['ndf'];
+
+			if(!empty($infosFacture['entity'])) {
+				$entity = $infosFacture['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
+
+			// Lignes client
+			foreach($infosNDF['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $ndf['datee'],
+					'numero_piece'					=> $ndf['ref'],
+					'numero_plan'					=> '0',
+					'numero_compte_general'			=> "41100000",
+					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
+	
+					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
+					'date_echeance'					=> '',
+					'montant_debit'					=> abs($montant),
+					'montant_credit'				=> 0,
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			// Lignes de produits
+			foreach($infosNDF['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $ndf['datee'],
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> $ndf['ref'],
+					'numero_plan'					=> '2',
+					'numero_section'				=> $codeAnalytique,
+					
+					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
+					'date_echeance'					=> '',
+					'montant_debit'					=> 0,
+					'montant_credit'				=> abs($montant),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				$ligneFichier['type_ecriture'] = 'A';
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			foreach($infosNDF['ligne_tva'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $ndf['datee'],
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> $ndf['ref'],
+					'numero_plan'					=> '0',
+					
+					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
+					'date_echeance'					=> '',
+					'montant_debit'					=> 0,
+					'montant_credit'				=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				

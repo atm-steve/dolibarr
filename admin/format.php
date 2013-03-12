@@ -17,19 +17,22 @@
  */
 
 require('../config.php');
+require('../class/export.class.php');
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 dol_include_once('/export-compta/lib/export-compta.lib.php');
+
+if (! $user->admin) accessforbidden();
 
 $langs->load("admin");
 $langs->load("errors");
 $langs->load('export-compta@export-compta');
 
-if (! $user->admin) accessforbidden();
+$exp = new TExportCompta($db);
 
 $action = GETPOST('action','alpha');
 
-$type_export = GETPOST('type_export', 'alpha');
 $logiciel_export = GETPOST('logiciel_export', 'alpha');
+$type_export = GETPOST('type_export', 'alpha');
 $formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
 
 if($action == 'saveformat') {
@@ -43,8 +46,11 @@ if($action == 'saveformat') {
 
 $format = unserialize($conf->global->{$formatvar});
 if(empty($format)) $format = array();
+if(empty($logiciel_export)) $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
 
-
+/**
+ * View
+ */
 $head = exportcompta_admin_prepare_head();
 llxHeader("",$langs->trans("ExportComptaSetup"));
 
@@ -53,44 +59,29 @@ print_fiche_titre($langs->trans("ExportComptaSetup"),$linkback,'setup');
 
 dol_fiche_head($head, 'format', $langs->trans("ExportCompta"));
 
-$form=new Form($db);
+$formDoli=new Form($db);
 
-print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
-
+$form = new TFormCore($_SERVER["PHP_SELF"],'export_format_choice');
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
 print '<td>'.$langs->trans("LogicielExport").'</td>';
 print '<td>';
-print '<select name="logiciel_export" class="flat">';
-print '<option value=""></option>';
-print '<option value="quadratus"';
-print $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT == 'quadratus' ? ' selected="selected"':'';
-print '>'.$langs->trans("quadratus").'</option>';
-print '<option value="sage"';
-print $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT == 'sage' ? ' selected="selected"':'';
-print '>'.$langs->trans("sage").'</option>';
-print '</select>';
+print $form->combo('', 'logiciel_export', $exp->TLogiciel, $logiciel_export);
 print '</td>';
 print '<td>'.$langs->trans("TypeExport").'</td>';
 print '<td>';
-print '<select name="type_export" class="flat">';
-print '<option value=""></option>';
-print '<option value="ecritures_comptables_vente"'.($type_export == 'ecritures_comptables_vente' ? ' selected' : '').'>'.$langs->trans("ecritures_comptables_vente").'</option>';
-print '<option value="ecritures_comptables_achat"'.($type_export == 'ecritures_comptables_achat' ? ' selected' : '').'>'.$langs->trans("ecritures_comptables_achat").'</option>';
-print '<option value="reglement_tiers"'.($type_export == 'reglement_tiers' ? ' selected' : '').'>'.$langs->trans("reglement_tiers").'</option>';
-print '</select>';
+print $form->combo('', 'type_export', $exp->TTypeExport, $type_export);
 print '</td>';
 print '<td><input type="submit" class="button" value="'.$langs->trans("Display").'" /></td>';
 print "</tr>\n";
 print '</table>';
-print '</form>';
+$form->end();
 
 if(!empty($logiciel_export) && !empty($type_export)) {
-	print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
-	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'" />';
-	print '<input type="hidden" name="action" value="saveformat" />';
-	print '<input type="hidden" name="type_export" value="'.$type_export.'" />';
-	print '<input type="hidden" name="logiciel_export" value="'.$logiciel_export.'" />';
+	$form = new TFormCore($_SERVER["PHP_SELF"],'export_format_data');
+	print $form->hidden('action','saveformat');
+	print $form->hidden('type_export',$type_export);
+	print $form->hidden('logiciel_export',$logiciel_export);
 	
 	print '<table class="noborder" width="100%">';
 	print '<tr class="liste_titre">';
@@ -161,7 +152,7 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 	print '</table>';
 	
 	print '<input type="submit" class="button" value="'.$langs->trans("Save").'" />';
-	print '</form>';
+	$form->end();
 }
 
 llxFooter();

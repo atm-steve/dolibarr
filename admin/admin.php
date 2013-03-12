@@ -17,35 +17,30 @@
  */
 
 require('../config.php');
+require('../class/export.class.php');
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 dol_include_once('/export-compta/lib/export-compta.lib.php');
 
-$langs->load("admin");
-$langs->load("errors");
-$langs->load('export-compta@export-compta');
-
 if (! $user->admin) accessforbidden();
 
+$langs->load("admin");
+$langs->load("errors");
+
+$exp = new TExportCompta($db);
+
+/**
+ * Actions
+ */
 $action = GETPOST('action','alpha');
 
-if($action == 'setlogicielexport') {
-	$logicielexport = GETPOST('logicielexport', 'alpha');
-	dolibarr_set_const($db,'EXPORT_COMPTA_LOGICIEL_EXPORT',$logicielexport,'chaine',0,'',$conf->entity);
-}
-if($action == 'setallentites') {
-	$allentites = GETPOST('allentites', 'alpha');
-	dolibarr_set_const($db,'EXPORT_COMPTA_ALL_ENTITIES',$allentites,'chaine',0,'',$conf->entity);
-}
-if($action == 'setdateexportvente') {
-	$dateexportvente = GETPOST('dateexportvente', 'alpha');
-	dolibarr_set_const($db,'EXPORT_COMPTA_DATE_VENTES',$dateexportvente,'chaine',0,'',$conf->entity);
-}
-if($action == 'setdateexportachat') {
-	$dateexportachat = GETPOST('dateexportachat', 'alpha');
-	dolibarr_set_const($db,'EXPORT_COMPTA_DATE_ACHATS',$dateexportachat,'chaine',0,'',$conf->entity);
+if($action == 'setconst') {
+	$const = GETPOST('const', 'alpha');
+	dolibarr_set_const($db,$const,GETPOST($const,'alpha'),'chaine',0,'',$conf->entity);
 }
 
-
+/**
+ * View
+ */
 $head = exportcompta_admin_prepare_head();
 llxHeader("",$langs->trans("ExportComptaSetup"));
 
@@ -54,7 +49,7 @@ print_fiche_titre($langs->trans("ExportComptaSetup"),$linkback,'setup');
 
 dol_fiche_head($head, 'config', $langs->trans("ExportCompta"));
 
-$form=new Form($db);
+$formDoli=new Form($db);
 
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
@@ -64,81 +59,76 @@ print '<td width="80">&nbsp;</td>';
 print "</tr>\n";
 $var=true;
 
-// Format d'export
+// Logiciel d'export
 $var=! $var;
-print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'" />';
-print '<input type="hidden" name="action" value="setlogicielexport" />';
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_logiciel');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_LOGICIEL_EXPORT');
 print '<tr '.$bc[$var].'><td>';
 print $langs->trans("ExportFormat");
 print '</td><td width="60" align="right">';
-print '<select name="logicielexport" class="flat">';
-print '<option value=""></option>';
-print '<option value="quadratus"';
-print $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT == 'quadratus' ? ' selected="selected"':'';
-print '>'.$langs->trans("quadratus").'</option>';
-print '<option value="sage"';
-print $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT == 'sage' ? ' selected="selected"':'';
-print '>'.$langs->trans("sage").'</option>';
-print '</select>';
+print $form->combo('', 'EXPORT_COMPTA_LOGICIEL_EXPORT', $exp->TLogiciel, $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";
-print '</form>';
 
 // Export de toutes les entités
 $var=!$var;
-print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<input type="hidden" name="action" value="setallentites">';
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_allentities');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_ALL_ENTITIES');
 print '<tr '.$bc[$var].'>';
 print '<td>'.$langs->trans("ExportAllEntities").'</td>';
 print '<td width="60" align="right">';
-print $form->selectyesno("allentites",$conf->global->EXPORT_COMPTA_ALL_ENTITIES,1);
+print $formDoli->selectyesno("EXPORT_COMPTA_ALL_ENTITIES",$conf->global->EXPORT_COMPTA_ALL_ENTITIES,1);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
-print '</td>';
-print '</tr>';
-print '</form>';
+print "</td></tr>\n";
+$form->end();
 
-// Champ date utilisé pour les bornes sur factures de vente
+// Champ date utilisé pour les bornes sur factures client
 $var=! $var;
-print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'" />';
-print '<input type="hidden" name="action" value="setdateexportvente" />';
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_datefaccli');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_DATE_FACTURES_CLIENT');
 print '<tr '.$bc[$var].'><td>';
-print $langs->trans("BaseDateForSellings");
+print $langs->trans("BaseDateForFacCli");
 print '</td><td width="60" align="right">';
-print '<select name="dateexportvente" class="flat">';
-print '<option value="datef"';
-print $conf->global->EXPORT_COMPTA_DATE_VENTES == 'datef' ? ' selected="selected"':'';
-print '>'.$langs->trans("DateFacture").'</option>';
-print '<option value="date_valid"';
-print $conf->global->EXPORT_COMPTA_DATE_VENTES == 'date_valid' ? ' selected="selected"':'';
-print '>'.$langs->trans("DateValid").'</option>';
-print '</select>';
+print $form->combo('', 'EXPORT_COMPTA_DATE_FACTURES_CLIENT', $exp->TDatesFacCli, $conf->global->EXPORT_COMPTA_DATE_FACTURES_CLIENT);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";
-print '</form>';
+$form->end();
 
-// Champ date utilisé pour les bornes sur factures d'achat
+// Champ date utilisé pour les bornes sur factures fournisseur
 $var=! $var;
-print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'" />';
-print '<input type="hidden" name="action" value="setdateexportachat" />';
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_datefacfourn');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_DATE_FACTURES_FOURNISSEUR');
 print '<tr '.$bc[$var].'><td>';
-print $langs->trans("BaseDateForSellings");
+print $langs->trans("BaseDateForFacFourn");
 print '</td><td width="60" align="right">';
-print '<select name="dateexportachat" class="flat">';
-print '<option value="datef"';
-print $conf->global->EXPORT_COMPTA_DATE_ACHATS == 'datef' ? ' selected="selected"':'';
-print '>'.$langs->trans("DateFacture").'</option>';
-print '</select>';
+print $form->combo('', 'EXPORT_COMPTA_DATE_FACTURES_FOURNISSEUR', $exp->TDatesFacFourn, $conf->global->EXPORT_COMPTA_DATE_FACTURES_FOURNISSEUR);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";
-print '</form>';
+$form->end();
+
+// Champ date utilisé pour les bornes sur notes de frais
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_datendf');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_DATE_NDF');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("BaseDateForNDF");
+print '</td><td width="60" align="right">';
+print $form->combo('', 'EXPORT_COMPTA_DATE_NDF', $exp->TDatesNDF, $conf->global->EXPORT_COMPTA_DATE_NDF);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+print "</table>";
 
 llxFooter();
 

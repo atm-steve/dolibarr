@@ -99,8 +99,9 @@ class modExportCompta extends DolibarrModules
 		//                             2=>array('MAIN_MODULE_MYMODULE_NEEDSMARTY','chaine',1,'Constant to say module need smarty',1)
 		$this->const = array(
 			0=>array('EXPORT_COMPTA_ALL_ENTITIES','chaine','0','Acccountancy export made across multi-companies', 1, 'current', 1),
-			1=>array('EXPORT_COMPTA_DATE_VENTES','chaine','datef','Date on which acccountancy export will be based for sales', 1, 'current', 1),
-			2=>array('EXPORT_COMPTA_DATE_ACHATS','chaine','datef','Date on which acccountancy export will be based for purchases', 1, 'current', 1)
+			1=>array('EXPORT_COMPTA_DATE_FACTURES_CLIENT','chaine','datef','Date on which acccountancy export will be based for sales', 1, 'current', 1),
+			2=>array('EXPORT_COMPTA_DATE_FACTURES_FOURNISSEUR','chaine','datef','Date on which acccountancy export will be based for purchases', 1, 'current', 1),
+			3=>array('EXPORT_COMPTA_DATE_FACTURES_NDF','chaine','datee','Date on which acccountancy export will be based for sales', 1, 'current', 1)
 		);
 
 		// Array to add new pages in new tabs
@@ -175,7 +176,7 @@ class modExportCompta extends DolibarrModules
 			'mainmenu'=>'accountancy',
 			'leftmenu'=>'export',
 			'url'=>'/export-compta/export.php',
-			'langs'=>'export-compta',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'langs'=>'export-compta@export-compta',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>100,
 			'enabled'=>'1',			// Define condition to show or hide menu entry. Use '$conf->monmodule->enabled' if entry must be visible if module is enabled.
 			'perms'=>'1',			// Use 'perms'=>'$user->rights->monmodule->level1->level2' if you want your menu with a permission rules
