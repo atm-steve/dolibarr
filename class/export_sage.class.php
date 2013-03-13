@@ -229,7 +229,7 @@ class TExportComptaSage extends TExportCompta {
 			// Lignes client
 			foreach($infosNDF['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'date_piece'					=> $ndf['datee'],
+					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
 					'numero_piece'					=> $ndf['ref'],
 					'numero_plan'					=> '0',
 					'numero_compte_general'			=> "41100000",
@@ -250,7 +250,7 @@ class TExportComptaSage extends TExportCompta {
 			// Lignes de produits
 			foreach($infosNDF['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'date_piece'					=> $ndf['datee'],
+					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $ndf['ref'],
 					'numero_plan'					=> '2',
@@ -275,7 +275,7 @@ class TExportComptaSage extends TExportCompta {
 			// Lignes TVA
 			foreach($infosNDF['ligne_tva'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'date_piece'					=> $ndf['datee'],
+					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $ndf['ref'],
 					'numero_plan'					=> '0',
