@@ -311,7 +311,7 @@ class TExportCompta extends TObjetStd {
 			// Récupération entity
 			if($conf->multicompany->enabled) {
 				$entity = new DaoMulticompany($db);
-				$entity->fetch($obj->entity);
+				$entity->fetch($idNDF['entity']);
 				$TNDF[$ndfp->id]['entity'] = get_object_vars($entity);
 			}
 			
