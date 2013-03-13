@@ -33,6 +33,7 @@ class TExportCompta extends TObjetStd {
 		$this->TDatesNDF = array(
 			'dates' => 'Date de début'
 			,'datee' => 'Date de fin'
+			,'date_valid' => 'Date de validation'
 		);
 		
 		$this->TTypeExport = array();
