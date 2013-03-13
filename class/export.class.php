@@ -99,7 +99,7 @@ class TExportCompta extends TObjetStd {
 		foreach($TIdFactures as $idFacture) {
 			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
-			$facture->fetch($idFacture['rowid']); // TODO : le fetch ne fonctionnera pas pour du multi entité
+			$facture->fetch($idFacture['rowid']);
 			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
@@ -277,11 +277,22 @@ class TExportCompta extends TObjetStd {
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
+		$TIdNDF = array();
+		while($obj = $db->fetch_object($resql)) {
+			$TIdNDF[] = array(
+				'rowid' => $obj->rowid
+				,'entity' => $obj->entity
+			);
+		}
+		$trueEntity = $conf->entity;
+		
+		// Construction du tableau de données
 		$i = 0;
 		$TNDF = array();
-		while($obj = $db->fetch_object($resql)) {
+		foreach($TIdNDF as $idNDF) {
+			$conf->entity = $idNDF['entity']; // Le fetch ne marche pas si pas dans la bonne entity
 			$ndfp = new Ndfp($db);
-			$ndfp->fetch($obj->rowid);
+			$ndfp->fetch($idNDF['rowid']);
 			$ndfp->fetch_lines();
 			
 			if(empty($ndfp->lines)) continue;
@@ -307,7 +318,7 @@ class TExportCompta extends TObjetStd {
 			// Définition des codes comptables
 			$codeComptableClient = !empty($ndfp->thirdparty->code_compta) ? $ndfp->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
 			
-			// Récupération lignes de facture
+			// Récupération lignes de notes de frais
 			
 			foreach ($ndfp->lines as $ligne) {
 				// Code compta produit 
@@ -332,6 +343,7 @@ class TExportCompta extends TObjetStd {
 			
 			$i++;
 		}
+		$conf->entity = $trueEntity;
 		
 		return $TNDF;
 	}
