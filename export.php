@@ -25,7 +25,7 @@ $error = '';
 $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
 
 if(!empty($action) && $action == 'export') {	
-	$fileName = $logiciel_export.date('YmdHis').".txt";
+	$fileName = $logiciel_export.$type_export.date('YmdHis').".txt";
 	$fileContent = '';
 	
 	if(!empty($logiciel_export)) {
