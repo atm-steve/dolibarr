@@ -232,13 +232,13 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
 					'numero_piece'					=> $ndf['ref'],
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> "40100000",
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
-					'montant_debit'					=> abs($montant),
-					'montant_credit'				=> 0,
+					'montant_debit'					=> 0,
+					'montant_credit'				=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -258,8 +258,8 @@ class TExportComptaSage extends TExportCompta {
 					
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
-					'montant_debit'					=> 0,
-					'montant_credit'				=> abs($montant),
+					'montant_debit'					=> abs($montant),
+					'montant_credit'				=> 0,
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -282,8 +282,8 @@ class TExportComptaSage extends TExportCompta {
 					
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
-					'montant_debit'					=> 0,
-					'montant_credit'				=> abs($montant),
+					'montant_debit'					=> abs($montant),
+					'montant_credit'				=> 0,
 					'type_ecriture'					=> 'G'
 				);
 				
