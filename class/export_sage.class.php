@@ -125,7 +125,7 @@ class TExportComptaSage extends TExportCompta {
 			if(!empty($infosFacture['entity'])) {
 				$entity = $infosFacture['entity'];
 				$tmp = explode(";", $entity['description']);
-				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeCompteTiers = !empty($tmp[2]) ? $tmp[2] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
@@ -222,7 +222,7 @@ class TExportComptaSage extends TExportCompta {
 			if(!empty($infosNDF['entity'])) {
 				$entity = $infosNDF['entity'];
 				$tmp = explode(";", $entity['description']);
-				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeCompteTiers = !empty($tmp[2]) ? $tmp[2] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
