@@ -271,7 +271,7 @@ class TExportCompta extends TObjetStd {
 		$sql.= " FROM ".MAIN_DB_PREFIX."ndfp n";
 		$sql.= " WHERE n.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND n.entity = {$conf->entity}";
-		$sql.= " AND n.statut IN (0,1,2,3)";
+		$sql.= " AND n.statut IN (1,2,3)";
 		$sql.= " ORDER BY n.".$datefield." ASC";
 		
 		$resql = $db->query($sql);
