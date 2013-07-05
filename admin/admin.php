@@ -71,6 +71,7 @@ print $form->combo('', 'EXPORT_COMPTA_LOGICIEL_EXPORT', $exp->TLogiciel, $conf->
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";
+$form->end();
 
 // Export de toutes les entités
 $var=!$var;
