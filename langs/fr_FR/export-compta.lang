@@ -18,6 +18,7 @@ ecritures_bancaires=Ecritures bancaires
 reglement_tiers=Règlements tiers
 ecritures_comptables_vente=Ecritures comptables ventes
 ecritures_comptables_achat=Ecritures comptables achats
+ecritures_bancaires=Ecritures bancaires
 
 #ADMIN
 ExportAllEntities=Exporter les données de toutes les entités dans un même fichier
@@ -32,3 +33,4 @@ quadratus=Quadratus
 BaseDateForFacCli=Date utilisée comme borne pour les factures client
 BaseDateForFacFourn=Date utilisée comme borne pour les factures fournisseur
 BaseDateForNDF=Date utilisée comme borne pour les notes de frais
+BaseDateForBank=Date utilisée comme borne pour les écritures bancaires
