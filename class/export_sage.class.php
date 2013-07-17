@@ -328,6 +328,9 @@ class TExportComptaSage extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
+			$label = $banqueligne['fk_type'].' '.number_format($banqueligne['amount'],2,',',' ');
+			$label.= isset($entity) ? mb_substr($entity['label'],0,15,'UTF-8').'/'.$tiers['nom'] : $tiers['nom'];
+
 			// Lignes client
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -337,7 +340,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_compte_general'			=> "41100000",
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
-					'libelle'						=> isset($entity) ? $banqueligne['fk_type'].' '.mb_substr($entity['label'],0,15,'UTF-8').'/'.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> $label,
 					'montant_debit'					=> 0,
 					'montant_credit'				=> abs($montant),
 					'type_ecriture'					=> 'G'
@@ -357,7 +360,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_plan'					=> '2',
 					'numero_section'				=> $codeAnalytique,
 					
-					'libelle'						=> isset($entity) ? $banqueligne['fk_type'].' '.mb_substr($entity['label'],0,15,'UTF-8').'/'.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> $label,
 					'montant_debit'					=> abs($montant),
 					'montant_credit'				=> 0,
 					'type_ecriture'					=> 'G'
