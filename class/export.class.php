@@ -491,6 +491,12 @@ class TExportCompta extends TObjetStd {
 			$bank = new Account($db);
 			$bank->fetch($bankline->fk_account);
 			
+			if($bankline->fk_bordereau > 0 && $bankline->fk_type == 'CHQ') {
+				$bordereau = new RemiseCheque($db);
+				$bordereau->fetch($bankline->fk_bordereau);
+				$bankline->datev = $bordereau->date_bordereau;
+			}
+			
 			$links = $bank->get_url($bankline->id);
 			foreach($links as $key => $val) {
 				if($links[$key]['type'] == 'company') $client = $links[$key]['label'];
