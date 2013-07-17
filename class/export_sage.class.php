@@ -322,7 +322,7 @@ class TExportComptaSage extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
-			$label = $banqueligne['fk_type'].' '.number_format($banqueligne['amount'],2,',',' ');
+			$label = $banqueligne['fk_type'].' '.number_format($banqueligne['amount'],2,',',' ').' ';
 			$label.= isset($entity) ? mb_substr($entity['label'],0,15,'UTF-8').'/'.$tiers['nom'] : $tiers['nom'];
 			$datepiece = strtotime($banqueligne['datev']);
 
