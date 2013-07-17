@@ -58,6 +58,9 @@ if(!empty($action) && $action == 'export') {
 				case 'reglement_tiers':
 					$fileContent = $export->get_file_reglement_tiers($format, $dt_deb, $dt_fin);
 					break;
+				case 'ecritures_bancaires':
+					$fileContent = $export->get_file_ecritures_bancaires($format, $dt_deb, $dt_fin);
+					break;
 				default:
 					$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportType'). ' : ' . $type_export;
 					break;

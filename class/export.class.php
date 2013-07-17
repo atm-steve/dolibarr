@@ -10,6 +10,7 @@ require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 
 class TExportCompta extends TObjetStd {
 	
@@ -35,15 +36,19 @@ class TExportCompta extends TObjetStd {
 			,'datee' => 'Date de fin'
 			,'date_valid' => 'Date de validation'
 		);
+		$this->TDatesBANK = array(
+			'datec' => 'Date de création'
+			,'dateo' => 'Date opération'
+			,'datev' => 'Date de valeur'
+		);
 		
 		$this->TTypeExport = array();
 		if($conf->facture->enabled) $this->TTypeExport['ecritures_comptables_vente'] = 'Ecritures comptables vente';
 		if($conf->fournisseur->enabled) $this->TTypeExport['ecritures_comptables_achat'] = 'Ecritures comptables achats';
 		if($conf->ndfp->enabled) {
-			require_once DOL_DOCUMENT_ROOT_ALT.'/ndfp/class/ndfp.class.php';
+			dol_include_once('/ndfp/class/ndfp.class.php');
 			$this->TTypeExport['ecritures_comptables_ndf'] = 'Ecritures comptables notes de frais';
 		}
-		if($conf->facture->enabled) $this->TTypeExport['reglement_tiers'] = 'reglement_tiers';
 		if($conf->banque->enabled) $this->TTypeExport['ecritures_bancaires'] = 'ecritures_bancaires';
 		
 		// Requête de récupération des codes tva
@@ -352,7 +357,7 @@ class TExportCompta extends TObjetStd {
 	 * Récupération dans Dolibarr de la liste des règlements clients avec détails facture + ligne + produit + client
 	 * Tous les règlement pour l'entité concernée, avec date de règlement entre les bornes sélectionnées
 	 */
-	function get_reglement_tiers($dt_deb, $dt_fin) {
+	/*function get_reglement_tiers($dt_deb, $dt_fin) {
 		global $db, $conf;
 
 		// Requête de récupération des règlements
@@ -395,6 +400,125 @@ class TExportCompta extends TObjetStd {
 		}	
 		
 		return $TReglements;
+	}*/
+
+	function get_banque($dt_deb, $dt_fin) {
+		global $db, $conf, $user;
+		
+		if(!$conf->banque->enabled) return array();
+		
+		$datefield=$conf->global->EXPORT_COMPTA_DATE_BANK;
+		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
+		/*
+        $sql = 'SELECT';
+        $sql .= ' DATE_FORMAT(b.dateo, \'' . $this->date_format . '\') as date,';
+        $sql .= ' t.libelle as op_type,';
+        $sql .= ' b.num_chq as op_id,';
+        $sql .= ' concat_ws(\'\', c.code_compta, s.code_compta_fournisseur) AS tp_account_code,';
+        $sql .= ' ba.account_number as bank_account_code,';
+        $sql .= ' b.label as bank_label,';
+        $sql .= ' group_concat(concat_ws(\' \', soc.nom, f.facnumber, si.rowid) SEPARATOR \', \') as label,';
+        $sql .= ' concat_ws(\' \', tc.libelle, ch.libelle) as payroll_label,';
+        $sql .= ' b.amount as amount';
+        $sql .= ' FROM llx_bank AS b';
+        $sql .= ' JOIN llx_bank_account AS ba ON ba.rowid = b.fk_account';
+        $sql .= ' JOIN llx_c_paiement AS t ON b.fk_type = t.code';
+        $sql .= ' LEFT JOIN llx_paiement AS p ON p.fk_bank = b.rowid';
+        $sql .= ' LEFT JOIN llx_paiement_facture AS pf ON pf.fk_paiement = p.rowid';
+        $sql .= ' LEFT JOIN llx_facture AS f ON f.rowid = pf.fk_facture';
+        $sql .= ' LEFT JOIN llx_paiementfourn AS sp ON sp.fk_bank = b.rowid';
+        $sql .= ' LEFT JOIN llx_paiementfourn_facturefourn AS sip ON sip.fk_paiementfourn = sp.rowid';
+        $sql .= ' LEFT JOIN llx_facture_fourn AS si ON si.rowid = sip.fk_facturefourn';
+        $sql .= ' LEFT JOIN llx_paiementcharge AS pc ON  pc.fk_bank = b.rowid';
+        $sql .= ' LEFT JOIN llx_chargesociales AS ch ON ch.rowid = pc.fk_charge';
+        $sql .= ' LEFT JOIN llx_c_chargesociales AS tc ON ch.fk_type = tc.id';
+        $sql .= ' LEFT JOIN llx_societe AS soc ON soc.rowid = f.fk_soc OR soc.rowid = si.fk_soc';
+        $sql .= ' LEFT JOIN llx_societe AS c ON c.rowid = f.fk_soc';
+        $sql .= ' LEFT JOIN llx_societe AS s ON s.rowid = si.fk_soc';
+        $sql.= " WHERE n.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
+        if(!$allEntities) $sql.= " AND n.entity = {$conf->entity} ";
+        $sql .= ' AND ';
+        $sql .= 'b.dateo >= \'' . $this->start_time . '\'';
+        $sql .= ' AND ';
+        $sql .= 'b.dateo <= \'' . $this->end_time . '\'';
+        $sql .= ' GROUP BY';
+        $sql .= ' b.rowid,';
+        $sql .= ' b.dateo,';
+        $sql .= ' t.libelle,';
+        $sql .= ' b.num_chq,';
+        $sql .= ' c.code_compta,';
+        $sql .= ' s.code_compta_fournisseur,';
+        $sql .= ' ba.account_number,';
+        $sql .= ' b.label,';
+        $sql .= ' tc.libelle,';
+        $sql .= ' ch.libelle,';
+        $sql .= ' b.amount';
+        $sql .= ' ORDER BY date';
+		*/
+		// Requête de récupération des factures
+		$sql = "SELECT b.rowid, ba.entity, p.rowid as 'id_paiement'";
+		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
+		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
+		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
+		$sql.= " ORDER BY b.".$datefield." ASC";
+		
+		//echo $sql;
+		
+		$resql = $db->query($sql);
+		
+		// Construction du tableau de données
+		$TIdBank = array();
+		while($obj = $db->fetch_object($resql)) {
+			$TIdBank[] = array(
+				'rowid' => $obj->rowid
+				,'entity' => $obj->entity
+				,'id_paiement' => $obj->id_paiement
+			);
+		}
+		$trueEntity = $conf->entity;
+		
+		$i = 0;
+		
+		// Construction du tableau de données
+		$TBank = array();
+		foreach($TIdBank as $idBank) {
+			$conf->entity = $idBank['entity'];
+			$bankline = new AccountLine($db);
+			$bankline->fetch($idBank['rowid']);
+			
+			$bank = new Account($db);
+			$bank->fetch($bankline->fk_account);
+			
+			$links = $bank->get_url($bankline->id);
+			foreach($links as $key => $val) {
+				if($links[$key]['type'] == 'company') $client = $links[$key]['label'];
+			}
+			
+			// Récupération entity
+			if($conf->multicompany->enabled) {
+				$entity = new DaoMulticompany($db);
+				$entity->fetch($idBank['entity']);
+				$TBank[$bankline->id]['entity'] = get_object_vars($entity);
+			}
+			
+			// Définition des codes comptables
+			$codeComptableClient = 0;
+			$codeComptableBank = !empty($bank->account_number) ? $bank->account_number : '51200000';
+			
+			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
+			$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
+			$TBank[$bankline->id]['tiers'] = array('nom' => $client);
+			
+			if(empty($TBank[$bankline->id]['ligne_tiers'][$codeComptableClient])) $TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] = 0;
+			if(empty($TBank[$bankline->id]['ligne_banque'][$codeComptableBank])) $TBank[$bankline->id]['ligne_banque'][$codeComptableBank] = 0;
+			$TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] += $bankline->amount;
+			$TBank[$bankline->id]['ligne_banque'][$codeComptableBank] += $bankline->amount;
+		}	
+		$conf->entity = $trueEntity;
+		
+		return $TBank;
 	}
 	
 	function get_line(&$format, $dataline) {		
