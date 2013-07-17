@@ -495,7 +495,7 @@ class TExportCompta extends TObjetStd {
 			if($bankline->fk_bordereau > 0 && $bankline->fk_type == 'CHQ') {
 				$bordereau = new RemiseCheque($db);
 				$bordereau->fetch($bankline->fk_bordereau);
-				$bankline['datev'] = $bordereau->date_bordereau;
+				$bankline->datev = $bordereau->date_bordereau;
 			}
 			
 			$links = $bank->get_url($bankline->id);
