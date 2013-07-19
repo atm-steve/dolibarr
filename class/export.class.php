@@ -50,7 +50,7 @@ class TExportCompta extends TObjetStd {
 			dol_include_once('/ndfp/class/ndfp.class.php');
 			$this->TTypeExport['ecritures_comptables_ndf'] = 'Ecritures comptables notes de frais';
 		}
-		if($conf->banque->enabled) $this->TTypeExport['ecritures_bancaires'] = 'ecritures_bancaires';
+		if($conf->banque->enabled) $this->TTypeExport['ecritures_bancaires'] = 'Ecritures bancaires';
 		
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
