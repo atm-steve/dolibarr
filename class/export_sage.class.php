@@ -39,9 +39,9 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_plan'					=> '0',
 					'numero_compte_general'			=> "41100000",
-					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
+					'numero_compte_tiers'			=> $code_compta,
 	
-					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> 'FC '.$tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant)),
@@ -56,6 +56,7 @@ class TExportComptaSage extends TExportCompta {
 			
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				list($code_compta, $codeAnalytique) = explode(';', $code_compta);
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_compte_general'			=> $code_compta,
@@ -63,7 +64,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_plan'					=> '2',
 					'numero_section'				=> $codeAnalytique,
 					
-					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> 'FC '.$tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
@@ -88,7 +89,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_plan'					=> '0',
 					
-					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> 'FC '.$tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
