@@ -323,7 +323,7 @@ class TExportComptaSage extends TExportCompta {
 			}
 
 			$label = $banqueligne['fk_type'].' '.number_format($banqueligne['amount'],2,',',' ').' ';
-			$label.= isset($entity) ? mb_substr($entity['label'],0,15,'UTF-8').'/'.$tiers['nom'] : $tiers['nom'];
+			$label.= isset($entity) ? $tiers['nom'].'/'.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'];
 			$datepiece = strtotime($banqueligne['datev']);
 
 			// Lignes client

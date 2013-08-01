@@ -457,7 +457,7 @@ class TExportCompta extends TObjetStd {
         $sql .= ' ORDER BY date';
 		*/
 		// Requête de récupération des factures
-		$sql = "SELECT b.rowid, ba.entity, p.rowid as 'id_paiement'";
+		$sql = "SELECT b.rowid, p.entity, p.rowid as 'id_paiement'";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
