@@ -324,7 +324,7 @@ class TExportComptaSage extends TExportCompta {
 
 			$label = $banqueligne['fk_type'].' '.number_format($banqueligne['amount'],2,',',' ').' ';
 			$label.= isset($entity) ? $tiers['nom'].'/'.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'];
-			$datepiece = strtotime($banqueligne['datev']);
+			$datepiece = $banqueligne['datev'];
 
 			// Lignes client
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
@@ -344,6 +344,11 @@ class TExportComptaSage extends TExportCompta {
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
+			}
+			
+			if($banqueligne['fk_type'] == 'CHQ') {
+				$label = 'RC '.number_format($banqueligne['amount'],2,',',' ').' ';
+				$label.= $tiers['nom'];
 			}
 			
 			// Lignes de banque
