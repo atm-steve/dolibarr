@@ -485,7 +485,6 @@ class TExportCompta extends TObjetStd {
 		// Construction du tableau de données
 		$TBank = array();
 		foreach($TIdBank as $idBank) {
-			$conf->entity = $idBank['entity'];
 			$bankline = new AccountLine($db);
 			$bankline->fetch($idBank['rowid']);
 			
