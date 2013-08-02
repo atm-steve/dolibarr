@@ -548,7 +548,7 @@ class TExportCompta extends TObjetStd {
 			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
 			$sql.= " WHERE b.fk_bordereau = ".$idRC;
 			$sql.= " ORDER BY b.".$datefield." ASC";
-			echo $sql;
+			
 			$resql = $db->query($sql);
 			
 			$TIdBank = array();
