@@ -44,8 +44,8 @@ class TExportComptaSage extends TExportCompta {
 					'libelle'						=> 'FC '.$tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant)),
-					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -67,8 +67,8 @@ class TExportComptaSage extends TExportCompta {
 					'libelle'						=> 'FC '.$tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -92,8 +92,8 @@ class TExportComptaSage extends TExportCompta {
 					'libelle'						=> 'FC '.$tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
