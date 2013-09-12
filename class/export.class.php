@@ -597,6 +597,7 @@ class TExportCompta extends TObjetStd {
 				if(empty($TBank[$bankline->id]['ligne_tiers'][$codeComptableClient])) $TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] = 0;
 				$TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] += $bankline->amount;
 				$TBank[$bankline->id]['ligne_banque'] = array();
+				$TBank[$bankline->id]['total_bordereau'] = $bordereau->amount;
 			}
 
 			$bankline->amount = $bordereau->amount;
