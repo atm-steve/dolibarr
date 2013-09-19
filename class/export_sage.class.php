@@ -38,7 +38,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> "4110000",
 					'numero_compte_tiers'			=> $code_compta,
 	
 					'libelle'						=> 'FC '.$tiers['nom'],
