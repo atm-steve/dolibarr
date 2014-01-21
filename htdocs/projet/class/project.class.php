@@ -162,6 +162,7 @@ class Project extends CommonObject
 
         $this->statuts_short = array(0 => 'Draft', 1 => 'Opened', 2 => 'Closed');
         $this->statuts_long = array(0 => 'Draft', 1 => 'Opened', 2 => 'Closed');
+        $this->public = true;
     }
 
     /**
