@@ -2558,7 +2558,7 @@ class Form
 
 		$langs->load('stocks');
 
-		$sql = "SELECT p.rowid, p.label, p.ref, p.price, p.duration, p.fk_product_type,";
+		$sql = "SELECT p.rowid, p.label, p.ref, p.price, p.duration, p.fk_product_type, p.accountancy_code_buy,";
 		$sql.= " pfp.ref_fourn, pfp.rowid as idprodfournprice, pfp.price as fprice, pfp.quantity, pfp.remise_percent, pfp.remise, pfp.unitprice,";
 		$sql.= " pfp.fk_supplier_price_expression, pfp.fk_product, pfp.tva_tx, pfp.fk_soc, s.nom as name,";
 		$sql.= " pfp.supplier_reputation";
@@ -2582,7 +2582,7 @@ class Form
 			foreach ($scrit as $crit)
 			{
 				if ($i > 0) $sql.=" AND ";
-				$sql.="(pfp.ref_fourn LIKE '".$this->db->escape($prefix.$crit)."%' OR p.ref LIKE '".$this->db->escape($prefix.$crit)."%' OR p.label LIKE '".$this->db->escape($prefix.$crit)."%')";
+				$sql.="(pfp.ref_fourn LIKE '".$this->db->escape($prefix.$crit)."%' OR p.ref LIKE '".$this->db->escape($prefix.$crit)."%' OR p.label LIKE '".$this->db->escape($prefix.$crit)."%' OR p.accountancy_code_buy LIKE '".$this->db->escape($prefix.$crit)."%')";
 				$i++;
 			}
 			if (count($scrit) > 1) $sql.=")";
@@ -2713,6 +2713,12 @@ class Form
 
 						$opt .= " - ".$reputations[$objp->supplier_reputation];
 						$outval.=" - ".$reputations[$objp->supplier_reputation];
+					}
+					if ($objp->accountancy_code_buy)
+					{
+						$langs->load('admin');
+						$opt.= ' - ' . $langs->trans('AccountancyCode') . ' : ' . $objp->accountancy_code_buy;
+						$outval.= ' - ' . $langs->trans('AccountancyCode') . ' : ' . $objp->accountancy_code_buy;
 					}
 				}
 				else
