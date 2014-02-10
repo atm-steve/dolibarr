@@ -37,11 +37,10 @@ class TExportComptaSage extends TExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					'numero_plan'					=> '0',
 					'numero_compte_general'			=> "4110000",
 					'numero_compte_tiers'			=> $code_compta,
 	
-					'libelle'						=> 'FC '.$tiers['nom'],
+					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
@@ -56,15 +55,12 @@ class TExportComptaSage extends TExportCompta {
 			
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
-				list($code_compta, $codeAnalytique) = explode(';', $code_compta);
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
-					'numero_plan'					=> '2',
-					'numero_section'				=> $codeAnalytique,
+					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> 'FC '.$tiers['nom'],
+					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
@@ -85,11 +81,10 @@ class TExportComptaSage extends TExportCompta {
 			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
-					'numero_plan'					=> '0',
+					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> 'FC '.$tiers['nom'],
+					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
@@ -123,27 +118,19 @@ class TExportComptaSage extends TExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 
-			if(!empty($infosFacture['entity'])) {
-				$entity = $infosFacture['entity'];
-				$tmp = explode(";", $entity['description']);
-				$codeCompteTiers = !empty($tmp[2]) ? $tmp[2] : '';
-				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
-			}
-
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					'numero_plan'					=> '0',
 					'numero_compte_general'			=> "41100000",
-					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
+					'numero_compte_tiers'			=> $code_compta,
 	
-					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($montant)),
-					'montant_credit'				=> ($facture['type'] == 2 ? abs($montant) : 0),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -156,16 +143,14 @@ class TExportComptaSage extends TExportCompta {
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
-					'numero_plan'					=> '2',
-					'numero_section'				=> $codeAnalytique,
+					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($montant)),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -182,11 +167,10 @@ class TExportComptaSage extends TExportCompta {
 			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $facture['ref'],
-					'numero_plan'					=> '0',
+					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
+					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 ? abs($montant) : 0),
