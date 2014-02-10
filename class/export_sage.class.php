@@ -76,8 +76,8 @@ class TExportComptaSage extends TExportCompta {
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				
 				// Ecriture analytique
-				$ligneFichier['type_ecriture'] = 'A';
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
 
@@ -173,8 +173,8 @@ class TExportComptaSage extends TExportCompta {
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				
 				// Ecriture analytique
-				$ligneFichier['type_ecriture'] = 'A';
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
 
@@ -268,8 +268,8 @@ class TExportComptaSage extends TExportCompta {
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				
 				// Ecriture analytique
-				$ligneFichier['type_ecriture'] = 'A';
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
 
