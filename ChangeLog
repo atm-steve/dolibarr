@@ -2681,6 +2681,7 @@ Fix: Enable extrafields for customer order, proposal and invoice lines. This fea
      was developed for 3.5 but was disabled (hidden) because of a bug not possible to
      fix enough quickly for 3.5.0 release. 
 Fix: user right on Holiday for month report nor working.
+Fix: Project task numbering rule do not work cause of missing entity column into project_task
 Fix: [ bug #1250 ] "Supplier Ref. product" sidebar search box does not work
 Fix: Bad space in predefined messages. 
 Fix: [ bug #1256 ] Signature was not added for email sent from thirdparty page.
