@@ -862,7 +862,7 @@ class Product extends CommonObject
 			$sql.= ", tosell = " . $this->status;
 			$sql.= ", tobuy = " . $this->status_buy;
 			$sql.= ", tobatch = " . ((empty($this->status_batch) || $this->status_batch < 0) ? '0' : $this->status_batch);
-			$sql.= ", finished = " . ((! isset($this->finished) || $this->finished < 0) ? "null" : (int) $this->finished);
+			$sql.= ", finished = " . ((empty($this->finished) || $this->finished < 0) ? "null" : (int) $this->finished);
 			$sql.= ", weight = " . ($this->weight!='' ? "'".$this->weight."'" : 'null');
 			$sql.= ", weight_units = " . ($this->weight_units!='' ? "'".$this->weight_units."'": 'null');
 			$sql.= ", length = " . ($this->length!='' ? "'".$this->length."'" : 'null');

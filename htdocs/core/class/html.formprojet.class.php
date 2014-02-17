@@ -220,7 +220,7 @@ class FormProjets
 						$disabled=0;
 						if ($obj->fk_statut == 0)
 						{
-							$disabled=1;
+							$disabled=0; // MIGRATION 3.5->6.0 : commit ffe5ed2
 							$labeltoshow.=' - '.$langs->trans("Draft");
 						}
 						else if ($obj->fk_statut == 2)
