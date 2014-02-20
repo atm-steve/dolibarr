@@ -221,7 +221,7 @@ class TExportCompta extends TObjetStd {
 				if(!empty($ligne->fk_product)) {
 					$produit = new Product($db);
 					$produit->fetch($ligne->fk_product);
-					$codeComptableProduit = $produit->accountancy_code_sell;
+					$codeComptableProduit = $produit->accountancy_code_buy;
 				}
 				
 				if(empty($codeComptableProduit)) {
