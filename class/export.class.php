@@ -401,6 +401,166 @@ class TExportCompta extends TObjetStd {
 		
 		return $TReglements;
 	}
+
+	function get_banque($dt_deb, $dt_fin) {
+		global $db, $conf, $user;
+		
+		if(!$conf->banque->enabled) return array();
+		
+		$datefield=$conf->global->EXPORT_COMPTA_DATE_BANK;
+		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
+		
+		// Requête de récupération des écritures bancaires
+		$sql = "SELECT b.rowid, p.entity, p.rowid as 'id_paiement'";
+		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
+		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
+		$sql.= " AND p.fk_paiement <> 7";
+		if(!$allEntities) $sql.= " AND p.entity = {$conf->entity}";
+		$sql.= " ORDER BY b.".$datefield." ASC";
+		
+		//echo $sql;
+		
+		$resql = $db->query($sql);
+		
+		// Construction du tableau de données
+		$TIdBank = array();
+		while($obj = $db->fetch_object($resql)) {
+			$TIdBank[] = array(
+				'rowid' => $obj->rowid
+				,'entity' => $obj->entity
+				,'id_paiement' => $obj->id_paiement
+			);
+		}
+		
+		$i = 0;
+		
+		// Construction du tableau de données
+		$TBank = array();
+		foreach($TIdBank as $idBank) {
+			$bankline = new AccountLine($db);
+			$bankline->fetch($idBank['rowid']);
+			$bankline->datev = $db->jdate($bankline->datev);
+			
+			$bank = new Account($db);
+			$bank->fetch($bankline->fk_account);
+			
+			$links = $bank->get_url($bankline->id);
+			foreach($links as $key => $val) {
+				if($links[$key]['type'] == 'company') $client = $links[$key]['label'];
+			}
+			
+			$TBank[$bankline->id] = array();
+			
+			// Récupération entity
+			if($conf->multicompany->enabled) {
+				$entity = new DaoMulticompany($db);
+				$entity->fetch($idBank['entity']);
+				$TBank[$bankline->id]['entity'] = get_object_vars($entity);
+			}
+			
+			// Définition des codes comptables
+			$codeComptableClient = 0;
+			$codeComptableBank = !empty($bank->account_number) ? $bank->account_number : '51200000';
+			
+			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
+			$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
+			$TBank[$bankline->id]['tiers'] = array('nom' => $client);
+			
+			if(empty($TBank[$bankline->id]['ligne_tiers'][$codeComptableClient])) $TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] = 0;
+			if(empty($TBank[$bankline->id]['ligne_banque'][$codeComptableBank])) $TBank[$bankline->id]['ligne_banque'][$codeComptableBank] = 0;
+			$TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] += $bankline->amount;
+			$TBank[$bankline->id]['ligne_banque'][$codeComptableBank] += $bankline->amount;
+		}
+
+		// Requête de récupération des écritures bancaires (CHQ)
+		$sql = "SELECT bc.rowid";
+		$sql.= " FROM ".MAIN_DB_PREFIX."bordereau_cheque bc";
+		$sql.= " WHERE bc.date_bordereau BETWEEN '$dt_deb' AND '$dt_fin'";
+		$sql.= " ORDER BY bc.rowid, bc.date_bordereau ASC";
+		
+		//echo $sql;
+		
+		$resql = $db->query($sql);
+		
+		// Construction du tableau de données
+		$TIdRC = array();
+		while($obj = $db->fetch_object($resql)) {
+			$TIdRC[] = $obj->rowid;
+		}
+		
+		$i = 0;
+		
+		// Construction du tableau de données
+		foreach($TIdRC as $idRC) {
+			$sql = "SELECT b.rowid, p.entity, p.rowid as 'id_paiement'";
+			$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
+			$sql.= " WHERE b.fk_bordereau = ".$idRC;
+			$sql.= " ORDER BY b.".$datefield." ASC";
+			
+			$resql = $db->query($sql);
+			
+			$TIdBank = array();
+			while($obj = $db->fetch_object($resql)) {
+				$TIdBank[] = array(
+					'rowid' => $obj->rowid
+					,'entity' => $obj->entity
+					,'id_paiement' => $obj->id_paiement
+				);
+			}
+			
+			$bordereau = new RemiseCheque($db);
+			$bordereau->fetch($idRC);
+			
+			foreach($TIdBank as $idBank) {
+				$bankline = new AccountLine($db);
+				$bankline->fetch($idBank['rowid']);
+				$bankline->datev = $bordereau->date_bordereau;
+				
+				$bank = new Account($db);
+				$bank->fetch($bankline->fk_account);
+				
+				$links = $bank->get_url($bankline->id);
+				foreach($links as $key => $val) {
+					if($links[$key]['type'] == 'company') $client = $links[$key]['label'];
+				}
+				
+				$TBank[$bankline->id] = array();
+				
+				// Récupération entity
+				if($conf->multicompany->enabled) {
+					$entity = new DaoMulticompany($db);
+					$entity->fetch($idBank['entity']);
+					$TBank[$bankline->id]['entity'] = get_object_vars($entity);
+				}
+				
+				// Définition des codes comptables
+				$codeComptableClient = 0;
+				$codeComptableBank = !empty($bank->account_number) ? $bank->account_number : '51200000';
+				
+				$TBank[$bankline->id]['bank'] = get_object_vars($bank);
+				$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
+				$TBank[$bankline->id]['tiers'] = array('nom' => $client);
+				
+				if(empty($TBank[$bankline->id]['ligne_tiers'][$codeComptableClient])) $TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] = 0;
+				$TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] += $bankline->amount;
+				$TBank[$bankline->id]['ligne_banque'] = array();
+				$TBank[$bankline->id]['total_bordereau'] = $bordereau->amount;
+			}
+
+			$bankline->amount = $bordereau->amount;
+			$TBank['RC'.$bordereau->id]['bank'] = get_object_vars($bank);
+			$TBank['RC'.$bordereau->id]['bankline'] = get_object_vars($bankline);
+			$TBank['RC'.$bordereau->id]['tiers'] = array('nom' => '('.$bordereau->number.' - '.date('d/m/Y',$bordereau->date_bordereau).')');
+			$TBank['RC'.$bordereau->id]['ligne_banque'][$codeComptableBank] = $bordereau->amount;
+			$TBank['RC'.$bordereau->id]['ligne_tiers'] = array();
+		}
+		
+		return $TBank;
+	}
 	
 	function get_line(&$format, $dataline) {		
 		$ligneFichierTxtFixe = '';
