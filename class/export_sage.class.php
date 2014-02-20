@@ -379,8 +379,8 @@ class TExportComptaSage extends TExportCompta {
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> $label,
-					'montant_debit'					=> 0,
-					'montant_credit'				=> abs($montant),
+					'montant_debit'					=> ($montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -405,8 +405,8 @@ class TExportComptaSage extends TExportCompta {
 					'numero_section'				=> $codeAnalytique,
 					
 					'libelle'						=> $label,
-					'montant_debit'					=> abs($montant),
-					'montant_credit'				=> 0,
+					'montant_debit'					=> ($montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
 				

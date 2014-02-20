@@ -478,7 +478,7 @@ class TExportCompta extends TObjetStd {
 			
 			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
 			$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
-			$TBank[$bankline->id]['tiers'] = array('nom' => $client);
+			$TBank[$bankline->id]['tiers'] = get_object_vars($tiers);
 			
 			if(empty($TBank[$bankline->id]['ligne_tiers'][$codeComptableClient])) $TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] = 0;
 			if(empty($TBank[$bankline->id]['ligne_banque'][$codeComptableBank])) $TBank[$bankline->id]['ligne_banque'][$codeComptableBank] = 0;
