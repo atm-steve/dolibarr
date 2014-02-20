@@ -283,15 +283,16 @@ class TExportComptaSage extends TExportCompta {
 		return $contenuFichier;
 	}
 
-	function get_file_reglement_tiers(&$db, &$conf, $dt_deb, $dt_fin) {
-		$TabReglement = parent::get_reglement_tiers($db, $conf, $dt_deb, $dt_fin);
+	function get_file_reglement_tiers($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
+		$numEcriture = 1;
 		$numLignes = 1;
-		$type = 'M';
-		$codeJournal = 'VE';
 		
 		foreach ($TabReglement as $infosReglement) {
 			$tiers = &$infosReglement['client'];
@@ -299,7 +300,6 @@ class TExportComptaSage extends TExportCompta {
 			
 			// Ligne client
 			$ligneFichier = array(
-				'type'							=> $type,
 				'numero_compte'					=> $tiers['code_compta'],
 				'code_journal'					=> $codeJournal,
 				'date_ecriture'					=> strtotime($reglement['datep']),
@@ -310,13 +310,12 @@ class TExportComptaSage extends TExportCompta {
 				'num_unique'					=> $numLignes,
 				'date_systeme'					=> time(),
 			);
-			echo $this->_format_ecritures_comptables; exit;
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 			$numLignes++;
 			
 			// Ligne Banque
 			$ligneFichier = array(
-				'type'							=> $type,
 				'numero_compte'					=> $reglement['code_compta'],
 				'code_journal'					=> $codeJournal,
 				'date_ecriture'					=> strtotime($reglement['datep']),
@@ -328,8 +327,10 @@ class TExportComptaSage extends TExportCompta {
 				'date_systeme'					=> time(),
 			);
 			
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 			$numLignes++;
+			
+			$numEcriture++;
 		}
 
 		return $contenuFichier;
