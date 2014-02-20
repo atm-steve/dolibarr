@@ -371,6 +371,7 @@ class TExportComptaSage extends TExportCompta {
 			// Lignes client
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
+					'code_journal'					=> $banque['ref'],
 					'date_piece'					=> $datepiece,
 					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '0',
@@ -396,6 +397,7 @@ class TExportComptaSage extends TExportCompta {
 			// Lignes de banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
+					'code_journal'					=> $banque['ref'],
 					'date_piece'					=> $datepiece,
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),

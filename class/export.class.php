@@ -38,6 +38,11 @@ class TExportCompta extends TObjetStd {
 			,'datee' => 'Date de fin'
 			,'date_valid' => 'Date de validation'
 		);
+		$this->TDatesBANK = array(
+			'datec' => 'Date de création'
+			,'dateo' => 'Date opération'
+			,'datev' => 'Date de valeur'
+		);
 		
 		$this->TTypeExport = array();
 		if($conf->facture->enabled) $this->TTypeExport['ecritures_comptables_vente'] = 'Ecritures comptables vente';
@@ -413,13 +418,13 @@ class TExportCompta extends TObjetStd {
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
 		// Requête de récupération des écritures bancaires
-		$sql = "SELECT b.rowid, p.entity, p.rowid as 'id_paiement'";
+		$sql = "SELECT b.rowid, ba.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
-		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
+		//$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
 		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
-		$sql.= " AND p.fk_paiement <> 7";
-		if(!$allEntities) $sql.= " AND p.entity = {$conf->entity}";
+		$sql.= " AND b.fk_type <> 'CHQ'";
+		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		$sql.= " ORDER BY b.".$datefield." ASC";
 		
 		//echo $sql;
@@ -432,7 +437,7 @@ class TExportCompta extends TObjetStd {
 			$TIdBank[] = array(
 				'rowid' => $obj->rowid
 				,'entity' => $obj->entity
-				,'id_paiement' => $obj->id_paiement
+				//,'id_paiement' => $obj->id_paiement
 			);
 		}
 		
@@ -448,9 +453,14 @@ class TExportCompta extends TObjetStd {
 			$bank = new Account($db);
 			$bank->fetch($bankline->fk_account);
 			
+			// Récupération du tiers concerné
 			$links = $bank->get_url($bankline->id);
+			$tiers = new Societe($db);
 			foreach($links as $key => $val) {
-				if($links[$key]['type'] == 'company') $client = $links[$key]['label'];
+				if($links[$key]['type'] == 'company') {
+					$idTiers = $links[$key]['url_id'];
+					$tiers->fetch($idTiers);
+				}
 			}
 			
 			$TBank[$bankline->id] = array();
@@ -463,7 +473,7 @@ class TExportCompta extends TObjetStd {
 			}
 			
 			// Définition des codes comptables
-			$codeComptableClient = 0;
+			$codeComptableClient = ($bankline->label == '(SupplierInvoicePayment)') ? $tiers->code_compta_fournisseur : $tiers->code_compta;
 			$codeComptableBank = !empty($bank->account_number) ? $bank->account_number : '51200000';
 			
 			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
