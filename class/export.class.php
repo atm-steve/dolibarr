@@ -71,7 +71,7 @@ class TExportCompta extends TObjetStd {
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_FACTURES_CLIENT;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
-		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 		
 		// Requête de récupération des factures
