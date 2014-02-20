@@ -237,10 +237,10 @@ class TExportCompta extends TObjetStd {
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
-				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA])) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
+				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
-				$TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+				if($ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
 			}
 			
 			$i++;
@@ -336,10 +336,10 @@ class TExportCompta extends TObjetStd {
 
 				if(empty($TNDF[$ndfp->id]['ligne_tiers'][$codeComptableClient])) $TNDF[$ndfp->id]['ligne_tiers'][$codeComptableClient] = 0;
 				if(empty($TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit])) $TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] = 0;
-				if(empty($TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA])) $TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] = 0;
+				if(empty($TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] = 0;
 				$TNDF[$ndfp->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
-				$TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+				if($ligne->total_tva > 0) $TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
 			}
 			
 			$i++;
