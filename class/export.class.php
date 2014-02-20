@@ -7,9 +7,11 @@
  *************************************************************************************************************************************************/
 
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/paiement/cheque/class/remisecheque.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 
 class TExportCompta extends TObjetStd {
 	
@@ -44,8 +46,8 @@ class TExportCompta extends TObjetStd {
 			require_once DOL_DOCUMENT_ROOT_ALT.'/ndfp/class/ndfp.class.php';
 			$this->TTypeExport['ecritures_comptables_ndf'] = 'Ecritures comptables notes de frais';
 		}
-		if($conf->facture->enabled) $this->TTypeExport['reglement_tiers'] = 'reglement_tiers';
-		if($conf->banque->enabled) $this->TTypeExport['ecritures_bancaires'] = 'ecritures_bancaires';
+		if($conf->facture->enabled) $this->TTypeExport['reglement_tiers'] = 'Règlements tiers';
+		if($conf->banque->enabled) $this->TTypeExport['ecritures_bancaires'] = 'Écritures bancaires';
 		
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
