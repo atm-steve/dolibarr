@@ -28,7 +28,8 @@ class TExportCompta extends TObjetStd {
 			,'date_valid' => 'Date de validation'
 		);
 		$this->TDatesFacFourn = array(
-			'datef' => 'Date de facture' 
+			'datef' => 'Date de facture'
+			,'datec' => 'Date de création'
 		);
 		$this->TDatesNDF = array(
 			'dates' => 'Date de début'
