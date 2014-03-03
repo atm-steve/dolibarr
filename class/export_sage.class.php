@@ -123,7 +123,7 @@ class TExportComptaSage extends TExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref_supplier'],
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> "40100000",
 					'numero_compte_tiers'			=> $code_compta,
 	
 					'libelle'						=> $tiers['nom'],
