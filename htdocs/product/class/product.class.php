@@ -542,7 +542,7 @@ class Product extends CommonObject
 					$sql.= ", '".$this->accountancy_code_buy."'";
 					$sql.= ", '".$this->accountancy_code_sell."'";
 					$sql.= ", '".$this->canvas."'";
-					$sql.= ", ".((! isset($this->finished) || $this->finished < 0 || $this->finished == '') ? 'null' : (int) $this->finished);
+					$sql.= ", ".((empty($this->finished) || $this->finished < 0) ? 'null' : (int) $this->finished);
 					$sql.= ", ".((empty($this->status_batch) || $this->status_batch < 0)? '0':$this->status_batch);
 					$sql.= ", ".(!$this->fk_unit ? 'NULL' : $this->fk_unit);
 					$sql.= ")";
