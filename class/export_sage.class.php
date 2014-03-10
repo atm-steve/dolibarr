@@ -370,7 +370,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $datepiece,
 					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> $banqueligne['label'] == 'SupplierInvoicePayment' ? '40100000' : '41100000',
+					'numero_compte_general'			=> $banqueligne['label'] == '(SupplierInvoicePayment)' ? '40100000' : '41100000',
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> $label,
