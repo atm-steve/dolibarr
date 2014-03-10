@@ -423,7 +423,7 @@ class TExportCompta extends TObjetStd {
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
 		//$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
 		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
-		$sql.= " AND (b.fk_type <> 'CHQ' AND b.label = '(CustomerInvoicePayment)'";
+		$sql.= " AND (b.label = '(CustomerInvoicePayment)'";
 		$sql.= " OR b.label = '(SupplierInvoicePayment)')";
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		$sql.= " ORDER BY b.".$datefield." ASC";
@@ -487,6 +487,7 @@ class TExportCompta extends TObjetStd {
 			$TBank[$bankline->id]['ligne_banque'][$codeComptableBank] += $bankline->amount;
 		}
 
+		/*
 		// Requête de récupération des écritures bancaires (CHQ)
 		$sql = "SELECT bc.rowid";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bordereau_cheque bc";
@@ -571,7 +572,7 @@ class TExportCompta extends TObjetStd {
 			$TBank['RC'.$bordereau->id]['ligne_banque'][$codeComptableBank] = $bordereau->amount;
 			$TBank['RC'.$bordereau->id]['ligne_tiers'] = array();
 		}
-		
+		*/
 		return $TBank;
 	}
 	

@@ -360,12 +360,7 @@ class TExportComptaSage extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
-			if($banqueligne['fk_type'] == 'CHQ') {
-				$label = 'RC '.number_format($infosBank['total_bordereau'],2,',',' ').' ';
-			} else {
-				$label = $banqueligne['fk_type'].' '.number_format($banqueligne['amount'],2,',',' ').' ';
-			}
-			$label.= isset($entity) ? $tiers['nom'].'/'.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'];
+			$label = $banqueligne['fk_type'].' '.$tiers['nom'];
 			$datepiece = $banqueligne['datev'];
 
 			// Lignes client
@@ -375,7 +370,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $datepiece,
 					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> $banqueligne['label'] == 'SupplierInvoicePayment' ? '40100000' : '41100000',
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> $label,
@@ -387,11 +382,6 @@ class TExportComptaSage extends TExportCompta {
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
-			}
-			
-			if($banqueligne['fk_type'] == 'CHQ') {
-				$label = 'RC '.number_format($banqueligne['amount'],2,',',' ').' ';
-				$label.= $tiers['nom'];
 			}
 			
 			// Lignes de banque
