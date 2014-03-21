@@ -130,6 +130,7 @@ class pdf_strato extends ModelePDFContract
 		$outputlangs->load("dict");
 		$outputlangs->load("companies");
 		$outputlangs->load("contracts");
+		$outputlangs->load("interventions");
 
 		if ($conf->contrat->dir_output)
 		{
