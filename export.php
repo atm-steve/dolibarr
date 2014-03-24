@@ -16,8 +16,8 @@ if(isset($_POST['submitBtn'])) {
 	$logiciel_export = GETPOST('logiciel_export');
 	$exp->set_date('dt_deb',$_REQUEST['dt_deb']);
 	$exp->set_date('dt_fin',$_REQUEST['dt_fin']);
-	$dt_deb = $exp->get_date('dt_deb','Y-m-d');
-	$dt_fin = $exp->get_date('dt_fin','Y-m-d');
+	$dt_deb = $exp->get_date('dt_deb','Y-m-d 00:00:00');
+	$dt_fin = $exp->get_date('dt_fin','Y-m-d 23:59:59');
 }
 
 $langs->load('bills');
