@@ -5,137 +5,95 @@
 
 dol_include_once("/export-compta/class/export.class.php");
 
-class ExportComptaSage extends ExportCompta {
-	var $_format_ecritures_comptables = array(
-		array('name' => 'code_journal',			'length' => 6,	'default' => 'VE',	'type' => 'text'),
-		array('name' => 'date_piece',			'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
-		array('name' => 'numero_compte',		'length' => 13,	'default' => '0',	'type' => 'text'),
-		array('name' => 'intitule_compte',		'length' => 35,	'default' => '',	'type' => 'text'),
-		array('name' => 'numero_piece',			'length' => 13,	'default' => '',	'type' => 'text'),
-		array('name' => 'numero_facture',		'length' => 17,	'default' => '',	'type' => 'text'),
-		array('name' => 'reference',			'length' => 17,	'default' => '',	'type' => 'text'),
-		array('name' => 'reference_rapproch',	'length' => 17,	'default' => '',	'type' => 'text'),
-		array('name' => 'date_rapproch',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
-		array('name' => 'numero_compte_tiers',	'length' => 17,	'default' => '',	'type' => 'text'),
-		array('name' => 'code_taxe',			'length' => 5,	'default' => '',	'type' => 'text'),
-		array('name' => 'provenance',			'length' => 1,	'default' => '',	'type' => 'text'),
-		array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text'),
-		array('name' => 'mode_rglt',			'length' => 3,	'default' => '',	'type' => 'text'),
-		array('name' => 'date_echeance',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
-		array('name' => 'code_iso_devise',		'length' => 3,	'default' => 'EUR',	'type' => 'text'),
-		array('name' => 'cours_devise',			'length' => 14,	'default' => '',	'type' => 'text'),
-		array('name' => 'montant_devise',		'length' => 14,	'default' => '0',	'type' => 'text'),
-		array('name' => 'type_norme',			'length' => 1,	'default' => '',	'type' => 'text'),
-		array('name' => 'sens',					'length' => 1,	'default' => '',	'type' => 'text'),
-		array('name' => 'montant',				'length' => 14,	'default' => '0',	'type' => 'text'),
-		array('name' => 'montant_signe',		'length' => 14,	'default' => '0',	'type' => 'text'),
-		array('name' => 'montant_debit',		'length' => 14,	'default' => '0',	'type' => 'text'),
-		array('name' => 'montant_credit',		'length' => 14,	'default' => '0',	'type' => 'text'),
-		array('name' => 'lettre_lettrage',		'length' => 3,	'default' => '',	'type' => 'text'),
-		array('name' => 'type_ecriture',		'length' => 1,	'default' => '',	'type' => 'text'),
-		array('name' => 'numero_plan',			'length' => 2,	'default' => '',	'type' => 'text'),
-		array('name' => 'numero_section',		'length' => 13,	'default' => '',	'type' => 'text'),
-		array('name' => 'information_libre',	'length' => 69,	'default' => '',	'type' => 'text'),
-	);
+class TExportComptaSage extends TExportCompta {
+	function __construct(&$db) {
+		parent::__construct($db);
+	}
 	
-	function get_file_ecritures_comptables(&$db, &$conf, $dt_deb, $dt_fin, $codeJournal='VE') {
-		if($codeJournal == 'VE') {
-			$TabFactures = parent::get_journal_vente($db, $conf, $dt_deb, $dt_fin);
-		} else if($codeJournal == 'AC') {
-			$TabFactures = parent::get_journal_achat($db, $conf, $dt_deb, $dt_fin);
-		} else {
-			return 'Erreur de code journal';
-		}
+	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		$type = 'M';
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
-			$tiers = &$infosFacture['client'];
-			$lignes = &$infosFacture['lignes'];
+			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
-			$divers = &$infosFacture['divers'];
-			
-			// Ligne client
-			$ligneFichier = array(
-				'code_journal'					=> $codeJournal.date('ym'),
-				'date_piece'					=> strtotime($facture['datef']),
-				'numero_compte'					=> 0, 
-				'numero_piece'					=> $numEcriture,
-				'numero_facture'				=> $facture['facnumber'],
-				'numero_compte_tiers'			=> $tiers['code_compta'],
 
-				'libelle'						=> $tiers['nom'],
-				'mode_rglt'						=> $facture['mode_reglement'],
-				'date_echeance'					=> strtotime($facture['date_lim_reglement']),
-				'montant_devise'				=> abs($facture['total_ttc'] * 100),
-				'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
+			if(!empty($infosFacture['entity'])) {
+				$entity = $infosFacture['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
 
-				'montant'						=> abs($facture['total_ttc'] * 100),
-				'montant_signe'					=> abs($facture['total_ttc'] * 100),
-				'montant_debit'					=> ($facture['type'] == 2 ? 0 : abs($facture['total_ttc'] * 100)),
-				'montant_credit'				=> ($facture['type'] == 2 ? abs($facture['total_ttc'] * 100) : 0),
-				
-				'numero_plan'					=> '01'
-			);
-			
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
-			$numLignes++;
-			
-			// Ligne TVA
-			$ligneFichier = array(
-				'code_journal'					=> $codeJournal.date('ym'),
-				'date_piece'					=> strtotime($facture['datef']),
-				'numero_compte'					=> $divers['code_compta_tva'],
-				'numero_piece'					=> $numEcriture,
-				'numero_facture'				=> $facture['facnumber'],
-			
-				'libelle'						=> $tiers['nom'],
-				'mode_rglt'						=> $facture['mode_reglement'],
-				'date_echeance'					=> strtotime($facture['date_lim_reglement']),
-				'montant_devise'				=> abs($facture['tva'] * 100),				
-				'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-
-				'montant'						=> abs($facture['tva'] * 100),
-				'montant_signe'					=> abs($facture['tva'] * 100),
-				'montant_debit'					=> ($facture['type'] == 2 ? abs($facture['tva'] * 100) : 0),
-				'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($facture['tva'] * 100)),
-				
-				'numero_plan'					=> '01'
-			);
-			
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
-			$numLignes++;
-			
-			// Lignes de factures
-			foreach ($lignes as $ligne) {
+			// Lignes client
+			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'code_journal'					=> $codeJournal.date('ym'),
-					'date_piece'					=> strtotime($facture['datef']),
-					'numero_compte'					=> $ligne['code_compta'],
-					'numero_piece'					=> $numEcriture,
-					'numero_facture'				=> $facture['facnumber'],
-					
-					'libelle'						=> $tiers['nom'],
+					'date_piece'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_compte_general'			=> "41100000",
+					'numero_compte_tiers'			=> $code_compta,
+	
+					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
 					'mode_rglt'						=> $facture['mode_reglement'],
-					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
-					'montant_devise'				=> abs($ligne['total_ht'] * 100),					
-					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-
-					'montant'						=> abs($ligne['total_ht'] * 100),
-					'montant_signe'					=> abs($ligne['total_ht'] * 100),
-					'montant_debit'					=> ($facture['type'] == 2 ? abs($ligne['total_ht'] * 100) : 0),
-					'montant_credit'				=> ($facture['type'] == 2 ? 0 : abs($ligne['total_ht'] * 100)),
-					
-					'numero_plan'					=> '01',
-					'numero_section'				=> $facture['entity']
+					'date_echeance'					=> $facture['date_lim_reglement'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'type_ecriture'					=> 'G'
 				);
 				
-				$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			// Lignes de produits
+			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_compte_general'			=> $code_compta,
+					
+					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
+					'mode_rglt'						=> $facture['mode_reglement'],
+					'date_echeance'					=> $facture['date_lim_reglement'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_compte_general'			=> $code_compta,
+					
+					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
+					'mode_rglt'						=> $facture['mode_reglement'],
+					'date_echeance'					=> $facture['date_lim_reglement'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
 			
@@ -145,15 +103,196 @@ class ExportComptaSage extends ExportCompta {
 		return $contenuFichier;
 	}
 
-	function get_file_reglement_tiers(&$db, &$conf, $dt_deb, $dt_fin) {
-		$TabReglement = parent::get_reglement_tiers($db, $conf, $dt_deb, $dt_fin);
+	function get_file_ecritures_comptables_achats($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabFactures = parent::get_factures_fournisseur($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
+		$numEcriture = 1;
 		$numLignes = 1;
-		$type = 'M';
-		$codeJournal = 'VE';
+		
+		foreach ($TabFactures as $id_facture => $infosFacture) {
+			$tiers = &$infosFacture['tiers'];
+			$facture = &$infosFacture['facture'];
+
+			// Lignes client
+			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref_supplier'],
+					'numero_compte_general'			=> "40100000",
+					'numero_compte_tiers'			=> $code_compta,
+	
+					'libelle'						=> $tiers['nom'],
+					'mode_rglt'						=> $facture['mode_reglement'],
+					'date_echeance'					=> $facture['date_lim_reglement'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			// Lignes de produits
+			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref_supplier'],
+					'numero_compte_general'			=> $code_compta,
+					
+					'libelle'						=> $tiers['nom'],
+					'mode_rglt'						=> $facture['mode_reglement'],
+					'date_echeance'					=> $facture['date_lim_reglement'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref_supplier'],
+					'numero_compte_general'			=> $code_compta,
+					
+					'libelle'						=> $tiers['nom'],
+					'mode_rglt'						=> $facture['mode_reglement'],
+					'date_echeance'					=> $facture['date_lim_reglement'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
+	function get_file_ecritures_comptables_ndf($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabNDF = parent::get_notes_de_frais($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabNDF as $id_ndf => $infosNDF) {
+			$tiers = &$infosNDF['tiers'];
+			$ndf = &$infosNDF['ndf'];
+
+			if(!empty($infosNDF['entity'])) {
+				$entity = $infosNDF['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[2]) ? $tmp[2] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
+
+			// Lignes client
+			foreach($infosNDF['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
+					'numero_piece'					=> $ndf['ref'],
+					'numero_plan'					=> '0',
+					'numero_compte_general'			=> "40100000",
+					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
+	
+					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
+					'date_echeance'					=> '',
+					'montant_debit'					=> 0,
+					'montant_credit'				=> abs($montant),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			// Lignes de produits
+			foreach($infosNDF['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> $ndf['ref'],
+					'numero_plan'					=> '2',
+					'numero_section'				=> $codeAnalytique,
+					
+					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
+					'date_echeance'					=> '',
+					'montant_debit'					=> abs($montant),
+					'montant_credit'				=> 0,
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			foreach($infosNDF['ligne_tva'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> $ndf['ref'],
+					'numero_plan'					=> '0',
+					
+					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
+					'date_echeance'					=> '',
+					'montant_debit'					=> abs($montant),
+					'montant_credit'				=> 0,
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
+	function get_file_reglement_tiers($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
 		
 		foreach ($TabReglement as $infosReglement) {
 			$tiers = &$infosReglement['client'];
@@ -161,7 +300,6 @@ class ExportComptaSage extends ExportCompta {
 			
 			// Ligne client
 			$ligneFichier = array(
-				'type'							=> $type,
 				'numero_compte'					=> $tiers['code_compta'],
 				'code_journal'					=> $codeJournal,
 				'date_ecriture'					=> strtotime($reglement['datep']),
@@ -173,12 +311,11 @@ class ExportComptaSage extends ExportCompta {
 				'date_systeme'					=> time(),
 			);
 			
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 			$numLignes++;
 			
 			// Ligne Banque
 			$ligneFichier = array(
-				'type'							=> $type,
 				'numero_compte'					=> $reglement['code_compta'],
 				'code_journal'					=> $codeJournal,
 				'date_ecriture'					=> strtotime($reglement['datep']),
@@ -190,8 +327,84 @@ class ExportComptaSage extends ExportCompta {
 				'date_systeme'					=> time(),
 			);
 			
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 			$numLignes++;
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
+	function get_file_ecritures_bancaires($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabBank = parent::get_banque($dt_deb, $dt_fin);
+		//pre($TabBank);return;
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabBank as $id_bank => $infosBank) {
+			$tiers = &$infosBank['tiers'];
+			$banque = &$infosBank['bank'];
+			$banqueligne = &$infosBank['bankline'];
+
+			if(!empty($infosBank['entity'])) {
+				$entity = $infosBank['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
+
+			$label = $banqueligne['fk_type'].' '.$tiers['nom'];
+			$datepiece = $banqueligne['datev'];
+
+			// Lignes client
+			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'code_journal'					=> $banque['ref'],
+					'date_piece'					=> $datepiece,
+					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
+					'numero_plan'					=> '0',
+					'numero_compte_general'			=> $banqueligne['label'] == '(SupplierInvoicePayment)' ? '40100000' : '41100000',
+					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
+	
+					'libelle'						=> $label,
+					'montant_debit'					=> ($montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($montant < 0) ? 0 : abs($montant),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			// Lignes de banque
+			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'code_journal'					=> $banque['ref'],
+					'date_piece'					=> $datepiece,
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
+					'numero_plan'					=> '2',
+					'numero_section'				=> $codeAnalytique,
+					
+					'libelle'						=> $label,
+					'montant_debit'					=> ($montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($montant < 0) ? abs($montant) : 0,
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			}
+			
+			$numEcriture++;
 		}
 
 		return $contenuFichier;
