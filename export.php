@@ -7,7 +7,14 @@ if (!$user->rights->exportcompta->generate) accessforbidden();
 $langs->load('main');
 $langs->load('export-compta@export-compta');
 
-$exp = new TExportCompta($db);
+
+
+$langs->load('bills');
+$error = '';
+$logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
+dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
+$className = 'TExportCompta'.ucfirst($logiciel_export);
+$exp=new $className($db);
 
 if(isset($_POST['submitBtn'])) {
 	$action = GETPOST('action');
@@ -19,10 +26,6 @@ if(isset($_POST['submitBtn'])) {
 	$dt_fin = $exp->get_date('dt_fin','Y-m-d 23:59:59');
 }
 
-$langs->load('bills');
-$error = '';
-$logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
-
 if(!empty($action) && $action == 'export') {	
 	$fileName = $logiciel_export.$type_export.date('YmdHis').".txt";
 	$fileContent = '';
@@ -31,7 +34,7 @@ if(!empty($action) && $action == 'export') {
 	if(!empty($logiciel_export)) {
 		
 		try {		
-			dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
+			
 		}
 		catch(Exception $e) {
 			var_dump($e);
@@ -67,6 +70,12 @@ if(!empty($action) && $action == 'export') {
 					break;
 				case 'ecritures_bancaires':
 					$fileContent = $export->get_file_ecritures_bancaires($format, $dt_deb, $dt_fin);
+					break;
+				case 'tiers':
+					$fileContent = $export->get_file_tiers($format, $dt_deb, $dt_fin);
+					break;
+				case 'produits':
+					$fileContent = $export->get_file_produits($format, $dt_deb, $dt_fin);
 					break;
 				default:
 					$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportType'). ' : ' . $type_export;

@@ -54,6 +54,9 @@ class TExportCompta extends TObjetStd {
 		if(!empty($conf->facture->enabled)) $this->TTypeExport['reglement_tiers'] = 'Règlements tiers';
 		if(!empty($conf->banque->enabled)) $this->TTypeExport['ecritures_bancaires'] = 'Écritures bancaires';
 		
+		$this->TTypeExport['tiers'] = 'Tiers';
+		$this->TTypeExport['produits'] = 'Produits';
+		
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
 		$sql = "SELECT t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
@@ -409,6 +412,13 @@ class TExportCompta extends TObjetStd {
 		}	
 		
 		return $TReglements;
+	}
+
+	function get_tiers($dt_deb, $dt_fin) {
+		global $db, $conf, $user;
+	
+		return array();
+		
 	}
 
 	function get_banque($dt_deb, $dt_fin) {

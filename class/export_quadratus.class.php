@@ -30,7 +30,7 @@ class TExportComptaQuadratus extends TExportCompta {
 			array('name' => 'quantite1',			'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_piece8',		'length' => 8,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_devise',			'length' => 3,	'default' => 'EUR',	'type' => 'text'),
-			array('name' => 'code_journal',			'length' => 3,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_journal2',		'length' => 3,	'default' => '',	'type' => 'text'),
 			array('name' => 'flag_code_tva',		'length' => 1,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_tva1',			'length' => 1,	'default' => '',	'type' => 'text'),
 			array('name' => 'methode_tva',			'length' => 1,	'default' => '',	'type' => 'text'),
@@ -67,6 +67,62 @@ class TExportComptaQuadratus extends TExportCompta {
 		
 		);
 		
+		$this->_format_tiers=array(
+	
+			array('name' => 'type',					'length' => 1,	'default' => 'C',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 8,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'clef',					'length' => 7,	'default' => ' ',	'type' => 'text'),
+			array('name' => 'debit_N1',				'length' => 13,	'default' => '0',	'type' => 'text'),
+			array('name' => 'credit_N1',			'length' => 13,	'default' => '0',	'type' => 'text'),
+			array('name' => 'debit_N2',				'length' => 13,	'default' => '0',	'type' => 'text'),
+			array('name' => 'credit_N2',			'length' => 13,	'default' => '0',	'type' => 'text'),
+			array('name' => 'compte_collectif',		'length' => 8,	'default' => '',	'type' => 'text'),
+			array('name' => 'adresse1',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'adresse2',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'ville',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'telephone',		'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'flag',		'length' => 1,	'default' => ' ',	'type' => 'text'),
+			array('name' => 'type_compte',		'length' => 1,	'default' => 'C',	'type' => 'text'),
+			array('name' => 'centraliser_compte',		'length' => 1,	'default' => 'N',	'type' => 'text'),
+			array('name' => 'domiciliation',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'rib',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'mode_reglement',		'length' => 2,	'default' => 'CB',	'type' => 'text'),
+			array('name' => 'nb_jour_echeance',		'length' => 2,	'default' => '0',	'type' => 'text'),
+			array('name' => 'term_echeance',		'length' => 2,	'default' => '31',	'type' => 'text'),
+			array('name' => 'depart_calcul_echeance',		'length' => 2,	'default' => '01',	'type' => 'text'),
+			array('name' => 'code_tva',		'length' => 2,	'default' => '',	'type' => 'text'),
+			array('name' => 'compte_contrepartie',		'length' => 8,	'default' => '0',	'type' => 'text'),
+			array('name' => 'nb_jour_echeance2',		'length' => 3,	'default' => '0',	'type' => 'text'),
+			array('name' => 'flag_tva',		'length' => 1,	'default' => '0',	'type' => 'text'),
+			array('name' => 'fax',		'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'mode_reglement2',		'length' => 4,	'default' => 'CB',	'type' => 'text'),
+			array('name' => 'groupe4',		'length' => 8,	'default' => '',	'type' => 'text'),
+			array('name' => 'siret',		'length' => 14,	'default' => '',	'type' => 'text'),
+			array('name' => 'edit_m2',		'length' => 1,	'default' => '',	'type' => 'text'),
+			array('name' => 'profession',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'pays',		'length' => 50,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_journal_treso',		'length' => 3,	'default' => '',	'type' => 'text'),
+			array('name' => 'personne_morale',		'length' => 1,	'default' => '0',	'type' => 'text'),
+			array('name' => 'bon_a_payer',			'length' => 1,	'default' => '1',	'type' => 'text'),
+			array('name' => 'iban',					'length' => 4,	'default' => '',	'type' => 'text'),
+			array('name' => 'bic',					'length' => 11,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_imputation',		'length' => 2,	'default' => '14',	'type' => 'text'),
+			
+		);
+		
+		
+		unset($this->TTypeExport['ecritures_bancaires']); // pas encore pris en charge
+		
+	}
+
+	function get_file_tiers($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		if(empty($format)) $format = $this->_format_tiers;
+	
+		
+	
 	}
 	
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
