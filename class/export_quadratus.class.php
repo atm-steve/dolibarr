@@ -4,7 +4,7 @@
  *************************************************************************************************************************************************/
 
 
-class TExportComptaQuadratus extends ExportCompta {
+class TExportComptaQuadratus extends TExportCompta {
 	
 	public $_format_ecritures_comptables = array(
 		array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
@@ -43,102 +43,230 @@ class TExportComptaQuadratus extends ExportCompta {
 		array('name' => 'date_systeme',			'length' => 14,	'default' => '',	'type' => 'date',	'format' => 'dmYHis'),
 	);
 	
-	function get_file_ecritures_comptables(&$db, &$conf, $dt_deb, $dt_fin, $codeJournal='VE') {
-		if($codeJournal == 'VE') {
-			$TabFactures = parent::get_journal_vente($db, $conf, $dt_deb, $dt_fin);
-		} else if($codeJournal == 'AC') {
-			$TabFactures = parent::get_journal_achat($db, $conf, $dt_deb, $dt_fin);
-		} else {
-			return 'Erreur de code journal';
-		}
+	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		if(empty($format)) $format = $this->_format_ecritures_comptables;
+
+		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
+		
+		$type = 'M';
+		$codeJournal='VE';
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
+		$numEcriture = 1;
 		$numLignes = 1;
-		$type = 'M';
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
-			$tiers = &$infosFacture['client'];
-			$lignes = &$infosFacture['lignes'];
+			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
-			$divers = &$infosFacture['divers'];
-			
-			// Ligne client
-			$ligneFichier = array(
-				'type'							=> $type,
-				'numero_compte'					=> $tiers['code_compta'],
-				'code_journal'					=> $codeJournal,
-				'date_ecriture'					=> strtotime($facture['datef']),
-				'libelle_libre'					=> $tiers['nom'],
-				'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-				//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-				'montant'						=> abs($facture['total_ttc'] * 100),
-				'date_echeance'					=> strtotime($facture['date_lim_reglement']),
-				'numero_piece5'					=> $facture['facnumber'],
-				'numero_piece8'					=> $facture['facnumber'],
-				'numero_piece10'				=> $facture['facnumber'],
-				//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-				'montant_devise'				=> abs($facture['total_ttc'] * 100),
-				'num_unique'					=> $numLignes,
-				'date_systeme'					=> time(),
-			);
-			
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
-			$numLignes++;
-			
-			// Ligne TVA
-			$ligneFichier = array(
-				'type'							=> $type,
-				'numero_compte'					=> $divers['code_compta_tva'],
-				'code_journal'					=> $codeJournal,
-				'date_ecriture'					=> strtotime($facture['datef']),
-				'libelle_libre'					=> $tiers['nom'],
-				'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-				//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
-				'montant'						=> abs($facture['tva'] * 100),
-				'date_echeance'					=> strtotime($facture['date_lim_reglement']),
-				'numero_piece5'					=> $facture['facnumber'],
-				'numero_piece8'					=> $facture['facnumber'],
-				'numero_piece10'				=> $facture['facnumber'],
-				//'montant_devise_signe'			=> floatval($facture['tva']) < 0 ? '-' : '+',
-				'montant_devise'				=> abs($facture['tva'] * 100),
-				'num_unique'					=> $numLignes,
-				'date_systeme'					=> time(),
-			);
-			
-			$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
-			$numLignes++;
-			
-			// Lignes de factures
-			foreach ($lignes as $ligne) {
+
+			if(!empty($infosFacture['entity'])) {
+				$entity = $infosFacture['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
+//var_dump($infosFacture);exit;
+			// Lignes client
+			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
+				
 				$ligneFichier = array(
 					'type'							=> $type,
-					'numero_compte'					=> $ligne['code_compta'],
+					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
-					'date_ecriture'					=> strtotime($facture['datef']),
-					'libelle_libre'					=> $tiers['nom'],
-					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-					//'montant_signe'					=> floatval($ligne['total_ht']) < 0 ? '-' : '+',
-					'montant'						=> abs($ligne['total_ht'] * 100),
+					'date_ecriture'					=> strtotime($facture['date']),
+					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
+					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
+					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
 					'numero_piece5'					=> $facture['facnumber'],
 					'numero_piece8'					=> $facture['facnumber'],
 					'numero_piece10'				=> $facture['facnumber'],
-					//'montant_devise_signe'			=> floatval($ligne['total_ht']) < 0 ? '-' : '+',
-					'montant_devise'				=> abs($ligne['total_ht'] * 100),
+					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
 				);
 				
-				$contenuFichier .= parent::get_line($this->_format_ecritures_comptables, $ligneFichier) . $separateurLigne;
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
 			}
+			
+			// Lignes de produits
+			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'type'							=> $type,
+					'numero_compte'					=> $code_compta,
+					'code_journal'					=> $codeJournal,
+					'date_ecriture'					=> strtotime($facture['date']),
+					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
+					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant'						=> abs($montant * 100),
+					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+					'numero_piece5'					=> $facture['facnumber'],
+					'numero_piece8'					=> $facture['facnumber'],
+					'numero_piece10'				=> $facture['facnumber'],
+					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant_devise'				=> abs($montant * 100),
+					'num_unique'					=> $numLignes,
+					'date_systeme'					=> time(),
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+					$ligneFichier = array(
+						'type'							=> $type,
+						'numero_compte'					=> $code_compta,
+						'code_journal'					=> $codeJournal,
+						'date_ecriture'					=> strtotime($facture['date']),
+						'libelle_libre'					=> $tiers['nom'],
+						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
+						'montant'						=> abs($montant * 100),
+						'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+						'numero_piece5'					=> $facture['facnumber'],
+						'numero_piece8'					=> $facture['facnumber'],
+						'numero_piece10'				=> $facture['facnumber'],
+						//'montant_devise_signe'			=> floatval($facture['tva']) < 0 ? '-' : '+',
+						'montant_devise'				=> abs($montant * 100),
+						'num_unique'					=> $numLignes,
+						'date_systeme'					=> time(),
+					);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			$numEcriture++;
 		}
 
 		return $contenuFichier;
 	}
 
+	function get_file_ecritures_comptables_achats($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabFactures = parent::get_factures_fournisseur($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		$type = 'M';
+		$codeJournal='AC';
+		
+		
+		foreach ($TabFactures as $id_facture => $infosFacture) {
+			$tiers = &$infosFacture['tiers'];
+			$facture = &$infosFacture['facture'];
+
+			// Lignes client
+			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
+				
+				$ligneFichier = array(
+					'type'							=> $type,
+					'numero_compte'					=> $code_compta,
+					'code_journal'					=> $codeJournal,
+					'date_ecriture'					=> strtotime($facture['date']),
+					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
+					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
+					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant'						=> abs($montant * 100),
+					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+					'numero_piece5'					=> $facture['facnumber'],
+					'numero_piece8'					=> $facture['facnumber'],
+					'numero_piece10'				=> $facture['facnumber'],
+					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant_devise'				=> abs($montant * 100),
+					'num_unique'					=> $numLignes,
+					'date_systeme'					=> time(),
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			// Lignes de produits
+			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'type'							=> $type,
+					'numero_compte'					=> $code_compta,
+					'code_journal'					=> $codeJournal,
+					'date_ecriture'					=> strtotime($facture['date']),
+					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
+					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant'						=> abs($montant * 100),
+					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+					'numero_piece5'					=> $facture['facnumber'],
+					'numero_piece8'					=> $facture['facnumber'],
+					'numero_piece10'				=> $facture['facnumber'],
+					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'montant_devise'				=> abs($montant * 100),
+					'num_unique'					=> $numLignes,
+					'date_systeme'					=> time(),
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+					$ligneFichier = array(
+						'type'							=> $type,
+						'numero_compte'					=> $code_compta,
+						'code_journal'					=> $codeJournal,
+						'date_ecriture'					=> strtotime($facture['date']),
+						'libelle_libre'					=> $tiers['nom'],
+						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
+						'montant'						=> abs($montant * 100),
+						'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+						'numero_piece5'					=> $facture['facnumber'],
+						'numero_piece8'					=> $facture['facnumber'],
+						'numero_piece10'				=> $facture['facnumber'],
+						//'montant_devise_signe'			=> floatval($facture['tva']) < 0 ? '-' : '+',
+						'montant_devise'				=> abs($montant * 100),
+						'num_unique'					=> $numLignes,
+						'date_systeme'					=> time(),
+					);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+	
 	function get_file_reglement_tiers(&$db, &$conf, $dt_deb, $dt_fin) {
 		$TabReglement = parent::get_reglement_tiers($db, $conf, $dt_deb, $dt_fin);
 		

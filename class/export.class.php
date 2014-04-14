@@ -580,17 +580,18 @@ class TExportCompta extends TObjetStd {
 	
 	function get_line(&$format, $dataline) {		
 		$ligneFichierTxtFixe = '';
+		
 		foreach($format as $fmt) {
 			// Récupération valeur
 			$valeur = '';
-			if($fmt['type_value'] == 'data') {
-				$valeur = $dataline[$fmt['name']];
-			} else if($fmt['type_value'] == 'php') {
+			if($fmt['type_value'] == 'php') {
 				$valeur = eval('return '.$fmt['value'].';');
 			} else if($fmt['type_value'] == 'dur') {
 				$valeur = $fmt['value'];
 			}
-			
+			else {
+				$valeur = $dataline[$fmt['name']];
+			}
 			// Gestion du format de la valeur
 			if($valeur == '') $valeur = $fmt['default'];
 			if($fmt['type'] == 'date' && !empty($valeur) && !empty($fmt['format'])) $valeur = date($fmt['format'], $valeur);

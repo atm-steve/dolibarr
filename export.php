@@ -30,7 +30,6 @@ if(!empty($action) && $action == 'export') {
 //error_reporting(E_ALL);
 	if(!empty($logiciel_export)) {
 		
-
 		try {		
 			dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
 		}
@@ -52,7 +51,7 @@ if(!empty($action) && $action == 'export') {
 		
 		if(isset($export) && is_object($export)) {
 			$formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
-			$format = unserialize($conf->global->{$formatvar});
+			$format = (!empty($conf->global->{$formatvar})) ? unserialize($conf->global->{$formatvar}) : '';
 			switch ($type_export) {
 				case 'ecritures_comptables_vente':
 					$fileContent = $export->get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin);
@@ -78,7 +77,8 @@ if(!empty($action) && $action == 'export') {
 	} else {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('NoExportSelected');
 	}
-
+/*print nl2br($fileContent);
+		exit();*/
 	if($fileContent != '') {
 		$size = strlen($fileContent);
 		
