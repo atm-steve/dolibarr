@@ -44,9 +44,28 @@ if($action == 'saveformat') {
 	dolibarr_set_const($db,$formatvar,$format,'array',0,'',$conf->entity);
 }
 
-$format = unserialize($conf->global->{$formatvar});
-if(empty($format)) $format = array();
+if(!empty($conf->global->{$formatvar})) $format = unserialize($conf->global->{$formatvar});
 if(empty($logiciel_export)) $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
+if(empty($format)) {
+
+	$format = array();
+
+	if(!empty($logiciel_export)) {
+		dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
+		
+		$className = 'TExportCompta'.ucfirst($logiciel_export);
+		$o=new $className($db);
+		//var_dump($o);
+		if(isset($o->{'_format_'.$type_export})) {
+			$format = $o->{'_format_'.$type_export};
+			//var_dump($format);
+		}
+		
+	}
+		
+	
+	
+}
 
 /**
  * View
