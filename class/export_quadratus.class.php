@@ -3,9 +3,9 @@
  * Format d'export comptable Quadratus
  *************************************************************************************************************************************************/
 
-dol_include_once("/export-compta/class/export.class.php");
 
 class ExportComptaQuadratus extends ExportCompta {
+	
 	var $_format_ecritures_comptables = array(
 		array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
 		array('name' => 'numero_compte',		'length' => 8,	'default' => '0',	'type' => 'text'),
@@ -191,4 +191,3 @@ class ExportComptaQuadratus extends ExportCompta {
 		return $contenuFichier;
 	}
 }
-?>

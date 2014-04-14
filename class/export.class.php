@@ -6,12 +6,12 @@
  *  - EXPORT DES FACTURES ACHAT + NOTE DE FRAIS
  *************************************************************************************************************************************************/
 
-require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
-require_once DOL_DOCUMENT_ROOT.'/compta/paiement/cheque/class/remisecheque.class.php';
-require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
-require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
-require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
-require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
+dol_include_once('/compta/facture/class/facture.class.php');
+dol_include_once('/compta/paiement/cheque/class/remisecheque.class.php');
+dol_include_once('/fourn/class/fournisseur.facture.class.php');
+dol_include_once('/societe/class/client.class.php');
+dol_include_once('/product/class/product.class.php');
+dol_include_once('/compta/bank/class/account.class.php');
 
 class TExportCompta extends TObjetStd {
 	
@@ -45,14 +45,14 @@ class TExportCompta extends TObjetStd {
 		);
 		
 		$this->TTypeExport = array();
-		if($conf->facture->enabled) $this->TTypeExport['ecritures_comptables_vente'] = 'Ecritures comptables vente';
-		if($conf->fournisseur->enabled) $this->TTypeExport['ecritures_comptables_achat'] = 'Ecritures comptables achats';
-		if($conf->ndfp->enabled) {
-			require_once DOL_DOCUMENT_ROOT_ALT.'/ndfp/class/ndfp.class.php';
+		if(!empty($conf->facture->enabled)) $this->TTypeExport['ecritures_comptables_vente'] = 'Ecritures comptables vente';
+		if(!empty($conf->fournisseur->enabled)) $this->TTypeExport['ecritures_comptables_achat'] = 'Ecritures comptables achats';
+		if(!empty($conf->ndfp->enabled)) {
+			dol_include_once('/ndfp/class/ndfp.class.php');
 			$this->TTypeExport['ecritures_comptables_ndf'] = 'Ecritures comptables notes de frais';
 		}
-		if($conf->facture->enabled) $this->TTypeExport['reglement_tiers'] = 'Règlements tiers';
-		if($conf->banque->enabled) $this->TTypeExport['ecritures_bancaires'] = 'Écritures bancaires';
+		if(!empty($conf->facture->enabled)) $this->TTypeExport['reglement_tiers'] = 'Règlements tiers';
+		if(!empty($conf->banque->enabled)) $this->TTypeExport['ecritures_bancaires'] = 'Écritures bancaires';
 		
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
@@ -65,6 +65,7 @@ class TExportCompta extends TObjetStd {
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 		}
+
 	}
 	
 	/* 
