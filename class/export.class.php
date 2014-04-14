@@ -66,6 +66,7 @@ class TExportCompta extends TObjetStd {
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 		}
 
+
 	}
 	
 	/* 

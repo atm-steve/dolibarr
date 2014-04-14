@@ -26,12 +26,18 @@ $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
 if(!empty($action) && $action == 'export') {	
 	$fileName = $logiciel_export.$type_export.date('YmdHis').".txt";
 	$fileContent = '';
-	ini_set('display_errors',1);
-error_reporting(E_ALL);
+//	ini_set('display_errors',1);
+//error_reporting(E_ALL);
 	if(!empty($logiciel_export)) {
 		
-		dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
-		
+
+		try {		
+			dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
+		}
+		catch(Exception $e) {
+			var_dump($e);
+		}
+
 		switch ($logiciel_export) {
 			case 'quadratus':
 				$export = new TExportComptaQuadratus($db);

@@ -4,9 +4,9 @@
  *************************************************************************************************************************************************/
 
 
-class ExportComptaQuadratus extends ExportCompta {
+class TExportComptaQuadratus extends ExportCompta {
 	
-	var $_format_ecritures_comptables = array(
+	public $_format_ecritures_comptables = array(
 		array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
 		array('name' => 'numero_compte',		'length' => 8,	'default' => '0',	'type' => 'text'),
 		array('name' => 'code_journal',			'length' => 2,	'default' => 'VE',	'type' => 'text'),
