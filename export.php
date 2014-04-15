@@ -6,12 +6,12 @@ if (!$user->rights->exportcompta->generate) accessforbidden();
 
 $langs->load('main');
 $langs->load('export-compta@export-compta');
-
-
-
 $langs->load('bills');
+
 $error = '';
+
 $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
+
 dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
 $className = 'TExportCompta'.ucfirst($logiciel_export);
 $exp=new $className($db);
@@ -19,7 +19,7 @@ $exp=new $className($db);
 if(isset($_POST['submitBtn'])) {
 	$action = GETPOST('action');
 	$type_export = GETPOST('type_export');
-	$logiciel_export = GETPOST('logiciel_export');
+	//$logiciel_export = GETPOST('logiciel_export');
 	$exp->set_date('dt_deb',$_REQUEST['dt_deb']);
 	$exp->set_date('dt_fin',$_REQUEST['dt_fin']);
 	$dt_deb = $exp->get_date('dt_deb','Y-m-d 00:00:00');
@@ -31,30 +31,20 @@ if(!empty($action) && $action == 'export') {
 	$fileContent = '';
 //	ini_set('display_errors',1);
 //error_reporting(E_ALL);
+
 	if(!empty($logiciel_export)) {
 		
-		try {		
-			
+		try{
+			$export=new $className($db);
 		}
 		catch(Exception $e) {
-			var_dump($e);
-		}
-
-		switch ($logiciel_export) {
-			case 'quadratus':
-				$export = new TExportComptaQuadratus($db);
-				break;
-			case 'sage':
-				$export = new TExportComptaSage($db);
-				break;
-			default:
-				$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportLogiciel'). ' : ' . $logiciel_export;
-				break;
+			$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportLogiciel'). ' : ' . $logiciel_export;
 		}
 		
 		if(isset($export) && is_object($export)) {
 			$formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
 			$format = (!empty($conf->global->{$formatvar})) ? unserialize($conf->global->{$formatvar}) : '';
+
 			switch ($type_export) {
 				case 'ecritures_comptables_vente':
 					$fileContent = $export->get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin);

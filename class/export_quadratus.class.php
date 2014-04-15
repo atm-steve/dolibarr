@@ -119,9 +119,34 @@ class TExportComptaQuadratus extends TExportCompta {
 	function get_file_tiers($format, $dt_deb, $dt_fin) {
 		global $conf;
 
+		$separateurLigne="\r\n";
+
 		if(empty($format)) $format = $this->_format_tiers;
 	
-		
+		$Tab = parent::get_tiers($dt_deb, $dt_fin);
+	
+		foreach($Tab as $code_compta=>$tiers) {
+			
+			$ligneFichier=array(
+				'numero_compte'=>$code_compta,
+				'libelle'=>$tiers['nom'], 
+				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
+				'adresse1'>$tiers['address'],
+				'ville'=>$tiers['town'],
+				'telephone'=>$tiers['phone'],
+			/*array('name' => 'domiciliation',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'rib',		'length' => 30,	'default' => '',	'type' => 'text'),*/
+				 'fax'=>$tiers['fax'],
+				 'siret'=>$tiers['siret'],
+				 'pays'=>$tiers['pays'],
+			/*array('name' => 'iban',					'length' => 4,	'default' => '',	'type' => 'text'),
+			array('name' => 'bic',					'length' => 11,	'default' => '',	'type' => 'text'),*/
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;	
+		}
+	
+		return $contenuFichier;
 	
 	}
 	

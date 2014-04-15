@@ -406,7 +406,7 @@ class TExportCompta extends TObjetStd {
 			if($rglt['reglement']['mode'] == 2)			$rglt['reglement']['code_compta'] = '58020000';
 			else if($rglt['reglement']['mode'] == 7)	$rglt['reglement']['code_compta'] = '58010000';
 			else if($rglt['reglement']['mode'] == 12)	$rglt['reglement']['code_compta'] = '58030000';
-			else 										$rglt['reglement']['code_compta'] = '';
+			else 	$rglt['reglement']['code_compta'] = '';
 			
 			$TReglements[] = $rglt;
 		}	
@@ -417,7 +417,26 @@ class TExportCompta extends TObjetStd {
 	function get_tiers($dt_deb, $dt_fin) {
 		global $db, $conf, $user;
 	
-		return array();
+		$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip, s.town,s.phone,s.fax,p.libelle as 'pays',s.siret
+		FROM ".MAIN_DB_PREFIX."societe s 
+		LEFT JOIN ".MAIN_DB_PREFIX."c_pays p ON (s.fk_pays=p.rowid)
+		
+		WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'";
+	
+		$resql = $db->query($sql);
+		// Construction du tableau de données
+		$TTier = array();
+		while($obj = $db->fetch_object($resql)) {
+			
+			$row=get_object_vars($obj);
+			
+			$code = $obj->code_compta;
+			
+			$TTier[$code] = $row;
+			
+		}	
+			
+		return $TTier;
 		
 	}
 
