@@ -111,10 +111,41 @@ class TExportComptaQuadratus extends TExportCompta {
 			
 		);
 		
+		$this->_format_produits=array(
+	
+			array('name' => 'type',					'length' => 1,	'default' => 'N',	'type' => 'text'),
+			array('name' => 'code',		'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle',		'length' => 30,	'default' => '',	'type' => 'text'),
+			
+		);
 		
 		unset($this->TTypeExport['ecritures_bancaires']); // pas encore pris en charge
 		
 	}
+
+	function get_file_produits($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$separateurLigne="\r\n";
+
+		if(empty($format)) $format = $this->_format_produits;
+	
+		$Tab = parent::get_produits($dt_deb, $dt_fin);
+	
+		foreach($Tab as $code_compta=>$prod) {
+			
+			$ligneFichier=array(
+				'code'=>$code_compta,
+				'libelle'=>$prod['label'], 
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;	
+		}
+	
+		return $contenuFichier;
+	
+	}
+	
 
 	function get_file_tiers($format, $dt_deb, $dt_fin) {
 		global $conf;

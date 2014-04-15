@@ -413,12 +413,35 @@ class TExportCompta extends TObjetStd {
 		
 		return $TReglements;
 	}
-
+	function get_produits($dt_deb, $dt_fin) {
+		global $db, $conf, $user;
+	
+		$sql="SELECT p.label, p.accountancy_code_sell, p.accountancy_code_buy
+		FROM ".MAIN_DB_PREFIX."product p
+		WHERE p.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'";
+	
+		$resql = $db->query($sql);
+		// Construction du tableau de données
+		$TProd = array();
+		while($obj = $db->fetch_object($resql)) {
+			
+			$row=get_object_vars($obj);
+			
+			$code = $obj->accountancy_code_sell;
+			
+			$TProd[$code] = $row;
+			
+		}	
+			
+		return $TProd;
+		
+	}
 	function get_tiers($dt_deb, $dt_fin) {
 		global $db, $conf, $user;
 	
 		$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip
-		, s.town,s.phone,s.fax,p.libelle as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque, rib.code_guichet, rib.number as 'compte_bancaire', rib.cle_rib, rib.bic, rib.iban_prefix as 'iban', rib.domiciliation, rib.proprio as 'rib_proprio'
+		, s.town,s.phone,s.fax,p.libelle as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
+		, rib.code_guichet, rib.number as 'compte_bancaire', rib.cle_rib, rib.bic, rib.iban_prefix as 'iban', rib.domiciliation, rib.proprio as 'rib_proprio'
 		FROM ".MAIN_DB_PREFIX."societe s 
 		LEFT JOIN ".MAIN_DB_PREFIX."societe_rib rib ON (s.rowid=rib.fk_soc AND rib.default_rib=1)
 		LEFT JOIN ".MAIN_DB_PREFIX."c_pays p ON (s.fk_pays=p.rowid)
