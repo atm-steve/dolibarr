@@ -134,13 +134,13 @@ class TExportComptaQuadratus extends TExportCompta {
 				'adresse1'>$tiers['address'],
 				'ville'=>$tiers['town'],
 				'telephone'=>$tiers['phone'],
-			/*array('name' => 'domiciliation',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'rib',		'length' => 30,	'default' => '',	'type' => 'text'),*/
-				 'fax'=>$tiers['fax'],
-				 'siret'=>$tiers['siret'],
-				 'pays'=>$tiers['pays'],
-			/*array('name' => 'iban',					'length' => 4,	'default' => '',	'type' => 'text'),
-			array('name' => 'bic',					'length' => 11,	'default' => '',	'type' => 'text'),*/
+				'domiciliation'=>$tiers['domiciliation'],
+				'rib'=>$tiers['code_banque'].$tiers['code_quichet'].$tiers['code_banque'].$tiers['compte_bancaire'].$tiers['cle_rib'],
+				'fax'=>$tiers['fax'],
+				'siret'=>$tiers['siret'],
+				'pays'=>$tiers['pays'],
+				'iban'=>$tiers['iban'],
+				'bic'=>$tiers['bic'],
 			);
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;	
