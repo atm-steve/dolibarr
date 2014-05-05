@@ -1006,7 +1006,7 @@ function dol_escape_htmltag($stringtoescape, $keepb = 0, $keepn = 0, $keepmoreta
 	// escape quotes and backslashes, newlines, etc.
 	$tmp = html_entity_decode($stringtoescape, ENT_COMPAT, 'UTF-8'); // TODO Use htmlspecialchars_decode instead, that make only required change for html tags
 	if (!$keepb) $tmp = strtr($tmp, array("<b>"=>'', '</b>'=>''));
-	if (!$keepn) $tmp = strtr($tmp, array("\r"=>'\\r', "\n"=>'\\n'));
+	if (!$keepn) $tmp = strtr($tmp, array("\r"=>'\\r', "\n"=>'\\n','"'=>'&quote;'));
 	return htmlentities($tmp, ENT_COMPAT, 'UTF-8'); // TODO Use htmlspecialchars instead, that make only required change for html tags
 }
 
