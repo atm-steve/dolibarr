@@ -1177,8 +1177,6 @@ class Propal extends CommonObject
         {
             $objsoc->fetch($clonedObj->socid);
         }
-        print $this->socid;
-        exit;
 
         $clonedObj->id=0;
         $clonedObj->ref='';
