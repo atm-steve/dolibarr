@@ -210,17 +210,17 @@ class TExportComptaQuadratus extends TExportCompta {
 //var_dump($infosFacture);exit;
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
-				
+			
 				$ligneFichier = array(
 					'type'							=> $type,
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
-					'date_ecriture'					=> strtotime($facture['date']),
+					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> abs($montant * 100),
-					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece5'					=> $facture['facnumber'],
 					'numero_piece8'					=> $facture['facnumber'],
 					'numero_piece10'				=> $facture['facnumber'],
@@ -241,12 +241,12 @@ class TExportComptaQuadratus extends TExportCompta {
 					'type'							=> $type,
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
-					'date_ecriture'					=> strtotime($facture['date']),
+					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> abs($montant * 100),
-					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece5'					=> $facture['facnumber'],
 					'numero_piece8'					=> $facture['facnumber'],
 					'numero_piece10'				=> $facture['facnumber'],
@@ -271,12 +271,12 @@ class TExportComptaQuadratus extends TExportCompta {
 						'type'							=> $type,
 						'numero_compte'					=> $code_compta,
 						'code_journal'					=> $codeJournal,
-						'date_ecriture'					=> strtotime($facture['date']),
+						'date_ecriture'					=> $facture['date'],
 						'libelle_libre'					=> $tiers['nom'],
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
 						'montant'						=> abs($montant * 100),
-						'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece5'					=> $facture['facnumber'],
 						'numero_piece8'					=> $facture['facnumber'],
 						'numero_piece10'				=> $facture['facnumber'],
@@ -423,19 +423,6 @@ class TExportComptaQuadratus extends TExportCompta {
 			$tiers = &$infosReglement['client'];
 			$reglement = &$infosReglement['reglement'];
 		
-			$ligneFichier = array(
-				'type'							=> 'R',
-				'numero_compte'					=> $tiers['code_compta'],
-				'code_journal'					=> $tiers['code_compta'],
-				'date_ecriture'					=> strtotime($reglement['datep']),
-				'reference'					=> $tiers['nom'],
-				'montant'						=> abs($reglement['amount'] * 100),
-				
-			);
-			
-			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
-			$numLignes++;
-			
 			// Ligne Banque
 			$ligneFichier = array(
 				'type'							=> 'M',
@@ -449,6 +436,21 @@ class TExportComptaQuadratus extends TExportCompta {
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 			$numLignes++;
+
+			$ligneFichier = array(
+				'type'							=> 'R',
+				'numero_compte'					=> $tiers['code_compta'],
+				'code_journal'					=> $tiers['code_compta'],
+				'date_ecriture'					=> strtotime($reglement['datep']),
+				'reference'					=> $tiers['nom'],
+				'montant'						=> abs($reglement['amount'] * 100),
+				
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			$numLignes++;
+			
+
 			
 			$numEcriture++;
 		}

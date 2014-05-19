@@ -636,14 +636,14 @@ class TExportCompta extends TObjetStd {
 		
 		foreach($format as $fmt) {
 			// Récupération valeur
-			$valeur = '';
+			$valeur = isset($dataline[$fmt['name']]) ? $dataline[$fmt['name']] : '';
+			
 			if($fmt['type_value'] == 'php') {
-				$valeur = eval('return '.$fmt['value'].';');
+				$valeur = eval('return '.strtr($fmt['value'],array(
+					'@val@'=>$valeur
+				)).';');
 			} else if($fmt['type_value'] == 'dur') {
 				$valeur = $fmt['value'];
-			}
-			else {
-				$valeur = $dataline[$fmt['name']];
 			}
 			// Gestion du format de la valeur
 			if($valeur == '') $valeur = $fmt['default'];

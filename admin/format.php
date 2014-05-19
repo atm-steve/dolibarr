@@ -129,8 +129,8 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 		print '<option value="dur"'.($colonne['type_value'] == 'dur' ? ' selected' : '').'>dur</option>';
 		print '</select>';
 		print '</td>';
-		print '<td><input type="text" name="format['.$i.'][value]" class="flat" value="'.$colonne['value'].'" /></td>';
-		print '<td><input type="text" name="format['.$i.'][default]" class="flat" value="'.$colonne['default'].'" /></td>';
+		print '<td><input type="text" name="format['.$i.'][value]" class="flat" value="'.htmlentities($colonne['value']).'" /></td>';
+		print '<td><input type="text" name="format['.$i.'][default]" class="flat" value="'.htmlentities($colonne['default']).'" /></td>';
 		print '<td><input type="text" name="format['.$i.'][type]" class="flat" value="'.$colonne['type'].'" /></td>';
 		print '<td><input type="text" name="format['.$i.'][format]" class="flat" value="'.$colonne['format'].'" /></td>';
 		print '</td>';
