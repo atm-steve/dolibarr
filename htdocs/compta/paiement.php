@@ -494,6 +494,24 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
         }
         print "</tr>\n";
 
+        // Payment amount
+        if ($conf->use_javascript_ajax && !empty($conf->global->MAIN_JS_ON_PAYMENT))
+        {
+            print '<tr><td><span class="fieldrequired">'.$langs->trans('AmountPayment').'</span></td>';
+            print '<td>';
+            if ($action == 'add_paiement')
+            {
+                print '<input id="amountpayment" name="amountpaymenthidden" size="8" type="text" value="'.(empty($_POST['amountpayment'])?'':$_POST['amountpayment']).'" disabled="disabled">';
+                print '<input name="amountpayment" type="hidden" value="'.(empty($_POST['amountpayment'])?'':$_POST['amountpayment']).'">';
+            }
+            else
+            {
+                print '<input id="amountpayment" name="amountpayment" size="8" type="text" value="'.(empty($_POST['amountpayment'])?'':$_POST['amountpayment']).'">';
+            }
+            print '</td>';
+            print '</tr>';
+        }
+
         // Cheque number
         print '<tr><td>'.$langs->trans('Numero');
         print ' <em>('.$langs->trans("ChequeOrTransferNumber").')</em>';
@@ -570,6 +588,8 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 				$remaindertopay=$langs->trans('RemainderToTake');
 				$multicurrencyremaindertopay=$langs->trans('MulticurrencyRemainderToTake');
 				if ($facture->type == 2) { $remaindertopay=$langs->trans("RemainderToPayBack"); $multicurrencyremaindertopay=$langs->trans("MulticurrencyRemainderToPayBack"); }
+				$parameters=array();
+				$reshook=$hookmanager->executeHooks('formAddObjectLine',$parameters,$facture,$action);    // Note that $action and $object may have been modified by hook
 
                 $i = 0;
                 //print '<tr><td colspan="3">';

@@ -505,6 +505,8 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 							print '	});'."\n";
 							print '	</script>'."\n";
 						}
+				$parameters=array();
+						$reshook=$hookmanager->executeHooks('formAddObjectLine',$parameters,$facture,$action);    // Note that $action and $object may have been modified by hook
 
                         print '<div class="div-table-responsive-no-min">';
                         print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">'."\n";
@@ -626,7 +628,8 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 	                        	print '<input type="hidden" name="'.$namef.'" value="'.dol_escape_htmltag(GETPOST($namef)).'">';
 	                        }
 							print "</td>";
-
+				$parameters=array();
+				$reshook=$hookmanager->executeHooks('printObjectLine',$parameters,$objp,$action); // Note that $action and $object may have been modified by hook
 							// Multicurrency Price
 							if (! empty($conf->multicurrency->enabled))
 							{
@@ -923,7 +926,8 @@ if (empty($action))
             print '<td class="nowrap">';
             print $invoicesupplierstatic->getNomUrl(1);
             print '</td>';*/
-
+	    $parameters=array();
+	    $reshook=$hookmanager->executeHooks('printObjectLine',$parameters,$objp,$action); // Note that $action and $object may have been modified by hook
 			print '<td>&nbsp;</td>';
             print '</tr>';
             $i++;

@@ -654,7 +654,7 @@ if ($id > 0 || $ref)
 					{
 
 
-						print '<tr class="oddeven">';
+						print '<tr id="row-'.$productfourn->product_fourn_price_id.'" class="oddeven">';
 
 						// Supplier
 						print '<td>'.$productfourn->getSocNomUrl(1,'supplier').'</td>';
