@@ -62,6 +62,8 @@ if (empty($conf->stock->enabled)) {
 	accessforbidden();
 }
 
+$hookmanager->initHooks(array('ordersupplier_receptioncard'));
+
 // Recuperation de l'id de projet
 $projectid = 0;
 if ($_GET["projectid"])
@@ -217,6 +219,9 @@ if ($action == 'denydispatchline' && ! ((empty($conf->global->MAIN_USE_ADVANCED_
 
 if ($action == 'dispatch' && $user->rights->fournisseur->commande->receptionner) {
 	$error = 0;
+
+	$parameters=array('id'=>$object->id);
+	$reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action); 
 
 	$db->begin();
 
@@ -483,7 +488,7 @@ if ($id > 0 || ! empty($ref)) {
 			$db->free($resql);
 		}
 
-		$sql = "SELECT l.rowid, l.fk_product, l.subprice, l.remise_percent, SUM(l.qty) as qty,";
+		$sql = "SELECT l.rowid, l.fk_commande, l.fk_product, l.subprice, l.remise_percent, SUM(l.qty) as qty,";
 		$sql .= " p.ref, p.label, p.tobatch";
 		$sql .= " FROM " . MAIN_DB_PREFIX . "commande_fournisseurdet as l";
 		$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON l.fk_product=p.rowid";
@@ -510,6 +515,12 @@ if ($id > 0 || ! empty($ref)) {
 				print '<td align="right">' . $langs->trans("QtyToDispatchShort") . '</td>';
 				print '<td width="32"></td>';
 				print '<td align="right">' . $langs->trans("Warehouse") . '</td>';
+				print '<td align="right">'.$langs->trans("Ancien prix").'</td>';
+				print '<td align="right">'.$langs->trans("Nouveau prix").'</td>';
+				print '<td align="right">'.$langs->trans("Information").'</td>';
+				print '<td align="right">'.$langs->trans("Calcul (coeff * pa HT * TVA) ").'</td>';
+				print '<td align="right">'.$langs->trans("Coeff").'</td>';
+				
 				print "</tr>\n";
 
 				if (! empty($conf->productbatch->enabled)) {
@@ -683,6 +694,10 @@ if ($id > 0 || ! empty($ref)) {
 							$langs->load("errors");
 							print $langs->trans("ErrorNoWarehouseDefined");
 						}
+
+						$parameters=array('id'=>$object->id);
+						$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$objp,$action); // Note that $action and $object may have been modified by some hooks
+
 						print "</td>\n";
 
 						print "</tr>\n";
