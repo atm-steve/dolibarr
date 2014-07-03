@@ -228,6 +228,9 @@ class TExportComptaQuadratus extends TExportCompta {
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
+					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
+					'numero_piece8'=>$facture['ref'],
+					'numero_piece10'=>$facture['ref'],
 				);
 				
 				// Ecriture générale
@@ -254,6 +257,9 @@ class TExportComptaQuadratus extends TExportCompta {
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
+					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
+					'numero_piece8'=>$facture['ref'],
+					'numero_piece10'=>$facture['ref'],
 				);
 				
 				// Ecriture générale
@@ -284,6 +290,9 @@ class TExportComptaQuadratus extends TExportCompta {
 						'montant_devise'				=> abs($montant * 100),
 						'num_unique'					=> $numLignes,
 						'date_systeme'					=> time(),
+						'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
+						'numero_piece8'=>$facture['ref'],
+						'numero_piece10'=>$facture['ref'],
 					);
 				
 				// Ecriture générale

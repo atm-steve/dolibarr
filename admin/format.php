@@ -132,7 +132,7 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 		print '<td><input type="text" name="format['.$i.'][value]" class="flat" value="'.htmlentities($colonne['value']).'" /></td>';
 		print '<td><input type="text" name="format['.$i.'][default]" class="flat" value="'.htmlentities($colonne['default']).'" /></td>';
 		print '<td><input type="text" name="format['.$i.'][type]" class="flat" value="'.$colonne['type'].'" /></td>';
-		print '<td><input type="text" name="format['.$i.'][format]" class="flat" value="'.$colonne['format'].'" /></td>';
+		print '<td><input type="text" name="format['.$i.'][format]" class="flat" value="'.htmlentities($colonne['format']).'" /></td>';
 		print '</td>';
 		print '<td>';
 		print '<select name="format['.$i.'][pad_type]" class="flat">';
