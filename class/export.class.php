@@ -151,9 +151,9 @@ class TExportCompta extends TObjetStd {
 						$codeComptableProduit = $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
 					} else if($ligne->product_type == 1) {
 						$codeComptableProduit = $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
-					} else {
+					}/* else {
 						$codeComptableProduit = 'NOCODE';
-					}
+					} Milestone ! */
 				}
 				
 				// Code compta TVA
