@@ -24,6 +24,7 @@ class TExportCompta extends TObjetStd {
 		$this->TLogiciel = array(
 			'quadratus' => 'Quadratus'
 			,'sage' => 'Sage'
+			,'ciel' => 'Ciel'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture' 

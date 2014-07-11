@@ -27,7 +27,7 @@ if(isset($_POST['submitBtn'])) {
 }
 
 if(!empty($action) && $action == 'export') {	
-	$fileName = $logiciel_export.$type_export.date('YmdHis').".txt";
+	
 	$fileContent = '';
 //	ini_set('display_errors',1);
 //error_reporting(E_ALL);
@@ -40,6 +40,14 @@ if(!empty($action) && $action == 'export') {
 		catch(Exception $e) {
 			$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportLogiciel'). ' : ' . $logiciel_export;
 		}
+		
+		if(!empty($export->filename)) {
+			$fileName = $export->filename;
+		}
+		else{
+			$fileName = $logiciel_export.$type_export.date('YmdHis').".txt";
+		}
+		
 		
 		if(isset($export) && is_object($export)) {
 			$formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
