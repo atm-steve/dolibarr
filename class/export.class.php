@@ -94,7 +94,7 @@ class TExportCompta extends TObjetStd {
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
-		$sql.= " AND f.fk_statut IN (1,2,3)";
+		$sql.= " AND f.fk_statut IN (1,2)";
 		$sql.= " ORDER BY f.".$datefield." ASC";
 
 		$resql = $db->query($sql);
