@@ -61,7 +61,7 @@ class TExportCompta extends TObjetStd {
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
 		$sql = "SELECT t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
-		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t";
+		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t WHERE active=1";
 		
 		$resql = $db->query($sql);
 		
@@ -69,7 +69,7 @@ class TExportCompta extends TObjetStd {
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 		}
-
+//var_dump($this->TTVA); exit;
 
 	}
 	
