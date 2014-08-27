@@ -180,6 +180,7 @@ class TExportComptaCiel extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -201,11 +202,11 @@ class TExportComptaCiel extends TExportCompta {
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					
-					'montant'						=> $montant * 100,
+					'montant'						=> $montant,
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['facnumber'],
 					
-					'num_unique'					=> $numLignes,
+					'num_unique'					=> $numEcriture,
 				
 					
 				);
@@ -224,10 +225,10 @@ class TExportComptaCiel extends TExportCompta {
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-					'montant'						=> $montant * 100,
+					'montant'						=> $montant ,
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['facnumber'],
-					'num_unique'					=> $numLignes,
+					'num_unique'					=> $numEcriture,
 					
 					
 				);
@@ -250,10 +251,10 @@ class TExportComptaCiel extends TExportCompta {
 						'libelle_libre'					=> $tiers['nom'],
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
-						'montant'						=> $montant * 100,
+						'montant'						=> $montant,
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece'					=> $facture['facnumber'],
-						'num_unique'					=> $numLignes,
+						'num_unique'					=> $numEcriture,
 					
 					);
 				
