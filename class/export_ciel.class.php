@@ -182,6 +182,7 @@ class TExportComptaCiel extends TExportCompta {
 		
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
+//var_dump($infosFacture);exit;
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 
@@ -204,7 +205,7 @@ class TExportComptaCiel extends TExportCompta {
 					
 					'montant'						=> $montant,
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece'					=> $facture['facnumber'],
+					'numero_piece'					=> $facture['ref'],
 					
 					'num_unique'					=> $numEcriture,
 				
@@ -227,7 +228,7 @@ class TExportComptaCiel extends TExportCompta {
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> $montant ,
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece'					=> $facture['facnumber'],
+					'numero_piece'					=> $facture['ref'],
 					'num_unique'					=> $numEcriture,
 					
 					
@@ -253,7 +254,7 @@ class TExportComptaCiel extends TExportCompta {
 						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
 						'montant'						=> $montant,
 						'date_echeance'					=> $facture['date_lim_reglement'],
-						'numero_piece'					=> $facture['facnumber'],
+						'numero_piece'					=> $facture['ref'],
 						'num_unique'					=> $numEcriture,
 					
 					);
