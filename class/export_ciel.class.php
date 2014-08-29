@@ -398,9 +398,9 @@ class TExportComptaCiel extends TExportCompta {
 				'numero_piece'					=> $reglement['id'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
-				'montant'						=> number_format($reglement['amount'],'.','',2) ,
+				'montant'						=> $reglement['amount'] ,
 				'num_unique'=>$numEcriture,
-				'sens'=>'D',
+				'sens'=>'C',
 				
 			);
 			
@@ -413,9 +413,9 @@ class TExportComptaCiel extends TExportCompta {
 				'numero_piece'					=> $reglement['id'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
-				'montant'						=> number_format($reglement['amount'],'.','',2),
+				'montant'						=> $reglement['amount'],
 				'num_unique'=>$numEcriture,
-				'sens'=>'C',
+				'sens'=>'D',
 				
 			);
 			
