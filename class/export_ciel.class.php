@@ -32,19 +32,20 @@ class TExportComptaCiel extends TExportCompta {
 	
 		$this->_format_reglement_tiers=array(
 	
-			array('name' => 'type',					'length' => 1,	'default' => 'R',	'type' => 'text'),
-			array('name' => 'date_ecriture',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
+			array('name' => 'num_unique',			'length' => 5,	'default' => '0',	'type' => 'text'),
+			array('name' => 'code_journal',			'length' => 2,	'default' => 'RG',	'type' => 'text'),
+			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
+			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
+			array('name' => 'numero_piece',			'length' => 12,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 11,	'default' => '0',	'type' => 'text'),
+			array('name' => 'libelle_libre',		'length' => 25,	'default' => '',	'type' => 'text'),
 			array('name' => 'montant',				'length' => 13,	'default' => '0',	'type' => 'text'),
-			array('name' => 'mode_reglement',		'length' => 2,	'default' => 'CB',	'type' => 'text'),
-			array('name' => 'code_journal',			'length' => 2,	'default' => 'RE',	'type' => 'text'),
-			array('name' => 'reference',			'length' => 10,	'default' => '',	'type' => 'text'),
-			array('name' => 'domiciliation',		'length' => 20,	'default' => '',	'type' => 'text'),
-			array('name' => 'code_journal2',		'length' => 3,	'default' => '  ',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 8,	'default' => ' ',	'type' => 'text'),
-			array('name' => 'mode_reglement2',		'length' => 4,	'default' => 'CB',	'type' => 'text'),
-			array('name' => 'bon_a_payer',			'length' => 1,	'default' => '1',	'type' => 'text'),
-			array('name' => 'iban',					'length' => 4,	'default' => '',	'type' => 'text'),
-			array('name' => 'bic',					'length' => 11,	'default' => '',	'type' => 'text'),
+			array('name' => 'sens',					'length' => 1,	'default' => 'C',	'type' => 'text'),
+			array('name' => 'numero_pointage',		'length' => 12,	'default' => '',	'type' => 'text'),
+			array('name' => 'compte_contrepartie',	'length' => 6,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle_compte',		'length' => 34,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_devise',			'length' => 1,	'default' => 'E',	'type' => 'text'),
+			array('name' => 'version',				'length' => 4,	'default' => '',	'type' => 'text'),
 		
 		);
 		
@@ -394,10 +395,11 @@ class TExportComptaCiel extends TExportCompta {
 			$ligneFichier = array(
 				'type'							=> 'M',
 				'numero_compte'					=> $reglement['code_compta'],
-				'code_journal'					=>  $reglement['code_compta'],
+				'numero_piece'					=> $reglement['id'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
-				'montant'						=> abs($reglement['amount'] * 100),
+				'montant'						=> number_format($reglement['amount'],'.','',2) ,
+				'num_unique'=>$numEcriture,
 				
 			);
 			
@@ -407,10 +409,11 @@ class TExportComptaCiel extends TExportCompta {
 			$ligneFichier = array(
 				'type'							=> 'R',
 				'numero_compte'					=> $tiers['code_compta'],
-				'code_journal'					=> $tiers['code_compta'],
+				'numero_piece'					=> $reglement['id'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
-				'reference'					=> $tiers['nom'],
-				'montant'						=> abs($reglement['amount'] * 100),
+				'libelle_libre'					=> $tiers['nom'],
+				'montant'						=> number_format($reglement['amount'],'.','',2),
+				'num_unique'=>$numEcriture,
 				
 			);
 			
