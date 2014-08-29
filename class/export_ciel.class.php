@@ -400,6 +400,7 @@ class TExportComptaCiel extends TExportCompta {
 				'libelle_libre'					=> $tiers['nom'],
 				'montant'						=> number_format($reglement['amount'],'.','',2) ,
 				'num_unique'=>$numEcriture,
+				'sens'=>'D',
 				
 			);
 			
@@ -414,6 +415,7 @@ class TExportComptaCiel extends TExportCompta {
 				'libelle_libre'					=> $tiers['nom'],
 				'montant'						=> number_format($reglement['amount'],'.','',2),
 				'num_unique'=>$numEcriture,
+				'sens'=>'C',
 				
 			);
 			
