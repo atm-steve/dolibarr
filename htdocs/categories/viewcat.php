@@ -556,7 +556,9 @@ if($object->type == Categorie::TYPE_CONTACT)
 	{
 		print "<br>";
 		print '<table class="noborder" width="100%">'."\n";
-		print '<tr class="liste_titre"><td colspan="2">'.$langs->trans("Contact")."</td></tr>\n";
+		print '<tr class="liste_titre"><td>'.$langs->trans("Contact")."</td>";
+		print '<td colspan="2">'.$langs->trans("Company")."</td>";
+		print "</tr>\n";
 
 		if (count($contacts) > 0)
 		{
@@ -568,6 +570,12 @@ if($object->type == Categorie::TYPE_CONTACT)
 				print "\t".'<tr class="oddeven">'."\n";
 				print '<td class="nowrap" valign="top">';
 				print $contact->getNomUrl(1,'category');
+				print "</td>\n";
+				print '<td class="nowrap" valign="top">';
+				$contact->fetch_thirdparty();
+				if (!empty($contact->thirdparty->id)) {
+					print $contact->thirdparty->getNomUrl(1,'category');
+				}
 				print "</td>\n";
 				// Link to delete from category
 				print '<td align="right">';
