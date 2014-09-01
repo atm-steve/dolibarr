@@ -402,13 +402,8 @@ class TExportCompta extends TObjetStd {
 				'mode' => $obj->paiement_mode,
 				'datep' => $obj->paiement_datep
 			);
-			
-			// Cas spécifique Axis : code comptables différents en fonction du mode de règlement
-			// Voir si c'est systématique et proposer d'associer un code comptable à chaque mode de règlement
-			if($rglt['reglement']['mode'] == 2)			$rglt['reglement']['code_compta'] = '58020000';
-			else if($rglt['reglement']['mode'] == 7)	$rglt['reglement']['code_compta'] = '58010000';
-			else if($rglt['reglement']['mode'] == 12)	$rglt['reglement']['code_compta'] = '58030000';
-			else 	$rglt['reglement']['code_compta'] = $obj->account_number;
+
+			$rglt['reglement']['code_compta'] = $obj->account_number;
 			
 			$TReglements[] = $rglt;
 		}	
