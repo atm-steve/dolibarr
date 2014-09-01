@@ -375,11 +375,12 @@ class TExportCompta extends TObjetStd {
 
 		// Requête de récupération des règlements
 		$sql = "SELECT r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
-		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom";
+		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom, ba.account_number";
 		$sql.= " FROM llx_paiement r";
 		$sql.= " LEFT JOIN llx_paiement_facture rf ON rf.fk_paiement = r.rowid";
 		$sql.= " LEFT JOIN llx_facture f ON f.rowid = rf.fk_facture";
 		$sql.= " LEFT JOIN llx_societe s ON s.rowid = f.fk_soc";
+		$sql.= " LEFT JOIN llx_bank_account ba ON ba.rowid = r.fk_bank";
 		$sql.= " WHERE r.datep BETWEEN '$dt_deb' AND '$dt_fin'";
 		$sql.= " AND r.entity = {$conf->entity}";
 		$sql.= " ORDER BY r.datep ASC";
@@ -407,7 +408,7 @@ class TExportCompta extends TObjetStd {
 			if($rglt['reglement']['mode'] == 2)			$rglt['reglement']['code_compta'] = '58020000';
 			else if($rglt['reglement']['mode'] == 7)	$rglt['reglement']['code_compta'] = '58010000';
 			else if($rglt['reglement']['mode'] == 12)	$rglt['reglement']['code_compta'] = '58030000';
-			else 	$rglt['reglement']['code_compta'] = '';
+			else 	$rglt['reglement']['code_compta'] = $obj->account_number;
 			
 			$TReglements[] = $rglt;
 		}	
