@@ -380,7 +380,8 @@ class TExportCompta extends TObjetStd {
 		$sql.= " LEFT JOIN llx_paiement_facture rf ON rf.fk_paiement = r.rowid";
 		$sql.= " LEFT JOIN llx_facture f ON f.rowid = rf.fk_facture";
 		$sql.= " LEFT JOIN llx_societe s ON s.rowid = f.fk_soc";
-		$sql.= " LEFT JOIN llx_bank_account ba ON ba.rowid = r.fk_bank";
+		$sql.= " LEFT JOIN llx_bank bank ON bank.rowid = r.fk_bank";
+		$sql.= " LEFT JOIN llx_bank_account ba ON ba.rowid = bank.fk_account";
 		$sql.= " WHERE r.datep BETWEEN '$dt_deb' AND '$dt_fin'";
 		$sql.= " AND r.entity = {$conf->entity}";
 		$sql.= " ORDER BY r.datep ASC";
