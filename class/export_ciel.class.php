@@ -395,7 +395,7 @@ class TExportComptaCiel extends TExportCompta {
 			$ligneFichier = array(
 				'type'							=> 'M',
 				'numero_compte'					=> $reglement['code_compta'],
-				'numero_piece'					=> $reglement['rowid'],
+				'numero_piece'					=> $reglement['num_fact'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
 				'montant'						=> $reglement['amount'] ,
@@ -410,7 +410,7 @@ class TExportComptaCiel extends TExportCompta {
 			$ligneFichier = array(
 				'type'							=> 'R',
 				'numero_compte'					=> $tiers['code_compta'],
-				'numero_piece'					=> $reglement['rowid'],
+				'numero_piece'					=> $reglement['num_fact'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
 				'montant'						=> $reglement['amount'],
