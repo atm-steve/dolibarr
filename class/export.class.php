@@ -374,7 +374,7 @@ class TExportCompta extends TObjetStd {
 		global $db, $conf;
 
 		// Requête de récupération des règlements
-		$sql = "SELECT r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
+		$sql = "SELECT r.rowid id_reg, r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
 		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom, ba.account_number";
 		$sql.= " FROM llx_paiement r";
 		$sql.= " LEFT JOIN llx_paiement_facture rf ON rf.fk_paiement = r.rowid";
@@ -401,7 +401,8 @@ class TExportCompta extends TObjetStd {
 			$rglt['reglement'] = array(
 				'amount' => $obj->paiement_amount,
 				'mode' => $obj->paiement_mode,
-				'datep' => $obj->paiement_datep
+				'datep' => $obj->paiement_datep,
+				'rowid' => $obj->id_reg
 			);
 
 			$rglt['reglement']['code_compta'] = $obj->account_number;
