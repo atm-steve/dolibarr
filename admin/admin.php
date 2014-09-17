@@ -129,6 +129,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Champ date utilisé pour les bornes sur notes de frais
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_factclifilter');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_FACT_CLI_FILTER');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("FactureClientFilter");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_FACT_CLI_FILTER',$conf->global->EXPORT_COMPTA_FACT_CLI_FILTER,5);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
 print "</table>";
 
 llxFooter();
