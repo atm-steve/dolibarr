@@ -95,6 +95,7 @@ class TExportCompta extends TObjetStd {
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
 		$sql.= " AND f.fk_statut IN (1,2)";
+		$sql.= " AND fd.special_code = 0";
 		if(!empty($conf->global->EXPORT_COMPTA_FACT_CLI_FILTER)) {
 			$sql.= " AND f.facnumber LIKE '".$conf->global->EXPORT_COMPTA_FACT_CLI_FILTER."'";
 		}
