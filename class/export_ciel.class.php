@@ -298,18 +298,20 @@ class TExportComptaCiel extends TExportCompta {
 				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
+			$label = $tiers['nom'];
+			$label.= (!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:'');
 //var_dump($infosFacture);exit;
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
-			
+				
 				$ligneFichier = array(
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'].(!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:''),
+					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					
-					'montant'						=> $montant,
+					'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['facnumber'],
 					
@@ -329,10 +331,10 @@ class TExportComptaCiel extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'].(!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:''),
+					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-					'montant'						=> $montant,
+					'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['facnumber'],
 					'num_unique'					=> $numEcriture,
@@ -355,10 +357,10 @@ class TExportComptaCiel extends TExportCompta {
 						'numero_compte'					=> $code_compta,
 						'code_journal'					=> $codeJournal,
 						'date_ecriture'					=> $facture['date'],
-						'libelle_libre'					=> $tiers['nom'],
+						'libelle_libre'					=> $label,
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
-						'montant'						=> $montant,
+						'montant'						=> abs($montant),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece'					=> $facture['facnumber'],
 						'num_unique'					=> $numEcriture,
