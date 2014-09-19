@@ -306,7 +306,7 @@ class TExportComptaCiel extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
+					'libelle_libre'					=> $tiers['nom'].(!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:''),
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					
 					'montant'						=> $montant,
@@ -329,7 +329,7 @@ class TExportComptaCiel extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
+					'libelle_libre'					=> $tiers['nom'].(!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:''),
 					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> $montant,
