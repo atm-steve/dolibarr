@@ -150,6 +150,16 @@ class TExportCompta extends TObjetStd {
 					$produit = new Product($db);
 					$produit->fetch($ligne->fk_product);
 					$codeComptableProduit = $produit->accountancy_code_sell;
+					if(!empty($conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD)) {
+						if($facture->thirdparty->country_code == 'FR') {
+							// Client en france, code compta standard du produit ok
+						}
+						else if($facture->thirdparty->isInEEC()) { // Vente CEE
+							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD];
+						} else { // Vente Export
+							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD];
+						}
+					}
 				}
 				
 				if(empty($codeComptableProduit)) {

@@ -137,7 +137,35 @@ print $form->hidden('const','EXPORT_COMPTA_FACT_CLI_FILTER');
 print '<tr '.$bc[$var].'><td>';
 print $langs->trans("FactureClientFilter");
 print '</td><td width="60" align="right">';
-print $form->texte('', 'EXPORT_COMPTA_FACT_CLI_FILTER',$conf->global->EXPORT_COMPTA_FACT_CLI_FILTER,5);
+print $form->texte('', 'EXPORT_COMPTA_FACT_CLI_FILTER',$conf->global->EXPORT_COMPTA_FACT_CLI_FILTER,10);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Champ supplémentaire contenant le code comptable produit pour les ventes CEE
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_cee_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_PRODUCT_CEE_FIELD');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("ProductCEEField");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_PRODUCT_CEE_FIELD',$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Champ supplémentaire contenant le code comptable produit pour les ventes export
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_export_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_PRODUCT_EXPORT_FIELD');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("ProductExportField");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_PRODUCT_EXPORT_FIELD',$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD,30,255);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";
