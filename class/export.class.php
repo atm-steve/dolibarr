@@ -151,6 +151,7 @@ class TExportCompta extends TObjetStd {
 					$produit->fetch($ligne->fk_product);
 					$codeComptableProduit = $produit->accountancy_code_sell;
 					if(!empty($conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD)) {
+						$produit->fetch_optionals($ligne->fk_product);
 						if($facture->thirdparty->country_code == 'FR') {
 							// Client en france, code compta standard du produit ok
 						}
