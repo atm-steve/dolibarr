@@ -206,7 +206,7 @@ class TExportComptaCiel extends TExportCompta {
 					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					
-					'montant'						=> abs($montant),
+					'montant'						=> abs(number_format($montant,2,'.','')),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					
@@ -222,14 +222,16 @@ class TExportComptaCiel extends TExportCompta {
 			
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				if($montant!=0) {
+
 				$ligneFichier = array(
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
-					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-					'montant'						=> abs($montant),
+					'montant'						=>  abs(number_format($montant,2,'.','')),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					'num_unique'					=> $numEcriture,
@@ -244,6 +246,7 @@ class TExportComptaCiel extends TExportCompta {
 				//$ligneFichier['type_ecriture'] = 'A';
 				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
+				}
 			}
 
 			// Lignes TVA
@@ -255,7 +258,7 @@ class TExportComptaCiel extends TExportCompta {
 						'libelle_libre'					=> $label,
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
-						'montant'						=> abs($montant),
+						'montant'						=>  abs(number_format($montant,2,'.','')),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece'					=> $facture['ref'],
 						'num_unique'					=> $numEcriture,
