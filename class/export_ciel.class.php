@@ -197,6 +197,9 @@ class TExportComptaCiel extends TExportCompta {
 			$label.= (!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:'');
 //var_dump($infosFacture);exit;
 			// Lignes client
+
+			$montant_facture = 0;
+
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 			
 				$ligneFichier = array(
@@ -204,9 +207,10 @@ class TExportComptaCiel extends TExportCompta {
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
-					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
+					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'C' : 'D'),
 					
 					'montant'						=> abs(number_format($montant,2,'.','')),
+					//'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					
@@ -218,8 +222,11 @@ class TExportComptaCiel extends TExportCompta {
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
+
+				$montant_facture+=number_format($montant,2,'.','');
 			}
 			
+			$montant_produit = 0;
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				if($montant!=0) {
@@ -232,6 +239,7 @@ class TExportComptaCiel extends TExportCompta {
 					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=>  abs(number_format($montant,2,'.','')),
+					//'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					'num_unique'					=> $numEcriture,
@@ -246,18 +254,28 @@ class TExportComptaCiel extends TExportCompta {
 				//$ligneFichier['type_ecriture'] = 'A';
 				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
+
+				$montant_produit+=number_format($montant,2,'.','');
+
 				}
+
+				
 			}
 
+			$montant_tva=0;$cpt_tva=1;
+			$nb_tva = count($infosFacture['ligne_tva']);
 			// Lignes TVA
 			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+					if($cpt_tva == $nb_tva) $montant = $montant_facture-$montant_produit;
+
 					$ligneFichier = array(
 						'numero_compte'					=> $code_compta,
 						'code_journal'					=> $codeJournal,
 						'date_ecriture'					=> $facture['date'],
 						'libelle_libre'					=> $label,
-						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+						'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
 						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
+					//	'montant'						=> abs($montant),
 						'montant'						=>  abs(number_format($montant,2,'.','')),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece'					=> $facture['ref'],
@@ -267,9 +285,14 @@ class TExportComptaCiel extends TExportCompta {
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
-				$numLignes++;
+				$numLignes++;$cpt_tva++;
+
+				$montant_tva+=number_format($montant,2,'.','');
+
 			}
 			
+
+
 			$numEcriture++;
 		}
 
