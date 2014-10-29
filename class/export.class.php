@@ -400,8 +400,9 @@ class TExportCompta extends TObjetStd {
 		$sql.= " LEFT JOIN llx_bank_account ba ON ba.rowid = bank.fk_account";
 		$sql.= " WHERE r.datep BETWEEN '$dt_deb' AND '$dt_fin'";
 		$sql.= " AND r.entity = {$conf->entity}";
-		$sql.= " ORDER BY r.datep ASC 
-				 GROUP BY r.rowid";
+		$sql.= " GROUP BY r.rowid
+					ORDER BY r.datep ASC 
+				 ";
 		//echo $sql;
 		$resql = $db->query($sql);
 		
