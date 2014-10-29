@@ -390,7 +390,7 @@ class TExportCompta extends TObjetStd {
 		global $db, $conf;
 
 		// Requête de récupération des règlements
-		$sql = "SELECT f.facnumber num_fact, r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
+		$sql = "SELECT r.rowid, f.facnumber num_fact, r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
 		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom, ba.account_number";
 		$sql.= " FROM llx_paiement r";
 		$sql.= " LEFT JOIN llx_paiement_facture rf ON rf.fk_paiement = r.rowid";
@@ -400,7 +400,8 @@ class TExportCompta extends TObjetStd {
 		$sql.= " LEFT JOIN llx_bank_account ba ON ba.rowid = bank.fk_account";
 		$sql.= " WHERE r.datep BETWEEN '$dt_deb' AND '$dt_fin'";
 		$sql.= " AND r.entity = {$conf->entity}";
-		$sql.= " ORDER BY r.datep ASC";
+		$sql.= " ORDER BY r.datep ASC 
+				 GROUP BY r.rowid";
 		//echo $sql;
 		$resql = $db->query($sql);
 		
