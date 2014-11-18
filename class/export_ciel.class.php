@@ -266,8 +266,9 @@ class TExportComptaCiel extends TExportCompta {
 			$nb_tva = count($infosFacture['ligne_tva']);
 			// Lignes TVA
 			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
-					if($cpt_tva == $nb_tva) $montant = $montant_facture-$montant_produit;
-
+					if($cpt_tva == $nb_tva) $montant = $montant_facture-$montant_produit-$montant_tva;
+					
+					if($montant!=0) {
 					$ligneFichier = array(
 						'numero_compte'					=> $code_compta,
 						'code_journal'					=> $codeJournal,
@@ -282,6 +283,7 @@ class TExportComptaCiel extends TExportCompta {
 						'num_unique'					=> $numEcriture,
 					
 					);
+					}
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
