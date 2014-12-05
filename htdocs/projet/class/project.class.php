@@ -1213,6 +1213,7 @@ class Project extends CommonObject
 	  *	@param	bool	$clone_project_file		Clone file of project
 	  *	@param	bool	$clone_task_file		Clone file of task (if task are copied)
       *	@param	bool	$clone_note		Clone note of project
+      * @param	bool	$move project date	move project date
       * @param	bool	$move_date		Move task date on clone
       *	@param	integer	$notrigger		No trigger flag
       * @param  int     $newthirdpartyid  New thirdparty id
@@ -1224,7 +1225,7 @@ class Project extends CommonObject
 
 		$error=0;
 
-		dol_syslog("createFromClone clone_contact=".$clone_contact." clone_task=".$clone_task." clone_project_file=".$clone_project_file." clone_note=".$clone_note." move_date=".$move_date,LOG_DEBUG);
+		dol_syslog("createFromClone clone_contact=".$clone_contact." clone_task=".$clone_task." clone_file=".$clone_file." clone_note=".$clone_note. " move_date=".$move_date);
 
 		$now = dol_mktime(0,0,0,idate('m',dol_now()),idate('d',dol_now()),idate('Y',dol_now()));
 
