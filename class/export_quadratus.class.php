@@ -48,6 +48,7 @@ class TExportComptaQuadratus extends TExportCompta {
 		);
 	
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 	
 		$this->_format_reglement_tiers=array(
 	
