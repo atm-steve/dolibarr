@@ -25,6 +25,7 @@ class TExportCompta extends TObjetStd {
 			'quadratus' => 'Quadratus'
 			,'sage' => 'Sage'
 			,'ciel' => 'Ciel'
+			,'opensi' => 'Open SI'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture' 
@@ -70,6 +71,9 @@ class TExportCompta extends TObjetStd {
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 		}
 //var_dump($this->TTVA); exit;
+
+		$this->fieldSeparator='';
+		$this->fieldPadding=true;
 
 	}
 	
@@ -670,7 +674,7 @@ class TExportCompta extends TObjetStd {
 			$valeur = $this->suppr_accents($valeur);
 			
 			// Ajout padding ou troncature
-			if(strlen($valeur) < $fmt['length']) {
+			if(strlen($valeur) < $fmt['length'] && $this->fieldPadding) {
 				$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
 				$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
 				$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
@@ -678,6 +682,8 @@ class TExportCompta extends TObjetStd {
 				$valeur = substr($valeur, 0, $fmt['length']);
 			}
 			$ligneFichierTxtFixe .= $valeur;
+			
+			if(!empty($this->fieldSeparator))$ligneFichierTxtFixe.=$this->fieldSeparator;
 		}
 		return $ligneFichierTxtFixe;
 	}
