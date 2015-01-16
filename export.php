@@ -125,13 +125,13 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 			<td colspan="3"><?php echo $langs->trans('Date') ?></td>
 		</tr>
 		<tr class="impair">
-			<td><?= $langs->trans('ExportLogiciel') ?></td>
+			<td><?php echo $langs->trans('ExportLogiciel') ?></td>
 			<td>
-				<?= $exp->TLogiciel[$conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT] ?>
+				<?php echo $exp->TLogiciel[$conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT] ?>
 			</td>
-			<td><?= $langs->trans('StartDate') ?></td>
+			<td><?php echo $langs->trans('StartDate') ?></td>
 			<td>
-				<?= $form->calendrier('', 'dt_deb', $exp->get_date('dt_deb'), 12) ?>
+				<?php echo $form->calendrier('', 'dt_deb', $exp->get_date('dt_deb'), 12) ?>
 			</td>
 			<td rowspan="2">
 				<input type="submit" class="button" name="submitBtn" value="<?php echo $langs->trans('DoExport') ?>" />
@@ -140,15 +140,15 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 		<tr class="impair">
 			<td><?php echo $langs->trans('ExportType') ?></td>
 			<td>
-				<?= $form->combo('', 'type_export', $exp->TTypeExport, $type_export) ?>
+				<?php echo $form->combo('', 'type_export', $exp->TTypeExport, $type_export) ?>
 			</td>
 			<td><?php echo $langs->trans('EndDate') ?></td>
 			<td>
-				<?= $form->calendrier('', 'dt_fin', $exp->get_date('dt_fin'), 12) ?>
+				<?php echo $form->calendrier('', 'dt_fin', $exp->get_date('dt_fin'), 12) ?>
 			</td>
 		</tr>
 	</table>
-<?
+<?php
 
 $form->end();
 
