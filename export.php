@@ -45,7 +45,7 @@ if(!empty($action) && $action == 'export') {
 			$fileName = $export->filename;
 		}
 		else{
-			$fileName = $logiciel_export.$type_export.date('YmdHis').".txt";
+			$fileName = $logiciel_export.$type_export.date('YmdHis').".csv";
 		}
 		
 		
