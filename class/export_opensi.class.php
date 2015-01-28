@@ -205,8 +205,8 @@ class TExportComptaOpensi extends TExportCompta {
 					'code_tiers'					=> $tiers['ref_client'],
 					'libelle_libre'					=> $facture['ref']. ' LIGNE '.$code_compta,
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-					'montantC'						=> floatval($facture['total_ttc']) < 0 ? abs($montant) : 0,
-					'montantD'						=> floatval($facture['total_ttc']) < 0 ? 0 : abs($montant),
+					'montantC'						=> floatval($facture['total_ttc']) < 0 ? round(abs($montant), 2) : 0,
+					'montantD'						=> floatval($facture['total_ttc']) < 0 ? 0 : round(abs($montant), 2),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					
@@ -238,8 +238,8 @@ class TExportComptaOpensi extends TExportCompta {
 						'code_tiers'					=> $tiers['ref_client'],
 						'libelle_libre'					=> 'TVA',
 						//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-						'montantC'						=> floatval($facture['total_ttc']) < 0 ? abs($montant) : 0,
-						'montantD'						=> floatval($facture['total_ttc']) < 0 ? 0 : abs($montant),
+						'montantC'						=> floatval($facture['total_ttc']) < 0 ? round(abs($montant), 2) : 0,
+						'montantD'						=> floatval($facture['total_ttc']) < 0 ? 0 : round(abs($montant), 2),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 						
@@ -265,8 +265,8 @@ class TExportComptaOpensi extends TExportCompta {
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					
-					'montantD'						=> floatval($facture['total_ttc']) < 0 ? abs($montant) : 0,
-					'montantC'						=> floatval($facture['total_ttc']) < 0 ? 0 : abs($montant),
+					'montantD'						=> floatval($facture['total_ttc']) < 0 ? round(abs($montant), 2) : 0,
+					'montantC'						=> floatval($facture['total_ttc']) < 0 ? 0 : round(abs($montant), 2),
 					
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
@@ -328,8 +328,8 @@ class TExportComptaOpensi extends TExportCompta {
 					'code_tiers'					=> $tiers['ref_client'],
 					'libelle_libre'					=> $facture['ref']. ' LIGNE '.$code_compta,
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-					'montantC'						=> floatval($facture['total_ttc']) > 0 ? abs($montant) : 0,
-					'montantD'						=> floatval($facture['total_ttc']) > 0 ? 0 : abs($montant),
+					'montantC'						=> floatval($facture['total_ttc']) > 0 ? round(abs($montant), 2) : 0,
+					'montantD'						=> floatval($facture['total_ttc']) > 0 ? 0 : round(abs($montant), 2),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					
@@ -361,8 +361,8 @@ class TExportComptaOpensi extends TExportCompta {
 						'code_tiers'					=> $tiers['ref_client'],
 						'libelle_libre'					=> 'TVA',
 						//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
-						'montantC'						=> floatval($facture['total_ttc']) > 0 ? abs($montant) : 0,
-						'montantD'						=> floatval($facture['total_ttc']) > 0 ? 0 : abs($montant),
+						'montantC'						=> floatval($facture['total_ttc']) > 0 ? round(abs($montant), 2) : 0,
+						'montantD'						=> floatval($facture['total_ttc']) > 0 ? 0 : round(abs($montant), 2),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 						
@@ -388,8 +388,8 @@ class TExportComptaOpensi extends TExportCompta {
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					
-					'montantD'						=> floatval($facture['total_ttc']) > 0 ? abs($montant) : 0,
-					'montantC'						=> floatval($facture['total_ttc']) > 0 ? 0 : abs($montant),
+					'montantD'						=> floatval($facture['total_ttc']) > 0 ? round(abs($montant), 2) : 0,
+					'montantC'						=> floatval($facture['total_ttc']) > 0 ? 0 : round(abs($montant), 2),
 					
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
