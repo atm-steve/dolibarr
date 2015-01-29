@@ -96,7 +96,7 @@ class TExportComptaOpensi extends TExportCompta {
 			
 		);
 		
-		unset($this->TTypeExport['ecritures_bancaires']); // pas encore pris en charge
+		//unset($this->TTypeExport['ecritures_bancaires']); // pas encore pris en charge
 		unset($this->TTypeExport['ecritures_comptables_ndf']); // pas encore pris en charge
 		unset($this->TTypeExport['produits']); // pas encore pris en charge
 		unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
@@ -107,6 +107,81 @@ class TExportComptaOpensi extends TExportCompta {
 		$this->fieldPadding=false;
 			
 						
+	}
+
+	function get_file_ecritures_bancaires($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabBank = parent::get_banque($dt_deb, $dt_fin);
+		//pre($TabBank);return;
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabBank as $id_bank => $infosBank) {
+			$tiers = &$infosBank['tiers'];
+			$banque = &$infosBank['bank'];
+			$banqueligne = &$infosBank['bankline'];
+
+			if(!empty($infosBank['entity'])) {
+				$entity = $infosBank['entity'];
+				$tmp = explode(";", $entity['description']);
+				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
+				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
+			}
+
+			$label = $banqueligne['fk_type'].' '.$tiers['nom'];
+			$datepiece = $banqueligne['datev'];
+
+			// Lignes client
+			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'code_journal'					=> $banque['ref'],
+					'date_piece'					=> $datepiece,
+					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
+					'numero_plan'					=> '0',
+					'numero_compte_general'			=> $banqueligne['label'] == '(SupplierInvoicePayment)' ? '40100000' : '41100000',
+					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
+	
+					'libelle'						=> $label,
+					'montant_debit'					=> ($montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($montant < 0) ? 0 : abs($montant),
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				//echo $contenuFichier;exit;
+				$numLignes++;
+			}
+			
+			// Lignes de banque
+			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'code_journal'					=> $banque['ref'],
+					'date_piece'					=> $datepiece,
+					'numero_compte_general'			=> $code_compta,
+					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
+					'numero_plan'					=> '2',
+					'numero_section'				=> $codeAnalytique,
+					
+					'libelle'						=> $label,
+					'montant_debit'					=> ($montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($montant < 0) ? abs($montant) : 0,
+					'type_ecriture'					=> 'G'
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			}
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
 	}
 
 	function get_file_produits($format, $dt_deb, $dt_fin) {
