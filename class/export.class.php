@@ -15,11 +15,13 @@ dol_include_once('/compta/bank/class/account.class.php');
 
 class TExportCompta extends TObjetStd {
 	
-	function __construct(&$db) {
+	function __construct(&$db, $exportAllreadyExported = false) {
 		global $conf;
 		
 		$this->dt_deb = strtotime('first day of last month');
 		$this->dt_fin = strtotime('last day of last month');
+		
+		$this->exportAllreadyExported = $exportAllreadyExported;
 		
 		$this->TLogiciel = array(
 			'quadratus' => 'Quadratus'
@@ -92,9 +94,11 @@ class TExportCompta extends TObjetStd {
 		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 		
+		
+		
 		// Requête de récupération des factures
 		$sql = "SELECT f.rowid, f.entity";
-		$sql.= " FROM ".MAIN_DB_PREFIX."facture f";
+		$sql.= " FROM ".MAIN_DB_PREFIX."facture f LEFT JOIN ".MAIN_DB_PREFIX."facture_extrafields fex ON (fex.fk_object=f.rowid)";
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
@@ -102,6 +106,11 @@ class TExportCompta extends TObjetStd {
 		if(!empty($conf->global->EXPORT_COMPTA_FACT_CLI_FILTER)) {
 			$sql.= " AND f.facnumber LIKE '".$conf->global->EXPORT_COMPTA_FACT_CLI_FILTER."'";
 		}
+		
+		if(!$this->exportAllreadyExported) {
+			$sql.=" AND fex.date_compta IS NULL "; 
+		}
+		
 		$sql.= " ORDER BY f.".$datefield." ASC";
 
 		$resql = $db->query($sql);
@@ -122,6 +131,10 @@ class TExportCompta extends TObjetStd {
 			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']);
+			
+			$facture->array_options['options_date_compta'] = time(); 
+			
+			$facture->insertExtraFields();
 			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
@@ -212,12 +225,16 @@ class TExportCompta extends TObjetStd {
 		
 		// Requête de récupération des factures fournisseur
 		$sql = "SELECT f.rowid, f.entity";
-		$sql.= " FROM ".MAIN_DB_PREFIX."facture_fourn f";
+		$sql.= " FROM ".MAIN_DB_PREFIX."facture_fourn f LEFT JOIN ".MAIN_DB_PREFIX."facture_fourn_extrafields fex ON (fex.fk_object=f.rowid)";
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		$sql.= " AND f.fk_statut IN (1,2,3)";
 		$sql.= " ORDER BY f.".$datefield." ASC";
 
+		if(!$this->exportAllreadyExported) {
+			$sql.=" AND fex.date_compta IS NULL "; 
+		}
+		
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
@@ -226,6 +243,11 @@ class TExportCompta extends TObjetStd {
 		while($obj = $db->fetch_object($resql)) {
 			$facture = new FactureFournisseur($db);
 			$facture->fetch($obj->rowid);
+			$facture->fetch_optionals();
+			
+			$facture->array_options['options_date_compta'] = time(); 
+			
+			$facture->insertExtraFields();
 			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;

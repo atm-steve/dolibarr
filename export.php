@@ -35,7 +35,7 @@ if(!empty($action) && $action == 'export') {
 	if(!empty($logiciel_export)) {
 		
 		try{
-			$export=new $className($db);
+			$export=new $className($db, (int)GETPOST('exportAllreadyExported') );
 		}
 		catch(Exception $e) {
 			$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportLogiciel'). ' : ' . $logiciel_export;
@@ -133,8 +133,8 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 			<td>
 				<?php echo $form->calendrier('', 'dt_deb', $exp->get_date('dt_deb'), 12) ?>
 			</td>
-			<td rowspan="2">
-				<input type="submit" class="button" name="submitBtn" value="<?php echo $langs->trans('DoExport') ?>" />
+			<td>
+				<input type="checkbox" name="exportAllreadyExported" value="1" /> <?php echo $langs->trans('exportAllreadyExported') ?>
 			</td>
 		</tr>	
 		<tr class="impair">
@@ -146,6 +146,10 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 			<td>
 				<?php echo $form->calendrier('', 'dt_fin', $exp->get_date('dt_fin'), 12) ?>
 			</td>
+			<td>
+				<input type="submit" class="button" name="submitBtn" value="<?php echo $langs->trans('DoExport') ?>" />
+			</td>
+
 		</tr>
 	</table>
 <?php

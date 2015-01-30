@@ -6,9 +6,9 @@
 
 class TExportComptaQuadratus extends TExportCompta {
 	
-	function __construct($db) {
+	function __construct($db, $exportAllreadyExported=false) {
 		
-		parent::__construct($db);
+		parent::__construct($db, $exportAllreadyExported);
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),

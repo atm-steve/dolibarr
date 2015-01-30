@@ -35,3 +35,4 @@ BaseDateForNDF=Date utilisée comme borne pour les notes de frais
 FactureClientFilter=Filtre sur les références de factures client
 ProductCEEField=Champ complémentaire contenant le code comptable de vente CEE
 ProductExportField=Champ complémentaire contenant le code comptable de vente Export
+exportAllreadyExported=Exporter les écritures déjà marquées exportées

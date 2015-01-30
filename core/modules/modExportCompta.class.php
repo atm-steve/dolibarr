@@ -212,6 +212,15 @@ class modExportCompta extends DolibarrModules
 	{
 		$sql = array();
 
+		dol_include_once('/core/class/extrafields.class.php');
+        $extrafields=new ExtraFields($this->db);
+		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture');
+		
+		dol_include_once('/core/class/extrafields.class.php');
+        $extrafields=new ExtraFields($this->db);
+		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture_fourn');
+		
+				
 		$result=$this->load_tables();
 
 		return $this->_init($sql);

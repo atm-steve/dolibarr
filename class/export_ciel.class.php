@@ -6,9 +6,9 @@
 
 class TExportComptaCiel extends TExportCompta {
 	
-	function __construct($db) {
+	function __construct($db, $exportAllreadyExported=false) {
 		
-		parent::__construct($db);
+		parent::__construct($db, $exportAllreadyExported);
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'num_unique',			'length' => 5,	'default' => '0',	'type' => 'text'),

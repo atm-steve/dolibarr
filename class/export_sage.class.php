@@ -6,8 +6,10 @@
 dol_include_once("/export-compta/class/export.class.php");
 
 class TExportComptaSage extends TExportCompta {
-	function __construct(&$db) {
-		parent::__construct($db);
+	function __construct(&$db, $exportAllreadyExported=false) {
+		
+		parent::__construct($db, $exportAllreadyExported);
+		
 	}
 	
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
