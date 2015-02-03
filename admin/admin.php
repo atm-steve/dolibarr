@@ -115,6 +115,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Champ date utilisé pour les bornes sur écritures bancaires
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_datefacfourn');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_DATE_BANK');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("BaseDateForBank");
+print '</td><td width="60" align="right">';
+print $form->combo('', 'EXPORT_COMPTA_DATE_BANK', $exp->TDatesBank, $conf->global->EXPORT_COMPTA_DATE_BANK);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
 // Champ date utilisé pour les bornes sur notes de frais
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_datendf');

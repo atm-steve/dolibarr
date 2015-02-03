@@ -101,7 +101,8 @@ class modExportCompta extends DolibarrModules
 			0=>array('EXPORT_COMPTA_ALL_ENTITIES','chaine','0','Acccountancy export made across multi-companies', 1, 'current', 1),
 			1=>array('EXPORT_COMPTA_DATE_FACTURES_CLIENT','chaine','datef','Date on which acccountancy export will be based for sales', 1, 'current', 1),
 			2=>array('EXPORT_COMPTA_DATE_FACTURES_FOURNISSEUR','chaine','datef','Date on which acccountancy export will be based for purchases', 1, 'current', 1),
-			3=>array('EXPORT_COMPTA_DATE_FACTURES_NDF','chaine','datee','Date on which acccountancy export will be based for sales', 1, 'current', 1)
+			3=>array('EXPORT_COMPTA_DATE_FACTURES_NDF','chaine','datee','Date on which acccountancy export will be based for ndf', 1, 'current', 1),
+			4=>array('EXPORT_COMPTA_DATE_BANK','chaine','datev','Date on which acccountancy export will be based for bank', 1, 'current', 1)
 		);
 
 		// Array to add new pages in new tabs

@@ -37,6 +37,9 @@ class TExportCompta extends TObjetStd {
 			'datef' => 'Date de facture'
 			,'datec' => 'Date de création'
 		);
+		$this->TDatesBank = array(
+			'datev' => 'Date de valeur'
+		);
 		$this->TDatesNDF = array(
 			'dates' => 'Date de début'
 			,'datee' => 'Date de fin'

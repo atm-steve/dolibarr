@@ -31,6 +31,7 @@ sage=Sage
 quadratus=Quadratus
 BaseDateForFacCli=Date utilisée comme borne pour les factures client
 BaseDateForFacFourn=Date utilisée comme borne pour les factures fournisseur
+BaseDateForBank=Date utilisée comme borne pour les écritures bancaires
 BaseDateForNDF=Date utilisée comme borne pour les notes de frais
 FactureClientFilter=Filtre sur les références de factures client
 ProductCEEField=Champ complémentaire contenant le code comptable de vente CEE
