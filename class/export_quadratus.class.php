@@ -120,7 +120,7 @@ class TExportComptaQuadratus extends TExportCompta {
 			
 		);
 		
-		unset($this->TTypeExport['ecritures_bancaires']); // pas encore pris en charge
+		//unset($this->TTypeExport['ecritures_bancaires']); // pas encore pris en charge
 		
 	}
 
