@@ -338,7 +338,7 @@ class TExportComptaSage extends TExportCompta {
 		return $contenuFichier;
 	}
 
-	function get_file_ecritures_bancaires($format, $dt_deb, $dt_fin) {
+	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);

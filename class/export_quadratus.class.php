@@ -49,6 +49,8 @@ class TExportComptaQuadratus extends TExportCompta {
 	
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
+		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_banque[2] = array('name' => 'code_journal','length' => 2,'default' => 'BQ',	'type' => 'text');
 	
 		$this->_format_reglement_tiers=array(
 	
@@ -118,10 +120,7 @@ class TExportComptaQuadratus extends TExportCompta {
 			array('name' => 'code',		'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'libelle',		'length' => 30,	'default' => '',	'type' => 'text'),
 			
-		);
-		
-		//unset($this->TTypeExport['ecritures_bancaires']); // pas encore pris en charge
-		
+		);		
 	}
 
 	function get_file_produits($format, $dt_deb, $dt_fin) {
@@ -219,13 +218,11 @@ class TExportComptaQuadratus extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece5'					=> $facture['facnumber'],
 					'numero_piece8'					=> $facture['facnumber'],
 					'numero_piece10'				=> $facture['facnumber'],
-					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
@@ -248,13 +245,11 @@ class TExportComptaQuadratus extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece5'					=> $facture['facnumber'],
 					'numero_piece8'					=> $facture['facnumber'],
 					'numero_piece10'				=> $facture['facnumber'],
-					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
@@ -281,13 +276,11 @@ class TExportComptaQuadratus extends TExportCompta {
 						'date_ecriture'					=> $facture['date'],
 						'libelle_libre'					=> $tiers['nom'],
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
 						'montant'						=> abs($montant * 100),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece5'					=> $facture['facnumber'],
 						'numero_piece8'					=> $facture['facnumber'],
 						'numero_piece10'				=> $facture['facnumber'],
-						//'montant_devise_signe'			=> floatval($facture['tva']) < 0 ? '-' : '+',
 						'montant_devise'				=> abs($montant * 100),
 						'num_unique'					=> $numLignes,
 						'date_systeme'					=> time(),
@@ -338,13 +331,11 @@ class TExportComptaQuadratus extends TExportCompta {
 					'date_ecriture'					=> strtotime($facture['date']),
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
 					'numero_piece5'					=> $facture['facnumber'],
 					'numero_piece8'					=> $facture['facnumber'],
 					'numero_piece10'				=> $facture['facnumber'],
-					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
@@ -364,13 +355,11 @@ class TExportComptaQuadratus extends TExportCompta {
 					'date_ecriture'					=> strtotime($facture['date']),
 					'libelle_libre'					=> $tiers['nom'].' - '.$facture['ref_client'],
 					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> strtotime($facture['date_lim_reglement']),
 					'numero_piece5'					=> $facture['facnumber'],
 					'numero_piece8'					=> $facture['facnumber'],
 					'numero_piece10'				=> $facture['facnumber'],
-					//'montant_devise_signe'			=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
@@ -394,13 +383,11 @@ class TExportComptaQuadratus extends TExportCompta {
 						'date_ecriture'					=> strtotime($facture['date']),
 						'libelle_libre'					=> $tiers['nom'],
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
 						'montant'						=> abs($montant * 100),
 						'date_echeance'					=> strtotime($facture['date_lim_reglement']),
 						'numero_piece5'					=> $facture['facnumber'],
 						'numero_piece8'					=> $facture['facnumber'],
 						'numero_piece10'				=> $facture['facnumber'],
-						//'montant_devise_signe'			=> floatval($facture['tva']) < 0 ? '-' : '+',
 						'montant_devise'				=> abs($montant * 100),
 						'num_unique'					=> $numLignes,
 						'date_systeme'					=> time(),
@@ -416,6 +403,81 @@ class TExportComptaQuadratus extends TExportCompta {
 
 		return $contenuFichier;
 	}
+
+	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		if(empty($format)) $format = $this->_format_ecritures_comptables_banque;
+
+		$TabBank = parent::get_banque($dt_deb, $dt_fin);
+		
+		$type = 'M';
+		$codeJournal='BQ';
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabBank as $id_bank => $infosBank) {
+			$tiers = &$infosBank['tiers'];
+			$bankline = &$infosBank['bankline'];
+			$bank = &$infosBank['bank'];
+			
+			// Lignes tiers
+			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
+			
+				$ligneFichier = array(
+					'type'							=> $type,
+					'numero_compte'					=> $code_compta,
+					'code_journal'					=> $bank['ref'],
+					'date_ecriture'					=> $bankline['datev'],
+					'libelle_libre'					=> $bankline['label'],
+					'sens'							=> ($montant < 0) ? 'C' : 'D',
+					'montant'						=> abs($montant * 100),
+					'numero_piece5'					=> $bankline['ref'],
+					'numero_piece8'					=> $bankline['ref'],
+					'numero_piece10'				=> $bankline['ref'],
+					'montant_devise'				=> abs($montant * 100),
+					'num_unique'					=> $numLignes,
+					'date_systeme'					=> time(),
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			// Lignes banque
+			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'type'							=> $type,
+					'numero_compte'					=> $code_compta,
+					'code_journal'					=> $bank['ref'],
+					'date_ecriture'					=> $bankline['datev'],
+					'libelle_libre'					=> $bankline['label'],
+					'sens'							=> ($montant < 0) ? 'D' : 'C',
+					'montant'						=> abs($montant * 100),
+					'numero_piece5'					=> $bankline['ref'],
+					'numero_piece8'					=> $bankline['ref'],
+					'numero_piece10'				=> $bankline['ref'],
+					'montant_devise'				=> abs($montant * 100),
+					'num_unique'					=> $numLignes,
+					'date_systeme'					=> time(),
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
 	function get_file_reglement_tiers($format, $dt_deb, $dt_fin) {
 		global $conf,$db;	
 		
