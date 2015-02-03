@@ -185,6 +185,34 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Extension des fichiers générés
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_export_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_EXTENSION');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("FileExtension");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_EXTENSION',$conf->global->EXPORT_COMPTA_EXTENSION,5,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Séparateur de données
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_export_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_DATASEPARATOR');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("DataSeparator");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_DATASEPARATOR',$conf->global->EXPORT_COMPTA_DATASEPARATOR,5,5);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
 print "</table>";
 
 llxFooter();
