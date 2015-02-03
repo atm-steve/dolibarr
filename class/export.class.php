@@ -12,11 +12,14 @@ dol_include_once('/fourn/class/fournisseur.facture.class.php');
 dol_include_once('/societe/class/client.class.php');
 dol_include_once('/product/class/product.class.php');
 dol_include_once('/compta/bank/class/account.class.php');
+dol_include_once('/compta/sociales/class/chargesociales.class.php');
 
 class TExportCompta extends TObjetStd {
 	
 	function __construct(&$db, $exportAllreadyExported = false) {
 		global $conf;
+		
+		$this->db = $db;
 		
 		$this->dt_deb = strtotime('first day of last month');
 		$this->dt_fin = strtotime('last day of last month');
@@ -54,32 +57,39 @@ class TExportCompta extends TObjetStd {
 		$this->TTypeExport = array();
 		if(!empty($conf->facture->enabled)) $this->TTypeExport['ecritures_comptables_vente'] = 'Ecritures comptables vente';
 		if(!empty($conf->fournisseur->enabled)) $this->TTypeExport['ecritures_comptables_achat'] = 'Ecritures comptables achats';
+		if(!empty($conf->banque->enabled)) $this->TTypeExport['ecritures_comptables_banque'] = 'Écritures comptables banque';
 		if(!empty($conf->ndfp->enabled)) {
 			dol_include_once('/ndfp/class/ndfp.class.php');
 			$this->TTypeExport['ecritures_comptables_ndf'] = 'Ecritures comptables notes de frais';
 		}
 		if(!empty($conf->facture->enabled)) $this->TTypeExport['reglement_tiers'] = 'Règlements tiers';
-		if(!empty($conf->banque->enabled)) $this->TTypeExport['ecritures_bancaires'] = 'Écritures bancaires';
 		
 		$this->TTypeExport['tiers'] = 'Tiers';
 		$this->TTypeExport['produits'] = 'Produits';
+
+		$this->fieldSeparator=$conf->global->EXPORT_COMPTA_DATASEPARATOR;
+		$this->fieldPadding=empty($conf->global->EXPORT_COMPTA_DATASEPARATOR) ? true : false;
 		
+		$this->init_plan_comptable();
+	}
+
+	/*
+	 * Initialisation d'un tableau qui contient tous les codes compta (tiers, produits, charges, TVA, etc.)
+	 */
+	function init_plan_comptable() {
+		$this->TPlanComptable = array();
+				
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
 		$sql = "SELECT t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
 		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t WHERE active=1";
 		
-		$resql = $db->query($sql);
+		$resql = $this->db->query($sql);
 		
-		while($obj = $db->fetch_object($resql)) {
+		while($obj = $this->db->fetch_object($resql)) {
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 		}
-//var_dump($this->TTVA); exit;
-
-		$this->fieldSeparator='';
-		$this->fieldPadding=true;
-
 	}
 	
 	/* 
@@ -522,10 +532,7 @@ class TExportCompta extends TObjetStd {
 		$sql = "SELECT b.rowid, ba.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
-		//$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid";
 		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
-		$sql.= " AND (b.label = '(CustomerInvoicePayment)'";
-		$sql.= " OR b.label = '(SupplierInvoicePayment)')";
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		$sql.= " ORDER BY b.".$datefield." ASC";
 		
@@ -539,7 +546,6 @@ class TExportCompta extends TObjetStd {
 			$TIdBank[] = array(
 				'rowid' => $obj->rowid
 				,'entity' => $obj->entity
-				//,'id_paiement' => $obj->id_paiement
 			);
 		}
 		
@@ -547,22 +553,48 @@ class TExportCompta extends TObjetStd {
 		
 		// Construction du tableau de données
 		$TBank = array();
+		$TBankAccount = array(); // Permet de stocket l'objet compte bancaire pour éviter de le fetcher à chaque écriture
 		foreach($TIdBank as $idBank) {
 			$bankline = new AccountLine($db);
 			$bankline->fetch($idBank['rowid']);
 			$bankline->datev = $db->jdate($bankline->datev);
+
+			if(empty($TBankAccount[$bankline->fk_account])) {
+				$TBankAccount[$bankline->fk_account] = new Account($db);
+				$TBankAccount[$bankline->fk_account]->fetch($bankline->fk_account);
+			}
+			$bank = &$TBankAccount[$bankline->fk_account];
 			
-			$bank = new Account($db);
-			$bank->fetch($bankline->fk_account);
-			
-			// Récupération du tiers concerné
+			// Récupération du tiers concerné, ou type de charge, ou user pour le code compta
+			$codeCompta = '';
 			$links = $bank->get_url($bankline->id);
-			$tiers = new Societe($db);
 			foreach($links as $key => $val) {
+				// Cas du tiers, type d'écriture = règlement client ou fournisseur
 				if($links[$key]['type'] == 'company') {
-					$idTiers = $links[$key]['url_id'];
-					$tiers->fetch($idTiers);
+					$tiers = new Societe($db);
+					$tiers->fetch($links[$key]['url_id']);
+					if($bankline->label == '(CustomerInvoicePayment)') {
+						$codeCompta = $tiers->code_compta;
+					} else {
+						$codeCompta = $tiers->code_compta_fournisseur;
+					}
 				}
+				// Cas de la charge sociale
+				if($links[$key]['type'] == 'sc') {
+					$charge = new ChargeSociales($db);
+					$charge->fetch($links[$key]['url_id']);
+					
+					$sql = "SELECT c.accountancy_code";
+			        $sql.= " FROM ".MAIN_DB_PREFIX."c_chargesociales as c";
+			        $sql.= " WHERE c.id = ".$charge->type;
+					
+			        $resql=$this->db->query($sql);
+					$obj = $this->db->fetch_object($resql);
+					$codeCompta = $obj->accountancy_code;
+				}
+				
+				// TODO : gérer les notes de frais (évol NDF à faire pour création URL avec le règlement)
+				// TODO : gérer le cas du transfert de compte à compte
 			}
 			
 			$TBank[$bankline->id] = array();
@@ -574,17 +606,16 @@ class TExportCompta extends TObjetStd {
 				$TBank[$bankline->id]['entity'] = get_object_vars($entity);
 			}
 			
-			// Définition des codes comptables
-			$codeComptableClient = ($bankline->label == '(SupplierInvoicePayment)') ? $tiers->code_compta_fournisseur : $tiers->code_compta;
+			// Définition du code comptable banque
 			$codeComptableBank = !empty($bank->account_number) ? $bank->account_number : '51200000';
 			
 			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
 			$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
 			$TBank[$bankline->id]['tiers'] = get_object_vars($tiers);
 			
-			if(empty($TBank[$bankline->id]['ligne_tiers'][$codeComptableClient])) $TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] = 0;
+			if(empty($TBank[$bankline->id]['ligne_tiers'][$codeCompta])) $TBank[$bankline->id]['ligne_tiers'][$codeCompta] = 0;
 			if(empty($TBank[$bankline->id]['ligne_banque'][$codeComptableBank])) $TBank[$bankline->id]['ligne_banque'][$codeComptableBank] = 0;
-			$TBank[$bankline->id]['ligne_tiers'][$codeComptableClient] += $bankline->amount;
+			$TBank[$bankline->id]['ligne_tiers'][$codeCompta] += $bankline->amount;
 			$TBank[$bankline->id]['ligne_banque'][$codeComptableBank] += $bankline->amount;
 		}
 

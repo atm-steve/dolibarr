@@ -19,7 +19,6 @@ $exp=new $className($db);
 if(isset($_POST['submitBtn'])) {
 	$action = GETPOST('action');
 	$type_export = GETPOST('type_export');
-	//$logiciel_export = GETPOST('logiciel_export');
 	$exp->set_date('dt_deb',$_REQUEST['dt_deb']);
 	$exp->set_date('dt_fin',$_REQUEST['dt_fin']);
 	$dt_deb = $exp->get_date('dt_deb','Y-m-d 00:00:00');
@@ -29,8 +28,6 @@ if(isset($_POST['submitBtn'])) {
 if(!empty($action) && $action == 'export') {	
 	
 	$fileContent = '';
-//	ini_set('display_errors',1);
-//error_reporting(E_ALL);
 
 	if(!empty($logiciel_export)) {
 		
@@ -45,7 +42,7 @@ if(!empty($action) && $action == 'export') {
 			$fileName = $export->filename;
 		}
 		else{
-			$fileName = $logiciel_export.$type_export.date('YmdHis').".csv";
+			$fileName = $logiciel_export.$type_export.date('YmdHis').".".$conf->global->EXPORT_COMPTA_EXTENSION;
 		}
 		
 		
@@ -66,8 +63,8 @@ if(!empty($action) && $action == 'export') {
 				case 'reglement_tiers':
 					$fileContent = $export->get_file_reglement_tiers($format, $dt_deb, $dt_fin);
 					break;
-				case 'ecritures_bancaires':
-					$fileContent = $export->get_file_ecritures_bancaires($format, $dt_deb, $dt_fin);
+				case 'ecritures_comptables_banque':
+					$fileContent = $export->get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin);
 					break;
 				case 'tiers':
 					$fileContent = $export->get_file_tiers($format, $dt_deb, $dt_fin);
@@ -84,8 +81,9 @@ if(!empty($action) && $action == 'export') {
 	} else {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('NoExportSelected');
 	}
-/*print nl2br($fileContent);
-		exit();*/
+/*echo '<font style="font-family: Courier;">';
+print nl2br($fileContent);
+exit();*/
 	if($fileContent != '') {
 		$size = strlen($fileContent);
 		
