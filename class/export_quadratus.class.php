@@ -51,6 +51,8 @@ class TExportComptaQuadratus extends TExportCompta {
 		$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_banque[2] = array('name' => 'code_journal','length' => 2,'default' => 'BQ',	'type' => 'text');
+		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_ndf[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 	
 		$this->_format_reglement_tiers=array(
 	
@@ -268,30 +270,32 @@ class TExportComptaQuadratus extends TExportCompta {
 			}
 
 			// Lignes TVA
-			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
-					$ligneFichier = array(
-						'type'							=> $type,
-						'numero_compte'					=> $code_compta,
-						'code_journal'					=> $codeJournal,
-						'date_ecriture'					=> $facture['date'],
-						'libelle_libre'					=> $tiers['nom'],
-						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						'montant'						=> abs($montant * 100),
-						'date_echeance'					=> $facture['date_lim_reglement'],
-						'numero_piece5'					=> $facture['facnumber'],
-						'numero_piece8'					=> $facture['facnumber'],
-						'numero_piece10'				=> $facture['facnumber'],
-						'montant_devise'				=> abs($montant * 100),
-						'num_unique'					=> $numLignes,
-						'date_systeme'					=> time(),
-						'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
-						'numero_piece8'=>$facture['ref'],
-						'numero_piece10'=>$facture['ref'],
-					);
-				
-				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
-				$numLignes++;
+			if(!empty($infosFacture['ligne_tva'])) {
+				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+						$ligneFichier = array(
+							'type'							=> $type,
+							'numero_compte'					=> $code_compta,
+							'code_journal'					=> $codeJournal,
+							'date_ecriture'					=> $facture['date'],
+							'libelle_libre'					=> $tiers['nom'],
+							'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+							'montant'						=> abs($montant * 100),
+							'date_echeance'					=> $facture['date_lim_reglement'],
+							'numero_piece5'					=> $facture['facnumber'],
+							'numero_piece8'					=> $facture['facnumber'],
+							'numero_piece10'				=> $facture['facnumber'],
+							'montant_devise'				=> abs($montant * 100),
+							'num_unique'					=> $numLignes,
+							'date_systeme'					=> time(),
+							'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
+							'numero_piece8'=>$facture['ref'],
+							'numero_piece10'=>$facture['ref'],
+						);
+					
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+					$numLignes++;
+				}
 			}
 			
 			$numEcriture++;
@@ -375,27 +379,132 @@ class TExportComptaQuadratus extends TExportCompta {
 			}
 
 			// Lignes TVA
-			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
-					$ligneFichier = array(
-						'type'							=> $type,
-						'numero_compte'					=> $code_compta,
-						'code_journal'					=> $codeJournal,
-						'date_ecriture'					=> strtotime($facture['date']),
-						'libelle_libre'					=> $tiers['nom'],
-						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						'montant'						=> abs($montant * 100),
-						'date_echeance'					=> strtotime($facture['date_lim_reglement']),
-						'numero_piece5'					=> $facture['facnumber'],
-						'numero_piece8'					=> $facture['facnumber'],
-						'numero_piece10'				=> $facture['facnumber'],
-						'montant_devise'				=> abs($montant * 100),
-						'num_unique'					=> $numLignes,
-						'date_systeme'					=> time(),
-					);
+			if(!empty($infosFacture['ligne_tva'])) {
+				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+						$ligneFichier = array(
+							'type'							=> $type,
+							'numero_compte'					=> $code_compta,
+							'code_journal'					=> $codeJournal,
+							'date_ecriture'					=> strtotime($facture['date']),
+							'libelle_libre'					=> $tiers['nom'],
+							'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+							'montant'						=> abs($montant * 100),
+							'date_echeance'					=> strtotime($facture['date_lim_reglement']),
+							'numero_piece5'					=> $facture['facnumber'],
+							'numero_piece8'					=> $facture['facnumber'],
+							'numero_piece10'				=> $facture['facnumber'],
+							'montant_devise'				=> abs($montant * 100),
+							'num_unique'					=> $numLignes,
+							'date_systeme'					=> time(),
+						);
+					
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+					$numLignes++;
+				}
+			}
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
+	function get_file_ecritures_comptables_ndf($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabNDF = parent::get_notes_de_frais($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		$type = 'M';
+		$codeJournal='AC';
+		
+		foreach ($TabNDF as $id_ndf => $infosNDF) {
+			$tiers = &$infosNDF['tiers'];
+			$ndf = &$infosNDF['ndf'];
+			$user = &$infosNDF['user'];
+
+			// Lignes client
+			foreach($infosNDF['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'type'							=> $type,
+					'numero_compte'					=> $code_compta,
+					'code_journal'					=> $codeJournal,
+					'date_ecriture'					=> $ndf['datee'],
+					'libelle_libre'					=> $user['firstname'].' '.$user['lastname'],
+					'sens'							=> 'C',
+					'montant'						=> abs($montant * 100),
+					'date_echeance'					=> $ndf['datee'],
+					'numero_piece5'					=> $ndf['ref'],
+					'numero_piece8'					=> $ndf['ref'],
+					'numero_piece10'				=> $ndf['ref'],
+					'montant_devise'				=> abs($montant * 100),
+					'num_unique'					=> $numLignes,
+					'date_systeme'					=> time(),
+				);
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 				$numLignes++;
+			}
+			
+			// Lignes de produits
+			foreach($infosNDF['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'type'							=> $type,
+					'numero_compte'					=> $code_compta,
+					'code_journal'					=> $codeJournal,
+					'date_ecriture'					=> $ndf['datee'],
+					'libelle_libre'					=> $user['firstname'].' '.$user['lastname'],
+					'sens'							=> 'D',
+					'montant'						=> abs($montant * 100),
+					'date_echeance'					=> $ndf['datee'],
+					'numero_piece5'					=> $ndf['ref'],
+					'numero_piece8'					=> $ndf['ref'],
+					'numero_piece10'				=> $ndf['ref'],
+					'montant_devise'				=> abs($montant * 100),
+					'num_unique'					=> $numLignes,
+					'date_systeme'					=> time(),
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				
+				// Ecriture analytique
+				//$ligneFichier['type_ecriture'] = 'A';
+				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			if(!empty($infosNDF['ligne_tva'])) {
+				foreach($infosNDF['ligne_tva'] as $code_compta => $montant) {
+					$ligneFichier = array(
+						'type'							=> $type,
+						'numero_compte'					=> $code_compta,
+						'code_journal'					=> $codeJournal,
+						'date_ecriture'					=> $ndf['datee'],
+						'libelle_libre'					=> $user['firstname'].' '.$user['lastname'],
+						'sens'							=> 'D',
+						'montant'						=> abs($montant * 100),
+						'date_echeance'					=> $ndf['datee'],
+						'numero_piece5'					=> $ndf['ref'],
+						'numero_piece8'					=> $ndf['ref'],
+						'numero_piece10'				=> $ndf['ref'],
+						'montant_devise'				=> abs($montant * 100),
+						'num_unique'					=> $numLignes,
+						'date_systeme'					=> time(),
+					);
+					
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+					$numLignes++;
+				}
 			}
 			
 			$numEcriture++;

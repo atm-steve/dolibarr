@@ -327,7 +327,7 @@ class TExportCompta extends TObjetStd {
 	function get_notes_de_frais($dt_deb, $dt_fin) {
 		global $db, $conf, $user;
 		
-		$ATMdb = new Tdb();
+		$ATMdb = new TPDOdb();
 		$sql = 'SELECT rowid, accountancy_code FROM '.MAIN_DB_PREFIX.'c_exp';
 		$TCodesCompta = TRequeteCore::get_keyval_by_sql($ATMdb, $sql, 'rowid', 'accountancy_code');
 		
@@ -373,12 +373,17 @@ class TExportCompta extends TObjetStd {
 			$TNDF[$ndfp->id] = array();
 			$TNDF[$ndfp->id]['compteur']['piece'] = $i;
 			
-			// Récupération en-tête facture
+			// Récupération en-tête ndf
 			$TNDF[$ndfp->id]['ndf'] = get_object_vars($ndfp);
 			
 			// Récupération client
 			if($ndfp->fetch_thirdparty()) {
 				$TNDF[$ndfp->id]['tiers'] = get_object_vars($ndfp->thirdparty);
+			}
+			
+			// Récupération user
+			if($ndfp->fetch_user($ndfp->fk_user)) {
+				$TNDF[$ndfp->id]['user'] = get_object_vars($ndfp->user);
 			}
 			
 			// Récupération entity
@@ -390,6 +395,7 @@ class TExportCompta extends TObjetStd {
 			
 			// Définition des codes comptables
 			$codeComptableClient = !empty($ndfp->thirdparty->code_compta) ? $ndfp->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+			$codeCompta = $user->array_options['options_COMPTE_TIERS'];
 			
 			// Récupération lignes de notes de frais
 			
@@ -406,10 +412,10 @@ class TExportCompta extends TObjetStd {
 				// Code compta TVA
 				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
 
-				if(empty($TNDF[$ndfp->id]['ligne_tiers'][$codeComptableClient])) $TNDF[$ndfp->id]['ligne_tiers'][$codeComptableClient] = 0;
+				if(empty($TNDF[$ndfp->id]['ligne_tiers'][$codeCompta])) $TNDF[$ndfp->id]['ligne_tiers'][$codeCompta] = 0;
 				if(empty($TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit])) $TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] = 0;
 				if(empty($TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] = 0;
-				$TNDF[$ndfp->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
+				$TNDF[$ndfp->id]['ligne_tiers'][$codeCompta] += $ligne->total_ttc;
 				$TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
 			}
@@ -730,12 +736,16 @@ class TExportCompta extends TObjetStd {
 			$valeur = $this->suppr_accents($valeur);
 			
 			// Ajout padding ou troncature
+			$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
 			if(strlen($valeur) < $fmt['length'] && $this->fieldPadding) {
 				$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
-				$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
 				$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
 			} else if(mb_strlen($valeur,'UTF-8') > $fmt['length']) {
-				$valeur = substr($valeur, 0, $fmt['length']);
+				if($pad_type == STR_PAD_RIGHT) {
+					$valeur = substr($valeur, 0, $fmt['length']);
+				} else {
+					$valeur = substr($valeur, -1 * $fmt['length'], $fmt['length']);
+				}
 			}
 			$ligneFichierTxtFixe .= $valeur;
 			
