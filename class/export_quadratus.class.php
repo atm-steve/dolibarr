@@ -222,15 +222,13 @@ class TExportComptaQuadratus extends TExportCompta {
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece5'					=> $facture['facnumber'],
-					'numero_piece8'					=> $facture['facnumber'],
-					'numero_piece10'				=> $facture['facnumber'],
+					'numero_piece5'					=> $facture['ref'],
+					'numero_piece8'					=> $facture['ref'],
+					'numero_piece10'				=> $facture['ref'],
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
 					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
-					'numero_piece8'=>$facture['ref'],
-					'numero_piece10'=>$facture['ref'],
 				);
 				
 				// Ecriture générale
@@ -249,15 +247,13 @@ class TExportComptaQuadratus extends TExportCompta {
 					'sens'							=> (($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'),
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece5'					=> $facture['facnumber'],
-					'numero_piece8'					=> $facture['facnumber'],
-					'numero_piece10'				=> $facture['facnumber'],
+					'numero_piece5'					=> $facture['ref'],
+					'numero_piece8'					=> $facture['ref'],
+					'numero_piece10'				=> $facture['ref'],
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
 					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
-					'numero_piece8'=>$facture['ref'],
-					'numero_piece10'=>$facture['ref'],
 				);
 				
 				// Ecriture générale
@@ -281,15 +277,13 @@ class TExportComptaQuadratus extends TExportCompta {
 							'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 							'montant'						=> abs($montant * 100),
 							'date_echeance'					=> $facture['date_lim_reglement'],
-							'numero_piece5'					=> $facture['facnumber'],
-							'numero_piece8'					=> $facture['facnumber'],
-							'numero_piece10'				=> $facture['facnumber'],
+							'numero_piece5'					=> $facture['ref'],
+							'numero_piece8'					=> $facture['ref'],
+							'numero_piece10'				=> $facture['ref'],
 							'montant_devise'				=> abs($montant * 100),
 							'num_unique'					=> $numLignes,
 							'date_systeme'					=> time(),
 							'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
-							'numero_piece8'=>$facture['ref'],
-							'numero_piece10'=>$facture['ref'],
 						);
 					
 					// Ecriture générale
