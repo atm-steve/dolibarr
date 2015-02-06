@@ -242,12 +242,13 @@ class TExportCompta extends TObjetStd {
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		$sql.= " AND f.fk_statut IN (1,2,3)";
-		$sql.= " ORDER BY f.".$datefield." ASC";
 
 		if(!$this->exportAllreadyExported) {
 			$sql.=" AND fex.date_compta IS NULL "; 
 		}
 		
+		$sql.= " ORDER BY f.".$datefield." ASC";
+
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
@@ -256,7 +257,6 @@ class TExportCompta extends TObjetStd {
 		while($obj = $db->fetch_object($resql)) {
 			$facture = new FactureFournisseur($db);
 			$facture->fetch($obj->rowid);
-			$facture->fetch_optionals();
 			
 			$facture->array_options['options_date_compta'] = time(); 
 			
