@@ -524,9 +524,17 @@ class TExportComptaQuadratus extends TExportCompta {
 		$numLignes = 1;
 		
 		foreach ($TabBank as $id_bank => $infosBank) {
-			$tiers = &$infosBank['tiers'];
 			$bankline = &$infosBank['bankline'];
 			$bank = &$infosBank['bank'];
+			$object = &$infosBank['object'];
+			
+			$label = $bankline['label'];
+			//pre($object, true);exit;
+			if(!empty($object)) {
+				if($object->element == 'societe')			$label = $object->name;
+				if($object->element == 'chargesociales')	$label = $object->type_libelle;
+				if($object->element == 'user')				$label = $object->firstname.' '.$object->lastname;
+			}
 			
 			// Lignes tiers
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
@@ -536,7 +544,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $bank['ref'],
 					'date_ecriture'					=> $bankline['datev'],
-					'libelle_libre'					=> $bankline['label'],
+					'libelle_libre'					=> $label,
 					'sens'							=> ($montant < 0) ? 'C' : 'D',
 					'montant'						=> abs($montant * 100),
 					'numero_piece5'					=> $bankline['ref'],
@@ -559,7 +567,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $bank['ref'],
 					'date_ecriture'					=> $bankline['datev'],
-					'libelle_libre'					=> $bankline['label'],
+					'libelle_libre'					=> $label,
 					'sens'							=> ($montant < 0) ? 'D' : 'C',
 					'montant'						=> abs($montant * 100),
 					'numero_piece5'					=> $bankline['ref'],

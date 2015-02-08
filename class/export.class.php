@@ -2,8 +2,12 @@
 /*************************************************************************************************************************************************
  * Classe permettant la récupération de données pour utilisation dans un export
  *  - EXPORT DES FACTURES VENTE
+ *  - EXPORT DES FACTURES ACHAT
+ *  - EXPORT DES NOTE DE FRAIS
+ *  - EXPORT DES ÉCRITURES BANCAIRES
  *  - EXPORT DES REGLEMENTS
- *  - EXPORT DES FACTURES ACHAT + NOTE DE FRAIS
+ *  - EXPORT DES TIERS
+ *  - EXPORT DES PRODUITS 
  *************************************************************************************************************************************************/
 
 dol_include_once('/compta/facture/class/facture.class.php');
@@ -395,7 +399,7 @@ class TExportCompta extends TObjetStd {
 			
 			// Définition des codes comptables
 			$codeComptableClient = !empty($ndfp->thirdparty->code_compta) ? $ndfp->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
-			$codeCompta = $user->array_options['options_COMPTE_TIERS'];
+			$codeCompta = $ndfp->user->array_options['options_COMPTE_TIERS'];
 			
 			// Récupération lignes de notes de frais
 			
@@ -574,16 +578,18 @@ class TExportCompta extends TObjetStd {
 			// Récupération du tiers concerné, ou type de charge, ou user pour le code compta
 			$codeCompta = '';
 			$links = $bank->get_url($bankline->id);
+			$object = new stdClass();
 			foreach($links as $key => $val) {
 				// Cas du tiers, type d'écriture = règlement client ou fournisseur
 				if($links[$key]['type'] == 'company') {
 					$tiers = new Societe($db);
 					$tiers->fetch($links[$key]['url_id']);
 					if($bankline->label == '(CustomerInvoicePayment)') {
-						$codeCompta = $tiers->code_compta;
+						$codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 					} else {
-						$codeCompta = $tiers->code_compta_fournisseur;
+						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
 					}
+					$object = &$tiers;
 				}
 				// Cas de la charge sociale
 				if($links[$key]['type'] == 'sc') {
@@ -591,16 +597,28 @@ class TExportCompta extends TObjetStd {
 					$charge->fetch($links[$key]['url_id']);
 					
 					$sql = "SELECT c.accountancy_code";
-			        $sql.= " FROM ".MAIN_DB_PREFIX."c_chargesociales as c";
-			        $sql.= " WHERE c.id = ".$charge->type;
+					$sql.= " FROM ".MAIN_DB_PREFIX."c_chargesociales as c";
+					$sql.= " WHERE c.id = ".$charge->type;
 					
-			        $resql=$this->db->query($sql);
+					$resql=$this->db->query($sql);
 					$obj = $this->db->fetch_object($resql);
 					$codeCompta = $obj->accountancy_code;
+					$object = &$charge;
 				}
 				
-				// TODO : gérer les notes de frais (évol NDF à faire pour création URL avec le règlement)
+				// Cas de l'utilisateur paiement NDF
+				if($links[$key]['type'] == 'user') {
+					$usr = new User($db);
+					$usr->fetch($links[$key]['url_id']);
+					
+					$codeCompta = $usr->array_options['options_COMPTE_TIERS'];
+					$object = &$usr;
+				}
+				
 				// TODO : gérer le cas du transfert de compte à compte
+				if($links[$key]['type'] == 'banktransfert') {
+					$codeCompta = $conf->global->EXPORT_COMPTA_BANK_TRANSFER_ACCOUNT;
+				}
 			}
 			
 			$TBank[$bankline->id] = array();
@@ -617,7 +635,7 @@ class TExportCompta extends TObjetStd {
 			
 			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
 			$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
-			$TBank[$bankline->id]['tiers'] = get_object_vars($tiers);
+			$TBank[$bankline->id]['object'] = $object;
 			
 			if(empty($TBank[$bankline->id]['ligne_tiers'][$codeCompta])) $TBank[$bankline->id]['ligne_tiers'][$codeCompta] = 0;
 			if(empty($TBank[$bankline->id]['ligne_banque'][$codeComptableBank])) $TBank[$bankline->id]['ligne_banque'][$codeComptableBank] = 0;
