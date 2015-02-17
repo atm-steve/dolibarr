@@ -343,6 +343,7 @@ class TExportComptaCiel extends TExportCompta {
 					'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_echeance'],
 					'numero_piece'					=> $facture['ref'],
+					'numero_piece_fourn'			=> $facture['ref_supplier'],
 					
 					'num_unique'					=> $numEcriture,
 				
@@ -365,9 +366,9 @@ class TExportComptaCiel extends TExportCompta {
 					'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_echeance'],
 					'numero_piece'					=> $facture['ref'],
+					'numero_piece_fourn'			=> $facture['ref_supplier'],
+					
 					'num_unique'					=> $numEcriture,
-					
-					
 				);
 				
 				// Ecriture générale
@@ -391,8 +392,9 @@ class TExportComptaCiel extends TExportCompta {
 							'montant'						=> abs($montant),
 							'date_echeance'					=> $facture['date_echeance'],
 							'numero_piece'					=> $facture['ref'],
+							'numero_piece_fourn'			=> $facture['ref_supplier'],
+							
 							'num_unique'					=> $numEcriture,
-						
 						);
 					
 					// Ecriture générale
