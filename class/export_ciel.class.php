@@ -339,11 +339,10 @@ class TExportComptaCiel extends TExportCompta {
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
-					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					
+					'sens'							=> ($montant > 0 ? 'C' : 'D'),
 					'montant'						=> abs($montant),
-					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece'					=> $facture['facnumber'],
+					'date_echeance'					=> $facture['date_echeance'],
+					'numero_piece'					=> $facture['ref'],
 					
 					'num_unique'					=> $numEcriture,
 				
@@ -362,11 +361,10 @@ class TExportComptaCiel extends TExportCompta {
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
-					'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'sens'							=> ($montant > 0 ? 'C' : 'D'),
 					'montant'						=> abs($montant),
-					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece'					=> $facture['facnumber'],
+					'date_echeance'					=> $facture['date_echeance'],
+					'numero_piece'					=> $facture['ref'],
 					'num_unique'					=> $numEcriture,
 					
 					
@@ -382,24 +380,25 @@ class TExportComptaCiel extends TExportCompta {
 			}
 
 			// Lignes TVA
-			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
-					$ligneFichier = array(
-						'numero_compte'					=> $code_compta,
-						'code_journal'					=> $codeJournal,
-						'date_ecriture'					=> $facture['date'],
-						'libelle_libre'					=> $label,
-						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
-						'montant'						=> abs($montant),
-						'date_echeance'					=> $facture['date_lim_reglement'],
-						'numero_piece'					=> $facture['facnumber'],
-						'num_unique'					=> $numEcriture,
+			if(!empty($infosFacture['ligne_tva'])) {
+				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+						$ligneFichier = array(
+							'numero_compte'					=> $code_compta,
+							'code_journal'					=> $codeJournal,
+							'date_ecriture'					=> $facture['date'],
+							'libelle_libre'					=> $label,
+							'sens'							=> ($montant > 0 ? 'C' : 'D'),
+							'montant'						=> abs($montant),
+							'date_echeance'					=> $facture['date_echeance'],
+							'numero_piece'					=> $facture['ref'],
+							'num_unique'					=> $numEcriture,
+						
+						);
 					
-					);
-				
-				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
-				$numLignes++;
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+					$numLignes++;
+				}
 			}
 			$numEcriture++;
 		}
