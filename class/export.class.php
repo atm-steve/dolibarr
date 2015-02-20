@@ -33,6 +33,7 @@ class TExportCompta extends TObjetStd {
 		$this->TLogiciel = array(
 			'quadratus' => 'Quadratus'
 			,'sage' => 'Sage'
+			,'sage30' => 'Sage 30'
 			,'ciel' => 'Ciel'
 			,'opensi' => 'Open SI'
 		);
@@ -188,6 +189,11 @@ class TExportCompta extends TObjetStd {
 						$produit->fetch_optionals($ligne->fk_product);
 						if($facture->thirdparty->country_code == 'FR') {
 							// Client en france, code compta standard du produit ok
+							
+							// Cas de la société française exonérée
+							if($facture->thirdparty->tva_assuj == 0) {
+								$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD];
+							}
 						}
 						else if($facture->thirdparty->isInEEC()) { // Vente CEE
 							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD];

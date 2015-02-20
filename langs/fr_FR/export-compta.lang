@@ -36,6 +36,7 @@ BaseDateForNDF=Date utilisée comme borne pour les notes de frais
 FactureClientFilter=Filtre sur les références de factures client
 ProductCEEField=Champ complémentaire contenant le code comptable de vente CEE
 ProductExportField=Champ complémentaire contenant le code comptable de vente Export
+ProductFRSuspField=Champ complémentaire contenant le code comptable de vente France Suspension TVA
 exportAllreadyExported=Exporter les écritures déjà marquées exportées
 FileExtension=Extension des fichiers générés
 DataSeparator=Séparateur de données (laisser vide pour un fichier à largeur fixe)
