@@ -16,7 +16,7 @@ dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
 $className = 'TExportCompta'.ucfirst($logiciel_export);
 $exp=new $className($db);
 
-if(isset($_POST['submitBtn'])) {
+if(isset($_POST['submitBtn']) || isset($_POST['showMe'])) {
 	$action = GETPOST('action');
 	$type_export = GETPOST('type_export');
 	$exp->set_date('dt_deb',$_REQUEST['dt_deb']);
@@ -32,7 +32,9 @@ if(!empty($action) && $action == 'export') {
 	if(!empty($logiciel_export)) {
 		
 		try{
-			$export=new $className($db, (int)GETPOST('exportAllreadyExported') );
+		    $addExportTimeToBill = isset($_REQUEST['showMe']) ? 0 : (int)GETPOST('addExportTimeToBill');
+            
+			$export=new $className($db, (int)GETPOST('exportAllreadyExported'), $addExportTimeToBill );
 		}
 		catch(Exception $e) {
 			$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportLogiciel'). ' : ' . $logiciel_export;
@@ -84,7 +86,18 @@ if(!empty($action) && $action == 'export') {
 /*echo '<font style="font-family: Courier;">';
 print nl2br($fileContent);
 exit();*/
-	if($fileContent != '') {
+    if(isset($_REQUEST['showMe'])) {
+        
+        $Tab = explode("\n", $fileContent);
+        
+        print '<pre>';
+        print $fileContent;
+        print '</pre>';
+        
+        exit;
+        
+    }
+    else if($fileContent != '') {
 		$size = strlen($fileContent);
 		
 		header("Content-Type: application/force-download; name=\"$fileName\"");
@@ -132,7 +145,9 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 				<?php echo $form->calendrier('', 'dt_deb', $exp->get_date('dt_deb'), 12) ?>
 			</td>
 			<td>
-				<input type="checkbox" name="exportAllreadyExported" value="1" /> <?php echo $langs->trans('exportAllreadyExported') ?>
+                <input type="checkbox" name="exportAllreadyExported" value="1" /> <?php echo $langs->trans('exportAllreadyExported') ?>
+                <br /> <input type="checkbox" name="addExportTimeToBill" value="1" checked="checked" /> <?php echo $langs->trans('addExportTimeToBill') ?>
+				
 			</td>
 		</tr>	
 		<tr class="impair">
@@ -146,6 +161,7 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 			</td>
 			<td>
 				<input type="submit" class="button" name="submitBtn" value="<?php echo $langs->trans('DoExport') ?>" />
+				<input type="submit" class="button" name="showMe" value="<?php echo $langs->trans('Show') ?>" />
 			</td>
 
 		</tr>

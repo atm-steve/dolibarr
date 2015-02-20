@@ -20,7 +20,7 @@ dol_include_once('/compta/sociales/class/chargesociales.class.php');
 
 class TExportCompta extends TObjetStd {
 	
-	function __construct(&$db, $exportAllreadyExported = false) {
+	function __construct(&$db, $exportAllreadyExported = false, $addExportTime = false) {
 		global $conf;
 		
 		$this->db = $db;
@@ -29,7 +29,8 @@ class TExportCompta extends TObjetStd {
 		$this->dt_fin = strtotime('last day of last month');
 		
 		$this->exportAllreadyExported = $exportAllreadyExported;
-		
+		$this->addExportTime=$addExportTime;
+        
 		$this->TLogiciel = array(
 			'quadratus' => 'Quadratus'
 			,'sage' => 'Sage'
@@ -150,9 +151,11 @@ class TExportCompta extends TObjetStd {
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']);
 			
-			$facture->array_options['options_date_compta'] = time(); 
-			
-			$facture->insertExtraFields();
+            if($this->addExportTime) {
+                $facture->array_options['options_date_compta'] = time(); 
+                $facture->insertExtraFields();
+                
+            }
 			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
@@ -267,11 +270,12 @@ class TExportCompta extends TObjetStd {
 		while($obj = $db->fetch_object($resql)) {
 			$facture = new FactureFournisseur($db);
 			$facture->fetch($obj->rowid);
-			
-			$facture->array_options['options_date_compta'] = time(); 
-			
-			$facture->insertExtraFields();
-			
+
+            if($this->addExportTime) {			
+			     $facture->array_options['options_date_compta'] = time(); 
+			     $facture->insertExtraFields();
+            }
+            
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
 			

@@ -38,5 +38,6 @@ ProductCEEField=Champ complémentaire contenant le code comptable de vente CEE
 ProductExportField=Champ complémentaire contenant le code comptable de vente Export
 ProductFRSuspField=Champ complémentaire contenant le code comptable de vente France Suspension TVA
 exportAllreadyExported=Exporter les écritures déjà marquées exportées
+addExportTimeToBill=Ajouter la date d'export sur les écritures de factures vente et achat
 FileExtension=Extension des fichiers générés
 DataSeparator=Séparateur de données (laisser vide pour un fichier à largeur fixe)
