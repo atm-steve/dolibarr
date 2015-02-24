@@ -5,14 +5,14 @@ require('config.php');
 if (!$user->rights->exportcompta->generate) accessforbidden();
 
 $langs->load('main');
-$langs->load('export-compta@export-compta');
+$langs->load('exportcompta@exportcompta');
 $langs->load('bills');
 
 $error = '';
 
 $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
 
-dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
+dol_include_once('/exportcompta/class/export_'.$logiciel_export.'.class.php');
 $className = 'TExportCompta'.ucfirst($logiciel_export);
 $exp=new $className($db);
 

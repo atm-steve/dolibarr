@@ -3,7 +3,7 @@
  * Format d'export comptable Quadratus
  *************************************************************************************************************************************************/
 
-dol_include_once("/export-compta/class/export.class.php");
+dol_include_once("/exportcompta/class/export.class.php");
 
 class TExportComptaSage30 extends TExportCompta {
 	function __construct(&$db, $exportAllreadyExported=false) {

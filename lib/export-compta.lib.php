@@ -7,12 +7,12 @@ function exportcompta_admin_prepare_head()
 	$h = 0;
 	$head = array();
 	
-	$head[$h][0] = dol_buildpath('/export-compta/admin/admin.php', 1);
+	$head[$h][0] = dol_buildpath('/exportcompta/admin/admin.php', 1);
 	$head[$h][1] = $langs->trans("Admin");
 	$head[$h][2] = 'config';
 	$h++;
 	
-	$head[$h][0] = dol_buildpath('/export-compta/admin/format.php', 1);
+	$head[$h][0] = dol_buildpath('/exportcompta/admin/format.php', 1);
 	$head[$h][1] = $langs->trans("Formats");
 	$head[$h][2] = 'format';
 	$h++;

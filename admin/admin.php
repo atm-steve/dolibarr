@@ -17,9 +17,9 @@
  */
 
 require('../config.php');
-dol_include_once('/export-compta/class/export.class.php');
+dol_include_once('/exportcompta/class/export.class.php');
 dol_include_once('/core/lib/admin.lib.php');
-dol_include_once('/export-compta/lib/export-compta.lib.php');
+dol_include_once('/exportcompta/lib/exportcompta.lib.php');
 
 if (! $user->admin) accessforbidden();
 

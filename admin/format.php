@@ -17,15 +17,15 @@
  */
 
 require('../config.php');
-dol_include_once('/export-compta/class/export.class.php');
+dol_include_once('/exportcompta/class/export.class.php');
 dol_include_once('/core/lib/admin.lib.php');
-dol_include_once('/export-compta/lib/export-compta.lib.php');
+dol_include_once('/exportcompta/lib/exportcompta.lib.php');
 
 if (! $user->admin) accessforbidden();
 
 $langs->load("admin");
 $langs->load("errors");
-$langs->load('export-compta@export-compta');
+$langs->load('exportcompta@exportcompta');
 
 $exp = new TExportCompta($db);
 
@@ -51,7 +51,7 @@ if(empty($format)) {
 	$format = array();
 
 	if(!empty($logiciel_export)) {
-		dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
+		dol_include_once('/exportcompta/class/export_'.$logiciel_export.'.class.php');
 		
 		$className = 'TExportCompta'.ucfirst($logiciel_export);
 		$o=new $className($db);

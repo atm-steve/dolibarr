@@ -72,8 +72,27 @@ class modExportCompta extends DolibarrModules
 		$this->picto='generic';
 
 		// Defined if the directory /mymodule/includes/triggers/ contains triggers or not
-		$this->triggers = 0;
-
+	
+        $this->module_parts = array(
+                    // Set this to 1 if module has its own trigger directory
+                    'triggers' => 1,
+                    // Set this to 1 if module has its own login method directory
+                    //'login' => 0,
+                    // Set this to 1 if module has its own substitution function file
+                    //'substitutions' => 0,
+                    // Set this to 1 if module has its own menus handler directory
+                    //'menus' => 0,
+                    // Set this to 1 if module has its own barcode directory
+                    //'barcode' => 0,
+                    // Set this to 1 if module has its own models directory
+                    //'models' => 0,
+                    // Set this to relative path of css if module has its own css file
+                    //'css' => '/scrumboard/css/mycss.css.php',
+                    // Set here all hooks context managed by module
+                    //'hooks' => array('hookcontext1','hookcontext2')
+                    // Set here all workflow context managed by module
+                    //'workflow' => array('order' => array('WORKFLOW_ORDER_AUTOCREATE_INVOICE'))
+        );
 		// Data directories to create when module is enabled.
 		// Example: this->dirs = array("/mymodule/temp");
 		$this->dirs = array();
@@ -83,14 +102,14 @@ class modExportCompta extends DolibarrModules
 //		$this->style_sheet = '/css/style.css';
 
 		// Config pages. Put here list of php page names stored in admmin directory used to setup module.
-		$this->config_page_url = 'admin.php@export-compta';
+		$this->config_page_url = 'admin.php@exportcompta';
 
 		// Dependencies
 		$this->depends = array();		// List of modules id that must be enabled if this module is enabled
 		$this->requiredby = array();	// List of modules id to disable if this one is disabled
 		$this->phpmin = array(5,0);					// Minimum version of PHP required by module
 		$this->need_dolibarr_version = array(3,0);	// Minimum version of Dolibarr required by module
-		$this->langfiles = array("export-compta@export-compta");
+		$this->langfiles = array("exportcompta@exportcompta");
 
 		// Constants
 		// List of particular constants to add when module is enabled (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive)
@@ -176,8 +195,8 @@ class modExportCompta extends DolibarrModules
 			'titre'=>'Exports comptables',
 			'mainmenu'=>'accountancy',
 			'leftmenu'=>'export',
-			'url'=>'/export-compta/export.php',
-			'langs'=>'export-compta@export-compta',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'url'=>'/exportcompta/export.php',
+			'langs'=>'exportcompta@exportcompta',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>100,
 			'enabled'=>'$conf->exportcompta->enabled && $user->rights->exportcompta->generate',			// Define condition to show or hide menu entry. Use '$conf->monmodule->enabled' if entry must be visible if module is enabled.
 			'perms'=>'1',			// Use 'perms'=>'$user->rights->monmodule->level1->level2' if you want your menu with a permission rules
@@ -250,7 +269,7 @@ class modExportCompta extends DolibarrModules
 	 */
 	function load_tables()
 	{
-		return $this->_load_tables( '/export-compta/sql/');
+		return $this->_load_tables( '/exportcompta/sql/');
 	}
 
 
