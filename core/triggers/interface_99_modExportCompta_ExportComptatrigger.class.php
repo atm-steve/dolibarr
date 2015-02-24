@@ -113,23 +113,26 @@ class InterfaceExportComptatrigger
      */
     public function run_trigger($action, $object, $user, $langs, $conf)
     {
-        // Put here code you want to execute when a Dolibarr business events occurs.
+        // Put here code you want to execute when a Dolsibarr business events occurs.
         // Data and type of action are stored into $object and $action
         // Users
-     // exit('la'.$action);  
-      /*  if ($action == 'BILL_MODIFY' || $action == 'BILL_VALIDATE' || $action == 'BILL_BUILDDOC' 
-        || $action == 'BILL_CANCEL' || $action == 'BILL_DELETE' || $action == 'LINEBILL_INSERT' || $action == 'LINEBILL_DELETE') {
+  
+        if (($action == 'BILL_MODIFY' || $action == 'BILL_UNPAYED' || $action == 'BILL_BUILDDOC')
+        && ( !empty($object->array_options['options_date_compta']) ) ){
+                
+            $langs->load('exportcompta@exportcompta') ;
+                
+            $this->error=$langs->trans('BillAlreadyExported');     
+            
+            setEventMessage($this->error, 'errors')  ;   
                     
-            $this->error=$langs->trans('BillAlreadyExported');        
-                    
-            return 1;   
+            return -1;   
             
             dol_syslog(
                 "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
             );
         }
 
-*/
-     //   return 0;
+        return 0;
     }
 }
