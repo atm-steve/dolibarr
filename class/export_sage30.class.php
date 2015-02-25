@@ -23,7 +23,7 @@ class TExportComptaSage30 extends TExportCompta {
 			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
 			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
 			array('name' => 'mode_rglt',			'length' => 2,	'default' => '10',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
-			array('name' => 'date_echeance',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
+			array('name' => 'date_echeance',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy',	'pad_type' => STR_PAD_RIGHT),
 			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
 			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
 			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),

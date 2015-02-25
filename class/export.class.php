@@ -193,6 +193,12 @@ class TExportCompta extends TObjetStd {
 						if($facture->thirdparty->country_code == 'FR') {
 							// Client en france, code compta standard du produit ok
 							
+							// Cas des DOM-TOM
+							if($facture->thirdparty->country_code == 'FR'
+								&& substr($facture->thirdparty->state_code, 0, 2) == '97') {
+								$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD];
+							}
+							
 							// Cas de la société française exonérée
 							if($facture->thirdparty->tva_assuj == 0) {
 								$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD];

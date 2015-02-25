@@ -37,6 +37,7 @@ FactureClientFilter=Filtre sur les références de factures client
 ProductCEEField=Champ complémentaire contenant le code comptable de vente CEE
 ProductExportField=Champ complémentaire contenant le code comptable de vente Export
 ProductFRSuspField=Champ complémentaire contenant le code comptable de vente France Suspension TVA
+ProductFRDomTomField=Champ complémentaire contenant le code comptable de vente France Dom / Tom
 exportAllreadyExported=Exporter les écritures déjà marquées exportées
 addExportTimeToBill=Ajouter la date d'export sur les écritures de factures vente et achat
 FileExtension=Extension des fichiers générés
