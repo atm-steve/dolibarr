@@ -50,8 +50,8 @@ class TExportComptaSage30 extends TExportCompta {
 
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
-		$contenuFichier = '#VER 5';
-		$separateurLigne = "\r\n#MECG\r\n";
+		$contenuFichier = '#VER 5\r\n';
+		$separateurLigne = "#MECG\r\n";
 		
 		$contenuFichier .= $separateurLigne;
 
