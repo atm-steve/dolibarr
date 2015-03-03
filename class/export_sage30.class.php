@@ -43,6 +43,13 @@ class TExportComptaSage30 extends TExportCompta {
 		
 		$this->fieldSeparator="\r\n";
 		
+        $this->TModeRglt = array(
+            'LCR' => 1,
+            'B03000' => 2,
+            'CHQ' => 3,
+            'LCRD' => 6,
+            'VIR' => 10
+        );
 	}
 	
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
@@ -81,7 +88,7 @@ class TExportComptaSage30 extends TExportCompta {
 					'numero_compte_tiers'			=> $code_compta,
 	
 					'libelle'						=> $label,
-					'mode_rglt'						=> $facture['mode_reglement'],
+					'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'sens'							=> ($facture['type'] == 2 ? '0' : '1'),
 					'montant'						=> abs($montant),
@@ -101,7 +108,7 @@ class TExportComptaSage30 extends TExportCompta {
 					'numero_compte_general'			=> $code_compta,
 					
 					'libelle'						=> $tiers['nom'],
-					'mode_rglt'						=> $facture['mode_reglement'],
+					'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'sens'							=> ($facture['type'] == 2 ? '1' : '0'),
 					'montant'						=> abs($montant),
@@ -126,7 +133,7 @@ class TExportComptaSage30 extends TExportCompta {
 						'numero_compte_general'			=> $code_compta,
 						
 						'libelle'						=> $tiers['nom'],
-						'mode_rglt'						=> $facture['mode_reglement'],
+						'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'sens'							=> ($facture['type'] == 2 ? '1' : '0'),
 						'montant'						=> abs($montant),
