@@ -68,6 +68,8 @@ class TExportComptaSage30 extends TExportCompta {
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
+            $label = ($facture['type'] == 2 ? 'Avoir' : 'Facture');
+            $label.= ' '.$facture['ref'].' C '.$tiers['code_client'];
             $facture['ref'] = substr($facture['ref'],0,2).substr($facture['ref'],-4);
 
 			if(!empty($infosFacture['entity'])) {
@@ -79,8 +81,6 @@ class TExportComptaSage30 extends TExportCompta {
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
-				$label = ($facture['type'] == 2 ? 'Avoir' : 'Facture');
-				$label.= ' '.$facture['ref'].' C '.$tiers['code_client'];
 				
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
