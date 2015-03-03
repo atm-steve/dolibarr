@@ -30,7 +30,7 @@ class TExportCompta extends TObjetStd {
 		
 		$this->exportAllreadyExported = $exportAllreadyExported;
 		$this->addExportTime=$addExportTime;
-        
+		
 		$this->TLogiciel = array(
 			'quadratus' => 'Quadratus'
 			,'sage' => 'Sage'
@@ -151,11 +151,11 @@ class TExportCompta extends TObjetStd {
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']);
 			
-            if($this->addExportTime) {
-                $facture->array_options['options_date_compta'] = time(); 
-                $facture->insertExtraFields();
-                
-            }
+			if($this->addExportTime) {
+				$facture->array_options['options_date_compta'] = time(); 
+				$facture->insertExtraFields();
+				
+			}
 			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
@@ -187,34 +187,36 @@ class TExportCompta extends TObjetStd {
 				if(!empty($ligne->fk_product)) {
 					$produit = new Product($db);
 					$produit->fetch($ligne->fk_product);
-					$codeComptableProduit = $produit->accountancy_code_sell;
-					if(!empty($conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD)) {
-						$produit->fetch_optionals($ligne->fk_product);
-						if($facture->thirdparty->country_code == 'FR') {
-							// Client en france, code compta standard du produit ok
-							
-							// Cas des DOM-TOM
-							if($facture->thirdparty->country_code == 'PM'
-								|| $facture->thirdparty->country_code == 'BL'
-								|| $facture->thirdparty->country_code == 'SM'
-								|| $facture->thirdparty->country_code == 'WF'
-								|| $facture->thirdparty->country_code == 'PF'
-								|| $facture->thirdparty->country_code == 'NC'
-								|| ($facture->thirdparty->country_code == 'FR'	&& substr($facture->thirdparty->state_code, 0, 2) == '97'))
-							{
-								$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD];
-							}
-							
-							// Cas de la société française exonérée
-							if($facture->thirdparty->tva_assuj == 0) {
-								$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD];
-							}
+					$produit->fetch_optionals($ligne->fk_product);
+					
+					// Cas des DOM-TOM
+					if($facture->thirdparty->country_code == 'PM'
+							|| $facture->thirdparty->country_code == 'BL'
+							|| $facture->thirdparty->country_code == 'SM'
+							|| $facture->thirdparty->country_code == 'WF'
+							|| $facture->thirdparty->country_code == 'PF'
+							|| $facture->thirdparty->country_code == 'NC'
+							|| ($facture->thirdparty->country_code == 'FR' && substr($facture->thirdparty->state_code, 0, 2) == '97'))
+					{
+						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD];
+					}
+					// Cas de la France
+					else if($facture->thirdparty->country_code == 'FR') {
+						// Client en france, code compta standard du produit ok
+						$codeComptableProduit = $produit->accountancy_code_sell;
+						
+						// Cas de la société française exonérée
+						if($facture->thirdparty->tva_assuj == 0) {
+							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD];
 						}
-						else if($facture->thirdparty->isInEEC()) { // Vente CEE
-							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD];
-						} else { // Vente Export
-							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD];
-						}
+					}
+					// Cas de la vente CEE
+					else if($facture->thirdparty->isInEEC()) { 
+						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD];
+					}
+					// Cas de la vente Export
+					else {
+						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD];
 					}
 				}
 				
@@ -283,11 +285,11 @@ class TExportCompta extends TObjetStd {
 			$facture = new FactureFournisseur($db);
 			$facture->fetch($obj->rowid);
 
-            if($this->addExportTime) {			
-			     $facture->array_options['options_date_compta'] = time(); 
-			     $facture->insertExtraFields();
-            }
-            
+			if($this->addExportTime) {			
+				 $facture->array_options['options_date_compta'] = time(); 
+				 $facture->insertExtraFields();
+			}
+			
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
 			
