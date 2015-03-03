@@ -68,6 +68,7 @@ class TExportComptaSage30 extends TExportCompta {
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
+            $facture['ref'] = substr($facture['ref'],0,2).substr($facture['ref'],-4);
 
 			if(!empty($infosFacture['entity'])) {
 				$entity = $infosFacture['entity'];
