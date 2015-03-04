@@ -355,6 +355,104 @@ class modCategorie extends DolibarrModules
 		$this->export_sql_end[$r] .= ' WHERE u.rowid = cp.fk_categorie AND cp.fk_socpeople = p.rowid AND u.entity IN ('.getEntity('category').')';
 		$this->export_sql_end[$r] .= ' AND u.type = 4'; // contact categories
 
+		$r++;
+		$this->export_code[$r]='category_'.$r;
+		$this->export_label[$r]='Liste des catégories contacts et contacts at societé (même sans categories)';
+		$this->export_icon[$r]='category';
+		$this->export_enabled[$r]='$conf->societe->enabled';
+		$this->export_permission[$r]=array(array("categorie", "lire"), array ("societe", "lire"));
+		$this->export_fields_array[$r]=array (
+				'u.rowid' => "CategId",
+				'u.label' => "Label",
+				'u.description' => "Description",
+				'p.rowid' => 'ContactId',
+				'p.civilite' => 'Civitity',
+				'p.lastname' => 'LastName',
+				'p.firstname' => 'Firstname',
+				'p.address' => 'Address',
+				'p.zip' => 'Zip',
+				'p.town' => 'Town',
+				'country.code' => 'CountryCode',
+				'country.libelle' => 'Country',
+				'p.birthday' => 'DateToBirth',
+				'p.poste' => 'PostOrFunction',
+				'p.phone' => 'Phone',
+				'p.phone_perso' => 'PhonePerso',
+				'p.phone_mobile' => 'PhoneMobile',
+				'p.fax' => 'Fax',
+				'p.email' => 'Email',
+				'p.note_private' => 'NotePrivate',
+				'p.note_public' => 'NotePublic',
+				's.nom'=>"Name",
+				's.client'=>"Customer",
+				's.fournisseur'=>"Supplier",
+				's.status'=>"Status",
+				's.address'=>"Address",
+				's.zip'=>"Zip",
+				's.town'=>"Town",
+				's.phone'=>"Phone",
+				's.fax'=>"Fax",
+				's.url'=>"Url",
+				's.email'=>"Email"
+		);
+		$this->export_TypeFields_array[$r] = array (
+				'u.label' => "Text",
+				'u.description' => "Text",
+				'p.rowid' => 'List:contact:lastname',
+				'p.lastname' => 'Text',
+				'p.firstname' => 'Text',
+				's.nom'=>"Text",
+				's.status'=>"Text",
+				's.address'=>"Text",
+				's.zip'=>"Text",
+				's.town'=>"Text",
+				's.phone'=>"Text",
+				's.fax'=>"Text",
+				's.url'=>"Text",
+				's.email'=>"Text"
+		);
+		$this->export_entities_array[$r] = array (
+				'u.rowid' => "category",
+				'u.label' => "category",
+				'u.description' => "category",
+				'p.rowid' => 'contact',
+				'p.civilite' => 'contact',
+				'p.lastname' => 'contact',
+				'p.firstname' => 'contact',
+				'p.address' => 'contact',
+				'p.zip' => 'contact',
+				'p.town' => 'contact',
+				'country.code' => 'contact',
+				'country.libelle' => 'contact',
+				'p.birthday' => 'contact',
+				'p.poste' => 'contact',
+				'p.phone' => 'contact',
+				'p.phone_perso' => 'contact',
+				'p.phone_mobile' => 'contact',
+				'p.fax' => 'contact',
+				'p.email' => 'contact',
+				'p.note_private' => 'contact',
+				'p.note_public' => 'contact',
+				's.nom'=>"company",
+				's.client'=>"company",
+				's.fournisseur'=>"company",
+				's.status'=>"company",
+				's.address'=>"company",
+				's.zip'=>"company",
+				's.town'=>"company",
+				's.phone'=>"company",
+				's.fax'=>"company",
+				's.url'=>"company",
+				's.email'=>"company"
+		); // We define here only fields that use another picto
+		$this->export_sql_start[$r] = 'SELECT DISTINCT ';
+		$this->export_sql_end[$r]  = ' FROM '.MAIN_DB_PREFIX . 'socpeople as p';
+		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'c_pays as country ON p.fk_pays = country.rowid';
+		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'societe as s ON s.rowid = p.fk_soc';
+		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'categorie_contact as cp ON cp.fk_socpeople = p.rowid';
+		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'categorie as u ON u.rowid = cp.fk_categorie';
+		$this->export_sql_end[$r] .= ' AND u.type = 4'; // contact categories
+		
 		// Imports
 		//--------
 
