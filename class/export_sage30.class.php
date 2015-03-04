@@ -151,7 +151,7 @@ class TExportComptaSage30 extends TExportCompta {
 			$numEcriture++;
 		}
 
-		return $contenuFichier . "\r\n#FIN";
+		return $contenuFichier . "#FIN";
 	}
 
 	/*********************************************************
