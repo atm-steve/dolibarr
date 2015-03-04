@@ -57,10 +57,8 @@ class TExportComptaSage30 extends TExportCompta {
 
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
-		$contenuFichier = '#VER 5\r\n';
+		$contenuFichier = "#VER 5\r\n";
 		$separateurLigne = "#MECG\r\n";
-		
-		$contenuFichier .= $separateurLigne;
 
 		$numEcriture = 1;
 		$numLignes = 1;
@@ -92,13 +90,13 @@ class TExportComptaSage30 extends TExportCompta {
 					'libelle'						=> $label,
 					'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'sens'							=> ($facture['type'] == 2 ? '0' : '1'),
+					'sens'							=> ($facture['type'] == 2 ? '1' : '0'),
 					'montant'						=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= $separateurLigne . parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -113,13 +111,13 @@ class TExportComptaSage30 extends TExportCompta {
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'sens'							=> ($facture['type'] == 2 ? '1' : '0'),
+					'sens'							=> ($facture['type'] == 2 ? '0' : '1'),
 					'montant'						=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= $separateurLigne . parent::get_line($format, $ligneFichier);
 				
 				// Ecriture analytique
 				//$ligneFichier['type_ecriture'] = 'A';
@@ -139,13 +137,13 @@ class TExportComptaSage30 extends TExportCompta {
 						'libelle'						=> $tiers['nom'],
 						'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 						'date_echeance'					=> $facture['date_lim_reglement'],
-						'sens'							=> ($facture['type'] == 2 ? '1' : '0'),
+						'sens'							=> ($facture['type'] == 2 ? '0' : '1'),
 						'montant'						=> abs($montant),
 						'type_ecriture'					=> 'G'
 					);
 					
 					// Ecriture générale
-					$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+					$contenuFichier .= $separateurLigne . parent::get_line($format, $ligneFichier);
 					$numLignes++;
 				}
 			}
@@ -153,7 +151,7 @@ class TExportComptaSage30 extends TExportCompta {
 			$numEcriture++;
 		}
 
-		return $contenuFichier;
+		return $contenuFichier . "\r\n#FIN";
 	}
 
 	/*********************************************************
