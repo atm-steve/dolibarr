@@ -77,6 +77,7 @@ class TExportComptaSage30 extends TExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
+					'code_client'					=> $tiers['code_client'],
 					'numero_compte_general'			=> "41100000",
 					'numero_compte_tiers'			=> $code_compta,
 	
@@ -98,6 +99,7 @@ class TExportComptaSage30 extends TExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
+					'code_client'					=> $tiers['code_client'],
 					'numero_compte_general'			=> $code_compta,
 					
 					'libelle'						=> $tiers['nom'],
@@ -123,6 +125,7 @@ class TExportComptaSage30 extends TExportCompta {
 					$ligneFichier = array(
 						'date_piece'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
+						'code_client'					=> $tiers['code_client'],
 						'numero_compte_general'			=> $code_compta,
 						
 						'libelle'						=> $tiers['nom'],
