@@ -756,7 +756,7 @@ class TExportCompta extends TObjetStd {
 		return $TBank;
 	}
 	
-	function get_line(&$format, $dataline) {		
+	function get_line(&$format, $dataline) {
 		$ligneFichierTxtFixe = '';
 		
 		foreach($format as $fmt) {
@@ -770,6 +770,7 @@ class TExportCompta extends TObjetStd {
 			} else if($fmt['type_value'] == 'dur') {
 				$valeur = $fmt['value'];
 			}
+			
 			// Gestion du format de la valeur
 			if($valeur == '') $valeur = $fmt['default'];
 			if($fmt['type'] == 'date' && !empty($valeur) && !empty($fmt['format'])) $valeur = date($fmt['format'], $valeur);
@@ -789,10 +790,14 @@ class TExportCompta extends TObjetStd {
 					$valeur = substr($valeur, -1 * $fmt['length'], $fmt['length']);
 				}
 			}
+			
 			$ligneFichierTxtFixe .= $valeur;
 			
-			if(!empty($this->fieldSeparator))$ligneFichierTxtFixe.=$this->fieldSeparator;
+			if(!empty($this->fieldSeparator)) $ligneFichierTxtFixe .= $this->fieldSeparator;
 		}
+		
+		if(!empty($this->lineSeparator)) $ligneFichierTxtFixe .= $this->lineSeparator;
+		
 		return $ligneFichierTxtFixe;
 	}
 	
