@@ -14,6 +14,7 @@ class TExportComptaEtag extends TExportCompta {
 			array('name' => 'code_journal',			'length' => 5,	'default' => 'VE',	'type' => 'text'),
 			array('name' => 'numero_piece',			'length' => 20,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_compte',		'length' => 20,	'default' => '0',	'type' => 'text'),
+			array('name' => 'libelle_fixe',			'length' => 20,	'default' => '0',	'type' => 'text'),
 			array('name' => 'libelle',				'length' => 50,	'default' => '',	'type' => 'text'),
 			array('name' => 'montant_debit',		'length' => 12,	'default' => '0',	'type' => 'text',),
 			array('name' => 'montant_credit',		'length' => 12,	'default' => '0',	'type' => 'text',),
