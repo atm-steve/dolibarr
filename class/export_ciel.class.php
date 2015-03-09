@@ -431,7 +431,7 @@ class TExportComptaCiel extends TExportCompta {
 				'numero_piece'					=> $reglement['num_fact'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
-				'montant'						=> $reglement['amount'] ,
+				'montant'						=> strtr(price($reglement['amount']), ',', '.'),
 				'num_unique'=>$numEcriture,
 				'sens'=>'D',
 				
@@ -446,12 +446,12 @@ class TExportComptaCiel extends TExportCompta {
 				'numero_piece'					=> $reglement['num_fact'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
-				'montant'						=> $reglement['amount'],
+				'montant'						=> strtr(price($reglement['amount']), ',', '.'),
 				'num_unique'=>$numEcriture,
 				'sens'=>'C',
 				
 			);
-			
+
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 			$numLignes++;
 			
