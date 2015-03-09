@@ -208,6 +208,9 @@ if ($action == 'denydispatchline' && ! ((empty($conf->global->MAIN_USE_ADVANCED_
 	if (! $error)
 	{
 		$db->commit();
+
+		header("Location: dispatch.php?id=".$id);
+		exit;
 	}
 	else
 	{
@@ -687,6 +690,8 @@ if ($id > 0 || ! empty($ref)) {
 
 						print "</tr>\n";
 					}
+
+                        $products_dispatched[$objp->fk_product]-=$objp->qty;
 				}
 				$i++;
 			}
