@@ -219,6 +219,9 @@ class TExportCompta extends TObjetStd {
 					else {
 						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD];
 					}
+					
+					// Sécurité au cas où non utilisation des comptes différents domtom, cee, export.
+					if(empty($codeComptableProduit)) $codeComptableProduit = $produit->accountancy_code_sell;
 				}
 				
 				if(empty($codeComptableProduit)) {
