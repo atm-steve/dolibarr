@@ -132,6 +132,11 @@ class InterfaceExportComptatrigger
                 "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
             );
         }
+		
+		elseif ($action == 'BILL_CREATE' || $action == 'BILL_SUPPLIER_CREATE') {
+			$object->array_options['options_date_compta'] = '';
+			$object->insertExtraFields();
+		}
 
         return 0;
     }
