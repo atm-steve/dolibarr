@@ -6,9 +6,9 @@
 dol_include_once("/exportcompta/class/export.class.php");
 
 class TExportComptaSage extends TExportCompta {
-	function __construct(&$db, $exportAllreadyExported=false) {
+	function __construct(&$db, $exportAllreadyExported=false, $addExportTime=false) {
 		
-		parent::__construct($db, $exportAllreadyExported);
+		parent::__construct($db, $exportAllreadyExported, $addExportTime);
 		
 	}
 	
