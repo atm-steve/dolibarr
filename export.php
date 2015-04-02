@@ -50,7 +50,8 @@ if(!empty($action) && $action == 'export') {
 		
 		if(isset($export) && is_object($export)) {
 			$formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
-			$format = (!empty($conf->global->{$formatvar})) ? unserialize($conf->global->{$formatvar}) : '';
+			$formatvardefault = '_format_'.$type_export;
+			$format = (!empty($conf->global->{$formatvar})) ? unserialize($conf->global->{$formatvar}) : $export->{$formatvardefault};
 
 			switch ($type_export) {
 				case 'ecritures_comptables_vente':

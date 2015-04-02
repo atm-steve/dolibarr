@@ -41,6 +41,116 @@ class TExportComptaSage30 extends TExportCompta {
 			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
 		);
 		
+		$this->_format_tiers=array(
+	
+			array('name' => 'numero_compte',		'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle',				'length' => 60,	'default' => '',	'type' => 'text'),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => 'numero_compte_general','length' => 10,	'default' => '',	'type' => 'text'),
+			
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			
+			array('name' => 'adresse1',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'adresse2',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'zip',					'length' => 25,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => 'ville',				'length' => 50,	'default' => '',	'type' => 'text'),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => 'pays',					'length' => 50,	'default' => '',	'type' => 'text'),
+			
+			array('name' => 'phone',				'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'fax',					'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'email',				'length' => 128,'default' => '',	'type' => 'text'),
+			
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			
+			array('name' => 'numero_compte',		'length' => 10,	'default' => '',	'type' => 'text'),
+			
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			
+			//DATE
+			array('name' => 'tms',					'length' => 6,	'default' => '0',	'type' => 'date',	'format' => 'dmy',	'pad_type' => STR_PAD_RIGHT),
+			
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			
+			array('name' => 'numero_compte_general','length' => 10,	'default' => '',	'type' => 'text'),
+			
+			// SECTION SPECIFIQUE
+			array('name' => 'sep',					'length' => 5,	'default' => '#MRLT',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => 'mode_rglt',			'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '0',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '1',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			
+		);
+		
 		$this->fieldSeparator="\r\n";
 		
         $this->TModeRglt = array(
@@ -149,6 +259,47 @@ class TExportComptaSage30 extends TExportCompta {
 			}
 			
 			$numEcriture++;
+		}
+
+		return $contenuFichier . "#FIN";
+	}
+
+	function get_file_tiers($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabTiers = parent::get_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = "#VER 5\r\n";
+		$separateurLigne = "#MPCT\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach($TabTiers as $code_compta=>$tiers) {
+			
+			$ligneFichier=array(
+				'numero_compte'=>$code_compta,
+				'numero_compte_general'			=> "41100000",
+				'libelle'=>$tiers['nom'],
+				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
+				'adresse1'=>$tiers['address'],
+				'zip'=>$tiers['zip'],
+				'ville'=>$tiers['town'],
+				'telephone'=>$tiers['phone'],
+				'domiciliation'=>$tiers['domiciliation'],
+				'rib'=>$tiers['code_banque'].$tiers['code_quichet'].$tiers['code_banque'].$tiers['compte_bancaire'].$tiers['cle_rib'],
+				'phone'=>$tiers['phone'],
+				'fax'=>$tiers['fax'],
+				'email'=>$tiers['email'],
+				'siret'=>$tiers['siret'],
+				'pays'=>$tiers['pays'],
+				'iban'=>$tiers['iban'],
+				'bic'=>$tiers['bic'],
+				'mode_rglt'	=> $this->TModeRglt[$tiers['mode_reglement_code']],
+				'tms'=>strtotime($tiers['tms']),
+			);
+			
+			$contenuFichier .= $separateurLigne . parent::get_line($format, $ligneFichier);
 		}
 
 		return $contenuFichier . "#FIN";
