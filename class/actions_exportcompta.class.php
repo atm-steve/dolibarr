@@ -63,7 +63,8 @@ class ActionsExportCompta
 	    
         if (in_array('invoicecard', explode(':', $parameters['context'])))
         {
-          
+          global $conf;
+		  if(!empty($conf->global->EXPORT_COMPTA_HIDE_GENERATE_FACTURE)) {
           ?>
           <script language="javascript">
             $(document).ready(function() {
@@ -72,6 +73,7 @@ class ActionsExportCompta
             }  );
           </script>
           <?php
+          }
           
             return 0;
         }
