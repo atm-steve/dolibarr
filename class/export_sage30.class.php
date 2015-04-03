@@ -167,8 +167,8 @@ class TExportComptaSage30 extends TExportCompta {
 
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
-		$contenuFichier = "#VER 5\r\n";
-		$separateurLigne = "#MECG\r\n";
+		$contenuFichier = "#VER 5";
+		$separateurLigne = "\r\n#MECG\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
@@ -261,7 +261,7 @@ class TExportComptaSage30 extends TExportCompta {
 			$numEcriture++;
 		}
 
-		return $contenuFichier . "#FIN";
+		return $contenuFichier . "\r\n#FIN";
 	}
 
 	function get_file_tiers($format, $dt_deb, $dt_fin) {
@@ -269,8 +269,8 @@ class TExportComptaSage30 extends TExportCompta {
 
 		$TabTiers = parent::get_tiers($dt_deb, $dt_fin);
 		
-		$contenuFichier = "#VER 5\r\n";
-		$separateurLigne = "#MPCT\r\n";
+		$contenuFichier = "#VER 5";
+		$separateurLigne = "\r\n#MPCT\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
@@ -302,7 +302,7 @@ class TExportComptaSage30 extends TExportCompta {
 			$contenuFichier .= $separateurLigne . parent::get_line($format, $ligneFichier);
 		}
 
-		return $contenuFichier . "#FIN";
+		return $contenuFichier . "\r\n#FIN";
 	}
 
 	/*********************************************************

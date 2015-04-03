@@ -765,6 +765,7 @@ class TExportCompta extends TObjetStd {
 	function get_line(&$format, $dataline) {
 		$ligneFichierTxtFixe = '';
 		
+		$TVal = array();
 		foreach($format as $fmt) {
 			// Récupération valeur
 			$valeur = isset($dataline[$fmt['name']]) ? $dataline[$fmt['name']] : '';
@@ -797,10 +798,13 @@ class TExportCompta extends TObjetStd {
 				}
 			}
 			
-			$ligneFichierTxtFixe .= $valeur;
+			$TVal[] = $valeur;
+			//$ligneFichierTxtFixe .= $valeur;
 			
-			if(!empty($this->fieldSeparator)) $ligneFichierTxtFixe .= $this->fieldSeparator;
+			//if(!empty($this->fieldSeparator)) $ligneFichierTxtFixe .= $this->fieldSeparator;
 		}
+
+		$ligneFichierTxtFixe = implode($this->fieldSeparator, $TVal);
 		
 		if(!empty($this->lineSeparator)) $ligneFichierTxtFixe .= $this->lineSeparator;
 		
