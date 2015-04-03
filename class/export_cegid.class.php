@@ -51,7 +51,7 @@ class TExportComptaCegid extends TExportCompta {
 					'numero_compte_aux'				=> $code_compta,
 					'libelle'						=> $tiers['nom'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					'montant'						=> abs(number_format($montant,2,',','')),
+					'montant'						=> number_format(abs($montant),2,',',''),
 				);
 				
 				// Ecriture générale
@@ -67,7 +67,7 @@ class TExportComptaCegid extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
 					'sens'							=> (($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'),
-					'montant'						=> abs(number_format($montant,2,',','')),
+					'montant'						=> number_format(abs($montant),2,',',''),
 				);
 				
 				// Ecriture générale
@@ -85,7 +85,7 @@ class TExportComptaCegid extends TExportCompta {
 						'numero_compte'					=> $code_compta,
 						'libelle'						=> $tiers['nom'],
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						'montant'						=> abs(number_format($montant,2,',','')),
+						'montant'						=> number_format(abs($montant),2,',',''),
 					);
 					
 					// Ecriture générale
