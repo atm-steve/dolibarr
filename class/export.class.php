@@ -38,6 +38,7 @@ class TExportCompta extends TObjetStd {
 			,'ciel' => 'Ciel'
 			,'opensi' => 'Open SI'
 			,'etag' => 'eTag'
+			,'cegid' => 'Cegid'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture' 
