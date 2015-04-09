@@ -695,6 +695,7 @@ if ($id > 0 || ! empty($ref)) {
 							print $langs->trans("ErrorNoWarehouseDefined");
 						}
 
+						$objp->fk_commande = $object->id;
 						$parameters=array('id'=>$object->id);
 						$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$objp,$action); // Note that $action and $object may have been modified by some hooks
 
