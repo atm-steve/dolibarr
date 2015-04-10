@@ -683,7 +683,7 @@ if ($id > 0 || ! empty($ref)) {
 						}
 
 						print '</td>';
-
+						$default_warehouse = $conf->entity == 1 ? 1 : 3;
 						// Warehouse
 						print '<td align="right">';
 						if (count($listwarehouses) > 1) {
