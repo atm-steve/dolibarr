@@ -200,7 +200,7 @@ class TExportComptaSage30 extends TExportCompta {
 					'libelle'						=> $label,
 					'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'sens'							=> ($facture['type'] == 2 ? '1' : '0'),
+					'sens'							=> ($facture['type'] == 2 || $montant < 0 ? '1' : '0'),
 					'montant'						=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
@@ -221,7 +221,7 @@ class TExportComptaSage30 extends TExportCompta {
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'sens'							=> ($facture['type'] == 2 ? '0' : '1'),
+					'sens'							=> ($facture['type'] == 2 || $montant < 0 ? '0' : '1'),
 					'montant'						=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
@@ -247,7 +247,7 @@ class TExportComptaSage30 extends TExportCompta {
 						'libelle'						=> $tiers['nom'],
 						'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 						'date_echeance'					=> $facture['date_lim_reglement'],
-						'sens'							=> ($facture['type'] == 2 ? '0' : '1'),
+						'sens'							=> ($facture['type'] == 2 || $montant < 0 ? '0' : '1'),
 						'montant'						=> abs($montant),
 						'type_ecriture'					=> 'G'
 					);
