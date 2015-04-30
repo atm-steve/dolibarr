@@ -2,6 +2,9 @@
 
 require('config.php');
 
+ini_set('memory_limit','512M');
+set_time_limit(0);
+
 if (!$user->rights->exportcompta->generate) accessforbidden();
 
 $langs->load('main');
