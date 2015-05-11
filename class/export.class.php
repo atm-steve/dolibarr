@@ -184,6 +184,7 @@ class TExportCompta extends TObjetStd {
 			$facture->fetch_lines();
 			foreach ($facture->lines as $ligne) {
 				if($ligne->special_code != 0) continue;
+				if($ligne->total_ht == 0) continue;
 				
 				// Code compta produit
 				$codeComptableProduit = ''; 
