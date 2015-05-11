@@ -56,7 +56,7 @@ class TExportComptaEbp extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> '"'.$tiers['nom'].'"',
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
@@ -73,7 +73,7 @@ class TExportComptaEbp extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> '"'.$tiers['nom'].'"',
 					'sens'							=> (($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
@@ -92,7 +92,7 @@ class TExportComptaEbp extends TExportCompta {
 						'date_ecriture'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
-						'libelle'						=> $tiers['nom'],
+						'libelle'						=> '"'.$tiers['nom'].'"',
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 						'montant'						=> number_format(abs($montant),2,'.',''),
 					);
