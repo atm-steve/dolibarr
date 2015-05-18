@@ -252,8 +252,51 @@ class TExportCompta extends TObjetStd {
 		}
 		$conf->entity = $trueEntity;
 		
+        TExportCompta::equilibreFacture($TFactures);
+        
 		return $TFactures;
 	}
+
+    static function equilibreFacture(&$TFactures) {
+        
+        foreach ($TFactures as $id_facture => &$infosFacture) {
+
+            $montant_facture = 0;
+            if(!empty($infosFacture['ligne_tiers'])) {
+                foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
+                    $montant_facture+=number_format($montant,2,'.','');
+                }
+                
+            }
+            
+            $montant_produit = 0;
+            // Lignes de produits
+             if(!empty($infosFacture['ligne_produit'])) {
+                foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+                        $montant_produit+=number_format($montant,2,'.','');
+                }
+             }
+            
+            $montant_tva=0;$cpt_tva=1;
+            
+            if(!empty($infosFacture['ligne_tva'])) {
+                $nb_tva = count($infosFacture['ligne_tva']);
+                // Lignes TVA
+                foreach($infosFacture['ligne_tva'] as $code_compta => &$montant) {
+                    if($cpt_tva == $nb_tva) $montant = $montant_facture-$montant_produit-$montant_tva;
+                    
+                    // Ecriture générale
+                    $cpt_tva++;
+                    $montant_tva+=number_format($montant,2,'.','');
+    
+                }
+                
+            }
+            
+            
+        }
+        
+    }
 
 	/* 
 	 * Récupération dans Dolibarr de la liste des factures fournisseur avec détails ligne + produit + fournisseur
