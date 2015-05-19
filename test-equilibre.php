@@ -19,20 +19,29 @@ var_dump($Tab);
 
 
 
-$file = file('sageecritures_comptables_vente20150121095411.txt');
+$file = file('ebpecritures_comptables_vente20150518171714.txt');
 
-foreach($file as $row) {
-	$piece = substr($row,25,9);
-	$amount = (double)substr($row,96,14);
-	$amount2 = (double)substr($row,110,14);
-	$type = $row[155];
+if(isset($_REQUEST['SAGE'])){
+	foreach($file as $row) {
+		$piece = substr($row,25,9);
+		$amount = (double)substr($row,96,14);
+		$amount2 = (double)substr($row,110,14);
+		$type = $row[155];
+		
+		if($type == 'G') {
 	
-	if($type == 'G') {
+	//var_dump($piece,$amount,$amount2);
+		@$Tab[$piece]-=$amount2;
+		@$Tab[$piece]+=$amount;
+	
+		}
+	}
+}
 
-//var_dump($piece,$amount,$amount2);
-	@$Tab[$piece]-=$amount2;
-	@$Tab[$piece]+=$amount;
-
+if(isset($_REQUEST['EBP'])){
+	$filename = 'ebpecritures_comptables_vente20150518171714.txt';
+	while ($line = fgetcsv($filename,1024,',','"')) {
+		var_dump($line);
 	}
 }
 
