@@ -37,12 +37,17 @@ if(isset($_REQUEST['SAGE'])){
 		}
 	}
 }
-
+$Tab = array();
 if(isset($_REQUEST['EBP'])){
-	$filename = 'ebpecritures_comptables_vente20150518171714.txt';
+	$filename = fopen('ebpecritures_comptables_vente20150518171714.txt', 'r');
 	while ($line = fgetcsv($filename,1024,',','"')) {
-		var_dump($line);
+		$fact = $line[6];
+		if($line[8] == 'D') $Tab[$fact] += $line[7];
+		if($line[8] == 'C') $Tab[$fact] -= $line[7];
+		
+		//var_dump($line);
 	}
+	
 }
 
 var_dump($Tab);
