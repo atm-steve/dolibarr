@@ -87,6 +87,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print "</td></tr>\n";
 $form->end();
 
+// Empêcher la réouverture des factures lorsqu'elle ont été comptabilisé
+$var=!$var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_reopeninvoice');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_HIDE_REOPEN_INVOICE');
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("ReopenInvoice").'</td>';
+print '<td width="60" align="right">';
+print $formDoli->selectyesno("EXPORT_COMPTA_HIDE_REOPEN_INVOICE",$conf->global->EXPORT_COMPTA_HIDE_REOPEN_INVOICE,1);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print "</td></tr>\n";
+$form->end();
+
 // Champ date utilisé pour les bornes sur factures client
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_datefaccli');

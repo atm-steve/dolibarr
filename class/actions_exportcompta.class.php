@@ -74,8 +74,22 @@ class ActionsExportCompta
           </script>
           <?php
           }
-          
-            return 0;
+
+ 		  if(!empty($conf->global->EXPORT_COMPTA_HIDE_REOPEN_INVOICE)) {
+          		?>
+          		<script language="javascript">
+		            $(document).ready(function() {
+		                $('.butAction').each(function(){
+		                	href = $(this).attr('href');
+		                	if(href.indexOf('action=reopen') > 0){
+		                		$(this).hide();
+		                	}
+		                })
+		            }  );
+		          </script>
+          		<?php
+		  }
+          return 0;
         }
         
 	} 
