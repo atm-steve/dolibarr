@@ -6,9 +6,9 @@
 dol_include_once("/exportcompta/class/export.class.php");
 
 class TExportComptaSage30 extends TExportCompta {
-	function __construct(&$db, $exportAllreadyExported=false) {
+	function __construct(&$db, $exportAllreadyExported=false, $addExportTimeToBill=false) {
 		
-		parent::__construct($db, $exportAllreadyExported);
+		parent::__construct($db, $exportAllreadyExported,$addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'code_journal',			'length' => 2,	'default' => 'VT',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
@@ -150,6 +150,8 @@ class TExportComptaSage30 extends TExportCompta {
 			array('name' => '(vide)',				'length' => 1,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
 			
 		);
+		
+		$this->addExportTimeToBill = $addExportTimeToBill;
 		
 		$this->fieldSeparator="\r\n";
 		
