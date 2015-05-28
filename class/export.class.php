@@ -253,7 +253,7 @@ class TExportCompta extends TObjetStd {
 		$conf->entity = $trueEntity;
 		
         TExportCompta::equilibreFacture($TFactures);
-        
+       
 		return $TFactures;
 	}
 
@@ -282,20 +282,25 @@ class TExportCompta extends TObjetStd {
             if(!empty($infosFacture['ligne_tva'])) {
                 $nb_tva = count($infosFacture['ligne_tva']);
                 // Lignes TVA
-                foreach($infosFacture['ligne_tva'] as $code_compta => &$montant) {
-                    if($cpt_tva == $nb_tva) $montant = $montant_facture-$montant_produit-$montant_tva;
-                    
+                foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
+                	
+                    if($cpt_tva == $nb_tva) {
+                    	$montant = $montant_facture-$montant_produit-$montant_tva;
+						$infosFacture['ligne_tva'][$code_compta] = $montant;
+					}
                     // Ecriture générale
                     $cpt_tva++;
-                    $montant_tva+=number_format($montant,2,'.','');
+                    $montant_tva+=round($montant,2);
     
                 }
                 
             }
-            
+        	      
             
         }
         
+		
+		
     }
 
 	/* 
