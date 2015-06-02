@@ -1874,39 +1874,39 @@ class Societe extends CommonObject
         if ($option == 'customer' || $option == 'compta' || $option == 'category' || $option == 'category_supplier')
         {
            $label.= '<u>' . $langs->trans("ShowCustomer") . '</u>';
-           $linkstart = '<a href="'.DOL_URL_ROOT.'/comm/card.php?socid='.$this->id;
+           $linkstart = '<a target="_blank"  href="'.DOL_URL_ROOT.'/comm/card.php?socid='.$this->id;
         }
         else if ($option == 'prospect' && empty($conf->global->SOCIETE_DISABLE_PROSPECTS))
         {
             $label.= '<u>' . $langs->trans("ShowProspect") . '</u>';
-            $linkstart = '<a href="'.DOL_URL_ROOT.'/comm/card.php?socid='.$this->id;
+            $linkstart = '<a target="_blank"  href="'.DOL_URL_ROOT.'/comm/card.php?socid='.$this->id;
         }
         else if ($option == 'supplier')
         {
             $label.= '<u>' . $langs->trans("ShowSupplier") . '</u>';
-            $linkstart = '<a href="'.DOL_URL_ROOT.'/fourn/card.php?socid='.$this->id;
+            $linkstart = '<a  target="_blank" href="'.DOL_URL_ROOT.'/fourn/card.php?socid='.$this->id;
         }
         else if ($option == 'agenda')
         {
             $label.= '<u>' . $langs->trans("ShowAgenda") . '</u>';
-            $linkstart = '<a href="'.DOL_URL_ROOT.'/societe/agenda.php?socid='.$this->id;
+            $linkstart = '<a  target="_blank" href="'.DOL_URL_ROOT.'/societe/agenda.php?socid='.$this->id;
         }
         else if ($option == 'project')
         {
             $label.= '<u>' . $langs->trans("ShowProject") . '</u>';
-            $linkstart = '<a href="'.DOL_URL_ROOT.'/societe/project.php?socid='.$this->id;
+            $linkstart = '<a target="_blank"  href="'.DOL_URL_ROOT.'/societe/project.php?socid='.$this->id;
         }
         else if ($option == 'margin')
         {
             $label.= '<u>' . $langs->trans("ShowMargin") . '</u>';
-            $linkstart = '<a href="'.DOL_URL_ROOT.'/margin/tabs/thirdpartyMargins.php?socid='.$this->id.'&type=1';
+            $linkstart = '<a  target="_blank" href="'.DOL_URL_ROOT.'/margin/tabs/thirdpartyMargins.php?socid='.$this->id.'&type=1';
         }
 
         // By default
         if (empty($linkstart))
         {
             $label.= '<u>' . $langs->trans("ShowCompany") . '</u>';
-            $linkstart = '<a href="'.DOL_URL_ROOT.'/societe/card.php?socid='.$this->id;
+            $linkstart = '<a target="_blank"  href="'.DOL_URL_ROOT.'/societe/card.php?socid='.$this->id;
         }
 
         if (! empty($this->name))
