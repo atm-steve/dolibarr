@@ -5,9 +5,9 @@
 
 class TExportComptaEbp extends TExportCompta {
 	
-	function __construct($db, $exportAllreadyExported=false) {
+	function __construct($db, $exportAllreadyExported=false,$addExportTimeToBill=false) {
 		
-		parent::__construct($db, $exportAllreadyExported);
+		parent::__construct($db, $exportAllreadyExported,$addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'num_ecriture',			'length' => 8,	'default' => '',	'type' => 'text'),
@@ -22,6 +22,8 @@ class TExportComptaEbp extends TExportCompta {
 			array('name' => 'date_ecriture',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
 			array('name' => 'devise',				'length' => 3,	'default' => 'EUR',	'type' => 'text'),
 		);
+		
+		$this->addExportTimeToBill = $addExportTimeToBill;
 		
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
