@@ -337,6 +337,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
+					'ref_fact_fourn'				=> $facture['ref_supplier'],
 				);
 				
 				// Ecriture générale
@@ -361,6 +362,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
+					'ref_fact_fourn'				=> $facture['ref_supplier'],
 				);
 				
 				// Ecriture générale
@@ -390,6 +392,7 @@ class TExportComptaQuadratus extends TExportCompta {
 							'montant_devise'				=> abs($montant * 100),
 							'num_unique'					=> $numLignes,
 							'date_systeme'					=> time(),
+							'ref_fact_fourn'				=> $facture['ref_supplier'],
 						);
 					
 					// Ecriture générale
