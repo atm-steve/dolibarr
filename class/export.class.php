@@ -17,6 +17,7 @@ dol_include_once('/societe/class/client.class.php');
 dol_include_once('/product/class/product.class.php');
 dol_include_once('/compta/bank/class/account.class.php');
 dol_include_once('/compta/sociales/class/chargesociales.class.php');
+dol_include_once('/compta/prelevement/class/bonprelevement.class.php');
 
 class TExportCompta extends TObjetStd {
 	
@@ -657,11 +658,17 @@ class TExportCompta extends TObjetStd {
 			
 			// Récupération du tiers concerné, ou type de charge, ou user pour le code compta
 			$codeCompta = '';
+			$TCodeCompta = array();
 			$links = $bank->get_url($bankline->id);
+			$lineType = '';
 			$object = new stdClass();
 			foreach($links as $key => $val) {
+				// On ne prend que les liens qui nous intéressent
+				if(!in_array($links[$key]['type'], array('company','sc','withdraw','user','banktransfert'))) continue;
+				$lineType = $links[$key]['type'];
+				
 				// Cas du tiers, type d'écriture = règlement client ou fournisseur
-				if($links[$key]['type'] == 'company') {
+				if($lineType == 'company') {
 					$tiers = new Societe($db);
 					$tiers->fetch($links[$key]['url_id']);
 					if($bankline->label == '(CustomerInvoicePayment)') {
@@ -669,10 +676,11 @@ class TExportCompta extends TObjetStd {
 					} else {
 						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
 					}
+					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = &$tiers;
 				}
 				// Cas de la charge sociale
-				if($links[$key]['type'] == 'sc') {
+				if($lineType == 'sc') {
 					$charge = new ChargeSociales($db);
 					$charge->fetch($links[$key]['url_id']);
 					
@@ -682,22 +690,47 @@ class TExportCompta extends TObjetStd {
 					
 					$resql=$this->db->query($sql);
 					$obj = $this->db->fetch_object($resql);
+					
 					$codeCompta = $obj->accountancy_code;
+					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = &$charge;
+				}
+				// Cas du prélèvement
+				if($lineType == 'withdraw') {
+					$prel = new BonPrelevement($db);
+					$prel->fetch($links[$key]['url_id']);
+					
+					$sql = "SELECT s.code_compta, pl.amount ";
+					$sql.= "FROM ".MAIN_DB_PREFIX."prelevement_bons as p ";
+					$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."prelevement_lignes as pl ON pl.fk_prelevement_bons = p.rowid ";
+					$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."prelevement_facture as pf ON pf.fk_prelevement_lignes = pl.rowid ";
+					$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."facture as f ON pf.fk_facture = f.rowid ";
+					$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON f.fk_soc = s.rowid ";
+					$sql.= "WHERE f.entity = ".$conf->entity;
+					$sql.= " AND p.rowid=".$links[$key]['url_id'];
+					
+					$resql=$this->db->query($sql);
+					while($obj = $this->db->fetch_object($resql)) {
+						$TCodeCompta[$obj->code_compta] = $obj->amount;
+					}
+					$object = &$prel;
 				}
 				
 				// Cas de l'utilisateur paiement NDF
-				if($links[$key]['type'] == 'user') {
+				if($lineType == 'user') {
 					$usr = new User($db);
 					$usr->fetch($links[$key]['url_id']);
 					
 					$codeCompta = $usr->array_options['options_COMPTE_TIERS'];
+					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = &$usr;
 				}
 				
-				// TODO : gérer le cas du transfert de compte à compte
-				if($links[$key]['type'] == 'banktransfert') {
+				// Cas du transfert de compte à compte
+				if($lineType == 'banktransfert') {
 					$codeCompta = $conf->global->EXPORT_COMPTA_BANK_TRANSFER_ACCOUNT;
+					$TCodeCompta[$codeCompta] = $bankline->amount;
+					$object = &$bankline;
 				}
 			}
 			
@@ -711,15 +744,17 @@ class TExportCompta extends TObjetStd {
 			}
 			
 			// Définition du code comptable banque
-			$codeComptableBank = !empty($bank->account_number) ? $bank->account_number : '51200000';
+			$codeComptableBank = !empty($bank->account_number) ? $bank->account_number : '512';
 			
 			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
 			$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
 			$TBank[$bankline->id]['object'] = $object;
 			
-			if(empty($TBank[$bankline->id]['ligne_tiers'][$codeCompta])) $TBank[$bankline->id]['ligne_tiers'][$codeCompta] = 0;
+			foreach($TCodeCompta as $codeCompta => $amount) {
+				if(empty($TBank[$bankline->id]['ligne_tiers'][$codeCompta])) $TBank[$bankline->id]['ligne_tiers'][$codeCompta] = 0;
+				$TBank[$bankline->id]['ligne_tiers'][$codeCompta] += $amount;
+			}
 			if(empty($TBank[$bankline->id]['ligne_banque'][$codeComptableBank])) $TBank[$bankline->id]['ligne_banque'][$codeComptableBank] = 0;
-			$TBank[$bankline->id]['ligne_tiers'][$codeCompta] += $bankline->amount;
 			$TBank[$bankline->id]['ligne_banque'][$codeComptableBank] += $bankline->amount;
 		}
 

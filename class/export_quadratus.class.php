@@ -537,6 +537,7 @@ class TExportComptaQuadratus extends TExportCompta {
 				if($object->element == 'societe')			$label = $object->name;
 				if($object->element == 'chargesociales')	$label = $object->type_libelle;
 				if($object->element == 'user')				$label = $object->firstname.' '.$object->lastname;
+				if(get_class($object) == 'BonPrelevement')	$label = $object->ref;
 			}
 			
 			// Lignes tiers
