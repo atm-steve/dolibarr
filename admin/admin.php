@@ -254,6 +254,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Code compta pour les transfert banque à banque
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_export_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_BANK_TRANSFER_ACCOUNT');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("AccountForBankTransfer");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_BANK_TRANSFER_ACCOUNT',$conf->global->EXPORT_COMPTA_BANK_TRANSFER_ACCOUNT,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
 print "</table>";
 
 llxFooter();

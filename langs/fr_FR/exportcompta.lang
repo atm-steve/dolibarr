@@ -43,5 +43,6 @@ addExportTimeToBill=Ajouter la date d'export sur les écritures de factures vent
 FileExtension=Extension des fichiers générés
 DataSeparator=Séparateur de données (laisser vide pour un fichier à largeur fixe)
 ReopenInvoice=Empêcher la modification des factures une fois comptabilisées
+AccountForBankTransfer= Compte comptable intermédiaire pour les transfert entre banques
 
 BillAlreadyExported=Facture déjà exportée
