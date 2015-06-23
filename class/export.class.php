@@ -677,7 +677,7 @@ class TExportCompta extends TObjetStd {
 						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
 					}
 					$TCodeCompta[$codeCompta] = $bankline->amount;
-					$object = &$tiers;
+					$object = $tiers;
 				}
 				// Cas de la charge sociale
 				if($lineType == 'sc') {
@@ -693,7 +693,7 @@ class TExportCompta extends TObjetStd {
 					
 					$codeCompta = $obj->accountancy_code;
 					$TCodeCompta[$codeCompta] = $bankline->amount;
-					$object = &$charge;
+					$object = $charge;
 				}
 				// Cas du prélèvement
 				if($lineType == 'withdraw') {
@@ -713,7 +713,7 @@ class TExportCompta extends TObjetStd {
 					while($obj = $this->db->fetch_object($resql)) {
 						$TCodeCompta[$obj->code_compta] = $obj->amount;
 					}
-					$object = &$prel;
+					$object = $prel;
 				}
 				
 				// Cas de l'utilisateur paiement NDF
@@ -723,14 +723,14 @@ class TExportCompta extends TObjetStd {
 					
 					$codeCompta = $usr->array_options['options_COMPTE_TIERS'];
 					$TCodeCompta[$codeCompta] = $bankline->amount;
-					$object = &$usr;
+					$object = $usr;
 				}
 				
 				// Cas du transfert de compte à compte
 				if($lineType == 'banktransfert') {
 					$codeCompta = $conf->global->EXPORT_COMPTA_BANK_TRANSFER_ACCOUNT;
 					$TCodeCompta[$codeCompta] = $bankline->amount;
-					$object = &$bankline;
+					$object = $bankline;
 				}
 			}
 			
