@@ -1253,7 +1253,11 @@ function pdf_getlinedesc($object,$i,$outputlangs,$hideref=0,$hidedesc=0,$issuppl
 		{
 			if ($idprod)
 			{
-				if (empty($hidedesc)) $libelleproduitservice.=$desc;
+				if (empty($hidedesc)) {
+					$libelleproduitservice.=$desc;
+				} elseif (strpos($prodser->ref,'DIVERS')!==false) {
+					$libelleproduitservice.=' '.$desc;
+				}
 			}
 			else
 			{
