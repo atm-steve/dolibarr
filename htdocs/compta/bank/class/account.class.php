@@ -726,7 +726,7 @@ class Account extends CommonObject
         $sql.= ",fk_pays = ".$this->country_id;
 
         $sql.= " WHERE rowid = ".$this->id;
-        $sql.= " AND entity = ".$conf->entity;
+        $sql.= " AND entity IN (".getEntity('bank_account',1).")";
 
         dol_syslog(get_class($this)."::update", LOG_DEBUG);
         $result = $this->db->query($sql);
