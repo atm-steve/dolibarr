@@ -227,6 +227,13 @@ class TExportCompta extends TObjetStd {
 					// Sécurité au cas où non utilisation des comptes différents domtom, cee, export.
 					if(empty($codeComptableProduit)) $codeComptableProduit = $produit->accountancy_code_sell;
 				}
+
+				// Compte spécifique pour les remises
+				if(empty($codeComptableProduit)) {
+					if($ligne->fk_remise_except !== 0) {
+						$codeComptableProduit = $conf->global->EXPORT_COMPTA_REMISE;
+					}
+				}
 				
 				if(empty($codeComptableProduit)) {
 					if($ligne->product_type == 0) {

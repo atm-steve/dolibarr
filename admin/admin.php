@@ -268,6 +268,21 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Code compta pour les remises
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_export_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_REMISE');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("AccountForDiscountExcept");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_REMISE',$conf->global->EXPORT_COMPTA_REMISE,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+
 print "</table>";
 
 llxFooter();
