@@ -711,7 +711,8 @@ class TExportCompta extends TObjetStd {
 					
 					$resql=$this->db->query($sql);
 					while($obj = $this->db->fetch_object($resql)) {
-						$TCodeCompta[$obj->code_compta] = $obj->amount;
+						if(empty($TCodeCompta[$obj->code_compta])) $TCodeCompta[$obj->code_compta] = 0;
+						$TCodeCompta[$obj->code_compta]+= $obj->amount;
 					}
 					$object = $prel;
 				}
