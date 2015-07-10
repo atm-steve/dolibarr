@@ -22,6 +22,8 @@ class TExportComptaCegid extends TExportCompta {
 		
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
 		
+		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
+
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
 		$this->fieldPadding = false;
@@ -185,6 +187,70 @@ class TExportComptaCegid extends TExportCompta {
 					$numLignes++;
 				}
 			}
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+	
+	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		if(empty($format)) $format = $this->_format_ecritures_comptables_banque;
+
+		$TabBank = parent::get_banque($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabBank as $id_bank => $infosBank) {
+			$bankline = &$infosBank['bankline'];
+			$bank = &$infosBank['bank'];
+			$object = &$infosBank['object'];
+			
+			$label = $bankline['label'];
+			//pre($object, true);exit;
+			if(!empty($object)) {
+				if($object->element == 'societe')			$label = $object->name;
+				if($object->element == 'chargesociales')	$label = $object->type_libelle;
+				if($object->element == 'user')				$label = $object->firstname.' '.$object->lastname;
+			}
+			
+			// Lignes tiers
+			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_ecriture'			=> $bankline['datev'],
+					'code_journal'			=> $bank['ref'],
+					'numero_compte'			=> $code_compta,
+					'sens'					=> ($montant < 0) ? 'D' : 'C',
+					'montant'				=> number_format(abs($montant),2,',',''),
+					'libelle'				=> $label
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
+				$numLignes++;
+			}
+			
+			// Lignes banque
+			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_ecriture'			=> $bankline['datev'],
+					'code_journal'			=> $bank['ref'],
+					'numero_compte'			=> $code_compta,
+					'sens'					=> ($montant < 0) ? 'C' : 'D',
+					'montant'				=> number_format(abs($montant),2,',',''),
+					'libelle'				=> $label
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
+				$numLignes++;
+			}
+			
 			$numEcriture++;
 		}
 
