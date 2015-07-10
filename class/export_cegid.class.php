@@ -24,6 +24,8 @@ class TExportComptaCegid extends TExportCompta {
 		
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
 
+		$this->_format_reglement_tiers = $this->_format_ecritures_comptables_vente;
+		
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
 		$this->fieldPadding = false;
@@ -256,4 +258,56 @@ class TExportComptaCegid extends TExportCompta {
 
 		return $contenuFichier;
 	}
+
+	function get_file_reglement_tiers($format, $dt_deb, $dt_fin) {
+		global $conf,$db;	
+		
+		if(empty($format)) $format = $this->_format_reglement_tiers;
+		
+		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+		$type = 'R';
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabReglement as $infosReglement) {
+			$tiers = &$infosReglement['client'];
+			$reglement = &$infosReglement['reglement'];
+			
+			// Ligne Banque
+			$ligneFichier = array(
+				'date_ecriture'			=> $reglement['datep'],
+				'code_journal'			=> 'M',
+				'numero_compte'			=> $reglement['code_compta'],
+				'sens'					=> 'D',
+				'montant'				=> number_format(abs($montant),2,',',''),
+				'libelle'				=> $tiers['nom'],
+				'numero_piece'			=> $reglement['num_fact']
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier);
+			$numLignes++;
+
+			$ligneFichier = array(
+				'date_ecriture'		=> $reglement['datep'],
+				'code_journal'		=> 'C',
+				'numero_compte'		=> $tiers['code_compta'],
+				'sens'				=> 'C',
+				'montant'			=> number_format(abs($montant),2,',',''),
+				'libelle'			=> $tiers['nom'],
+				'numero_piece'		=> $reglement['num_fact']
+			);
+
+			$contenuFichier .= parent::get_line($format, $ligneFichier);
+			$numLignes++;
+			
+
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}	
 }
