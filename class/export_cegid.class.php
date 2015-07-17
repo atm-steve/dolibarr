@@ -19,11 +19,13 @@ class TExportComptaCegid extends TExportCompta {
 			array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_piece',			'length' => 35,	'default' => '',	'type' => 'text')
 		);
-		
+				
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_achat[1]['default'] = 'AC';
 		
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
-
+		$this->_format_ecritures_comptables_banque[1]['default'] = '';
+		
 		$this->_format_reglement_tiers = $this->_format_ecritures_comptables_vente;
 		
 		$this->lineSeparator = "\r\n";
