@@ -29,6 +29,10 @@ class TExportComptaCegid extends TExportCompta {
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
 		$this->fieldPadding = false;
+		
+		unset($this->TTypeExport['produits']); // pas encore pris en charge
+		unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
+		unset($this->TTypeExport['tiers']); // pas encore pris en charge
 	}
 	
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
