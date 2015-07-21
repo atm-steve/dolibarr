@@ -201,26 +201,83 @@ $form->end();
 
 // Champ supplémentaire contenant le code comptable produit pour les ventes France Dom / Tom
 $var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_dom_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("ProductFRDomTomField");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD',$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Champ supplémentaire contenant le code comptable produit pour les ventes France suspension TVA
+$var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_product_susp_field');
 print $form->hidden('action','setconst');
 print $form->hidden('const','EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD');
 print '<tr '.$bc[$var].'><td>';
-print $langs->trans("ProductFRDomTomField");
+print $langs->trans("ProductFRSuspField");
 print '</td><td width="60" align="right">';
 print $form->texte('', 'EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD',$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD,30,255);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";
 $form->end();
-// Champ supplémentaire contenant le code comptable produit pour les ventes France suspension TVA
+
+// Champ supplémentaire contenant le code comptable produit pour les achats CEE
 $var=! $var;
-$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_dom_field');
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_cee_field_buying');
 print $form->hidden('action','setconst');
-print $form->hidden('const','EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD');
+print $form->hidden('const','EXPORT_COMPTA_PRODUCT_CEE_FIELD_BUYING');
 print '<tr '.$bc[$var].'><td>';
-print $langs->trans("ProductFRSuspField");
+print $langs->trans("ProductCEEFieldBuying");
 print '</td><td width="60" align="right">';
-print $form->texte('', 'EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD',$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD,30,255);
+print $form->texte('', 'EXPORT_COMPTA_PRODUCT_CEE_FIELD_BUYING',$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD_BUYING,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Champ supplémentaire contenant le code comptable produit pour les achats export
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_export_field_buying');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_PRODUCT_EXPORT_FIELD_BUYING');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("ProductExportFieldBuying");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_PRODUCT_EXPORT_FIELD_BUYING',$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD_BUYING,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Champ supplémentaire contenant le code comptable produit pour les achats France Dom / Tom
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_dom_field_buying');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD_BUYING');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("ProductFRDomTomFieldBuying");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD_BUYING',$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD_BUYING,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Champ supplémentaire contenant le code comptable produit pour les achats France suspension TVA
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_susp_field_buying');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD_BUYING');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("ProductFRSuspFieldBuying");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD_BUYING',$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD_BUYING,30,255);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";

@@ -45,5 +45,8 @@ DataSeparator=Séparateur de données (laisser vide pour un fichier à largeur f
 ReopenInvoice=Empêcher la modification des factures une fois comptabilisées
 AccountForBankTransfer=Compte comptable intermédiaire pour les transfert entre banques
 AccountForDiscountExcept=Compte comptable pour les remises
-
+ProductCEEFieldBuying=Champ complémentaire contenant le code comptable d'achat CEE
+ProductExportFieldBuying=Champ complémentaire contenant le code comptable d'achat Export
+ProductFRDomTomFieldBuying=Champ complémentaire contenant le code comptable d'achat France Dom / Tom
+ProductFRSuspFieldBuying=Champ complémentaire contenant le code comptable d'achat France Suspension TVA
 BillAlreadyExported=Facture déjà exportée

@@ -381,7 +381,39 @@ class TExportCompta extends TObjetStd {
 				if(!empty($ligne->fk_product)) {
 					$produit = new Product($db);
 					$produit->fetch($ligne->fk_product);
-					$codeComptableProduit = $produit->accountancy_code_buy;
+					
+					// Cas des DOM-TOM
+					if($facture->thirdparty->country_code == 'PM'
+							|| $facture->thirdparty->country_code == 'BL'
+							|| $facture->thirdparty->country_code == 'SM'
+							|| $facture->thirdparty->country_code == 'WF'
+							|| $facture->thirdparty->country_code == 'PF'
+							|| $facture->thirdparty->country_code == 'NC'
+							|| ($facture->thirdparty->country_code == 'FR' && substr($facture->thirdparty->state_code, 0, 2) == '97'))
+					{
+						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD_BUYING];
+					}
+					// Cas de la France
+					else if($facture->thirdparty->country_code == 'FR') {
+						// Client en france, code compta standard du produit ok
+						$codeComptableProduit = $produit->accountancy_code_buy;
+						
+						// Cas de la société française exonérée
+						if($facture->thirdparty->tva_assuj == 0) {
+							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD_BUYING];
+						}
+					}
+					// Cas de la vente CEE
+					else if($facture->thirdparty->isInEEC()) { 
+						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD_BUYING];
+					}
+					// Cas de la vente Export
+					else {
+						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD_BUYING];
+					}
+					
+					// Sécurité au cas où non utilisation des comptes différents domtom, cee, export.
+					if(empty($codeComptableProduit)) $codeComptableProduit = $produit->accountancy_code_buy;
 				}
 				
 				if(empty($codeComptableProduit)) {
