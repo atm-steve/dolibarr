@@ -224,6 +224,7 @@ if (empty($reshook))
  */
 
 $now=dol_now();
+$late_only = GETPOST('lateonly');
 
 $form = new Form($db);
 $formother = new FormOther($db);
@@ -324,6 +325,13 @@ foreach ($search_array_options as $key => $val)
         $sql .= natural_search('ef.'.$tmpkey, $crit, $mode);
     }
 }
+
+if ($late_only) {
+	//($objp->fk_statut == 1 && $db->jdate($objp->dfv) < ($now - $conf->propal->cloture->warning_delay))
+	$sql .= " AND (p.fk_statut = 1 AND UNIX_TIMESTAMP(p.fin_validite) < " . ($now - $conf->propal->cloture->warning_delay) . ")";	
+}
+
+
 // Add where from hooks
 $parameters=array();
 $reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
@@ -380,6 +388,7 @@ if ($resql)
 	if ($search_town)		 $param.='&search_town='.urlencode($search_town);
 	if ($socid > 0)          $param.='&socid='.urlencode($socid);
 	if ($optioncss != '') $param.='&optioncss='.urlencode($optioncss);
+	if ($late_only)			 $param.='&lateonly=1';	
 	// Add $param from extra fields
 	foreach ($search_array_options as $key => $val)
 	{
@@ -747,6 +756,9 @@ if ($resql)
 	while ($i < min($num,$limit))
 	{
 		$obj = $db->fetch_object($resql);
+
+		$late = ($objp->fk_statut == 1 && $db->jdate($objp->dfv) < ($now - $conf->propal->cloture->warning_delay));
+
 		$var=!$var;
 
     	$objectstatic->id=$obj->rowid;
@@ -762,7 +774,8 @@ if ($resql)
             // Picto + Ref
     		print '<td class="nobordernopadding nowrap">';
     		print $objectstatic->getNomUrl(1);
-    		print '</td>';
+		if ($late) print img_warning($langs->trans("Late"));
+		print '</td>';
             // Warning
             $warnornote='';
     		if ($obj->fk_statut == 1 && $db->jdate($obj->dfv) < ($now - $conf->propal->cloture->warning_delay)) $warnornote.=img_warning($langs->trans("Late"));
