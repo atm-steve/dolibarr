@@ -160,6 +160,10 @@ llxHeader('',$langs->trans("Agenda"),$help_url);
 // Define list of all external calendars
 $listofextcals=array();
 
+$now=dol_now();
+$delay_warning=$conf->global->MAIN_DELAY_ACTIONS_TODO*24*60*60;
+$late_only = GETPOST('lateonly');
+	
 $param='';
 if (! empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) $param.='&contextpage='.$contextpage;
 if ($limit > 0 && $limit != $conf->liste_limit) $param.='&limit='.$limit;
@@ -174,6 +178,7 @@ if ($pid) $param.="&projectid=".$pid;
 if ($type) $param.="&type=".$type;
 if ($usergroup) $param.="&usergroup=".$usergroup;
 if ($optioncss != '') $param.='&optioncss='.$optioncss;
+if ($late_only) $param.="&lateonly=1";
 
 $sql = "SELECT";
 if ($usergroup > 0) $sql.=" DISTINCT";
@@ -244,6 +249,19 @@ if ($dateselect > 0) $sql.= " AND ((a.datep2 >= '".$db->idate($dateselect)."' AN
 if ($datestart > 0) $sql.= " AND a.datep BETWEEN '".$db->idate($datestart)."' AND '".$db->idate($datestart+3600*24-1)."'";
 if ($dateend > 0) $sql.= " AND a.datep2 BETWEEN '".$db->idate($dateend)."' AND '".$db->idate($dateend+3600*24-1)."'";
 $sql.= $db->order($sortfield,$sortorder);
+
+if ($late_only) {
+	//if ($obj->percent == 0 && $obj->dp && $db->jdate($obj->dp) < ($now - $delay_warning)) $late=1;
+	$sql .= " AND ((a.percent = 0 AND a.datep IS NOT NULL AND UNIX_TIMESTAMP(a.datep) < " . ($now - $delay_warning) . ")";
+	
+	//if ($obj->percent == 0 && ! $obj->dp && $obj->dp2 && $db->jdate($obj->dp) < ($now - $delay_warning)) $late=1;
+	$sql .= " OR (a.percent = 0 AND a.datep IS NULL AND a.datep2 IS NOT NULL AND UNIX_TIMESTAMP(a.datep2) < " . ($now - $delay_warning) . ")";
+	
+	//if ($obj->percent > 0 && $obj->percent < 100 && $obj->dp2 && $db->jdate($obj->dp2) < ($now - $delay_warning)) $late=1;
+	$sql .= " OR (a.percent > 0 AND a.percent < 100 AND a.datep2 IS NOT NULL AND UNIX_TIMESTAMP(a.datep2) < " . ($now - $delay_warning) . ")";
+	
+	//if ($obj->percent > 0 && $obj->percent < 100 && ! $obj->dp2 && $obj->dp && $db->jdate($obj->dp) < ($now - $delay_warning)) $late=1;
+	$sql .= " OR (a.percent > 0 AND a.percent < 100 AND a.datep2 IS NULL AND a.datep IS NOT NULL AND UNIX_TIMESTAMP(a.datep) < " . ($now - $delay_warning) . "))";	
 
 $nbtotalofrecords = '';
 if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
@@ -377,10 +395,7 @@ if ($resql)
 	print "</tr>\n";
 
 	$contactstatic = new Contact($db);
-	$now=dol_now();
-	$delay_warning=$conf->global->MAIN_DELAY_ACTIONS_TODO*24*60*60;
-	$late_only = GETPOST('lateonly');
-
+	
 	require_once DOL_DOCUMENT_ROOT.'/comm/action/class/cactioncomm.class.php';
 	$caction=new CActionComm($db);
 	$arraylist=$caction->liste_array(1, 'code', '', (empty($conf->global->AGENDA_USE_EVENT_TYPE)?1:0));
@@ -396,11 +411,6 @@ if ($resql)
 		if ($obj->percent > 0 && $obj->percent < 100 && $obj->dp2 && $db->jdate($obj->dp2) < ($now - $delay_warning)) $late=1;
 		if ($obj->percent > 0 && $obj->percent < 100 && ! $obj->dp2 && $obj->dp && $db->jdate($obj->dp) < ($now - $delay_warning)) $late=1;
 		
-		if (!$late && $late_only) {
-			$i++;
-			continue;
-		}
-	
         // Discard auto action if option is on
         if (! empty($conf->global->AGENDA_ALWAYS_HIDE_AUTO) && $obj->type_code == 'AC_OTH_AUTO')
         {
