@@ -1060,6 +1060,9 @@ if ($resql)
     while ($i < min($num,$limit))
     {
         $obj = $db->fetch_object($resql);
+
+	$late = (($objp->fk_statut > 0) && ($objp->fk_statut < 3) && max($db->jdate($objp->date_commande),$db->jdate($objp->date_delivery)) < ($now - $conf->commande->client->warning_delay));
+
         $var=!$var;
         print '<tr '.$bc[$var].'>';
 
