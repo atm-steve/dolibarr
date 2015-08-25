@@ -433,6 +433,7 @@ if ($massaction == 'confirm_createbills') {
  */
 
 $now=dol_now();
+$late_only = GETPOST('lateonly');
 
 $form = new Form($db);
 $formother = new FormOther($db);
@@ -556,6 +557,10 @@ foreach ($search_array_options as $key => $val)
 $parameters=array();
 $reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
+
+if ($late_only) {
+	$sql .= " AND (c.fk_statut IN (1, 2) AND GREATEST(IFNULL(UNIX_TIMESTAMP(c.date_commande), 0), IFNULL(UNIX_TIMESTAMP(c.date_livraison), 0)) < " . ($now - $conf->commande->client->warning_delay) . ")";
+}
 
 $sql.= $db->order($sortfield,$sortorder);
 

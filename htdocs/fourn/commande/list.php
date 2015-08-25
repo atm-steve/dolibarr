@@ -235,6 +235,7 @@ if (empty($reshook))
  */
 
 $now=dol_now();
+$late_only = GETPOST('lateonly');
 
 $form=new Form($db);
 $thirdpartytmp = new Fournisseur($db);
@@ -373,6 +374,12 @@ $parameters=array();
 $reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
 
+if ($late_only) {
+	$sql .= " AND cf.fk_statut IN (1, 2)";
+	$sql .= " AND ((cf.date_livraison IS NOT NULL AND UNIX_TIMESTAMP(cf.date_livraison) < " . ($now - $conf->commande->fournisseur->warning_delay) . ")";
+	$sql .= " OR (cf.date_creation IS NOT NULL AND UNIX_TIMESTAMP(cf.date_creation) < " . ($now - $conf->commande->fournisseur->warning_delay) . ") AND cf.date_livraison IS NULL)";
+}
+
 $sql.= $db->order($sortfield,$sortorder);
 
 $nbtotalofrecords = '';
@@ -428,7 +435,9 @@ if ($resql)
 	    $tmpkey=preg_replace('/search_options_/','',$key);
 	    if ($val != '') $param.='&search_options_'.$tmpkey.'='.urlencode($val);
 	}
-
+	if ($late_only) {
+		$param .= '&lateonly=1';
+	}
 	//$massactionbutton=$form->selectMassAction('', $massaction == 'presend' ? array() : array('presend'=>$langs->trans("SendByMail"), 'builddoc'=>$langs->trans("PDFMerge")));
 
 	// Lignes des champs de filtre
@@ -702,6 +711,9 @@ if ($resql)
 	while ($i < min($num,$limit))
 	{
 		$obj = $db->fetch_object($resql);
+		
+		$date_to_test = (!empty($obj->date_livraison) ? $obj->date_livraison : $obj->date_creation);
+        $late = (!empty($date_to_test) && ($obj->fk_statut == 1 || $obj->fk_statut == 2) && $db->jdate($date_to_test) < ($now - $conf->commande->fournisseur->warning_delay));
 		$var=!$var;
 
         $objectstatic->id=$obj->rowid;
@@ -733,6 +745,9 @@ if ($resql)
 			$filename=dol_sanitizeFileName($obj->ref);
 			$filedir=$conf->fournisseur->dir_output.'/commande' . '/' . dol_sanitizeFileName($obj->ref);
 			print $formfile->getDocumentsLink($objectstatic->element, $filename, $filedir);
+			if ($late) {
+				print ' ' . img_picto($langs->trans("Late"),"warning");
+			}
 			print '</td></tr></table>';
 
 			print '</td>'."\n";
