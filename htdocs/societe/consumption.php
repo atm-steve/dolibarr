@@ -53,6 +53,7 @@ if (! $sortfield) $sortfield='dateprint';
 // Search fields
 $sref=GETPOST("sref");
 $sprod_fulldescr=GETPOST("sprod_fulldescr");
+$sprod_user=GETPOST("sprod_user");
 $month	= GETPOST('month','int');
 $year	= GETPOST('year','int');
 
@@ -61,12 +62,13 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
 {
     $sref='';
     $sprod_fulldescr='';
+    $sprod_user='';
     $year='';
     $month='';
 }
 // Customer or supplier selected in drop box
 $thirdTypeSelect = GETPOST("third_select_id");
-$type_element = GETPOST('type_element')?GETPOST('type_element'):'';
+$type_element = GETPOST('type_element')?GETPOST('type_element'):'invoice';
 
 
 $langs->load("companies");
@@ -206,9 +208,9 @@ if ($type_element == 'invoice')
 { 	// Customer : show products from invoices
 	require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 	$documentstatic=new Facture($db);
-	$sql_select = 'SELECT f.rowid as doc_id, f.facnumber as doc_number, f.type as doc_type, f.datef as dateprint, f.fk_statut as status, f.paye as paid, ';
-	$tables_from = MAIN_DB_PREFIX."facture as f,".MAIN_DB_PREFIX."facturedet as d";
-	$where = " WHERE f.fk_soc = s.rowid AND s.rowid = ".$socid;
+	$sql_select = 'SELECT f.rowid as doc_id, f.facnumber as doc_number, f.type as doc_type, f.datef as dateprint, f.fk_statut as status, f.paye as paid, u.firstname, u.lastname, ';
+	$tables_from = MAIN_DB_PREFIX."facture as f,".MAIN_DB_PREFIX."facturedet as d,".MAIN_DB_PREFIX."facturedet_extrafields as dex,  ".MAIN_DB_PREFIX."user as u ";
+	$where = " WHERE f.fk_soc = s.rowid AND s.rowid = ".$socid." AND dex.fk_object=f.rowid AND (dex.fk_user=u.rowid OR dex.fk_user=0) ";
 	$where.= " AND d.fk_facture = f.rowid";
 	$where.= " AND f.entity = ".$conf->entity;
 	$dateprint = 'f.datef';
@@ -315,6 +317,7 @@ if (!empty($sql_select))
 	    if (GETPOST('type_element') != 'fichinter') $sql.= " OR p.label LIKE '%".$db->escape($sprod_fulldescr)."%'";
 	    $sql.=")";
 	}
+	if ($sprod_user) $sql.= " AND (CONCAT(u.firstname,' ',u.lastname) LIKE '%".$sprod_user."%')";
 	$sql.= $db->order($sortfield,$sortorder);
 
 	$resql=$db->query($sql);
@@ -333,7 +336,7 @@ if (empty($elementTypeArray) && ! $object->client && ! $object->fournisseur)
 }
 
 // Define type of elements
-$typeElementString = $form->selectarray("type_element", $elementTypeArray, GETPOST('type_element'), $showempty, 0, 0, '', 0, 0, $disabled, '', 'maxwidth150onsmartphone');
+$typeElementString = $form->selectarray("type_element", $elementTypeArray, $type_element, $showempty, 0, 0, '', 0, 0, $disabled, '', 'maxwidth150onsmartphone');
 $button = '<input type="submit" class="button" name="button_third" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
 
 $param='';
@@ -385,6 +388,9 @@ if ($sql_select)
     print '<td class="liste_titre" align="center">';
     print '</td>';
     print '<td class="liste_titre" align="center">';
+    print '<input class="flat" type="text" name="sprod_user" size="15" value="'.dol_escape_htmltag($sprod_user).'">'; 
+    print '</td>';
+    print '<td class="liste_titre" align="center">';
     print '</td>';
     print '<td class="liste_titre" align="right">';
     $searchpicto=$form->showFilterAndCheckAddButtons(0);
@@ -399,6 +405,7 @@ if ($sql_select)
     print_liste_field_titre('Status',$_SERVER['PHP_SELF'],'fk_statut','',$param,'align="center"',$sortfield,$sortorder);
     print_liste_field_titre('Product',$_SERVER['PHP_SELF'],'','',$param,'align="left"',$sortfield,$sortorder);
     print_liste_field_titre('Quantity',$_SERVER['PHP_SELF'],'prod_qty','',$param,'align="right"',$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans('Esthéticienne'),$_SERVER['PHP_SELF'],'','',$param,'align="left"',$sortfield,$sortorder);
     print_liste_field_titre('TotalHT',$_SERVER['PHP_SELF'],'total_ht','',$param,'align="right"',$sortfield,$sortorder);
     print_liste_field_titre('UnitPrice',$_SERVER['PHP_SELF'],'','',$param,'align="right"',$sortfield,$sortorder);
     print "</tr>\n";
@@ -583,7 +590,9 @@ if ($sql_select)
 
 		print '<td align="right">'.$objp->prod_qty.'</td>';
 		$total_qty+=$objp->prod_qty;
-
+		
+		print '<td align="right">'.$objp->firstname.' '.$objp->lastname.'</td>';
+		
 		print '<td align="right">'.price($objp->total_ht).'</td>';
 		$total_ht+=$objp->total_ht;
 
@@ -597,6 +606,7 @@ if ($sql_select)
 	print '<td>' . $langs->trans('Total') . '</td>';
 	print '<td colspan="3"></td>';
 	print '<td align="right">' . $total_qty . '</td>';
+	print '<td></td>';
 	print '<td align="right">' . price($total_ht) . '</td>';
 	print '<td align="right">' . price($total_ht/(empty($total_qty)?1:$total_qty)) . '</td>';
 	print "</table>";
