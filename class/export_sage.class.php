@@ -128,7 +128,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_compte_general'			=> "40100000",
 					'numero_compte_tiers'			=> $code_compta,
 	
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> (!empty($facture['libelle']) ? $facture['libelle'] : $tiers['nom']),
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
