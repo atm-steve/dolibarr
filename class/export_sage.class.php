@@ -34,8 +34,12 @@ class TExportComptaSage extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
+			$facture['date']=date('dmy', $facture['date']);
+			$facture['date_lim_reglement'] = date('dmy', $facture['date_lim_reglement']);
+
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
+//var_dump($facture);exit;
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
