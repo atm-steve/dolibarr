@@ -348,6 +348,8 @@ class TExportCompta extends TObjetStd {
 			$facture = new FactureFournisseur($db);
 			$facture->fetch($obj->rowid);
 
+			$facture->date_lim_reglement = $facture->date_echeance;
+
 			if($this->addExportTime) {			
 				 $facture->array_options['options_date_compta'] = time(); 
 				 $facture->insertExtraFields();
