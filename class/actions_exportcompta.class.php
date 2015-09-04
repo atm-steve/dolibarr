@@ -64,7 +64,7 @@ class ActionsExportCompta
         if (in_array('invoicecard', explode(':', $parameters['context'])))
         {
           global $conf;
-		  if(!empty($conf->global->EXPORT_COMPTA_HIDE_GENERATE_FACTURE)) {
+		  if(!empty($conf->global->EXPORT_COMPTA_HIDE_GENERATE_FACTURE) && !empty($object->array_options['options_date_compta'])  ) {
           ?>
           <script language="javascript">
             $(document).ready(function() {
