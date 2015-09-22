@@ -907,7 +907,9 @@ class TExportCompta extends TObjetStd {
 			
 			// Gestion du format de la valeur
 			if($valeur == '') $valeur = $fmt['default'];
-			if($fmt['type'] == 'date' && !empty($valeur) && !empty($fmt['format'])) $valeur = date($fmt['format'], $valeur);
+			if($fmt['type'] == 'date' && !empty($valeur) && !empty($fmt['format'])) {
+				$valeur = date($fmt['format'], $valeur);
+			}
 			
 			// Suppression de tous les caractères accentués pour compatibilités tous systèmes
 			$valeur = $this->suppr_accents($valeur);
