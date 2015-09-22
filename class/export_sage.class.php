@@ -416,5 +416,44 @@ class TExportComptaSage extends TExportCompta {
 
 		return $contenuFichier;
 	}
+
+		function get_file_tiers($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabTiers = parent::get_tiers($dt_deb, $dt_fin);
+		
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach($TabTiers as $code_compta=>$tiers) {
+			
+			$ligneFichier=array(
+				'numero_compte'=>$code_compta,
+				'numero_compte_general'			=> "41100000",
+				'libelle'=>$tiers['nom'],
+				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
+				'adresse1'=>$tiers['address'],
+				'zip'=>$tiers['zip'],
+				'ville'=>$tiers['town'],
+				'telephone'=>$tiers['phone'],
+				'domiciliation'=>$tiers['domiciliation'],
+				'rib'=>$tiers['code_banque'].$tiers['code_quichet'].$tiers['code_banque'].$tiers['compte_bancaire'].$tiers['cle_rib'],
+				'phone'=>$tiers['phone'],
+				'fax'=>$tiers['fax'],
+				'email'=>$tiers['email'],
+				'siret'=>$tiers['siret'],
+				'pays'=>$tiers['pays'],
+				'iban'=>$tiers['iban'],
+				'bic'=>$tiers['bic'],
+				'mode_rglt'	=> $this->TModeRglt[$tiers['mode_reglement_code']],
+				'tms'=>strtotime($tiers['tms']),
+			);
+			
+			$contenuFichier .= $separateurLigne . parent::get_line($format, $ligneFichier);
+		}
+
+		return $contenuFichier;
+	}
+
 }
 ?>
