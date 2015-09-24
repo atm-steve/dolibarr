@@ -661,9 +661,19 @@ class TExportCompta extends TObjetStd {
 			
 			$row=get_object_vars($obj);
 			
-			$code = $obj->code_compta;	
+			$code = $obj->code_compta;
+			$code_fournisseur = $obj->code_compta_fournisseur;	
 			
-			$TTier[$code] = $row;
+			if(!empty($code)){
+				$row['client'] = 1;
+				$row['fournisseur'] = 0;
+				$TTier[$code] = $row ;
+			}
+			if(!empty($code_fournisseur)){
+				$row['client'] = 0;
+				$row['fournisseur'] = 1;
+				$TTier[$code_fournisseur] = $row;
+			} 
 			
 		}	
 			
