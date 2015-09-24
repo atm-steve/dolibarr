@@ -431,7 +431,7 @@ class TExportComptaSage extends TExportCompta {
 			
 			$ligneFichier=array(
 				'numero_compte'=>$code_compta,
-				'numero_compte_general'			=> "41100000",
+				'numero_compte_general'	=> ($tiers['fournisseur']) ? "40100000" : "41100000",
 				'libelle'=>$tiers['nom'],
 				'type_tiers'=>($tiers['fournisseur']) ? 2 : 1,
 				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
