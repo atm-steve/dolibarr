@@ -131,7 +131,8 @@ class TExportComptaSage extends TExportCompta {
 					'numero_compte_general'			=> "40100000",
 					'numero_compte_tiers'			=> $code_compta,
 	
-					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
+//					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
+					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
@@ -152,7 +153,8 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
 					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> $tiers['nom'],
+//					'libelle'						=> $tiers['nom'],
+					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
