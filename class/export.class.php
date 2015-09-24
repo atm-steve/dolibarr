@@ -656,10 +656,12 @@ class TExportCompta extends TObjetStd {
 		// Construction du tableau de données
 		$TTier = array();
 		while($obj = $db->fetch_object($resql)) {
+				
+			$obj->address = strtr($obj->address, array("\n"=>' ',"\r"=>''));
 			
 			$row=get_object_vars($obj);
 			
-			$code = $obj->code_compta;
+			$code = $obj->code_compta;	
 			
 			$TTier[$code] = $row;
 			
