@@ -4461,7 +4461,7 @@ class Facture extends CommonInvoice
 		$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.'facture';
 		$sql .= ' WHERE situation_cycle_ref = '.$this->situation_cycle_ref;
 		$sql .= ' AND situation_counter < '.$this->situation_counter;
-		$sql .= ' AND entity = '.($this->entity > 0 ? $this->entity : $conf->entity);
+		$sql .= ' AND entity in ('.getEntity('facture').')';
 		$resql = $this->db->query($sql);
 		$res = array();
 		if ($resql && $resql->num_rows > 0) {
@@ -4542,8 +4542,8 @@ class Facture extends CommonInvoice
 		if (!empty($this->situation_cycle_ref)) {
 			// No point in testing anything if we're not inside a cycle
 			$sql = 'SELECT max(situation_counter) FROM '.MAIN_DB_PREFIX.'facture';
-			$sql .= ' WHERE situation_cycle_ref = '.$this->situation_cycle_ref;
-			$sql .= ' AND entity = '.($this->entity > 0 ? $this->entity : $conf->entity);
+			$sql .= ' WHERE situation_cycle_ref = '.(int) $this->situation_cycle_ref;
+			$sql .= ' AND entity in ('.getEntity('facture').')';
 			$resql = $this->db->query($sql);
 
 			if ($resql && $resql->num_rows > 0) {
