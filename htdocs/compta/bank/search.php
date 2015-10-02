@@ -70,7 +70,7 @@ $pageprev = $page - 1;
 $pagenext = $page + 1;
 $limit = $conf->liste_limit;
 if (! $sortorder) $sortorder='DESC';
-if (! $sortfield) $sortfield='b.dateo';
+if (! $sortfield) $sortfield='b.rowid';
 
 
 /*
