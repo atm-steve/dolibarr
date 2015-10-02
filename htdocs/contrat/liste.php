@@ -80,7 +80,7 @@ $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."contratdet as cd ON c.rowid = cd.fk_contrat
 if ($conf->clivici->enabled) $sql .= ' INNER JOIN ' . MAIN_DB_PREFIX . 'contrat_extrafields as ce ON ce.fk_object = c.rowid';
 $sql.= " WHERE c.fk_soc = s.rowid ";
 $sql.= " AND c.entity = ".$conf->entity;
-if ($socid) $sql.= " AND s.rowid = ".$socid;
+if ($socid) $sql.= " AND s.rowid = ".$db->escape($socid);
 if (!$user->rights->societe->client->voir && !$socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
 if ($search_nom) {
     $sql .= natural_search('s.nom', $search_nom);
@@ -110,14 +110,13 @@ if ($resql)
     $num = $db->num_rows($resql);
     $i = 0;
 
-  //print_barre_liste($langs->trans('BillsCustomers').' '.($socid?' '.$soc->nom:''),$page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num,$nbtotalofrecords);
-    print_barre_liste($langs->trans("ListOfContracts"), $page, $_SERVER["PHP_SELF"], '&search_contract='.$search_contract.'&search_nom='.$search_nom, $sortfield, $sortorder,'',$num,$nbtotalofrecords);
+    print_barre_liste($langs->trans("ListOfContracts"), $page, $_SERVER["PHP_SELF"], '&search_contract='.htmlspecialchars($search_contract).'&search_nom='.htmlspecialchars($search_nom), $sortfield, $sortorder,'',$num,$nbtotalofrecords);
 
     print '<table class="liste" width="100%">';
 
     print '<tr class="liste_titre">';
-    $param='&amp;search_contract='.$search_contract;
-    $param.='&amp;search_nom='.$search_nom;
+    $param='&amp;search_contract='.htmlspecialchars($search_contract);
+    $param.='&amp;search_nom='.htmlspecialchars($search_nom);
     print_liste_field_titre($langs->trans("Ref"), $_SERVER["PHP_SELF"], "c.rowid","","$param",'',$sortfield,$sortorder);
     print_liste_field_titre($langs->trans("Company"), $_SERVER["PHP_SELF"], "s.nom","","$param",'',$sortfield,$sortorder);
     //print_liste_field_titre($langs->trans("DateCreation"), $_SERVER["PHP_SELF"], "c.datec","","$param",'align="center"',$sortfield,$sortorder);
@@ -134,10 +133,10 @@ if ($resql)
     print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
     print '<tr class="liste_titre">';
     print '<td class="liste_titre">';
-    print '<input type="text" class="flat" size="3" name="search_contract" value="'.$search_contract.'">';
+    print '<input type="text" class="flat" size="3" name="search_contract" value="'.htmlspecialchars($search_contract).'">';
     print '</td>';
     print '<td class="liste_titre">';
-    print '<input type="text" class="flat" size="24" name="search_nom" value="'.$search_nom.'">';
+    print '<input type="text" class="flat" size="24" name="search_nom" value="'.htmlspecialchars($search_nom).'">';
     print '</td>';
     print '<td class="liste_titre">&nbsp;</td>';
     //print '<td class="liste_titre">&nbsp;</td>';
