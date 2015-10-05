@@ -247,6 +247,7 @@ class TExportComptaSage30 extends TExportCompta {
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				
+				$type = '0';
 				if($facture['type'] == 2){
 					$type = '0';
 					if($montant > 0 ) $type = '1';
