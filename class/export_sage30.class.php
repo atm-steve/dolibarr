@@ -243,9 +243,19 @@ class TExportComptaSage30 extends TExportCompta {
 				$contenuFichier .= $separateurLigne . parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				
+				if($facture['type'] == 2){
+					$type = '0';
+					if($montant > 0 ) $type = '1';
+				}
+				else{
+					$type = '1';
+					if($montant < 0 ) $type = '0';
+				}
+				
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
@@ -255,7 +265,7 @@ class TExportComptaSage30 extends TExportCompta {
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $this->TModeRglt[$facture['mode_reglement_code']],
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'sens'							=> ($facture['type'] == 2 || $montant < 0 ? '0' : '1'),
+					'sens'							=> $type,
 					'montant'						=> abs(round($montant,2)),
 					'type_ecriture'					=> 'G'
 				);
