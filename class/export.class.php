@@ -244,10 +244,18 @@ class TExportCompta extends TObjetStd {
 						$codeComptableProduit = 'NOCODE';
 					} Milestone ! */
 				}
-				
-				// Code compta TVA
-				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf->global->COMPTA_VAT_ACCOUNT;
-
+                
+                if(!empty($facture->thirdparty->array_options['options_code_tva'])) {
+                    $codeComptableTVA  = $facture->thirdparty->array_options['options_code_tva'];
+                }
+                else if(!empty($produit->array_options['options_code_tva'])) {
+                    $codeComptableTVA  = $produit->array_options['options_code_tva'];
+                }
+                else{
+				    // Code compta TVA
+				    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                }
+                
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
 				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
@@ -427,10 +435,20 @@ class TExportCompta extends TObjetStd {
 				}
 				
 				// Code compta TVA
-				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
 				
-				// Spécifique Travail Associé : si facture réglé, mettre TVA dans un autre compte
-				if($facture->paye == 1) $codeComptableTVA = '44566200';
+				if(!empty($facture->thirdparty->array_options['options_code_tva_achat'])) {
+				    $codeComptableTVA  = $facture->thirdparty->array_options['options_code_tva_achat'];
+				}
+                else if(!empty($produit->array_options['options_code_tva_achat'])) {
+                    $codeComptableTVA  = $produit->array_options['options_code_tva_achat'];
+				}
+                else{
+                    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;    
+
+                    // Spécifique Travail Associé : si facture réglé, mettre TVA dans un autre compte
+                    if($facture->paye == 1) $codeComptableTVA = '44566200';
+                }
+				
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;

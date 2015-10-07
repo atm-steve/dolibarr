@@ -236,11 +236,14 @@ class modExportCompta extends DolibarrModules
         $extrafields=new ExtraFields($this->db);
 		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture');
 		
-		dol_include_once('/core/class/extrafields.class.php');
-        $extrafields=new ExtraFields($this->db);
-		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture_fourn');
-		
-				
+        $res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture_fourn');
+        
+        $res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'product',0,0,'');
+        $res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'product',0,0,'');
+
+        $res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'societe',0,0,'');
+        $res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'societe',0,0,'');
+        		
 		$result=$this->load_tables();
 
 		return $this->_init($sql);
