@@ -4,6 +4,7 @@ require('config.php');
 
 ini_set('memory_limit','512M');
 set_time_limit(0);
+error_reporting(E_ALL);
 
 if (!$user->rights->exportcompta->generate) accessforbidden();
 
