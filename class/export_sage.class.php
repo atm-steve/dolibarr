@@ -429,7 +429,7 @@ class TExportComptaSage extends TExportCompta {
 		
 		foreach($TabTiers as $code_compta=>$tiers) {
 			
-			$ligneFichier=array(
+			$ligneFichier=array_merge($tiers, array(
 				'numero_compte'=>$code_compta,
 				'numero_compte_general'	=> ($tiers['fournisseur']) ? "40100000" : "41100000",
 				'libelle'=>$tiers['nom'],
@@ -449,7 +449,7 @@ class TExportComptaSage extends TExportCompta {
 				'iban'=>$tiers['iban'],
 				'bic'=>$tiers['bic'],
 				'mode_rglt'	=> $this->TModeRglt[$tiers['mode_reglement_code']],
-				'tms'=>strtotime($tiers['tms']),
+				'tms'=>strtotime($tiers['tms'])),
 			);
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier).$separateurLigne;

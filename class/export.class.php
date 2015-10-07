@@ -244,10 +244,18 @@ class TExportCompta extends TObjetStd {
 						$codeComptableProduit = 'NOCODE';
 					} Milestone ! */
 				}
-				
-				// Code compta TVA
-				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf->global->COMPTA_VAT_ACCOUNT;
-
+                
+                if(!empty($facture->thirdparty->array_options['options_code_tva'])) {
+                    $codeComptableTVA  = $facture->thirdparty->array_options['options_code_tva'];
+                }
+                else if(!empty($produit->array_options['options_code_tva'])) {
+                    $codeComptableTVA  = $produit->array_options['options_code_tva'];
+                }
+                else{
+				    // Code compta TVA
+				    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                }
+                
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
 				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
@@ -427,10 +435,20 @@ class TExportCompta extends TObjetStd {
 				}
 				
 				// Code compta TVA
-				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
 				
-				// Spécifique Travail Associé : si facture réglé, mettre TVA dans un autre compte
-				if($facture->paye == 1) $codeComptableTVA = '44566200';
+				if(!empty($facture->thirdparty->array_options['options_code_tva_achat'])) {
+				    $codeComptableTVA  = $facture->thirdparty->array_options['options_code_tva_achat'];
+				}
+                else if(!empty($produit->array_options['options_code_tva_achat'])) {
+                    $codeComptableTVA  = $produit->array_options['options_code_tva_achat'];
+				}
+                else{
+                    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;    
+
+                    // Spécifique Travail Associé : si facture réglé, mettre TVA dans un autre compte
+                    if($facture->paye == 1) $codeComptableTVA = '44566200';
+                }
+				
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
@@ -630,9 +648,11 @@ class TExportCompta extends TObjetStd {
 			$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip, s.fournisseur
 			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.label as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
 			, rib.code_guichet, rib.number as 'compte_bancaire', rib.cle_rib, rib.bic, rib.iban_prefix as 'iban', rib.domiciliation, rib.proprio as 'rib_proprio'
+			, ex.fk_soc_affacturage
 			FROM ".MAIN_DB_PREFIX."societe s 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe_rib rib ON (s.rowid=rib.fk_soc AND rib.default_rib=1)
-			LEFT JOIN ".MAIN_DB_PREFIX."c_country p ON (s.fk_pays=p.rowid)
+            LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields ex ON (s.rowid=ex.fk_object)
+            LEFT JOIN ".MAIN_DB_PREFIX."c_country p ON (s.fk_pays=p.rowid)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_paiement rglt ON (s.mode_reglement=rglt.id)
 			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'";
 			
@@ -659,6 +679,24 @@ class TExportCompta extends TObjetStd {
 				
 			$obj->address = strtr($obj->address, array("\n"=>' ',"\r"=>''));
 			
+			if($obj->fk_soc_affacturage>0) {
+                 $saffac = new Societe($db);
+                 $saffac->fetch($obj->fk_soc_affacturage);
+               
+                 $obj->code_client_affacturage = $saffac->code_client;
+                 $obj->code_fournisseur_affacturage = $saffac->code_fournisseur;
+
+                 $obj->code_compta_affacturage = $saffac->code_compta;
+                 $obj->code_compta_fournisseur_affacturage = $saffac->code_compta_fournisseur;
+                 
+  			}
+            else{
+                 $obj->code_client_affacturage = '';
+                 $obj->code_fournisseur_affacturage = '';
+                 $obj->code_compta_affacturage ='';
+                 $obj->code_compta_fournisseur_affacturage ='';
+            }
+            
 			$row=get_object_vars($obj);
 			
 			$code = $obj->code_compta;
