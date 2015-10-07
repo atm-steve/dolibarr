@@ -648,9 +648,11 @@ class TExportCompta extends TObjetStd {
 			$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip, s.fournisseur
 			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.label as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
 			, rib.code_guichet, rib.number as 'compte_bancaire', rib.cle_rib, rib.bic, rib.iban_prefix as 'iban', rib.domiciliation, rib.proprio as 'rib_proprio'
+			, ex.fk_soc_affacturage
 			FROM ".MAIN_DB_PREFIX."societe s 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe_rib rib ON (s.rowid=rib.fk_soc AND rib.default_rib=1)
-			LEFT JOIN ".MAIN_DB_PREFIX."c_country p ON (s.fk_pays=p.rowid)
+            LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields ex ON (s.rowid=ex.fk_object)
+            LEFT JOIN ".MAIN_DB_PREFIX."c_country p ON (s.fk_pays=p.rowid)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_paiement rglt ON (s.mode_reglement=rglt.id)
 			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'";
 			
@@ -677,6 +679,24 @@ class TExportCompta extends TObjetStd {
 				
 			$obj->address = strtr($obj->address, array("\n"=>' ',"\r"=>''));
 			
+			if($obj->fk_soc_affacturage>0) {
+                 $saffac = new Societe($db);
+                 $saffac->fetch($obj->fk_soc_affacturage);
+               
+                 $obj->code_client_affacturage = $saffac->code_client;
+                 $obj->code_fournisseur_affacturage = $saffac->code_fournisseur;
+
+                 $obj->code_compta_affacturage = $saffac->code_compta;
+                 $obj->code_compta_fournisseur_affacturage = $saffac->code_compta_fournisseur;
+                 
+  			}
+            else{
+                 $obj->code_client_affacturage = '';
+                 $obj->code_fournisseur_affacturage = '';
+                 $obj->code_compta_affacturage ='';
+                 $obj->code_compta_fournisseur_affacturage ='';
+            }
+            
 			$row=get_object_vars($obj);
 			
 			$code = $obj->code_compta;

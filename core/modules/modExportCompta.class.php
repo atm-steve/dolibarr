@@ -244,6 +244,9 @@ class modExportCompta extends DolibarrModules
         $res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'societe',0,0,'');
         $res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'societe',0,0,'');
         		
+        $res = $extrafields->addExtraField('fk_soc_affacturage', 'Tiers pour  affacturage', 'sellist', 0, '', 'societe',0,0,'',serialize(array('options'=>array('societe:nom:rowid'=>null))));
+                
+                
 		$result=$this->load_tables();
 
 		return $this->_init($sql);

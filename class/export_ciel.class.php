@@ -143,7 +143,7 @@ class TExportComptaCiel extends TExportCompta {
 	
 		foreach($Tab as $code_compta=>$tiers) {
 			
-			$ligneFichier=array(
+			$ligneFichier=array_merge($tiers, array(
 				'numero_compte'=>$code_compta,
 				'libelle'=>$tiers['nom'], 
 				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
@@ -157,7 +157,7 @@ class TExportComptaCiel extends TExportCompta {
 				'pays'=>$tiers['pays'],
 				'iban'=>$tiers['iban'],
 				'bic'=>$tiers['bic'],
-			);
+			));
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;	
 		}
