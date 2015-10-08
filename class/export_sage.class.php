@@ -449,8 +449,8 @@ class TExportComptaSage extends TExportCompta {
 				'iban'=>$tiers['iban'],
 				'bic'=>$tiers['bic'],
 				'mode_rglt'	=> $this->TModeRglt[$tiers['mode_reglement_code']],
-				'tms'=>strtotime($tiers['tms'])),
-			);
+				'tms'=>strtotime($tiers['tms']),
+			));
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier).$separateurLigne;
 		}
