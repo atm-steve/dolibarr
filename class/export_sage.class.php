@@ -423,7 +423,7 @@ class TExportComptaSage extends TExportCompta {
 		global $conf;
 
 		$TabTiers = parent::get_tiers($dt_deb, $dt_fin);
-		$separateurLigne="\n";
+		$separateurLigne="\r\n";
 		$numEcriture = 1;
 		$numLignes = 1;
 		
