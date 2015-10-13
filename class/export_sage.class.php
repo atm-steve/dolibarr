@@ -437,7 +437,7 @@ class TExportComptaSage extends TExportCompta {
 				'numero_compte'=>$code_compta,
 				'numero_compte_general'	=> ($tiers['fournisseur']) ? "40100000" : "41100000",
 				'libelle'=>html_entity_decode($tiers['nom'],ENT_QUOTES,'UTF-8'),
-				'type_tiers'=>($tiers['fournisseur']) ? 1 : 0,
+				'type_tiers'=>($tiers['fournisseur']) ? 2 : 1,
 				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
 				'adresse1'=>html_entity_decode($tiers['address'],ENT_QUOTES,'UTF-8'),
 				'zip'=>$tiers['zip'],
