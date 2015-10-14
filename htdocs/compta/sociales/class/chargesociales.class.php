@@ -229,6 +229,7 @@ class ChargeSociales extends CommonObject
                 $result=$accountline->delete_urls($user);
                 if ($result < 0)
                 {
+                	$this->error=$accountline->error;
                     $error++;
                 }
             }
