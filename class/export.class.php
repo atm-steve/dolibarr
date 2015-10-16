@@ -654,7 +654,8 @@ class TExportCompta extends TObjetStd {
             LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields ex ON (s.rowid=ex.fk_object)
             LEFT JOIN ".MAIN_DB_PREFIX."c_country p ON (s.fk_pays=p.rowid)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_paiement rglt ON (s.mode_reglement=rglt.id)
-			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'";
+			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'
+			AND s.client != 2";
 			
 			
 		}
@@ -666,7 +667,8 @@ class TExportCompta extends TObjetStd {
 			LEFT JOIN ".MAIN_DB_PREFIX."societe_rib rib ON (s.rowid=rib.fk_soc AND rib.default_rib=1)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_pays p ON (s.fk_pays=p.rowid)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_paiement rglt ON (s.mode_reglement=rglt.id)
-			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'";
+			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'
+			AND s.client != 2";
 			
 		}
 	
