@@ -670,7 +670,6 @@ class TExportCompta extends TObjetStd {
 			
 		}
 	
-	
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
@@ -702,12 +701,12 @@ class TExportCompta extends TObjetStd {
 			$code = $obj->code_compta;
 			$code_fournisseur = $obj->code_compta_fournisseur;	
 			
-			if(!empty($code)){
+			if(!empty($code) && !is_null($code)){
 				$row['client'] = 1;
 				$row['fournisseur'] = 0;
 				$TTier[$code] = $row ;
 			}
-			if(!empty($code_fournisseur)){
+			if(!empty($code_fournisseur) && !is_null($code)){
 				$row['client'] = 0;
 				$row['fournisseur'] = 1;
 				$TTier[$code_fournisseur] = $row;
