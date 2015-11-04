@@ -116,7 +116,7 @@ class InterfaceExportComptatrigger
         // Put here code you want to execute when a Dolsibarr business events occurs.
         // Data and type of action are stored into $object and $action
         // Users
-        if ($action == 'BILL_UNVALIDATE' && ( !empty($object->array_options['options_date_compta']) ) ){
+        if ($action == 'BILL_UNVALIDATE' && !empty($object->array_options['options_date_compta']) && empty($conf->global->EXPORT_COMPTA_ALLOW_UNVALIDATE) ){
                 
             $langs->load('exportcompta@exportcompta') ;
                 
