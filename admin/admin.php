@@ -157,6 +157,22 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+
+// Champ date utilisé pour les bornes sur sur les tiers
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_datetiers');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_DATE_TIERS');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("BaseDateForThirdParties");
+print '</td><td width="60" align="right">';
+print $form->combo('', 'EXPORT_COMPTA_DATE_TIERS', $exp->TDateTiers, $conf->global->EXPORT_COMPTA_DATE_TIERS);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+
 // Champ date utilisé pour les bornes sur notes de frais
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_factclifilter');

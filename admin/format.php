@@ -170,7 +170,7 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 	
 	print '</table>';
 	
-	print '<input type="submit" class="button" value="'.$langs->trans("Save").'" />';
+	print '<div class="tabsAction"><input type="submit" class="button" value="'.$langs->trans("Save").'" /></div>';
 	$form->end();
 }
 

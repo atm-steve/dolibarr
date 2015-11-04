@@ -64,6 +64,12 @@ class TExportCompta extends TObjetStd {
 			,'datev' => 'Date de valeur'
 		);
 		
+		$this->TDateTiers=array(
+			'tms'=>'Date de dernière opération'
+			,'datec'=>'Date de création'
+		);
+		
+		
 		$this->TTypeExport = array();
 		if(!empty($conf->facture->enabled)) $this->TTypeExport['ecritures_comptables_vente'] = 'Ecritures comptables vente';
 		if(!empty($conf->fournisseur->enabled)) $this->TTypeExport['ecritures_comptables_achat'] = 'Ecritures comptables achats';
@@ -644,6 +650,8 @@ class TExportCompta extends TObjetStd {
 	function get_tiers($dt_deb, $dt_fin) {
 		global $db, $conf, $user;
 	
+		$field = empty($conf->global->EXPORT_COMPTA_DATE_TIERS) ? 'tms' : $conf->global->EXPORT_COMPTA_DATE_TIERS;
+	
 		if((float)DOL_VERSION>=3.7) {
 			$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip, s.fournisseur
 			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.label as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
@@ -654,7 +662,7 @@ class TExportCompta extends TObjetStd {
             LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields ex ON (s.rowid=ex.fk_object)
             LEFT JOIN ".MAIN_DB_PREFIX."c_country p ON (s.fk_pays=p.rowid)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_paiement rglt ON (s.mode_reglement=rglt.id)
-			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'
+			WHERE s.".$field." BETWEEN '".$dt_deb."' AND '".$dt_fin."'
 			AND s.client != 2";
 			
 			
@@ -667,7 +675,7 @@ class TExportCompta extends TObjetStd {
 			LEFT JOIN ".MAIN_DB_PREFIX."societe_rib rib ON (s.rowid=rib.fk_soc AND rib.default_rib=1)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_pays p ON (s.fk_pays=p.rowid)
 			LEFT JOIN ".MAIN_DB_PREFIX."c_paiement rglt ON (s.mode_reglement=rglt.id)
-			WHERE s.tms BETWEEN '".$dt_deb."' AND '".$dt_fin."'
+			WHERE s.".$field." BETWEEN '".$dt_deb."' AND '".$dt_fin."'
 			AND s.client != 2";
 			
 		}
