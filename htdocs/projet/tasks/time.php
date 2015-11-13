@@ -566,7 +566,7 @@ if (($id > 0 || ! empty($ref)) || $projectidforalltimes > 0)
 			print '<td class="maxwidthonsmartphone">';
 			print img_object('','user','class="hideonsmartphone"');
 			$contactsoftask=$object->getListContactId('internal');
-			if (count($contactsoftask)>0)
+			/*if (count($contactsoftask)>0)
 			{
 				if(in_array($user->id, $contactsoftask)) $userid = $user->id;
 				else $userid=$contactsoftask[0];
@@ -575,7 +575,10 @@ if (($id > 0 || ! empty($ref)) || $projectidforalltimes > 0)
 			else
 			{
 				print img_error($langs->trans('FirstAddRessourceToAllocateTime')).$langs->trans('FirstAddRessourceToAllocateTime');
-			}
+			}*/
+			$userid = $user->id;
+			print $form->select_dolusers((GETPOST('userid')?GETPOST('userid'):$userid), 'userid', 0, '', 0, '', '', 0, 0, 0, '', 0, $langs->trans("ResourceNotAssignedToTask"));
+			
 			print '</td>';
 
 			// Note
