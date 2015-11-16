@@ -172,6 +172,19 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Logiciel d'export
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_justmm');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_TIERS_JUSTMM');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("ExportJustMM");
+print '</td><td width="60" align="right">';
+print $form->combo('', 'EXPORT_COMPTA_TIERS_JUSTMM', array(0=>$langs->trans('No'), 1=>$langs->trans('Yes')), $conf->global->EXPORT_COMPTA_TIERS_JUSTMM);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
 
 // Champ date utilisé pour les bornes sur notes de frais
 $var=! $var;

@@ -51,3 +51,4 @@ ProductExportFieldBuying=Champ complémentaire contenant le code comptable d'ach
 ProductFRDomTomFieldBuying=Champ complémentaire contenant le code comptable d'achat France Dom / Tom
 ProductFRSuspFieldBuying=Champ complémentaire contenant le code comptable d'achat France Suspension TVA
 BillAlreadyExported=Facture déjà exportée
+ExportJustMM=Exporté juste les maisons mères

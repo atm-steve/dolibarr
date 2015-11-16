@@ -665,6 +665,12 @@ class TExportCompta extends TObjetStd {
 			WHERE s.".$field." BETWEEN '".$dt_deb."' AND '".$dt_fin."'
 			AND s.client != 2";
 			
+			if(!empty($conf->global->EXPORT_COMPTA_TIERS_JUSTMM)) {
+				
+				$sql.=" AND s.parent IS NULL ";
+				
+			}
+			
 			
 		}
 		else {
