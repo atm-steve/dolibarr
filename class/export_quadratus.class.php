@@ -619,7 +619,7 @@ class TExportComptaQuadratus extends TExportCompta {
 				'libelle_libre'					=> $tiers['nom'],
 				'montant'						=> abs($reglement['amount'] * 100),
 				'mode_reglement'				=>$reglement['paiement_mode'],
-				
+				'sens'							=>($reglement['amount'] > 0 ? 'C' : 'D'),
 			);
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
@@ -630,10 +630,10 @@ class TExportComptaQuadratus extends TExportCompta {
 				'numero_compte'					=> $tiers['code_compta'],
 				'code_journal'					=> $tiers['code_compta'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
-				'reference'					=> $tiers['nom'],
+				'reference'						=> $tiers['nom'],
 				'montant'						=> abs($reglement['amount'] * 100),
 				'mode_reglement'				=>$reglement['paiement_mode'],
-				
+				'sens'							=>($reglement['amount'] > 0 ? 'C' : 'D'),
 			);
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;

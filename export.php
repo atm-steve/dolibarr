@@ -129,7 +129,7 @@ exit();*/
 
 llxHeader('',$langs->trans('AccountancyExports'),'');
 
-$form = new TFormCore($_SERVER['PHP_SELF'], 'exportCompta');
+$form = new TFormCore($_SERVER['PHP_SELF'], 'exportCompta','get');
 print $form->hidden('action', 'export');
 
 print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
