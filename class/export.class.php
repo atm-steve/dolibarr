@@ -576,6 +576,29 @@ class TExportCompta extends TObjetStd {
 		return $TNDF;
 	}
 
+	function get_code_compable($fk_soc) {
+		global $db, $conf, $langs;
+		
+		$r = '';
+		
+		if($fk_soc>0) {
+			dol_include_once('/societe/class/societe.class.php');
+			$s=new Societe($db);
+			$s->fetch($fk_soc);
+			
+			if(!empty($s->parent) && !empty($conf->global->EXPORT_COMPTA_TIERS_JUSTMM)) {
+				return $this->get_code_compable($s->parent);
+			}
+			elseif(!empty($s->scode_compta)) {
+				return $s->scode_compta;
+			}
+		}
+		
+		if(empty($r))$r = $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+		
+		return $r;
+	}
+
 	/* 
 	 * Récupération dans Dolibarr de la liste des règlements clients avec détails facture + ligne + produit + client
 	 * Tous les règlement pour l'entité concernée, avec date de règlement entre les bornes sélectionnées
@@ -585,7 +608,7 @@ class TExportCompta extends TObjetStd {
 
 		// Requête de récupération des règlements
 		$sql = "SELECT r.rowid, f.facnumber num_fact, r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
-		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom, ba.account_number";
+		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom, ba.account_number,s.rowid as fk_soc";
 		$sql.= " FROM llx_paiement r";
 		$sql.= " LEFT JOIN llx_paiement_facture rf ON rf.fk_paiement = r.rowid";
 		$sql.= " LEFT JOIN llx_facture f ON f.rowid = rf.fk_facture";
@@ -606,7 +629,7 @@ class TExportCompta extends TObjetStd {
 			$rglt = array();
 			
 			$rglt['client'] = array(
-				'code_compta' => $obj->client_code_compta == '' ? $conf->global->COMPTA_ACCOUNT_CUSTOMER : $obj->client_code_compta,
+				'code_compta' => $this->get_code_compable($obj->fk_soc),
 				'nom' => $obj->client_nom
 			);
 			
