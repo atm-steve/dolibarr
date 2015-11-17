@@ -88,7 +88,7 @@ class TExportCompta extends TObjetStd {
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
 		$sql.= " AND f.fk_statut IN (1,2,3)";
 		$sql.= " ORDER BY f.".$datefield." ASC";
-
+//echo $sql;exit;
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
