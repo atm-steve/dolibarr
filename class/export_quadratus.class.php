@@ -221,6 +221,8 @@ class TExportComptaQuadratus extends TExportCompta {
 					'libelle_libre'					=> $tiers['nom'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					'montant'						=> abs($montant * 100),
+					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
+					'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece5'					=> $facture['ref'],
 					'numero_piece8'					=> $facture['ref'],
@@ -246,6 +248,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'libelle_libre'					=> $tiers['nom'],
 					'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
 					'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
+					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece5'					=> $facture['ref'],
@@ -278,6 +281,7 @@ class TExportComptaQuadratus extends TExportCompta {
 							
 							'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
 							'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
+							'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					
 							'montant'						=> abs($montant * 100),
 							'date_echeance'					=> $facture['date_lim_reglement'],
@@ -335,6 +339,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					
 					'sens'							=> ($montant<0 ? 'D' : 'C'),
 					'montant_signe'					=> ($montant<0 ? '-' : '+'),
+					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
 					
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> $facture['date_echeance'],
@@ -362,6 +367,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'libelle_libre'					=> $tiers['nom'],
 					'sens'							=> ($montant<0 ? 'D' : 'C'),
 					'montant_signe'					=> ($montant<0 ? '-' : '+'),
+					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
 					'montant'						=> abs($montant * 100),
 					'date_echeance'					=> $facture['date_echeance'],
 					'numero_piece5'					=> $facture['ref'],
@@ -393,6 +399,7 @@ class TExportComptaQuadratus extends TExportCompta {
 							'libelle_libre'					=> $tiers['nom'],
 							'sens'							=> ($montant<0 ? 'D' : 'C'),
 							'montant_signe'					=> ($montant<0 ? '-' : '+'),
+							'montant_devise_signe'					=> ($montant<0 ? '-' : '+'),
 							'montant'						=> abs($montant * 100),
 							'date_echeance'					=> $facture['date_echeance'],
 							'numero_piece5'					=> $facture['ref'],
