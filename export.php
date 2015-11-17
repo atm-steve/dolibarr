@@ -20,7 +20,7 @@ dol_include_once('/exportcompta/class/export_'.$logiciel_export.'.class.php');
 $className = 'TExportCompta'.ucfirst($logiciel_export);
 $exp=new $className($db);
 
-if(isset($_POST['submitBtn']) || isset($_POST['showMe'])) {
+if(isset($_REQUEST['submitBtn']) || isset($_REQUEST['showMe'])) {
 	$action = GETPOST('action');
 	$type_export = GETPOST('type_export');
 	$exp->set_date('dt_deb',$_REQUEST['dt_deb']);
