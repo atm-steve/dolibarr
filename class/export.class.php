@@ -1001,7 +1001,7 @@ class TExportCompta extends TObjetStd {
 			if(strlen($valeur) < $fmt['length'] && $this->fieldPadding) {
 				$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
 				$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
-			} else if(mb_strlen($valeur,'UTF-8') > $fmt['length']) {
+			} else if(iconv_strlen($valeur) > $fmt['length']) {
 				if($pad_type == STR_PAD_RIGHT) {
 					$valeur = substr($valeur, 0, $fmt['length']);
 				} else {
