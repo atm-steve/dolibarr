@@ -71,7 +71,7 @@ class TExportComptaQuadratus extends TExportCompta {
 			array('name' => 'bic',					'length' => 11,	'default' => '',	'type' => 'text'),
 		
 		);
-		
+
 		$this->_format_tiers=array(
 	
 			array('name' => 'type',					'length' => 1,	'default' => 'C',	'type' => 'text'),
@@ -618,6 +618,7 @@ class TExportComptaQuadratus extends TExportCompta {
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
 				'montant'						=> abs($reglement['amount'] * 100),
+				'mode_reglement'				=>$reglement['paiement_mode'],
 				
 			);
 			
@@ -631,6 +632,7 @@ class TExportComptaQuadratus extends TExportCompta {
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'reference'					=> $tiers['nom'],
 				'montant'						=> abs($reglement['amount'] * 100),
+				'mode_reglement'				=>$reglement['paiement_mode'],
 				
 			);
 			
