@@ -576,7 +576,7 @@ class TExportCompta extends TObjetStd {
 		return $TNDF;
 	}
 
-	function get_code_compable($fk_soc) {
+	function get_code_comptable($fk_soc) {
 		global $db, $conf, $langs;
 		
 		$r = '';
@@ -587,10 +587,10 @@ class TExportCompta extends TObjetStd {
 			$s->fetch($fk_soc);
 			
 			if(!empty($s->parent) && !empty($conf->global->EXPORT_COMPTA_TIERS_JUSTMM)) {
-				return $this->get_code_compable($s->parent);
+				return $this->get_code_comptable($s->parent);
 			}
-			elseif(!empty($s->scode_compta)) {
-				return $s->scode_compta;
+			elseif(!empty($s->code_compta)) {
+				return $s->code_compta;
 			}
 		}
 		
@@ -629,7 +629,7 @@ class TExportCompta extends TObjetStd {
 			$rglt = array();
 			
 			$rglt['client'] = array(
-				'code_compta' => $this->get_code_compable($obj->fk_soc),
+				'code_compta' => $this->get_code_comptable($obj->fk_soc),
 				'nom' => $obj->client_nom
 			);
 			

@@ -215,7 +215,8 @@ class TExportComptaQuadratus extends TExportCompta {
 			
 				$ligneFichier = array(
 					'type'							=> $type,
-					'numero_compte'					=> $code_compta,
+					//'numero_compte'					=> $code_compta,
+					'numero_compte'					=> parent::get_code_comptable($tiers['id']),
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'],
