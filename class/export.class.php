@@ -1044,6 +1044,17 @@ class TExportCompta extends TObjetStd {
 		
 		return $ligneFichierTxtFixe;
 	}
+
+	// Retourne le détail d'une configuration du module export compta
+	function get_line_conf($TDataConf, $name) {
+		
+		foreach ($TDataConf as $TData) {
+			if($TData['name'] == $name) return $TData;
+		}
+		
+		return 0;
+		
+	}
 	
 	/**
 	 * Supprimer les accents

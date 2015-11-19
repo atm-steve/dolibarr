@@ -193,6 +193,9 @@ class TExportComptaQuadratus extends TExportCompta {
 		$type = 'M';
 		$codeJournal='VE';
 		
+		$TConfQuadra = parent::get_line_conf($format, 'code_journal');
+		if(!empty($TConfQuadra['default'])) $codeJournal = $TConfQuadra['default'];
+		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
