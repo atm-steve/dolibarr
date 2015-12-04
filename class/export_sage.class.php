@@ -237,8 +237,8 @@ class TExportComptaSage extends TExportCompta {
 	
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
-					'montant_debit'					=> 0,
-					'montant_credit'				=> abs($montant),
+					'montant_debit'					=> ($montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -258,8 +258,8 @@ class TExportComptaSage extends TExportCompta {
 					
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
-					'montant_debit'					=> abs($montant),
-					'montant_credit'				=> 0,
+					'montant_debit'					=> ($montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -282,8 +282,8 @@ class TExportComptaSage extends TExportCompta {
 					
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
-					'montant_debit'					=> abs($montant),
-					'montant_credit'				=> 0,
+					'montant_debit'					=> ($montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
 				

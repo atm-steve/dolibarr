@@ -346,6 +346,16 @@ class TExportCompta extends TObjetStd {
 				$TNDF[$ndfp->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				$TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+				
+				// Ticket 3313 : TVA spécifique pour 2 types de frais
+				if($codeComptableProduit == '60709000') {
+					$TNDF[$ndfp->id]['ligne_tva']['44526900'] += round($ligne->total_ht * .2,2);
+					$TNDF[$ndfp->id]['ligne_tva']['44527900'] -= round($ligne->total_ht * .2,2);
+				}
+				if($codeComptableProduit == '60400000') {
+					$TNDF[$ndfp->id]['ligne_tva']['44562200'] += round($ligne->total_ht * .2,2);
+					$TNDF[$ndfp->id]['ligne_tva']['44571070'] -= round($ligne->total_ht * .2,2);
+				}
 			}
 			
 			$i++;
