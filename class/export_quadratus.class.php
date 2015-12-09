@@ -265,8 +265,8 @@ class TExportComptaQuadratus extends TExportCompta {
 				);
 
 				if(!empty($conf->global->EXPORTCOMPTA_AVOIRS_AVEC_SIGNE_PLUS)) {
-					$ligneFichier['montant_devise_signe'] = '';
-					$ligneFichier['montant_signe'] = '';
+					$ligneFichier['montant_devise_signe'] = '+';
+					$ligneFichier['montant_signe'] = '+';
 				}
 				
 				// Ecriture générale
@@ -304,8 +304,8 @@ class TExportComptaQuadratus extends TExportCompta {
 						);
 
 						if(!empty($conf->global->EXPORTCOMPTA_AVOIRS_AVEC_SIGNE_PLUS)) {
-							$ligneFichier['montant_devise_signe'] = '';
-							$ligneFichier['montant_signe'] = '';
+							$ligneFichier['montant_devise_signe'] = '+';
+							$ligneFichier['montant_signe'] = '+';
 						}
 					
 					// Ecriture générale
