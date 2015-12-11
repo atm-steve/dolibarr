@@ -594,7 +594,9 @@ class TExportCompta extends TObjetStd {
 			}
 		}
 		
-		if(empty($r))$r = $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+		if(empty($r)){
+			$r = ((float)DOL_VERSION >= 3.8) ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+		}
 		
 		return $r;
 	}
