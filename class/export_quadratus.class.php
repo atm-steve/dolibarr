@@ -236,6 +236,11 @@ class TExportComptaQuadratus extends TExportCompta {
 					'date_systeme'					=> time(),
 					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
 				);
+
+				if(!empty($conf->global->EXPORTCOMPTA_AVOIRS_AVEC_SIGNE_PLUS)) {
+					$ligneFichier['montant_devise_signe'] = '+';
+					$ligneFichier['montant_signe'] = '+';
+				}
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
