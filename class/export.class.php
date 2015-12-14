@@ -259,7 +259,8 @@ class TExportCompta extends TObjetStd {
                 }
                 else{
 				    // Code compta TVA
-				    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf->global->COMPTA_VAT_ACCOUNT;
+				    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
+				    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf_compte_tva;
                 }
                 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
