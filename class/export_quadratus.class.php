@@ -6,9 +6,9 @@
 
 class TExportComptaQuadratus extends TExportCompta {
 	
-	function __construct($db, $exportAllreadyExported=false) {
+	function __construct($db, $exportAllreadyExported=false,$addExportTimeToBill=false) {
 		
-		parent::__construct($db, $exportAllreadyExported);
+		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
@@ -47,6 +47,8 @@ class TExportComptaQuadratus extends TExportCompta {
 			array('name' => 'date_systeme',			'length' => 14,	'default' => '',	'type' => 'date',	'format' => 'dmYHis'),
 		);
 	
+		$this->addExportTimeToBill = $addExportTimeToBill;
+		
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
