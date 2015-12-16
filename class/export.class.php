@@ -608,9 +608,19 @@ class TExportCompta extends TObjetStd {
 	 */
 	function get_reglement_tiers($dt_deb, $dt_fin) {
 		global $db, $conf;
-
+		
+		$TModeReglement = $conf->global->EXPORTCOMPTA_TAB_ALIAS_MODE_REGLEMENT;
+		if(!empty($TModeReglement)) {
+			$TModeReglement = explode(';', $TModeReglement);
+			$TModeRGLT = array();
+			foreach ($TModeReglement as $tab) {
+				$t = explode(',', $tab);
+				$TModeRGLT[$t[0]] = $t[1];
+			}
+		}
+		
 		// Requête de récupération des règlements
-		$sql = "SELECT r.rowid, f.facnumber num_fact, r.amount as paiement_amount, r.fk_paiement as paiement_mode, r.datep as paiement_datep,"; 
+		$sql = "SELECT r.rowid, f.facnumber num_fact, r.amount as paiement_amount, cp.code as paiement_mode, r.datep as paiement_datep,"; 
 		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom, ba.account_number,s.rowid as fk_soc";
 		$sql.= " FROM llx_paiement r";
 		$sql.= " LEFT JOIN llx_paiement_facture rf ON rf.fk_paiement = r.rowid";
@@ -618,12 +628,13 @@ class TExportCompta extends TObjetStd {
 		$sql.= " LEFT JOIN llx_societe s ON s.rowid = f.fk_soc";
 		$sql.= " LEFT JOIN llx_bank bank ON bank.rowid = r.fk_bank";
 		$sql.= " LEFT JOIN llx_bank_account ba ON ba.rowid = bank.fk_account";
+		$sql.= " LEFT JOIN llx_c_paiement cp ON (cp.id = r.fk_paiement)";
 		$sql.= " WHERE r.datep BETWEEN '$dt_deb' AND '$dt_fin'";
 		$sql.= " AND r.entity = {$conf->entity}";
 		$sql.= " GROUP BY r.rowid
 					ORDER BY r.datep ASC 
 				 ";
-		//echo $sql;
+		//echo $sql;exit;
 		$resql = $db->query($sql);
 		
 		// Construction du tableau de données
@@ -638,7 +649,7 @@ class TExportCompta extends TObjetStd {
 			
 			$rglt['reglement'] = array(
 				'amount' => $obj->paiement_amount,
-				'mode' => $obj->paiement_mode,
+				'paiement_mode' => !empty($TModeRGLT) ? $TModeRGLT[$obj->paiement_mode] : $obj->paiement_mode,
 				'datep' => $obj->paiement_datep,
 				'num_fact' => $obj->num_fact
 			);
