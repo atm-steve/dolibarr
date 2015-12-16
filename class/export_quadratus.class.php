@@ -257,7 +257,9 @@ class TExportComptaQuadratus extends TExportCompta {
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'],
-					'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
+					//'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
+					// Modification pour Acticontrole (qui normalement marche pour tout le monde) : quand on est sur un avoir, si un montant est positif, il doit être au crédit.
+					'sens'							=> ($montant<0 ) ? 'D' : 'C',
 					'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'montant'						=> abs($montant * 100),
