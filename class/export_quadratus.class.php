@@ -698,14 +698,19 @@ class TExportComptaQuadratus extends TExportCompta {
 		$type = 'R';
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+		//var_dump($TabReglement);exit;
 		foreach ($TabReglement as $infosReglement) {
 			$tiers = &$infosReglement['client'];
 			$reglement = &$infosReglement['reglement'];
 
+			if($reglement['paiement_mode'] == 'R') $numero_compte = 58020000;
+			elseif($reglement['paiement_mode'] == 'V') $numero_compte = 58030000;
+			elseif($reglement['paiement_mode'] == 'L') $numero_compte = 58050000;
+			else $numero_compte = $tiers['code_compta'];
+	
 			$ligneFichier = array(
 				'type'							=> 'M',
-				'numero_compte'					=> $tiers['code_compta'],
+				'numero_compte'					=> $numero_compte,
 				'code_journal'					=> $tiers['code_journal'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'reference'						=> $tiers['nom'],
