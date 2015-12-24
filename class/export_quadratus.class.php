@@ -707,7 +707,10 @@ class TExportComptaQuadratus extends TExportCompta {
 			elseif($reglement['paiement_mode'] == 'V') $numero_compte = 58030000;
 			elseif($reglement['paiement_mode'] == 'L') $numero_compte = 58050000;
 			else $numero_compte = $tiers['code_compta'];
-	
+			
+			$numero_piece = $reglement['num_paiement'];
+			if(empty($numero_piece)) $numero_piece = $reglement['num_fact'];
+			
 			$ligneFichier = array(
 				'type'							=> 'M',
 				'numero_compte'					=> $numero_compte,
@@ -715,7 +718,7 @@ class TExportComptaQuadratus extends TExportCompta {
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'reference'						=> $tiers['nom'],
 				'montant'						=> abs($reglement['amount'] * 100),
-				'numero_piece'					=> $reglement['num_fact'],
+				'numero_piece'					=> $numero_piece,
 				'mode_reglement'				=>$reglement['paiement_mode'],
 				'sens'							=>($reglement['amount'] > 0 ? 'C' : 'D'),
 				'montant_signe'					=> '+'
