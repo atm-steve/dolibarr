@@ -684,6 +684,47 @@ class TExportComptaQuadratus extends TExportCompta {
 		}
 
 		return $contenuFichier;
+	}
+
+	function get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin) {
+		global $conf,$db;	
+		
+		if(empty($format)) $format = $this->_format_reglement_tiers;
+		
+		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+		$type = 'R';
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabReglement as $infosReglement) {
+			$tiers = &$infosReglement['client'];
+			$reglement = &$infosReglement['reglement'];
+
+			$ligneFichier = array(
+				'type'							=> 'M',
+				'numero_compte'					=> $tiers['code_compta'],
+				'code_journal'					=> $tiers['code_journal'],
+				'date_ecriture'					=> strtotime($reglement['datep']),
+				'reference'						=> $tiers['nom'],
+				'montant'						=> abs($reglement['amount'] * 100),
+				'numero_piece'					=> $reglement['num_fact'],
+				'mode_reglement'				=>$reglement['paiement_mode'],
+				'sens'							=>($reglement['amount'] > 0 ? 'C' : 'D'),
+				'montant_signe'					=> '+'
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			$numLignes++;
+			
+
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
 	}	
 	
 }
