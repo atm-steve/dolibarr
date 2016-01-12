@@ -350,6 +350,16 @@ class TExportComptaQuadratus extends TExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 			
+			// Configuration permettant d'afficher la ligne tiers au crédit et les lignes complémentaires au débit. si non renseigné : tout au crédit 
+			$sens = array();
+			if(empty($conf->global->EXPORTCOMPTA_ACHAT_DEBIT_CREDIT)) {
+				$sens[] = 'D';
+				$sens[] = 'C';
+			} else {
+				$sens[] = 'C';
+				$sens[] = 'D';
+			}
+			
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				
@@ -388,7 +398,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'],
-					'sens'							=> ($montant<0 ? 'D' : 'C'),
+					'sens'							=> ($montant<0 ? $sens[0] : $sens[1]),
 					'montant_signe'					=> ($montant<0 ? '-' : '+'),
 					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
 					'montant'						=> abs($montant * 100),
@@ -420,7 +430,7 @@ class TExportComptaQuadratus extends TExportCompta {
 							'code_journal'					=> $codeJournal,
 							'date_ecriture'					=> $facture['date'],
 							'libelle_libre'					=> $tiers['nom'],
-							'sens'							=> ($montant<0 ? 'D' : 'C'),
+							'sens'							=> ($montant<0 ? $sens[0] : $sens[1]),
 							'montant_signe'					=> ($montant<0 ? '-' : '+'),
 							'montant_devise_signe'					=> ($montant<0 ? '-' : '+'),
 							'montant'						=> abs($montant * 100),
