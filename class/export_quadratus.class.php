@@ -696,7 +696,7 @@ class TExportComptaQuadratus extends TExportCompta {
 		return $contenuFichier;
 	}
 
-	function get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin) {
+	/*function get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin) {
 		global $conf,$db;	
 		
 		if(empty($format)) $format = $this->_format_reglement_tiers;
@@ -731,10 +731,92 @@ class TExportComptaQuadratus extends TExportCompta {
 				'numero_piece'					=> $numero_piece,
 				'mode_reglement'				=>$reglement['paiement_mode'],
 				'sens'							=>($reglement['amount'] > 0 ? 'C' : 'D'),
-				'montant_signe'					=> '+'
+				'montant_signe'					=> '+',
+				'vide'							=> ''
 			);
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			$numLignes++;
+			
+
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}	*/
+
+	function get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin) {
+		global $conf,$db;	
+		
+		if(empty($format)) $format = $this->_format_reglement_tiers;
+		
+		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+		$type = 'R';
+		$numEcriture = 1;
+		$numLignes = 1;
+		/*echo '<pre>';
+		print_r($TabReglement);
+		echo '</pre>';
+		exit;*/
+		foreach ($TabReglement as $id_reglement => $infosReglement) {
+			$tiers = &$infosReglement[0]['client'];
+			$reglement = &$infosReglement[0]['reglement'];
+		/*echo '<pre>';
+		print_r($TabReglement);
+		echo '</pre>';
+		exit;*/
+
+			if($reglement['paiement_mode'] == 'R') $numero_compte = 58020000;
+			elseif($reglement['paiement_mode'] == 'V') $numero_compte = 58030000;
+			elseif($reglement['paiement_mode'] == 'L') $numero_compte = 58050000;
+			else $numero_compte = $tiers['code_compta'];
+			
+			$numero_piece = $reglement['num_paiement'];
+			if(empty($numero_piece)) $numero_piece = $reglement['num_fact'];
+			
+			// Partie règlement avec compte tiers
+			$ligneFichier = array(
+				'type'							=> 'M',
+				'numero_compte'					=> $numero_compte,
+				'code_journal'					=> $tiers['code_journal'],
+				'date_ecriture'					=> strtotime($reglement['datep']),
+				'reference'						=> $tiers['nom'],
+				'montant'						=> abs($reglement['amount'] * 100),
+				'numero_piece'					=> $numero_piece,
+				'mode_reglement'				=> $reglement['paiement_mode'],
+				//'sens'							=>($reglement['amount'] > 0 ? 'D' : 'C'),
+				// Pour les règlements tiers, ils sont forcément positifs, donc au débit pour la première ligne
+				'sens'							=> 'D',
+				'montant_signe'					=> '+',
+				'vide'							=> ''
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			
+			// détail des règlements par facture
+			foreach($infosReglement as $TReglements) {
+				
+				$ligneFichier = array(
+					'type'							=> 'M',
+					'numero_compte'					=> $TReglements['client']['code_compta'],
+					'code_journal'					=> $tiers['code_journal'],
+					'date_ecriture'					=> strtotime($reglement['datep']),
+					'reference'						=> $tiers['nom'],
+					'montant'						=> abs($TReglements['reglement']['amount_facture'] * 100),
+					'numero_piece'					=> $TReglements['reglement']['num_fact'],
+					'mode_reglement'				=> $reglement['paiement_mode'],
+					// Pour les règlements tiers, ils sont forcément au crédit pour les lignes de détail par facture
+					'sens'							=> 'C',
+					'montant_signe'					=> '+',
+					'vide'							=> ''
+				);
+			
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			}
 			$numLignes++;
 			
 
