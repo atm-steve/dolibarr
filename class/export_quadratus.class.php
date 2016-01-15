@@ -776,7 +776,7 @@ class TExportComptaQuadratus extends TExportCompta {
 			else $numero_compte = $tiers['code_compta'];
 			
 			$numero_piece = $reglement['num_paiement'];
-			if(empty($numero_piece)) $numero_piece = $reglement['num_fact'];
+			if(empty($numero_piece)) $numero_piece = 'NC';
 			
 			// Partie règlement avec compte tiers
 			$ligneFichier = array(
