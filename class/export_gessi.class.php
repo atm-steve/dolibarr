@@ -14,8 +14,8 @@ class TExportComptaGESSI extends TExportCompta {
 			array('name' => 'numero_compte',		'length' => 9,	'default' => '0',	'type' => 'text'),
 			array('name' => 'date_ecriture',		'length' => 10,	'default' => '',	'type' => 'date',	'format' => 'd/m/Y'),
 			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'debit',				'length' => 13,	'default' => '0',	'type' => 'text',),
-			array('name' => 'credit',				'length' => 13,	'default' => '0',	'type' => 'text',)
+			array('name' => 'montant_debit',		'length' => 13,	'default' => '0',	'type' => 'text',),
+			array('name' => 'montant_credit',		'length' => 13,	'default' => '0',	'type' => 'text',)
 		);
 				
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
@@ -54,11 +54,10 @@ class TExportComptaGESSI extends TExportCompta {
 				$ligneFichier = array(
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					'numero_compte'					=> '41100000',
-					'numero_compte_aux'				=> $code_compta,
+					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					'montant'						=> number_format(abs($montant),2,',',''),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 				);
 				
 				// Ecriture générale
@@ -73,8 +72,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'sens'							=> (($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'),
-					'montant'						=> number_format(abs($montant),2,',',''),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 				);
 				
 				// Ecriture générale
@@ -91,8 +90,8 @@ class TExportComptaGESSI extends TExportCompta {
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
 						'libelle'						=> $tiers['nom'],
-						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						'montant'						=> number_format(abs($montant),2,',',''),
+						'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+						'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 					);
 					
 					// Ecriture générale
@@ -139,14 +138,12 @@ class TExportComptaGESSI extends TExportCompta {
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'date_ecriture'			=> $facture['date'],
-					'code_journal'			=> $codeJournal,
-					'numero_compte'			=> '40100000',
-					'numero_compte_aux'		=> $code_compta,
-					'sens'					=> ($montant > 0 ? 'C' : 'D'),
-					'montant'				=> number_format(abs($montant),2,',',''),
-					'libelle'				=> $label,
-					'numero_piece'			=> $facture['ref']
+					'date_ecriture'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_compte'					=> $code_compta,
+					'libelle'						=> $tiers['nom'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 				);
 				
 				// Ecriture générale
@@ -157,13 +154,12 @@ class TExportComptaGESSI extends TExportCompta {
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'date_ecriture'			=> $facture['date'],
-					'code_journal'			=> $codeJournal,
-					'numero_compte'			=> $code_compta,
-					'sens'					=> ($montant > 0 ? 'D' : 'C'),
-					'montant'				=> number_format(abs($montant),2,',',''),
-					'libelle'				=> $label,
-					'numero_piece'			=> $facture['ref']
+					'date_ecriture'					=> $facture['date'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_compte'					=> $code_compta,
+					'libelle'						=> $tiers['nom'],
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 				);
 				
 				// Ecriture générale
@@ -178,12 +174,11 @@ class TExportComptaGESSI extends TExportCompta {
 				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 						$ligneFichier = array(
 							'date_ecriture'					=> $facture['date'],
-							'code_journal'					=> $codeJournal,
+							'numero_piece'					=> $facture['ref'],
 							'numero_compte'					=> $code_compta,
-							'sens'							=> ($montant > 0 ? 'D' : 'C'),
-							'montant'						=> number_format(abs($montant),2,',',''),
-							'libelle'						=> $label,
-							'numero_piece'					=> $facture['ref']
+							'libelle'						=> $tiers['nom'],
+							'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+							'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 						);
 					
 					// Ecriture générale
@@ -227,11 +222,11 @@ class TExportComptaGESSI extends TExportCompta {
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_ecriture'			=> $bankline['datev'],
-					'code_journal'			=> $bank['ref'],
 					'numero_compte'			=> $code_compta,
-					'sens'					=> ($montant < 0) ? 'D' : 'C',
-					'montant'				=> number_format(abs($montant),2,',',''),
-					'libelle'				=> $label
+					'numero_piece'			=> $bankline['ref'],
+					'libelle'				=> $label,
+					'montant_debit'			=> ($montant < 0) ? abs($montant) : 0,
+					'montant_credit'		=> ($montant < 0) ? 0 : abs($montant)
 				);
 				
 				// Ecriture générale
@@ -243,11 +238,11 @@ class TExportComptaGESSI extends TExportCompta {
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_ecriture'			=> $bankline['datev'],
-					'code_journal'			=> $bank['ref'],
 					'numero_compte'			=> $code_compta,
-					'sens'					=> ($montant < 0) ? 'C' : 'D',
-					'montant'				=> number_format(abs($montant),2,',',''),
-					'libelle'				=> $label
+					'numero_piece'			=> $bankline['ref'],
+					'libelle'				=> $label,
+					'montant_debit'			=> ($montant < 0) ? 0 : abs($montant),
+					'montant_credit'		=> ($montant < 0) ? abs($montant) : 0,
 				);
 				
 				// Ecriture générale
