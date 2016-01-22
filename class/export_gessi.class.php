@@ -26,7 +26,7 @@ class TExportComptaGESSI extends TExportCompta {
 		
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = '';
-		$this->fieldPadding = false;
+		$this->fieldPadding = true;
 		
 		unset($this->TTypeExport['produits']); // pas encore pris en charge
 		unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
