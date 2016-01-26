@@ -56,8 +56,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
 				);
 				
 				// Ecriture générale
@@ -72,8 +72,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
 				);
 				
 				// Ecriture générale
@@ -90,8 +90,8 @@ class TExportComptaGESSI extends TExportCompta {
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
 						'libelle'						=> $tiers['nom'],
-						'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
-						'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+						'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
+						'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
 					);
 					
 					// Ecriture générale
@@ -142,8 +142,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
 				);
 				
 				// Ecriture générale
@@ -158,8 +158,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
 				);
 				
 				// Ecriture générale
@@ -177,8 +177,8 @@ class TExportComptaGESSI extends TExportCompta {
 							'numero_piece'					=> $facture['ref'],
 							'numero_compte'					=> $code_compta,
 							'libelle'						=> $tiers['nom'],
-							'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
-							'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+							'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
+							'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
 						);
 					
 					// Ecriture générale
@@ -225,8 +225,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_compte'			=> $code_compta,
 					'numero_piece'			=> $bankline['ref'],
 					'libelle'				=> $label,
-					'montant_debit'			=> ($montant < 0) ? abs($montant) : 0,
-					'montant_credit'		=> ($montant < 0) ? 0 : abs($montant)
+					'montant_debit'			=> ($montant < 0) ? number_format($montant,2,'.','') : 0,
+					'montant_credit'		=> ($montant < 0) ? 0 : number_format($montant,2,'.','')
 				);
 				
 				// Ecriture générale
@@ -241,8 +241,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_compte'			=> $code_compta,
 					'numero_piece'			=> $bankline['ref'],
 					'libelle'				=> $label,
-					'montant_debit'			=> ($montant < 0) ? 0 : abs($montant),
-					'montant_credit'		=> ($montant < 0) ? abs($montant) : 0,
+					'montant_debit'			=> ($montant < 0) ? 0 : number_format($montant,2,'.',''),
+					'montant_credit'		=> ($montant < 0) ? number_format($montant,2,'.','') : 0,
 				);
 				
 				// Ecriture générale
@@ -255,56 +255,4 @@ class TExportComptaGESSI extends TExportCompta {
 
 		return $contenuFichier;
 	}
-
-	function get_file_reglement_tiers($format, $dt_deb, $dt_fin) {
-		global $conf,$db;	
-		
-		if(empty($format)) $format = $this->_format_reglement_tiers;
-		
-		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
-		
-		$contenuFichier = '';
-		$separateurLigne = "\r\n";
-		$type = 'R';
-		$numEcriture = 1;
-		$numLignes = 1;
-		
-		foreach ($TabReglement as $infosReglement) {
-			$tiers = &$infosReglement['client'];
-			$reglement = &$infosReglement['reglement'];
-			
-			// Ligne Banque
-			$ligneFichier = array(
-				'date_ecriture'			=> $reglement['datep'],
-				'code_journal'			=> 'M',
-				'numero_compte'			=> $reglement['code_compta'],
-				'sens'					=> 'D',
-				'montant'				=> number_format(abs($montant),2,',',''),
-				'libelle'				=> $tiers['nom'],
-				'numero_piece'			=> $reglement['num_fact']
-			);
-			
-			$contenuFichier .= parent::get_line($format, $ligneFichier);
-			$numLignes++;
-
-			$ligneFichier = array(
-				'date_ecriture'		=> $reglement['datep'],
-				'code_journal'		=> 'C',
-				'numero_compte'		=> $tiers['code_compta'],
-				'sens'				=> 'C',
-				'montant'			=> number_format(abs($montant),2,',',''),
-				'libelle'			=> $tiers['nom'],
-				'numero_piece'		=> $reglement['num_fact']
-			);
-
-			$contenuFichier .= parent::get_line($format, $ligneFichier);
-			$numLignes++;
-			
-
-			
-			$numEcriture++;
-		}
-
-		return $contenuFichier;
-	}	
 }
