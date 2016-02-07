@@ -68,7 +68,10 @@ if(!empty($action) && $action == 'export') {
 					$fileContent = $export->get_file_ecritures_comptables_ndf($format, $dt_deb, $dt_fin);
 					break;
 				case 'reglement_tiers':
-					$fileContent = $export->get_file_reglement_tiers($format, $dt_deb, $dt_fin);
+					if($conf->global->EXPORTCOMPTA_EXPORT_REGLEMENT_SPECIFIQUE == 'Acticontrole')
+						$fileContent = $export->get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin);
+					else
+						$fileContent = $export->get_file_reglement_tiers($format, $dt_deb, $dt_fin);
 					break;
 				case 'ecritures_comptables_banque':
 					$fileContent = $export->get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin);

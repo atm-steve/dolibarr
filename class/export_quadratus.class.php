@@ -6,9 +6,9 @@
 
 class TExportComptaQuadratus extends TExportCompta {
 	
-	function __construct($db, $exportAllreadyExported=false) {
+	function __construct($db, $exportAllreadyExported=false,$addExportTimeToBill=false) {
 		
-		parent::__construct($db, $exportAllreadyExported);
+		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
@@ -47,6 +47,8 @@ class TExportComptaQuadratus extends TExportCompta {
 			array('name' => 'date_systeme',			'length' => 14,	'default' => '',	'type' => 'date',	'format' => 'dmYHis'),
 		);
 	
+		$this->addExportTimeToBill = $addExportTimeToBill;
+		
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
@@ -236,6 +238,11 @@ class TExportComptaQuadratus extends TExportCompta {
 					'date_systeme'					=> time(),
 					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
 				);
+
+				if(!empty($conf->global->EXPORTCOMPTA_AVOIRS_AVEC_SIGNE_PLUS)) {
+					$ligneFichier['montant_devise_signe'] = '+';
+					$ligneFichier['montant_signe'] = '+';
+				}
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
@@ -250,7 +257,9 @@ class TExportComptaQuadratus extends TExportCompta {
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'],
-					'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
+					//'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
+					// Modification pour Acticontrole (qui normalement marche pour tout le monde) : quand on est sur un avoir, si un montant est positif, il doit être au crédit.
+					'sens'							=> ($montant<0 ) ? 'D' : 'C',
 					'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'montant'						=> abs($montant * 100),
@@ -341,6 +350,16 @@ class TExportComptaQuadratus extends TExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 			
+			// Configuration permettant d'afficher la ligne tiers au crédit et les lignes complémentaires au débit. si non renseigné : tout au crédit 
+			$sens = array();
+			if(empty($conf->global->EXPORTCOMPTA_ACHAT_DEBIT_CREDIT)) {
+				$sens[] = 'D';
+				$sens[] = 'C';
+			} else {
+				$sens[] = 'C';
+				$sens[] = 'D';
+			}
+			
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				
@@ -379,7 +398,7 @@ class TExportComptaQuadratus extends TExportCompta {
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $tiers['nom'],
-					'sens'							=> ($montant<0 ? 'D' : 'C'),
+					'sens'							=> ($montant<0 ? $sens[0] : $sens[1]),
 					'montant_signe'					=> ($montant<0 ? '-' : '+'),
 					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
 					'montant'						=> abs($montant * 100),
@@ -411,7 +430,7 @@ class TExportComptaQuadratus extends TExportCompta {
 							'code_journal'					=> $codeJournal,
 							'date_ecriture'					=> $facture['date'],
 							'libelle_libre'					=> $tiers['nom'],
-							'sens'							=> ($montant<0 ? 'D' : 'C'),
+							'sens'							=> ($montant<0 ? $sens[0] : $sens[1]),
 							'montant_signe'					=> ($montant<0 ? '-' : '+'),
 							'montant_devise_signe'					=> ($montant<0 ? '-' : '+'),
 							'montant'						=> abs($montant * 100),
@@ -667,6 +686,137 @@ class TExportComptaQuadratus extends TExportCompta {
 			);
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			$numLignes++;
+			
+
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
+	/*function get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin) {
+		global $conf,$db;	
+		
+		if(empty($format)) $format = $this->_format_reglement_tiers;
+		
+		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+		$type = 'R';
+		$numEcriture = 1;
+		$numLignes = 1;
+		//var_dump($TabReglement);exit;
+		foreach ($TabReglement as $infosReglement) {
+			$tiers = &$infosReglement['client'];
+			$reglement = &$infosReglement['reglement'];
+
+			if($reglement['paiement_mode'] == 'R') $numero_compte = 58020000;
+			elseif($reglement['paiement_mode'] == 'V') $numero_compte = 58030000;
+			elseif($reglement['paiement_mode'] == 'L') $numero_compte = 58050000;
+			else $numero_compte = $tiers['code_compta'];
+			
+			$numero_piece = $reglement['num_paiement'];
+			if(empty($numero_piece)) $numero_piece = $reglement['num_fact'];
+			
+			$ligneFichier = array(
+				'type'							=> 'M',
+				'numero_compte'					=> $numero_compte,
+				'code_journal'					=> $tiers['code_journal'],
+				'date_ecriture'					=> strtotime($reglement['datep']),
+				'reference'						=> $tiers['nom'],
+				'montant'						=> abs($reglement['amount'] * 100),
+				'numero_piece'					=> $numero_piece,
+				'mode_reglement'				=>$reglement['paiement_mode'],
+				'sens'							=>($reglement['amount'] > 0 ? 'C' : 'D'),
+				'montant_signe'					=> '+',
+				'vide'							=> ''
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			$numLignes++;
+			
+
+			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}	*/
+
+	function get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin) {
+		global $conf,$db;	
+		
+		if(empty($format)) $format = $this->_format_reglement_tiers;
+		
+		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+		$type = 'R';
+		$numEcriture = 1;
+		$numLignes = 1;
+		/*echo '<pre>';
+		print_r($TabReglement);
+		echo '</pre>';
+		exit;*/
+		foreach ($TabReglement as $id_reglement => $infosReglement) {
+			$tiers = &$infosReglement[0]['client'];
+			$reglement = &$infosReglement[0]['reglement'];
+		/*echo '<pre>';
+		print_r($TabReglement);
+		echo '</pre>';
+		exit;*/
+
+			if($reglement['paiement_mode'] == 'R') $numero_compte = 58020000;
+			elseif($reglement['paiement_mode'] == 'V') $numero_compte = 58030000;
+			elseif($reglement['paiement_mode'] == 'L') $numero_compte = 58050000;
+			else $numero_compte = $tiers['code_compta'];
+			
+			$numero_piece = $reglement['num_paiement'];
+			if(empty($numero_piece)) $numero_piece = 'NC';
+			
+			// Partie règlement avec compte tiers
+			$ligneFichier = array(
+				'type'							=> 'M',
+				'numero_compte'					=> $numero_compte,
+				'code_journal'					=> $tiers['code_journal'],
+				'date_ecriture'					=> strtotime($reglement['datep']),
+				'reference'						=> $tiers['nom'],
+				'montant'						=> abs($reglement['amount'] * 100),
+				'numero_piece'					=> $numero_piece,
+				'mode_reglement'				=> $reglement['paiement_mode'],
+				//'sens'							=>($reglement['amount'] > 0 ? 'D' : 'C'),
+				// Pour les règlements tiers, ils sont forcément positifs, donc au débit pour la première ligne
+				'sens'							=> 'D',
+				'montant_signe'					=> '+',
+				'vide'							=> ''
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			
+			// détail des règlements par facture
+			foreach($infosReglement as $TReglements) {
+				
+				$ligneFichier = array(
+					'type'							=> 'M',
+					'numero_compte'					=> $TReglements['client']['code_compta'],
+					'code_journal'					=> $tiers['code_journal'],
+					'date_ecriture'					=> strtotime($reglement['datep']),
+					'reference'						=> $tiers['nom'],
+					'montant'						=> abs($TReglements['reglement']['amount_facture'] * 100),
+					'numero_piece'					=> $TReglements['reglement']['num_fact'],
+					'mode_reglement'				=> $reglement['paiement_mode'],
+					// Pour les règlements tiers, ils sont forcément au crédit pour les lignes de détail par facture
+					'sens'							=> 'C',
+					'montant_signe'					=> '+',
+					'vide'							=> ''
+				);
+			
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			}
 			$numLignes++;
 			
 
