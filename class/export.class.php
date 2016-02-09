@@ -98,7 +98,8 @@ class TExportCompta extends TObjetStd {
 				
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
-		$sql = "SELECT t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
+		$this->TTVAbyId = array();
+		$sql = "SELECT t.rowid, t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
 		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t WHERE active=1";
 		
 		$resql = $this->db->query($sql);
@@ -106,6 +107,9 @@ class TExportCompta extends TObjetStd {
 		while($obj = $this->db->fetch_object($resql)) {
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
+			
+			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell'] = $obj->accountancy_code_sell;
+			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy'] = $obj->accountancy_code_buy;
 		}
 	}
 	
@@ -339,7 +343,7 @@ class TExportCompta extends TObjetStd {
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_FACTURES_FOURNISSEUR;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
-		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 		
 		// Requête de récupération des factures fournisseur
@@ -487,7 +491,7 @@ class TExportCompta extends TObjetStd {
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_NDF;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
-		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 		
 		// Requête de récupération des notes de frais
@@ -561,7 +565,7 @@ class TExportCompta extends TObjetStd {
 				}
 				
 				// Code compta TVA
-				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_BUY_ACCOUNT;
+				$codeComptableTVA = !empty($this->TTVAbyId[$idpays][$ligne->fk_tva]['buy']) ? $this->TTVAbyId[$idpays][$ligne->fk_tva]['buy'] : $conf->global->COMPTA_VAT_BUY_ACCOUNT;
 
 				if(empty($TNDF[$ndfp->id]['ligne_tiers'][$codeCompta])) $TNDF[$ndfp->id]['ligne_tiers'][$codeCompta] = 0;
 				if(empty($TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit])) $TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] = 0;
@@ -898,7 +902,7 @@ class TExportCompta extends TObjetStd {
 				if($lineType == 'company') {
 					$tiers = new Societe($db);
 					$tiers->fetch($links[$key]['url_id']);
-					if($bankline->label == '(CustomerInvoicePayment)') {
+					if($bankline->label == '(CustomerInvoicePayment)' || $bankline->label == 'Règlement client') {
 						$codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 					} else {
 						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
