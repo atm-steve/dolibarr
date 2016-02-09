@@ -5,9 +5,9 @@
 
 class TExportComptaGESSI extends TExportCompta {
 	
-	function __construct($db, $exportAllreadyExported=false) {
+	function __construct($db, $exportAllreadyExported=false, $addExportTimeToBill=false) {
 		
-		parent::__construct($db, $exportAllreadyExported);
+		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'numero_piece',			'length' => 6,	'default' => '',	'type' => 'text'),
