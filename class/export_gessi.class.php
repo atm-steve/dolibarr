@@ -221,6 +221,7 @@ class TExportComptaGESSI extends TExportCompta {
 			// Lignes tiers
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
+					'code_journal'			=> $bank['ref'],
 					'date_ecriture'			=> $bankline['datev'],
 					'numero_compte'			=> $code_compta,
 					'numero_piece'			=> $bankline['ref'],
@@ -237,6 +238,7 @@ class TExportComptaGESSI extends TExportCompta {
 			// Lignes banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
+					'code_journal'			=> $bank['ref'],
 					'date_ecriture'			=> $bankline['datev'],
 					'numero_compte'			=> $code_compta,
 					'numero_piece'			=> $bankline['ref'],
