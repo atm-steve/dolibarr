@@ -4,7 +4,7 @@ require('config.php');
 
 ini_set('memory_limit','512M');
 set_time_limit(0);
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 
 if (!$user->rights->exportcompta->generate) accessforbidden();
 
@@ -14,7 +14,9 @@ $langs->load('bills');
 
 $error = '';
 
+$fileContent = '';
 $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
+$type_export = 'ecritures_comptables_vente';
 
 dol_include_once('/exportcompta/class/export_'.$logiciel_export.'.class.php');
 $className = 'TExportCompta'.ucfirst($logiciel_export);
@@ -29,9 +31,7 @@ if(isset($_REQUEST['submitBtn']) || isset($_REQUEST['showMe'])) {
 	$dt_fin = $exp->get_date('dt_fin','Y-m-d 23:59:59');
 }
 
-if(!empty($action) && $action == 'export') {	
-	
-	$fileContent = '';
+if(!empty($action) && $action == 'export') {
 
 	if(!empty($logiciel_export)) {
 		
