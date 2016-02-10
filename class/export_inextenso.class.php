@@ -25,8 +25,7 @@ class TExportComptaInextenso extends TExportCompta {
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_banque[0] = array('name' => 'code_journal','length' => 6,'default' => 'BQ',	'type' => 'text');
 		
-		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_vente;
-		$this->_format_ecritures_comptables_ndf[0] = array('name' => 'code_journal','length' => 6,'default' => 'AC',	'type' => 'text');
+		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_achat;
 		
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
@@ -242,6 +241,79 @@ class TExportComptaInextenso extends TExportCompta {
 				$numLignes++;
 			}
 			
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
+
+	function get_file_ecritures_comptables_ndf($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		if(empty($format)) $format = $this->_format_ecritures_comptables_achat;
+
+		$TabNDF = parent::get_notes_de_frais($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach ($TabNDF as $id_ndf => $infosNDF) {
+			$ndf = &$infosNDF['ndf'];
+			$user = &$infosNDF['user'];
+
+			// Lignes client
+			foreach($infosNDF['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_ecriture'					=> $ndf['date_valid'],
+					'numero_piece'					=> $ndf['ref'],
+					'numero_compte'					=> $code_compta,
+					'libelle'						=> $user['firstname'].' '.$user['lastname'],
+					'montant_debit'					=> 0,
+					'montant_credit'				=> number_format(abs($montant),2,'.',''),
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
+				$numLignes++;
+			}
+			
+			// Lignes de produits
+			foreach($infosNDF['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_ecriture'					=> $ndf['date_valid'],
+					'numero_piece'					=> $ndf['ref'],
+					'numero_compte'					=> $code_compta,
+					'libelle'						=> $user['firstname'].' '.$user['lastname'],
+					'montant_debit'					=> number_format(abs($montant),2,'.',''),
+					'montant_credit'				=> 0,
+				);
+				
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
+				
+				// Ecriture analytique
+				$numLignes++;
+			}
+
+			// Lignes TVA
+			if(!empty($infosNDF['ligne_tva'])) {
+				foreach($infosNDF['ligne_tva'] as $code_compta => $montant) {
+						$ligneFichier = array(
+							'date_ecriture'					=> $ndf['date_valid'],
+							'numero_piece'					=> $ndf['ref'],
+							'numero_compte'					=> $code_compta,
+							'libelle'						=> $user['firstname'].' '.$user['lastname'],
+							'montant_debit'					=> number_format(abs($montant),2,'.',''),
+							'montant_credit'				=> 0,
+						);
+					
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
+					$numLignes++;
+				}
+			}
 			$numEcriture++;
 		}
 
