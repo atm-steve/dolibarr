@@ -56,8 +56,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,'.',''),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,'.','') : 0,
 				);
 				
 				// Ecriture générale
@@ -72,8 +72,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,'.','') : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,'.',''),
 				);
 				
 				// Ecriture générale
@@ -90,8 +90,8 @@ class TExportComptaGESSI extends TExportCompta {
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
 						'libelle'						=> $tiers['nom'],
-						'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
-						'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
+						'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,'.','') : 0,
+						'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,'.',''),
 					);
 					
 					// Ecriture générale
@@ -142,8 +142,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,'.','') : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,'.',''),
 				);
 				
 				// Ecriture générale
@@ -158,8 +158,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,'.',''),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,'.','') : 0,
 				);
 				
 				// Ecriture générale
@@ -177,8 +177,8 @@ class TExportComptaGESSI extends TExportCompta {
 							'numero_piece'					=> $facture['ref'],
 							'numero_compte'					=> $code_compta,
 							'libelle'						=> $tiers['nom'],
-							'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format($montant,2,'.',''),
-							'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format($montant,2,'.','') : 0,
+							'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,'.',''),
+							'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,'.','') : 0,
 						);
 					
 					// Ecriture générale
@@ -225,8 +225,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_compte'			=> $code_compta,
 					'numero_piece'			=> $bankline['ref'],
 					'libelle'				=> $label,
-					'montant_debit'			=> ($montant < 0) ? number_format($montant,2,'.','') : 0,
-					'montant_credit'		=> ($montant < 0) ? 0 : number_format($montant,2,'.','')
+					'montant_debit'			=> ($montant < 0) ? number_format(abs($montant),2,'.','') : 0,
+					'montant_credit'		=> ($montant < 0) ? 0 : number_format(abs($montant),2,'.','')
 				);
 				
 				// Ecriture générale
@@ -241,8 +241,8 @@ class TExportComptaGESSI extends TExportCompta {
 					'numero_compte'			=> $code_compta,
 					'numero_piece'			=> $bankline['ref'],
 					'libelle'				=> $label,
-					'montant_debit'			=> ($montant < 0) ? 0 : number_format($montant,2,'.',''),
-					'montant_credit'		=> ($montant < 0) ? number_format($montant,2,'.','') : 0,
+					'montant_debit'			=> ($montant < 0) ? 0 : number_format(abs($montant),2,'.',''),
+					'montant_credit'		=> ($montant < 0) ? number_format(abs($montant),2,'.','') : 0,
 				);
 				
 				// Ecriture générale
