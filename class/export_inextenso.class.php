@@ -10,13 +10,13 @@ class TExportComptaInextenso extends TExportCompta {
 		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
-			array('name' => 'code_journal',			'length' => 6,	'default' => 'VE',	'type' => 'text'),
 			array('name' => 'date_ecriture',		'length' => 10,	'default' => '',	'type' => 'date',	'format' => 'd/m/Y'),
-			array('name' => 'numero_piece',			'length' => 12,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_journal',			'length' => 6,	'default' => 'VT',	'type' => 'text'),
 			array('name' => 'numero_compte',		'length' => 9,	'default' => '0',	'type' => 'text'),
-			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text'),
 			array('name' => 'montant_debit',		'length' => 13,	'default' => '0',	'type' => 'text',),
-			array('name' => 'montant_credit',		'length' => 13,	'default' => '0',	'type' => 'text',)
+			array('name' => 'montant_credit',		'length' => 13,	'default' => '0',	'type' => 'text',),
+			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_piece',			'length' => 12,	'default' => '',	'type' => 'text'),
 		);
 				
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
