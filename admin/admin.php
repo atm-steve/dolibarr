@@ -186,6 +186,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Export uniquement de la banque si rapprochée
+$var=!$var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_allentities');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_BANK_ONLY_RECONCILED');
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("ExportOnlyReconciled").'</td>';
+print '<td width="60" align="right">';
+print $formDoli->selectyesno("EXPORT_COMPTA_BANK_ONLY_RECONCILED",$conf->global->EXPORT_COMPTA_BANK_ONLY_RECONCILED,1);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print "</td></tr>\n";
+$form->end();
+
 // Champ date utilisé pour les bornes sur notes de frais
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_factclifilter');
