@@ -456,12 +456,8 @@ class TExportCompta extends TObjetStd {
                     $codeComptableTVA  = $produit->array_options['options_code_tva_achat'];
 				}
                 else{
-                    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;    
-
-                    // Spécifique Travail Associé : si facture réglé, mettre TVA dans un autre compte
-                    if($facture->paye == 1) $codeComptableTVA = '44566200';
+                    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
                 }
-				
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
