@@ -30,11 +30,11 @@ class TExportComptaInextenso extends TExportCompta {
 		$this->_format_tiers = array(
 			array('name' => 'numero_compte',		'length' => 9,	'default' => '0',	'type' => 'text'),
 			array('name' => 'nom',					'length' => 50,	'default' => '0',	'type' => 'text',),
-			array('name' => 'vide',					'length' => 1,	'default' => '0',	'type' => 'text',),
-			array('name' => 'vide',					'length' => 1,	'default' => '0',	'type' => 'text',),
-			array('name' => 'vide',					'length' => 1,	'default' => '0',	'type' => 'text',),
-			array('name' => 'vide',					'length' => 1,	'default' => '0',	'type' => 'text',),
-			array('name' => 'vide',					'length' => 1,	'default' => '0',	'type' => 'text',),
+			array('name' => 'vide',					'length' => 1,	'default' => '',	'type' => 'text',),
+			array('name' => 'vide',					'length' => 1,	'default' => '',	'type' => 'text',),
+			array('name' => 'vide',					'length' => 1,	'default' => '',	'type' => 'text',),
+			array('name' => 'vide',					'length' => 1,	'default' => '',	'type' => 'text',),
+			array('name' => 'vide',					'length' => 1,	'default' => '',	'type' => 'text',),
 			array('name' => 'code_pays',			'length' => 3,	'default' => '0',	'type' => 'text',),
 		);
 		
