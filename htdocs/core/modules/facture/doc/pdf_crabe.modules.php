@@ -120,17 +120,17 @@ class pdf_crabe extends ModelePDFFactures
 		{
 			$this->posxtva=99;
 			$this->posxup=114;
-			$this->posxqty=130;
-			$this->posxunit=147;
+			$this->posxqty=133;
+			$this->posxunit=150;
 		}
 		else
 		{
-			$this->posxtva=110;
+			$this->posxtva=112;
 			$this->posxup=126;
 			$this->posxqty=145;
 		}
 		$this->posxdiscount=162;
-		$this->posxprogress=126; // Only displayed for situation invoices
+		$this->posxprogress=174; // Only displayed for situation invoices
 		$this->postotalht=174;
 		if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) || ! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN)) $this->posxtva=$this->posxup;
 		$this->posxpicture=$this->posxtva - (empty($conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH)?20:$conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH);	// width of images
