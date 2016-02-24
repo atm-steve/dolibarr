@@ -757,7 +757,7 @@ class TExportCompta extends TObjetStd {
 	
 		if((float)DOL_VERSION>=3.7) {
 			$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip, s.fournisseur
-			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.label as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
+			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.code as 'code_pays',p.label as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
 			, rib.code_guichet, rib.number as 'compte_bancaire', rib.cle_rib, rib.bic, rib.iban_prefix as 'iban', rib.domiciliation, rib.proprio as 'rib_proprio'
 			, ex.fk_soc_affacturage
 			FROM ".MAIN_DB_PREFIX."societe s 
@@ -773,12 +773,12 @@ class TExportCompta extends TObjetStd {
 				$sql.=" AND s.parent IS NULL ";
 				
 			}
-			
+			//echo $sql;
 			
 		}
 		else {
 			$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip
-			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.libelle as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
+			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.code as 'code_pays',p.libelle as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
 			, rib.code_guichet, rib.number as 'compte_bancaire', rib.cle_rib, rib.bic, rib.iban_prefix as 'iban', rib.domiciliation, rib.proprio as 'rib_proprio'
 			FROM ".MAIN_DB_PREFIX."societe s 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe_rib rib ON (s.rowid=rib.fk_soc AND rib.default_rib=1)

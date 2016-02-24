@@ -27,13 +27,18 @@ class TExportComptaInextenso extends TExportCompta {
 		
 		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_achat;
 		
+		$this->_format_tiers = array(
+			array('name' => 'numero_compte',		'length' => 9,	'default' => '0',	'type' => 'text'),
+			array('name' => 'nom',					'length' => 50,	'default' => '0',	'type' => 'text',),
+			array('name' => 'code_pays',			'length' => 3,	'default' => '0',	'type' => 'text',),
+		);
+		
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
 		$this->fieldPadding = false;
 		
 		unset($this->TTypeExport['produits']); // pas encore pris en charge
 		unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
-		unset($this->TTypeExport['tiers']); // pas encore pris en charge
 	}
 	
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
@@ -317,6 +322,28 @@ class TExportComptaInextenso extends TExportCompta {
 			$numEcriture++;
 		}
 
+		return $contenuFichier;
+	}
+
+	function get_file_tiers($format, $dt_deb, $dt_fin) {
+		global $conf;
+		if(empty($format)) $format = $this->_format_tiers;
+	
+		$Tab = parent::get_tiers($dt_deb, $dt_fin);
+		
+		$contenuFichier = '';
+	
+		foreach($Tab as $code_compta=>$tiers) {
+			
+			$ligneFichier = array(
+				'numero_compte'			=> $code_compta,
+				'nom'					=> $tiers['nom'],
+				'code_pays'				=> $tiers['code_pays'],
+			);
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier);	
+		}
+	
 		return $contenuFichier;
 	}
 }
