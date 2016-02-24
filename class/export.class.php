@@ -857,7 +857,7 @@ class TExportCompta extends TObjetStd {
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		$sql.= " ORDER BY b.".$datefield." ASC";
 		
-		echo $sql;
+		//echo $sql;
 		
 		$resql = $db->query($sql);
 		
