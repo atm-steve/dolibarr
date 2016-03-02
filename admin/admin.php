@@ -87,6 +87,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print "</td></tr>\n";
 $form->end();
 
+// Autoriser la modification (repassage en brouillon) des factures lorsqu'elle ont été comptabilisés
+$var=!$var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_reopeninvoice');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_ALLOW_UNVALIDATE');
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("AllowModifyInvoiceWhenTransfered").'</td>';
+print '<td width="60" align="right">';
+print $formDoli->selectyesno("EXPORT_COMPTA_ALLOW_UNVALIDATE",$conf->global->EXPORT_COMPTA_ALLOW_UNVALIDATE,1);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print "</td></tr>\n";
+$form->end();
+
 // Empêcher la réouverture des factures lorsqu'elle ont été comptabilisé
 $var=!$var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_reopeninvoice');
@@ -96,6 +110,20 @@ print '<tr '.$bc[$var].'>';
 print '<td>'.$langs->trans("ReopenInvoice").'</td>';
 print '<td width="60" align="right">';
 print $formDoli->selectyesno("EXPORT_COMPTA_HIDE_REOPEN_INVOICE",$conf->global->EXPORT_COMPTA_HIDE_REOPEN_INVOICE,1);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print "</td></tr>\n";
+$form->end();
+
+// Empêcher la regénération des factures lorsqu'elle ont été comptabilisé
+$var=!$var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_reopeninvoice');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_HIDE_GENERATE_FACTURE');
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("RegenerateInvoice").'</td>';
+print '<td width="60" align="right">';
+print $formDoli->selectyesno("EXPORT_COMPTA_HIDE_GENERATE_FACTURE",$conf->global->EXPORT_COMPTA_HIDE_GENERATE_FACTURE,1);
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
 print "</td></tr>\n";
