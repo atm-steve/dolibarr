@@ -446,7 +446,11 @@ if (($action != 'create' && $action != 'add') && !$error) {
 	$sql .= ' AND c.fk_soc = s.rowid';
 
 	// Show orders with status validated, shipping started and delivered (well any order we can bill)
-	$sql .= " AND c.fk_statut IN (5)";
+	/* SPECIFIQUE GRAPEFRUIT */
+	if ($conf->grapefruit->enabled && !empty($conf->global->GRAPEFRUIT_SUPPLIER_FORCE_BT_ORDER_TO_INVOICE)) $sql .= " AND c.fk_statut IN (2,3,4,5)";
+	else $sql .= " AND c.fk_statut IN (5)";
+	/* */
+	
 	$sql .= " AND c.billed = 0";
 
 	// Find order that are not already invoiced
