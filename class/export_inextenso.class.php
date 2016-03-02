@@ -185,6 +185,41 @@ class TExportComptaInextenso extends TExportCompta {
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
 					$numLignes++;
 				}
+			} else {
+				global $db;
+				$soc = new Societe($db);
+				$soc->fetch($tiers['id']);
+				
+				if($soc->isInEEC() && $soc->country_id != 1) { // Autoliquidation TVA pour achat intracommunautaires
+					$montant = $facture['total_ttc'] * .2;
+					$montant = round($montant,2);
+					
+					$ligneFichier = array(
+						'date_ecriture'					=> $facture['date'],
+						'numero_piece'					=> $facture['ref'],
+						'numero_compte'					=> 445662,
+						'libelle'						=> $tiers['nom'],
+						'montant_debit'					=> number_format(abs($montant),2,'.',''),
+						'montant_credit'				=> 0,
+					);
+					
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
+					$numLignes++;
+					
+					$ligneFichier = array(
+						'date_ecriture'					=> $facture['date'],
+						'numero_piece'					=> $facture['ref'],
+						'numero_compte'					=> 445200,
+						'libelle'						=> $tiers['nom'],
+						'montant_debit'					=> 0,
+						'montant_credit'				=> number_format(abs($montant),2,'.',''),
+					);
+					
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
+					$numLignes++;
+				}
 			}
 			$numEcriture++;
 		}
