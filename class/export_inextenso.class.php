@@ -20,10 +20,10 @@ class TExportComptaInextenso extends TExportCompta {
 		);
 				
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
-		$this->_format_ecritures_comptables_achat[0] = array('name' => 'code_journal','length' => 6,'default' => 'AC',	'type' => 'text');
+		$this->_format_ecritures_comptables_achat[1] = array('name' => 'code_journal','length' => 6,'default' => 'AC',	'type' => 'text');
 		
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
-		$this->_format_ecritures_comptables_banque[0] = array('name' => 'code_journal','length' => 6,'default' => 'BQ',	'type' => 'text');
+		$this->_format_ecritures_comptables_banque[1] = array('name' => 'code_journal','length' => 6,'default' => 'BQ',	'type' => 'text');
 		
 		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_achat;
 		
