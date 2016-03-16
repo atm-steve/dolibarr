@@ -11,18 +11,24 @@ class TExportComptaDiacompta extends TExportCompta {
 		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
-			array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 8,	'default' => '0',	'type' => 'text'),
-			array('name' => 'code_journal',			'length' => 2,	'default' => 'VE',	'type' => 'text'),
-			array('name' => 'numero_folio',			'length' => 3,	'default' => '000',	'type' => 'text'),
-			array('name' => 'date_ecriture',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
-			array('name' => 'code_libelle',			'length' => 1,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle_libre',		'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_journal',			'length' => 3,	'default' => ' VE',	'type' => 'text'),
+			array('name' => 'numero_lot_ecriture',	'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 10,	'default' => '0',	'type' => 'text'),
 			array('name' => 'sens',					'length' => 1,	'default' => 'C',	'type' => 'text'),
-			array('name' => 'montant_signe',		'length' => 1,	'default' => '+',	'type' => 'text'),
-			array('name' => 'montant',				'length' => 12,	'default' => '0',	'type' => 'text'),
+			array('name' => 'montant',				'length' => 15,	'default' => '0',	'type' => 'text'),
+			array('name' => 'code_libelle',			'length' => 1,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle_ecriture',		'length' => 50,	'default' => '',	'type' => 'text'),
+			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmy'), // TODO date sur 8 format yyyymmdd
+			array('name' => 'code_lettrage',		'length' => 2,	'default' => '',	'type' => 'text'),
+			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmy'), // TODO date sur 8 format yyyymmdd
+			array('name' => 'numero_piece16',		'length' => 16,	'default' => '',	'type' => 'text'),
+			array('name' => 'quantite',				'length' => 15,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_reglement',		'length' => 3,	'default' => '',	'type' => 'text'), // TODO WTF ?
+			
+			array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
+			array('name' => 'numero_folio',			'length' => 3,	'default' => '000',	'type' => 'text'),
+			array('name' => 'libelle_libre',		'length' => 20,	'default' => '',	'type' => 'text'),
 			array('name' => 'compte_contrepartie',	'length' => 8,	'default' => '',	'type' => 'text'),
-			array('name' => 'date_echeance',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
 			array('name' => 'code_lettrage',		'length' => 2,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_statistiques',	'length' => 3,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_piece5',		'length' => 5,	'default' => '',	'type' => 'text'),
@@ -34,7 +40,6 @@ class TExportComptaDiacompta extends TExportCompta {
 			array('name' => 'flag_code_tva',		'length' => 1,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_tva1',			'length' => 1,	'default' => '',	'type' => 'text'),
 			array('name' => 'methode_tva',			'length' => 1,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle_ecriture',		'length' => 30,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_tva2',			'length' => 2,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_piece10',		'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'reserve',				'length' => 10,	'default' => '',	'type' => 'text'),
@@ -214,6 +219,9 @@ class TExportComptaDiacompta extends TExportCompta {
 				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
+			
+			$i=1; // Pour la colonne numero_lot_ecriture
+			
 //var_dump($infosFacture);exit;
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
