@@ -18,14 +18,18 @@ class TExportComptaDiacompta extends TExportCompta {
 			array('name' => 'montant',				'length' => 15,	'default' => '0',	'type' => 'text'),
 			array('name' => 'code_libelle',			'length' => 1,	'default' => '',	'type' => 'text'),
 			array('name' => 'libelle_ecriture',		'length' => 50,	'default' => '',	'type' => 'text'),
-			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmy'), // TODO date sur 8 format yyyymmdd
+			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ydm'),
 			array('name' => 'code_lettrage',		'length' => 2,	'default' => '',	'type' => 'text'),
-			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmy'), // TODO date sur 8 format yyyymmdd
+			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ydm'),
 			array('name' => 'numero_piece16',		'length' => 16,	'default' => '',	'type' => 'text'),
 			array('name' => 'quantite',				'length' => 15,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_reglement',		'length' => 3,	'default' => '',	'type' => 'text'), // TODO WTF ?
+			array('name' => 'intitule_compte',		'length' => 40,	'default' => '',	'type' => 'text'), // TODO WTF ?
+			array('name' => 'numero_compte_collectif','length' => 10,'default' => '',	'type' => 'text'), // TODO WTF ?
+			array('name' => 'code_regroupement','length' => 10,'default' => '',	'type' => 'text'), // TODO WTF ?
+			array('name' => 'code_devise',			'length' => 3,	'default' => 'EUR',	'type' => 'text'),
 			
-			array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
+			/*array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
 			array('name' => 'numero_folio',			'length' => 3,	'default' => '000',	'type' => 'text'),
 			array('name' => 'libelle_libre',		'length' => 20,	'default' => '',	'type' => 'text'),
 			array('name' => 'compte_contrepartie',	'length' => 8,	'default' => '',	'type' => 'text'),
@@ -49,15 +53,15 @@ class TExportComptaDiacompta extends TExportCompta {
 			array('name' => 'quantite2',			'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'num_unique',			'length' => 10,	'default' => '0',	'type' => 'text'),
 			array('name' => 'code_operateur',		'length' => 4,	'default' => '',	'type' => 'text'),
-			array('name' => 'date_systeme',			'length' => 14,	'default' => '',	'type' => 'date',	'format' => 'dmYHis'),
+			array('name' => 'date_systeme',			'length' => 14,	'default' => '',	'type' => 'date',	'format' => 'dmYHis'),*/
 		);
 	
 		$this->addExportTimeToBill = $addExportTimeToBill;
 		
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
-		$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
+		//$this->_format_ecritures_comptables_achat[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
-		$this->_format_ecritures_comptables_banque[2] = array('name' => 'code_journal','length' => 2,'default' => 'BQ',	'type' => 'text');
+		//$this->_format_ecritures_comptables_banque[2] = array('name' => 'code_journal','length' => 2,'default' => 'BQ',	'type' => 'text');
 		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_ndf[2] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 	
@@ -220,8 +224,6 @@ class TExportComptaDiacompta extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 			
-			$i=1; // Pour la colonne numero_lot_ecriture
-			
 //var_dump($infosFacture);exit;
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
@@ -229,6 +231,7 @@ class TExportComptaDiacompta extends TExportCompta {
 				$ligneFichier = array(
 					'type'							=> $type,
 					//'numero_compte'					=> $code_compta,
+					'numero_lot_ecriture'			=> $numEcriture,
 					'numero_compte'					=> parent::get_code_comptable($tiers['id']),
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
@@ -238,7 +241,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
 					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece5'					=> $facture['ref'],
+					'numero_piece16'					=> $facture['ref'],
 					'numero_piece8'					=> $facture['ref'],
 					'numero_piece10'				=> $facture['ref'],
 					'montant_devise'				=> abs($montant * 100),
@@ -261,6 +264,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'type'							=> $type,
+					'numero_lot_ecriture'			=> $numEcriture,
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
@@ -300,6 +304,7 @@ class TExportComptaDiacompta extends TExportCompta {
 				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 						$ligneFichier = array(
 							'type'							=> $type,
+							'numero_lot_ecriture'			=> $numEcriture,
 							'numero_compte'					=> $code_compta,
 							'code_journal'					=> $codeJournal,
 							'date_ecriture'					=> $facture['date'],
@@ -373,6 +378,7 @@ class TExportComptaDiacompta extends TExportCompta {
 				
 				$ligneFichier = array(
 					'type'							=> $type,
+					'numero_lot_ecriture'			=> $numEcriture,
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
@@ -402,6 +408,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'type'							=> $type,
+					'numero_lot_ecriture'			=> $numEcriture,
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
@@ -434,6 +441,7 @@ class TExportComptaDiacompta extends TExportCompta {
 				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 						$ligneFichier = array(
 							'type'							=> $type,
+							'numero_lot_ecriture'			=> $numEcriture,
 							'numero_compte'					=> $code_compta,
 							'code_journal'					=> $codeJournal,
 							'date_ecriture'					=> $facture['date'],
@@ -602,6 +610,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			
 				$ligneFichier = array(
 					'type'							=> $type,
+					'numero_lot_ecriture'			=> $numEcriture,
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $bank['ref'],
 					'date_ecriture'					=> $bankline['datev'],
@@ -625,6 +634,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'type'							=> $type,
+					'numero_lot_ecriture'			=> $numEcriture,
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $bank['ref'],
 					'date_ecriture'					=> $bankline['datev'],
