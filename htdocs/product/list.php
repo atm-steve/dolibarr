@@ -75,6 +75,10 @@ if (!$_POST) {
 	$search_hidechildproducts = GETPOST('search_hidechildproducts');
 }
 
+if(!isset($_REQUEST['finished'])) $finished = "0";
+else $finished = GETPOST('finished','int');
+if($finished == "-1") $finished="";
+
 $diroutputmassaction=$conf->product->dir_output . '/temp/massgeneration/'.$user->id;
 
 $limit = GETPOST('limit','int')?GETPOST('limit','int'):$conf->liste_limit;
@@ -314,6 +318,15 @@ else
     if ($search_accountancy_code_buy)   $sql.= natural_search('p.accountancy_code_buy', $search_accountancy_code_buy);
     // Add where from extra fields
 
+    if ($finished === '0')
+    {
+        $sql.= " AND p.finished = ".$finished;
+    }
+    elseif ($finished === '1')
+    {
+            $sql.= " AND p.finished = ".$finished;
+    }
+
 	if (!empty($conf->variants->enabled) && $search_hidechildproducts && ($search_type === 0)) {
 		$sql .= " AND pac.rowid IS NULL";
 	}
@@ -412,6 +425,8 @@ else
     	if ($search_tobatch) $param="&amp;search_ref_supplier=".urlencode($search_ref_supplier);
     	if ($search_accountancy_code_sell) $param="&amp;search_accountancy_code_sell=".urlencode($search_accountancy_code_sell);
     	if ($search_accountancy_code_buy) $param="&amp;search_accountancy_code_buy=".urlencode($search_accountancy_code_buy);
+	$param.="&amp;finished=".$finished;
+
     	// Add $param from extra fields
 	    foreach ($search_array_options as $key => $val)
 	    {
@@ -486,6 +501,9 @@ else
     			$moreforfilter.=$htmlother->select_categories(Categorie::TYPE_PRODUCT,$search_categ,'search_categ',1);
     		 	$moreforfilter.='</div>';
     		}
+		
+		$statutarray=array('1' => $langs->trans("Finished"), '0' => $langs->trans("RowMaterial"));
+	        $moreforfilter.='&nbsp; '.$langs->trans("Nature").' : '.$form->selectarray('finished',$statutarray,$finished,1);
 
 			//Show/hide child products. Hidden by default
 			if (!empty($conf->variants->enabled) && $search_type === 0) {
