@@ -1146,6 +1146,7 @@ else
 
 		if (! empty($conf->accounting->enabled))
 		{
+	if(empty($object->accountancy_code_sell)) $object->accountancy_code_sell = '701130000';
             // Accountancy_code_sell
             print '<tr><td class="titlefieldcreate">'.$langs->trans("ProductAccountancySellCode").'</td>';
             print '<td>';
