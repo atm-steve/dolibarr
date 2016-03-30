@@ -80,6 +80,7 @@ $search_opp_amount=GETPOST("search_opp_amount",'alpha');
 $search_budget_amount=GETPOST("search_budget_amount",'alpha');
 $search_public=GETPOST("search_public",'int');
 $search_project_user=GETPOST('search_project_user','int');
+$search_entity=GETPOST('search_entity','int');
 $search_sale=GETPOST('search_sale','int');
 $optioncss = GETPOST('optioncss','alpha');
 
@@ -234,7 +235,7 @@ if (count($listofprojectcontacttype) == 0) $listofprojectcontacttype[0]='0';    
 
 $distinct='DISTINCT';   // We add distinct until we are added a protection to be sure a contact of a project and task is only once.
 $sql = "SELECT ".$distinct." p.rowid as id, p.ref, p.title, p.fk_statut, p.fk_opp_status, p.public, p.fk_user_creat";
-$sql.= ", p.datec as date_creation, p.dateo as date_start, p.datee as date_end, p.opp_amount, p.opp_percent, p.tms as date_update, p.budget_amount";
+$sql.= ", p.datec as date_creation, p.dateo as date_start, p.datee as date_end, p.opp_amount, p.opp_percent, p.tms as date_update, p.budget_amount, p.entity";
 $sql.= ", s.nom as name, s.rowid as socid";
 $sql.= ", cls.code as opp_status_code";
 // We'll need these fields in order to filter by categ
@@ -267,6 +268,7 @@ if ($search_categ > 0)    $sql.= " AND cs.fk_categorie = ".$db->escape($search_c
 if ($search_categ == -2)  $sql.= " AND cs.fk_categorie IS NULL";
 if ($search_ref) $sql .= natural_search('p.ref', $search_ref);
 if ($search_label) $sql .= natural_search('p.title', $search_label);
+if ($search_entity) $sql .= natural_search('p.entity', $search_entity);
 if ($search_societe) $sql .= natural_search('s.nom', $search_societe);
 if ($search_opp_amount) $sql .= natural_search('p.opp_amount', $search_opp_amount, 1);
 if ($search_opp_percent) $sql .= natural_search('p.opp_percent', $search_opp_percent, 1);
@@ -523,6 +525,23 @@ if (! empty($arrayfields['p.datee']['checked']))
 	$formother->select_year($search_eyear?$search_eyear:-1,'search_eyear',1, 20, 5);
 	print '</td>';
 }
+
+print '<td class="liste_titre">';
+if(!empty($conf->multicompany->enabled)) {
+	//$mc->getInstanceDao();
+	$mc->dao->getEntities();
+	$TEntity=array(''=>'');
+	foreach ($mc->dao->entities as $entity)
+	{
+		if ($entity->active == 1)
+		{
+			$TEntity[$entity->id] = $entity->label; 
+		}
+	}
+	
+    print $form->selectarray('search_entity',$TEntity,$search_entity);
+}
+print '</td>';
 if (! empty($arrayfields['p.public']['checked']))
 {
 	print '<td class="liste_titre">';
@@ -729,6 +748,10 @@ while ($i < min($num,$limit))
 			print '</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
+		print '<td align="left">';
+		echo empty($TEntity[$obj->entity])? '' : $TEntity[$obj->entity];
+		print '</td>';
+		if (! $i) $totalarray['nbfield']++;
 		// Visibility
 		if (! empty($arrayfields['p.public']['checked']))
 		{
