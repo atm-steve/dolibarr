@@ -55,3 +55,4 @@ ProductFRSuspFieldBuying=Champ complémentaire contenant le code comptable d'ach
 BillAlreadyExported=Facture déjà exportée
 ExportJustMM=Exporter uniquement les maisons mères
 ExportOnlyReconciled=Exporter uniquement les écritures bancaires rapprochées
+ExcludedBank=Exclure du journal de banque les écritures provenant des comptes suivants (sous la forme REFCOMPTE1,REFCOMPTE2,REFCOMPTE3)

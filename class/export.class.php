@@ -848,6 +848,7 @@ class TExportCompta extends TObjetStd {
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_BANK;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		$onlyReconciled=$conf->global->EXPORT_COMPTA_BANK_ONLY_RECONCILED;
+		$TExcludedBankAcount = !empty($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT) ? strtr($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT, array(';'=>'","', ','=>'","')) : '';
 		
 		// Requête de récupération des écritures bancaires
 		$sql = "SELECT b.rowid, ba.entity";
@@ -856,6 +857,7 @@ class TExportCompta extends TObjetStd {
 		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if($onlyReconciled) $sql.= " AND b.rappro = 1";
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
+		if(!empty($TExcludedBankAcount)) $sql.= ' AND ba.ref NOT IN("'.$TExcludedBankAcount.'")';
 		$sql.= " ORDER BY b.".$datefield." ASC";
 		
 		//echo $sql;
