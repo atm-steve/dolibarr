@@ -167,6 +167,8 @@ class TExportCompta extends TObjetStd {
 			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']);
+			$facture->fetchPreviousNextSituationInvoice();
+			//if(!empty($facture->tab_previous_situation_invoice)){ pre($facture->tab_previous_situation_invoice,true);exit; }
 			
 			if($this->addExportTime) {
 				$facture->array_options['options_date_compta'] = time(); 
@@ -194,51 +196,52 @@ class TExportCompta extends TObjetStd {
 			// Définition des codes comptables
 			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $facture->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 			
+			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
+			//Cas particulier des factures de situation
+			if(!empty($facture->tab_previous_situation_invoice)){
+				foreach ($facture->tab_previous_situation_invoice as $FactureSituation) {
+					$FactureSituation->fetch_lines();
+					$FactureSituation->fetch_thirdparty();
+					foreach ($FactureSituation->lines as $ligneSituation) {
+						
+						$produit = new Product($db);
+						$produit->fetch($ligneSituation->fk_product);
+						$produit->fetch_optionals($ligneSituation->fk_product);
+
+						if(!empty($FactureSituation->thirdparty->array_options['options_code_tva'])) {
+		                    $codeComptableTVA  = $FactureSituation->thirdparty->array_options['options_code_tva'];
+		                }
+		                else if(!empty($produit->array_options['options_code_tva'])) {
+		                    $codeComptableTVA  = $produit->array_options['options_code_tva'];
+		                }
+		                else{
+						    // Code compta TVA
+						    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
+						    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
+		                }
+						
+						$codeComptableProduit = $this->_get_code_compta_product($FactureSituation,$produit);
+						
+						$TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $ligneSituation->total_ht;
+						$TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $ligneSituation->total_ttc;
+						$TotalTVASituationPrev[$facture->id][$codeComptableTVA] += $ligneSituation->total_tva;
+					}
+				}
+			}
+			
 			// Récupération lignes de facture
 			$facture->fetch_lines();
 			foreach ($facture->lines as $ligne) {
 				if($ligne->special_code != 0) continue;
 				if($ligne->total_ht == 0) continue;
 				
-				// Code compta produit
-				$codeComptableProduit = ''; 
+				// Code compta produit 
 				if(!empty($ligne->fk_product)) {
 					$produit = new Product($db);
 					$produit->fetch($ligne->fk_product);
 					$produit->fetch_optionals($ligne->fk_product);
 					
-					// Cas des DOM-TOM
-					if($facture->thirdparty->country_code == 'PM'
-							|| $facture->thirdparty->country_code == 'BL'
-							|| $facture->thirdparty->country_code == 'SM'
-							|| $facture->thirdparty->country_code == 'WF'
-							|| $facture->thirdparty->country_code == 'PF'
-							|| $facture->thirdparty->country_code == 'NC'
-							|| ($facture->thirdparty->country_code == 'FR' && substr($facture->thirdparty->state_code, 0, 2) == '97'))
-					{
-						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD];
-					}
-					// Cas de la France
-					else if($facture->thirdparty->country_code == 'FR') {
-						// Client en france, code compta standard du produit ok
-						$codeComptableProduit = $produit->accountancy_code_sell;
-						
-						// Cas de la société française exonérée
-						if($facture->thirdparty->tva_assuj == 0) {
-							$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD];
-						}
-					}
-					// Cas de la vente CEE
-					else if($facture->thirdparty->isInEEC()) { 
-						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD];
-					}
-					// Cas de la vente Export
-					else {
-						$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD];
-					}
-					
-					// Sécurité au cas où non utilisation des comptes différents domtom, cee, export.
-					if(empty($codeComptableProduit)) $codeComptableProduit = $produit->accountancy_code_sell;
+					$codeComptableProduit = $this->_get_code_compta_product($facture,$produit);
 				}
 
 				// Compte spécifique pour les remises
@@ -273,6 +276,7 @@ class TExportCompta extends TObjetStd {
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
 				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
+				
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
@@ -280,11 +284,76 @@ class TExportCompta extends TObjetStd {
 			
 			$i++;
 		}
+
+
+		foreach($TFactures as $facid => $Tabs){
+			if(!empty($TotalTTCSituationPrev)){
+				foreach($Tabs['ligne_tiers'] as $codeComptableClient => $value){
+					$TFactures[$facid]['ligne_tiers'][$codeComptableClient] -= $TotalTTCSituationPrev[$facid][$codeComptableClient];
+				}
+			}
+			if(!empty($TotalTHSituationPrev)){
+				foreach($Tabs['ligne_produit'] as $codeComptableProduit => $value){
+					$TFactures[$facid]['ligne_produit'][$codeComptableProduit] -= $TotalTHSituationPrev[$facid][$codeComptableProduit];
+				}
+			}
+			if(!empty($TotalTVASituationPrev) && !empty($Tabs['ligne_tva'])){
+				foreach($Tabs['ligne_tva'] as $codeComptableTVA => $value){
+					$TFactures[$facid]['ligne_tva'][$codeComptableTVA] -= $TotalTVASituationPrev[$facid][$codeComptableTVA];
+				}
+			}
+		}
+
 		$conf->entity = $trueEntity;
+		
+		//pre($TFactures[24],true);exit;
 		
         TExportCompta::equilibreFacture($TFactures);
        
 		return $TFactures;
+	}
+
+	static function _get_code_compta_product(&$facture,&$produit){
+		global $conf;
+		
+		$codeComptableProduit = '';
+		
+		//pre($facture->thirdparty,true);exit;
+		
+		// Cas des DOM-TOM
+		if($facture->thirdparty->country_code == 'PM'
+				|| $facture->thirdparty->country_code == 'BL'
+				|| $facture->thirdparty->country_code == 'SM'
+				|| $facture->thirdparty->country_code == 'WF'
+				|| $facture->thirdparty->country_code == 'PF'
+				|| $facture->thirdparty->country_code == 'NC'
+				|| ($facture->thirdparty->country_code == 'FR' && substr($facture->thirdparty->state_code, 0, 2) == '97'))
+		{
+			$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_DOM_FIELD];
+		}
+		// Cas de la France
+		else if($facture->thirdparty->country_code == 'FR') {
+			// Client en france, code compta standard du produit ok
+			$codeComptableProduit = $produit->accountancy_code_sell;
+			
+			// Cas de la société française exonérée
+			if($facture->thirdparty->tva_assuj == 0) {
+				$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_FR_SUSP_FIELD];
+			}
+		}
+		// Cas de la vente CEE
+		else if($facture->thirdparty->isInEEC()) { 
+			$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_CEE_FIELD];
+		}
+		// Cas de la vente Export
+		else {
+			$codeComptableProduit = $produit->array_options['options_'.$conf->global->EXPORT_COMPTA_PRODUCT_EXPORT_FIELD];
+		}
+		
+		// Sécurité au cas où non utilisation des comptes différents domtom, cee, export.
+		if(empty($codeComptableProduit)) $codeComptableProduit = $produit->accountancy_code_sell;
+		
+		return $codeComptableProduit;
 	}
 
     static function equilibreFacture(&$TFactures) {
