@@ -573,6 +573,11 @@ if ($id > 0 || ! empty($ref))
     		print '<div class="fichecenter"><div class="fichehalfleft">';
     		print '<a name="builddoc"></a>'; // ancre
 
+			
+			$parameters=array();
+			$reshook=$hookmanager->executeHooks('addMoreActionsButtons',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+	
+	
 			/*
 			 * Documents generes
 			 */
