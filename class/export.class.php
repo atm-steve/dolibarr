@@ -208,6 +208,8 @@ class TExportCompta extends TObjetStd {
 							$produit = new Product($db);
 							$produit->fetch($ligneSituation->fk_product);
 							$produit->fetch_optionals($ligneSituation->fk_product);
+						}else {
+							$produit = new stdClass();
 						}
 
 						if(!empty($FactureSituation->thirdparty->array_options['options_code_tva'])) {
@@ -253,15 +255,7 @@ class TExportCompta extends TObjetStd {
 					}
 				}
 				
-				if(empty($codeComptableProduit)) {
-					if($ligne->product_type == 0) {
-						$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
-					} else if($ligne->product_type == 1) {
-						$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT : $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
-					}/* else {
-						$codeComptableProduit = 'NOCODE';
-					} Milestone ! */
-				}
+				
                 
                 if(!empty($facture->thirdparty->array_options['options_code_tva'])) {
                     $codeComptableTVA  = $facture->thirdparty->array_options['options_code_tva'];
@@ -355,6 +349,16 @@ class TExportCompta extends TObjetStd {
 		// Sécurité au cas où non utilisation des comptes différents domtom, cee, export.
 		if(empty($codeComptableProduit)) $codeComptableProduit = $produit->accountancy_code_sell;
 		
+		if(empty($codeComptableProduit)) {
+			if($ligne->product_type == 0) {
+				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
+			} else if($ligne->product_type == 1) {
+				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT : $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
+			}/* else {
+				$codeComptableProduit = 'NOCODE';
+			} Milestone ! */
+		}
+
 		return $codeComptableProduit;
 	}
 
