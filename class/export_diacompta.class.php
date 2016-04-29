@@ -359,7 +359,7 @@ class TExportComptaDiacompta extends TExportCompta {
 		$numLignes = 1;
 		
 		$type = 'M';
-		$codeJournal='AC';
+		$codeJournal='ACH';
 		
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
@@ -385,9 +385,9 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'],
+					'libelle_ecriture'					=> $tiers['nom'],
 					
-					'sens'							=> ($montant<0 ? 'D' : 'C'),
+					'sens'							=> 'C',
 					'montant_signe'					=> ($montant<0 ? '-' : '+'),
 					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
 					
@@ -396,6 +396,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_piece5'					=> $facture['ref'],
 					'numero_piece8'					=> $facture['ref'],
 					'numero_piece10'				=> $facture['ref'],
+					'numero_piece16'				=> $facture['ref'],
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
@@ -415,8 +416,8 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'],
-					'sens'							=> ($montant<0 ? $sens[0] : $sens[1]),
+					'libelle_ecriture'					=> $tiers['nom'],
+					'sens'							=> 'C',
 					'montant_signe'					=> ($montant<0 ? '-' : '+'),
 					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
 					'montant'						=> abs($montant * 100),
@@ -424,6 +425,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_piece5'					=> $facture['ref'],
 					'numero_piece8'					=> $facture['ref'],
 					'numero_piece10'				=> $facture['ref'],
+					'numero_piece16'				=> $facture['ref'],
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
@@ -448,8 +450,8 @@ class TExportComptaDiacompta extends TExportCompta {
 							'numero_compte'					=> $code_compta,
 							'code_journal'					=> $codeJournal,
 							'date_ecriture'					=> $facture['date'],
-							'libelle_libre'					=> $tiers['nom'],
-							'sens'							=> ($montant<0 ? $sens[0] : $sens[1]),
+							'libelle_ecriture'					=> $tiers['nom'],
+							'sens'							=> 'C',
 							'montant_signe'					=> ($montant<0 ? '-' : '+'),
 							'montant_devise_signe'					=> ($montant<0 ? '-' : '+'),
 							'montant'						=> abs($montant * 100),
@@ -457,6 +459,7 @@ class TExportComptaDiacompta extends TExportCompta {
 							'numero_piece5'					=> $facture['ref'],
 							'numero_piece8'					=> $facture['ref'],
 							'numero_piece10'				=> $facture['ref'],
+							'numero_piece16'				=> $facture['ref'],
 							'montant_devise'				=> abs($montant * 100),
 							'num_unique'					=> $numLignes,
 							'date_systeme'					=> time(),
