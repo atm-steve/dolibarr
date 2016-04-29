@@ -599,6 +599,7 @@ class TExportComptaDiacompta extends TExportCompta {
 		
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
+			$numchq = $bankline->num_chq;
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
 			
@@ -611,30 +612,38 @@ class TExportComptaDiacompta extends TExportCompta {
 				if(get_class($object) == 'BonPrelevement')	$label = $object->ref;
 			}
 			
-			// Lignes tiers
-			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
+			$nom_tiers = '';
+			if (!empty($object) && $object->element== 'societe') $nom_tiers = $object->nom;
 			
-				$ligneFichier = array(
-					'type'							=> $type,
-					'numero_lot_ecriture'			=> $numEcriture,
-					'numero_compte'					=> $code_compta,
-					'code_journal'					=> $bank['ref'],
-					'date_ecriture'					=> $bankline['datev'],
-					'libelle_libre'					=> $label,
-					'sens'							=> ($montant < 0) ? 'D' : 'C',
-					'montant'						=> abs($montant * 100),
-					'numero_piece5'					=> $bankline['ref'],
-					'numero_piece8'					=> $bankline['ref'],
-					'numero_piece10'				=> $bankline['ref'],
-					'montant_devise'				=> abs($montant * 100),
-					'num_unique'					=> $numLignes,
-					'date_systeme'					=> time(),
-				);
+			// Lignes tiers
+			if (!empty($infosNDF['ligne_tiers']))
+			{
+				foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 				
-				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
-				$numLignes++;
+					$ligneFichier = array(
+						'type'							=> $type,
+						'numero_lot_ecriture'			=> $numEcriture,
+						'numero_compte'					=> $code_compta,
+						'code_journal'					=> $bank['ref'],
+						'date_ecriture'					=> $bankline['datev'],
+						'libelle_ecriture'					=> $nom_tiers,
+						'sens'							=> ($montant < 0) ? 'D' : 'C',
+						'montant'						=> abs($montant * 100),
+						'numero_piece5'					=> $bankline['ref'],
+						'numero_piece8'					=> $bankline['ref'],
+						'numero_piece10'				=> $bankline['ref'],
+						'numero_piece16'				=> $numchq,
+						'montant_devise'				=> abs($montant * 100),
+						'num_unique'					=> $numLignes,
+						'date_systeme'					=> time(),
+					);
+					
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+					$numLignes++;
+				}	
 			}
+			
 			
 			// Lignes banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
@@ -644,12 +653,13 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $bank['ref'],
 					'date_ecriture'					=> $bankline['datev'],
-					'libelle_libre'					=> $label,
+					'libelle_ecriture'					=> $nom_tiers,
 					'sens'							=> ($montant < 0) ? 'C' : 'D',
 					'montant'						=> abs($montant * 100),
 					'numero_piece5'					=> $bankline['ref'],
 					'numero_piece8'					=> $bankline['ref'],
 					'numero_piece10'				=> $bankline['ref'],
+					'numero_piece16'				=> $numchq,
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
