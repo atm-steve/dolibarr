@@ -204,9 +204,11 @@ class TExportCompta extends TObjetStd {
 					$FactureSituation->fetch_thirdparty();
 					foreach ($FactureSituation->lines as $ligneSituation) {
 						
-						$produit = new Product($db);
-						$produit->fetch($ligneSituation->fk_product);
-						$produit->fetch_optionals($ligneSituation->fk_product);
+						if (!empty($ligneSituation->fk_product)){
+							$produit = new Product($db);
+							$produit->fetch($ligneSituation->fk_product);
+							$produit->fetch_optionals($ligneSituation->fk_product);
+						}
 
 						if(!empty($FactureSituation->thirdparty->array_options['options_code_tva'])) {
 		                    $codeComptableTVA  = $FactureSituation->thirdparty->array_options['options_code_tva'];
