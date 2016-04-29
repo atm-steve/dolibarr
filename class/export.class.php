@@ -968,7 +968,7 @@ class TExportCompta extends TObjetStd {
 			$object = new stdClass();
 			foreach($links as $key => $val) {
 				// On ne prend que les liens qui nous intéressent
-				if(!in_array($links[$key]['type'], array('company','sc','withdraw','user','banktransfert'))) continue;
+				if(!in_array($links[$key]['type'], array('company','sc','withdraw','user','banktransfert','payment_vat'))) continue;
 				$lineType = $links[$key]['type'];
 				
 				// Cas du tiers, type d'écriture = règlement client ou fournisseur
@@ -1034,6 +1034,13 @@ class TExportCompta extends TObjetStd {
 				// Cas du transfert de compte à compte
 				if($lineType == 'banktransfert') {
 					$codeCompta = $conf->global->EXPORT_COMPTA_BANK_TRANSFER_ACCOUNT;
+					$TCodeCompta[$codeCompta] = $bankline->amount;
+					$object = $bankline;
+				}
+				
+				// Cas du règlement de TVA 
+				if($lineType == 'payment_vat') {
+					$codeCompta = $conf->global->ACCOUNTING_VAT_PAY_ACCOUNT;
 					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = $bankline;
 				}
