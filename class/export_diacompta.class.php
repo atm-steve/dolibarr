@@ -13,11 +13,11 @@ class TExportComptaDiacompta extends TExportCompta {
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'code_journal',			'length' => 3,	'default' => ' VE',	'type' => 'text'),
 			array('name' => 'numero_lot_ecriture',	'length' => 10,	'default' => '',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 10,	'default' => '0',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 8,	'default' => '0',	'type' => 'text'),
 			array('name' => 'sens',					'length' => 1,	'default' => 'C',	'type' => 'text'),
 			array('name' => 'montant',				'length' => 15,	'default' => '0',	'type' => 'text'),
 			array('name' => 'code_libelle',			'length' => 1,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle_ecriture',		'length' => 50,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle_ecriture',		'length' => 50,	'default' => '',	'type' => 'text', 'pad_type' => STR_PAD_RIGHT),
 			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ydm'),
 			array('name' => 'code_lettrage',		'length' => 2,	'default' => '',	'type' => 'text'),
 			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ydm'),
@@ -235,7 +235,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_compte'					=> parent::get_code_comptable($tiers['id']),
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'],
+					'libelle_ecriture'					=> $tiers['nom'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					'montant'						=> abs($montant * 100),
 					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
@@ -257,6 +257,7 @@ class TExportComptaDiacompta extends TExportCompta {
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			
 				$numLignes++;
 			}
 			
@@ -268,7 +269,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
-					'libelle_libre'					=> $tiers['nom'],
+					'libelle_ecriture'					=> $tiers['nom'],
 					//'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
 					// Modification pour Acticontrole (qui normalement marche pour tout le monde) : quand on est sur un avoir, si un montant est positif, il doit être au crédit.
 					'sens'							=> ($montant<0 ) ? 'D' : 'C',
@@ -279,6 +280,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'numero_piece5'					=> $facture['ref'],
 					'numero_piece8'					=> $facture['ref'],
 					'numero_piece10'				=> $facture['ref'],
+					'numero_piece16'					=> $facture['ref'],
 					'montant_devise'				=> abs($montant * 100),
 					'num_unique'					=> $numLignes,
 					'date_systeme'					=> time(),
@@ -308,7 +310,7 @@ class TExportComptaDiacompta extends TExportCompta {
 							'numero_compte'					=> $code_compta,
 							'code_journal'					=> $codeJournal,
 							'date_ecriture'					=> $facture['date'],
-							'libelle_libre'					=> $tiers['nom'],
+							'libelle_ecriture'					=> $tiers['nom'],
 							
 							'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
 							'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
@@ -319,6 +321,7 @@ class TExportComptaDiacompta extends TExportCompta {
 							'numero_piece5'					=> $facture['ref'],
 							'numero_piece8'					=> $facture['ref'],
 							'numero_piece10'				=> $facture['ref'],
+							'numero_piece16'					=> $facture['ref'],
 							'montant_devise'				=> abs($montant * 100),
 							'num_unique'					=> $numLignes,
 							'date_systeme'					=> time(),
