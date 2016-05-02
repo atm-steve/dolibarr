@@ -6,6 +6,14 @@
 
 class TExportComptaDiacompta extends TExportCompta {
 	
+	public static $TCodeReglement = array(
+		'VAD' => '@'
+		,'CB' => 'B'
+		,'CHQ' => 'C'
+		,'LIQ' => 'E'
+		,'VIR' => 'V'
+	);
+	
 	function __construct($db, $exportAllreadyExported=false,$addExportTimeToBill=false) {
 		
 		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
@@ -13,21 +21,23 @@ class TExportComptaDiacompta extends TExportCompta {
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'code_journal',			'length' => 3,	'default' => ' VE',	'type' => 'text'),
 			array('name' => 'numero_lot_ecriture',	'length' => 10,	'default' => '',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 8,	'default' => '0',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'sens',					'length' => 1,	'default' => 'C',	'type' => 'text'),
-			array('name' => 'montant',				'length' => 15,	'default' => '0',	'type' => 'text'),
+			array('name' => 'montant',				'length' => 15,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_libelle',			'length' => 1,	'default' => '',	'type' => 'text'),
 			array('name' => 'libelle_ecriture',		'length' => 50,	'default' => '',	'type' => 'text', 'pad_type' => STR_PAD_RIGHT),
-			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ydm'),
+			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 			array('name' => 'code_lettrage',		'length' => 2,	'default' => '',	'type' => 'text'),
-			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ydm'),
+			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 			array('name' => 'numero_piece16',		'length' => 16,	'default' => '',	'type' => 'text'),
 			array('name' => 'quantite',				'length' => 15,	'default' => '',	'type' => 'text'),
 			array('name' => 'code_reglement',		'length' => 3,	'default' => '',	'type' => 'text'), // TODO WTF ?
 			array('name' => 'intitule_compte',		'length' => 40,	'default' => '',	'type' => 'text'), // TODO WTF ?
 			array('name' => 'numero_compte_collectif','length' => 10,'default' => '',	'type' => 'text'), // TODO WTF ?
-			array('name' => 'code_regroupement','length' => 10,'default' => '',	'type' => 'text'), // TODO WTF ?
+			array('name' => 'code_regroupement',	'length' => 10,	'default' => '',	'type' => 'text'), // TODO WTF ?
 			array('name' => 'code_devise',			'length' => 3,	'default' => 'EUR',	'type' => 'text'),
+			array('name' => 'montant_devise',		'length' => 15,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_tva',				'length' => 1,	'default' => '',	'type' => 'text'),
 			
 			/*array('name' => 'type',					'length' => 1,	'default' => 'M',	'type' => 'text'),
 			array('name' => 'numero_folio',			'length' => 3,	'default' => '000',	'type' => 'text'),
@@ -224,30 +234,29 @@ class TExportComptaDiacompta extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 			
-//var_dump($infosFacture);exit;
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
-			
 				$ligneFichier = array(
-					'type'							=> $type,
-					//'numero_compte'					=> $code_compta,
-					'numero_lot_ecriture'			=> $numEcriture,
-					'numero_compte'					=> parent::get_code_comptable($tiers['id']),
-					'code_journal'					=> $codeJournal,
-					'date_ecriture'					=> $facture['date'],
-					'libelle_ecriture'					=> $tiers['nom'],
-					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					'montant'						=> abs($montant * 100),
-					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
-					'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
-					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece16'					=> $facture['ref'],
-					'numero_piece8'					=> $facture['ref'],
-					'numero_piece10'				=> $facture['ref'],
-					'montant_devise'				=> abs($montant * 100),
-					'num_unique'					=> $numLignes,
-					'date_systeme'					=> time(),
-					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
+					'code_journal'					=> $codeJournal
+					,'numero_lot_ecriture'			=> $numEcriture
+					,'numero_compte'				=> parent::get_code_comptable($tiers['id'])
+					,'sens'							=> ($facture['type'] == 2 ? 'C' : 'D')
+					,'montant'						=> abs($montant*100)
+					,'code_libelle'					=> ($facture['type']=='2' ? 'A' : 'F' )
+					,'libelle_ecriture'				=> $tiers['nom']
+					,'date_ecriture'				=> $facture['date']
+					,'code_lettrage'				=> ''
+					,'date_echeance'				=> $facture['date_lim_reglement']
+					,'numero_piece16'				=> $facture['ref']
+					,'quantite'						=> ''
+					,'code_reglement'				=> ''
+					,'intitule_compte'				=> ''
+					,'numero_compte_collectif'		=> ''
+					,'code_regroupement'			=> ''
+					,'code_devise' 					=> ''
+					,'montant_devise'				=> abs($montant*100)
+					,'code_tva'						=> ''
+					,'date_systeme'					=> time()
 				);
 
 				if(!empty($conf->global->EXPORTCOMPTA_AVOIRS_AVEC_SIGNE_PLUS)) {
@@ -264,27 +273,26 @@ class TExportComptaDiacompta extends TExportCompta {
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'type'							=> $type,
-					'numero_lot_ecriture'			=> $numEcriture,
-					'numero_compte'					=> $code_compta,
-					'code_journal'					=> $codeJournal,
-					'date_ecriture'					=> $facture['date'],
-					'libelle_ecriture'					=> $tiers['nom'],
-					//'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
-					// Modification pour Acticontrole (qui normalement marche pour tout le monde) : quand on est sur un avoir, si un montant est positif, il doit être au crédit.
-					'sens'							=> ($montant<0 ) ? 'D' : 'C',
-					'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
-					'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
-					'montant'						=> abs($montant * 100),
-					'date_echeance'					=> $facture['date_lim_reglement'],
-					'numero_piece5'					=> $facture['ref'],
-					'numero_piece8'					=> $facture['ref'],
-					'numero_piece10'				=> $facture['ref'],
-					'numero_piece16'					=> $facture['ref'],
-					'montant_devise'				=> abs($montant * 100),
-					'num_unique'					=> $numLignes,
-					'date_systeme'					=> time(),
-					'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
+					'code_journal'					=> $codeJournal
+					,'numero_lot_ecriture'			=> $numEcriture
+					,'numero_compte'				=> $code_compta
+					,'sens'							=> ($montant<0 ) ? 'D' : 'C'
+					,'montant'						=> abs($montant*100)
+					,'code_libelle'					=> ($facture['type']=='2' ? 'A' : 'F' )
+					,'libelle_ecriture'				=> $tiers['nom']
+					,'date_ecriture'				=> $facture['date']
+					,'code_lettrage'				=> ''
+					,'date_echeance'				=> $facture['date_lim_reglement']
+					,'numero_piece16'				=> $facture['ref']
+					,'quantite'						=> ''
+					,'code_reglement'				=> ''
+					,'intitule_compte'				=> ''
+					,'numero_compte_collectif'		=> ''
+					,'code_regroupement'			=> ''
+					,'code_devise' 					=> ''
+					,'montant_devise'				=> abs($montant*100)
+					,'code_tva'						=> ''
+					,'date_systeme'					=> time()
 				);
 
 				if(!empty($conf->global->EXPORTCOMPTA_AVOIRS_AVEC_SIGNE_PLUS)) {
@@ -305,27 +313,28 @@ class TExportComptaDiacompta extends TExportCompta {
 			if(!empty($infosFacture['ligne_tva'])) {
 				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 						$ligneFichier = array(
-							'type'							=> $type,
-							'numero_lot_ecriture'			=> $numEcriture,
-							'numero_compte'					=> $code_compta,
-							'code_journal'					=> $codeJournal,
-							'date_ecriture'					=> $facture['date'],
-							'libelle_ecriture'					=> $tiers['nom'],
+							'code_journal'					=> $codeJournal
+							,'numero_lot_ecriture'			=> $numEcriture
+							,'numero_compte'				=> $code_compta
+							,'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C')
+							,'montant'						=> abs($montant*100)
+							,'code_libelle'					=> ($facture['type']=='2' ? 'A' : 'F' )
+							,'libelle_ecriture'				=> $tiers['nom']
+							,'date_ecriture'				=> $facture['date']
+							,'code_lettrage'				=> ''
+							,'date_echeance'				=> $facture['date_lim_reglement']
+							,'numero_piece16'				=> $facture['ref']
+							,'quantite'						=> ''
+							,'code_reglement'				=> ''
+							,'intitule_compte'				=> ''
+							,'numero_compte_collectif'		=> ''
+							,'code_regroupement'			=> ''
+							,'code_devise' 					=> ''
+							,'montant_devise'				=> abs($montant*100)
+							,'code_tva'						=> ''
+							,'date_systeme'					=> time()
 							
-							'sens'							=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? 'D' : 'C'),
-							'montant_signe'					=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
-							'montant_devise_signe'			=> (( $montant>0 && $facture['type'] == 2 ) || ($montant<0 ) ? '-' : '+'),
-					
-							'montant'						=> abs($montant * 100),
-							'date_echeance'					=> $facture['date_lim_reglement'],
-							'numero_piece5'					=> $facture['ref'],
-							'numero_piece8'					=> $facture['ref'],
-							'numero_piece10'				=> $facture['ref'],
-							'numero_piece16'					=> $facture['ref'],
-							'montant_devise'				=> abs($montant * 100),
-							'num_unique'					=> $numLignes,
-							'date_systeme'					=> time(),
-							'code_libelle'=>($facture['type']=='2' ? 'A' : 'F' ),
+							
 						);
 
 						if(!empty($conf->global->EXPORTCOMPTA_AVOIRS_AVEC_SIGNE_PLUS)) {
@@ -368,39 +377,33 @@ class TExportComptaDiacompta extends TExportCompta {
 			
 			// Configuration permettant d'afficher la ligne tiers au crédit et les lignes complémentaires au débit. si non renseigné : tout au crédit 
 			$sens = array();
-			if(empty($conf->global->EXPORTCOMPTA_ACHAT_DEBIT_CREDIT)) {
-				$sens[] = 'D';
-				$sens[] = 'C';
-			} else {
-				$sens[] = 'C';
-				$sens[] = 'D';
-			}
+			$sens[] = 'D';
+			$sens[] = 'C';
 			
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				
 				$ligneFichier = array(
-					'type'							=> $type,
-					'numero_lot_ecriture'			=> $numEcriture,
-					'numero_compte'					=> $code_compta,
-					'code_journal'					=> $codeJournal,
-					'date_ecriture'					=> $facture['date'],
-					'libelle_ecriture'					=> $tiers['nom'],
-					
-					'sens'							=> 'C',
-					'montant_signe'					=> ($montant<0 ? '-' : '+'),
-					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
-					
-					'montant'						=> abs($montant * 100),
-					'date_echeance'					=> $facture['date_echeance'],
-					'numero_piece5'					=> $facture['ref'],
-					'numero_piece8'					=> $facture['ref'],
-					'numero_piece10'				=> $facture['ref'],
-					'numero_piece16'				=> $facture['ref'],
-					'montant_devise'				=> abs($montant * 100),
-					'num_unique'					=> $numLignes,
-					'date_systeme'					=> time(),
-					'ref_fact_fourn'				=> $facture['ref_supplier'],
+					'code_journal'					=> $codeJournal
+					,'numero_lot_ecriture'			=> $numEcriture
+					,'numero_compte'				=> parent::get_code_comptable($tiers['id'])
+					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'C' : 'D'
+					,'montant'						=> abs($montant*100)
+					,'code_libelle'					=> ''
+					,'libelle_ecriture'				=> $tiers['nom']
+					,'date_ecriture'				=> $facture['date']
+					,'code_lettrage'				=> ''
+					,'date_echeance'				=> $facture['date_lim_reglement']
+					,'numero_piece16'				=> $facture['ref']
+					,'quantite'						=> ''
+					,'code_reglement'				=> ''
+					,'intitule_compte'				=> ''
+					,'numero_compte_collectif'		=> ''
+					,'code_regroupement'			=> ''
+					,'code_devise' 					=> ''
+					,'montant_devise'				=> abs($montant*100)
+					,'code_tva'						=> ''
+					,'date_systeme'					=> time()
 				);
 				
 				// Ecriture générale
@@ -411,25 +414,26 @@ class TExportComptaDiacompta extends TExportCompta {
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'type'							=> $type,
-					'numero_lot_ecriture'			=> $numEcriture,
-					'numero_compte'					=> $code_compta,
-					'code_journal'					=> $codeJournal,
-					'date_ecriture'					=> $facture['date'],
-					'libelle_ecriture'					=> $tiers['nom'],
-					'sens'							=> 'C',
-					'montant_signe'					=> ($montant<0 ? '-' : '+'),
-					'montant_devise_signe'			=> ($montant<0 ? '-' : '+'),
-					'montant'						=> abs($montant * 100),
-					'date_echeance'					=> $facture['date_echeance'],
-					'numero_piece5'					=> $facture['ref'],
-					'numero_piece8'					=> $facture['ref'],
-					'numero_piece10'				=> $facture['ref'],
-					'numero_piece16'				=> $facture['ref'],
-					'montant_devise'				=> abs($montant * 100),
-					'num_unique'					=> $numLignes,
-					'date_systeme'					=> time(),
-					'ref_fact_fourn'				=> $facture['ref_supplier'],
+					'code_journal'					=> $codeJournal
+					,'numero_lot_ecriture'			=> $numEcriture
+					,'numero_compte'				=> $code_compta
+					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
+					,'montant'						=> abs($montant*100)
+					,'code_libelle'					=> ''
+					,'libelle_ecriture'				=> $tiers['nom']
+					,'date_ecriture'				=> $facture['date']
+					,'code_lettrage'				=> ''
+					,'date_echeance'				=> $facture['date_lim_reglement']
+					,'numero_piece16'				=> $facture['ref']
+					,'quantite'						=> ''
+					,'code_reglement'				=> ''
+					,'intitule_compte'				=> ''
+					,'numero_compte_collectif'		=> ''
+					,'code_regroupement'			=> ''
+					,'code_devise' 					=> ''
+					,'montant_devise'				=> abs($montant*100)
+					,'code_tva'						=> ''
+					,'date_systeme'					=> time()
 				);
 				
 				// Ecriture générale
@@ -444,27 +448,28 @@ class TExportComptaDiacompta extends TExportCompta {
 			// Lignes TVA
 			if(!empty($infosFacture['ligne_tva'])) {
 				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
-						$ligneFichier = array(
-							'type'							=> $type,
-							'numero_lot_ecriture'			=> $numEcriture,
-							'numero_compte'					=> $code_compta,
-							'code_journal'					=> $codeJournal,
-							'date_ecriture'					=> $facture['date'],
-							'libelle_ecriture'					=> $tiers['nom'],
-							'sens'							=> 'C',
-							'montant_signe'					=> ($montant<0 ? '-' : '+'),
-							'montant_devise_signe'					=> ($montant<0 ? '-' : '+'),
-							'montant'						=> abs($montant * 100),
-							'date_echeance'					=> $facture['date_echeance'],
-							'numero_piece5'					=> $facture['ref'],
-							'numero_piece8'					=> $facture['ref'],
-							'numero_piece10'				=> $facture['ref'],
-							'numero_piece16'				=> $facture['ref'],
-							'montant_devise'				=> abs($montant * 100),
-							'num_unique'					=> $numLignes,
-							'date_systeme'					=> time(),
-							'ref_fact_fourn'				=> $facture['ref_supplier'],
-						);
+					$ligneFichier = array(
+						'code_journal'					=> $codeJournal
+						,'numero_lot_ecriture'			=> $numEcriture
+						,'numero_compte'				=> $code_compta
+						,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
+						,'montant'						=> abs($montant*100)
+						,'code_libelle'					=> ''
+						,'libelle_ecriture'				=> $tiers['nom']
+						,'date_ecriture'				=> $facture['date']
+						,'code_lettrage'				=> ''
+						,'date_echeance'				=> $facture['date_lim_reglement']
+						,'numero_piece16'				=> $facture['ref']
+						,'quantite'						=> ''
+						,'code_reglement'				=> ''
+						,'intitule_compte'				=> ''
+						,'numero_compte_collectif'		=> ''
+						,'code_regroupement'			=> ''
+						,'code_devise' 					=> ''
+						,'montant_devise'				=> abs($montant*100)
+						,'code_tva'						=> ''
+						,'date_systeme'					=> time()
+					);
 					
 					// Ecriture générale
 					$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
@@ -584,6 +589,8 @@ class TExportComptaDiacompta extends TExportCompta {
 	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
 		global $conf;
 
+		
+
 		if(empty($format)) $format = $this->_format_ecritures_comptables_banque;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
@@ -619,23 +626,28 @@ class TExportComptaDiacompta extends TExportCompta {
 			if (!empty($infosNDF['ligne_tiers']))
 			{
 				foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
-				
+					
 					$ligneFichier = array(
-						'type'							=> $type,
-						'numero_lot_ecriture'			=> $numEcriture,
-						'numero_compte'					=> $code_compta,
-						'code_journal'					=> $bank['ref'],
-						'date_ecriture'					=> $bankline['datev'],
-						'libelle_ecriture'					=> $nom_tiers,
-						'sens'							=> ($montant < 0) ? 'D' : 'C',
-						'montant'						=> abs($montant * 100),
-						'numero_piece5'					=> $bankline['ref'],
-						'numero_piece8'					=> $bankline['ref'],
-						'numero_piece10'				=> $bankline['ref'],
-						'numero_piece16'				=> $numchq,
-						'montant_devise'				=> abs($montant * 100),
-						'num_unique'					=> $numLignes,
-						'date_systeme'					=> time(),
+						'code_journal'					=> $bank['ref']
+						,'numero_lot_ecriture'			=> $numEcriture
+						,'numero_compte'				=> $code_compta
+						,'sens'							=> ($montant < 0) ? 'D' : 'C'
+						,'montant'						=> abs($montant*100)
+						,'code_libelle'					=> ''
+						,'libelle_ecriture'				=> $nom_tiers
+						,'date_ecriture'				=> $bankline['datev']
+						,'code_lettrage'				=> ''
+						,'date_echeance'				=> ''
+						,'numero_piece16'				=> $numchq
+						,'quantite'						=> ''
+						,'code_reglement'				=> !empty(self::$TCodeReglement[$bankline['fk_type']]) ? self::$TCodeReglement[$bankline['fk_type']] : '' 
+						,'intitule_compte'				=> $bank['label']
+						,'numero_compte_collectif'		=> ''
+						,'code_regroupement'			=> ''
+						,'code_devise' 					=> ''
+						,'montant_devise'				=> abs($montant*100)
+						,'code_tva'						=> ''
+						,'date_systeme'					=> time()
 					);
 					
 					// Ecriture générale
@@ -643,26 +655,33 @@ class TExportComptaDiacompta extends TExportCompta {
 					$numLignes++;
 				}	
 			}
-			
-			
+		
 			// Lignes banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
+				
+				//var_dump(date('Ymd',$bankline['datev']));c;
+				
 				$ligneFichier = array(
-					'type'							=> $type,
-					'numero_lot_ecriture'			=> $numEcriture,
-					'numero_compte'					=> $code_compta,
-					'code_journal'					=> $bank['ref'],
-					'date_ecriture'					=> $bankline['datev'],
-					'libelle_ecriture'					=> $nom_tiers,
-					'sens'							=> ($montant < 0) ? 'C' : 'D',
-					'montant'						=> abs($montant * 100),
-					'numero_piece5'					=> $bankline['ref'],
-					'numero_piece8'					=> $bankline['ref'],
-					'numero_piece10'				=> $bankline['ref'],
-					'numero_piece16'				=> $numchq,
-					'montant_devise'				=> abs($montant * 100),
-					'num_unique'					=> $numLignes,
-					'date_systeme'					=> time(),
+					'code_journal'					=> $bank['ref']
+					,'numero_lot_ecriture'			=> $numEcriture
+					,'numero_compte'				=> $code_compta
+					,'sens'							=> ($montant < 0) ? 'C' : 'D'
+					,'montant'						=> abs($montant*100)
+					,'code_libelle'					=> ''
+					,'libelle_ecriture'				=> $nom_tiers
+					,'date_ecriture'				=> $bankline['datev']
+					,'code_lettrage'				=> ''
+					,'date_echeance'				=> ''
+					,'numero_piece16'				=> $numchq
+					,'quantite'						=> ''
+					,'code_reglement'				=> !empty(self::$TCodeReglement[$bankline['fk_type']]) ? self::$TCodeReglement[$bankline['fk_type']] : '' 
+					,'intitule_compte'				=> $bank['label']
+					,'numero_compte_collectif'		=> ''
+					,'code_regroupement'			=> ''
+					,'code_devise' 					=> ''
+					,'montant_devise'				=> abs($montant*100)
+					,'code_tva'						=> ''
+					,'date_systeme'					=> time()
 				);
 				
 				// Ecriture générale
