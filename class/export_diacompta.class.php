@@ -382,14 +382,15 @@ class TExportComptaDiacompta extends TExportCompta {
 			
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
-				
+			/*	var_dump($code_compta);
+				exit;*/
 				$ligneFichier = array(
 					'code_journal'					=> $codeJournal
 					,'numero_lot_ecriture'			=> $numEcriture
-					,'numero_compte'				=> parent::get_code_comptable($tiers['id'])
+					,'numero_compte'				=> $code_compta
 					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'C' : 'D'
 					,'montant'						=> abs($montant*100)
-					,'code_libelle'					=> ''
+					,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
 					,'libelle_ecriture'				=> $tiers['nom']
 					,'date_ecriture'				=> $facture['date']
 					,'code_lettrage'				=> ''
@@ -419,7 +420,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					,'numero_compte'				=> $code_compta
 					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
 					,'montant'						=> abs($montant*100)
-					,'code_libelle'					=> ''
+					,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
 					,'libelle_ecriture'				=> $tiers['nom']
 					,'date_ecriture'				=> $facture['date']
 					,'code_lettrage'				=> ''
@@ -454,7 +455,7 @@ class TExportComptaDiacompta extends TExportCompta {
 						,'numero_compte'				=> $code_compta
 						,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
 						,'montant'						=> abs($montant*100)
-						,'code_libelle'					=> ''
+						,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
 						,'libelle_ecriture'				=> $tiers['nom']
 						,'date_ecriture'				=> $facture['date']
 						,'code_lettrage'				=> ''
@@ -606,7 +607,7 @@ class TExportComptaDiacompta extends TExportCompta {
 		
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
-			$numchq = $bankline->num_chq;
+			$numchq = $bankline['num_chq'];
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
 			
@@ -623,7 +624,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			if (!empty($object) && $object->element== 'societe') $nom_tiers = $object->nom;
 			
 			// Lignes tiers
-			if (!empty($infosNDF['ligne_tiers']))
+			if (!empty($infosBank['ligne_tiers']))
 			{
 				foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 					
@@ -638,7 +639,7 @@ class TExportComptaDiacompta extends TExportCompta {
 						,'date_ecriture'				=> $bankline['datev']
 						,'code_lettrage'				=> ''
 						,'date_echeance'				=> ''
-						,'numero_piece16'				=> $numchq
+						,'numero_piece16'				=> empty($numchq) ? $bankline['ref'] : $numchq
 						,'quantite'						=> ''
 						,'code_reglement'				=> !empty(self::$TCodeReglement[$bankline['fk_type']]) ? self::$TCodeReglement[$bankline['fk_type']] : '' 
 						,'intitule_compte'				=> $bank['label']
@@ -658,8 +659,6 @@ class TExportComptaDiacompta extends TExportCompta {
 		
 			// Lignes banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
-				
-				//var_dump(date('Ymd',$bankline['datev']));c;
 				
 				$ligneFichier = array(
 					'code_journal'					=> $bank['ref']
