@@ -388,7 +388,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'code_journal'					=> $codeJournal
 					,'numero_lot_ecriture'			=> $numEcriture
 					,'numero_compte'				=> $code_compta
-					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'C' : 'D'
+					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
 					,'montant'						=> abs($montant*100)
 					,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
 					,'libelle_ecriture'				=> $tiers['nom']
@@ -418,7 +418,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					'code_journal'					=> $codeJournal
 					,'numero_lot_ecriture'			=> $numEcriture
 					,'numero_compte'				=> $code_compta
-					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
+					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'C' : 'D'
 					,'montant'						=> abs($montant*100)
 					,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
 					,'libelle_ecriture'				=> $tiers['nom']
@@ -453,7 +453,7 @@ class TExportComptaDiacompta extends TExportCompta {
 						'code_journal'					=> $codeJournal
 						,'numero_lot_ecriture'			=> $numEcriture
 						,'numero_compte'				=> $code_compta
-						,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
+						,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'C' : 'D'
 						,'montant'						=> abs($montant*100)
 						,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
 						,'libelle_ecriture'				=> $tiers['nom']
