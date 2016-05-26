@@ -980,11 +980,13 @@ class TExportCompta extends TObjetStd {
 				if($lineType == 'company') {
 					$tiers = new Societe($db);
 					$tiers->fetch($links[$key]['url_id']);
+					$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 					if($bankline->label == '(CustomerInvoicePayment)' || $bankline->label == 'Règlement client') {
-						$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 						$codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf_code_compta_client_defaut;
 					} else {
 						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+						// Si c'est un remboursement, il s'agit bien d'un paiement sortant, mais il revient à un client et non à un fournisseur, on veut donc le code comptable client :
+						if(empty($codeCompta) && $bankline->label === '(CustomerInvoicePaymentBack)') $codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf_code_compta_client_defaut;
 					}
 					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = $tiers;
