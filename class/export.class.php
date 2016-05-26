@@ -194,7 +194,8 @@ class TExportCompta extends TObjetStd {
 			}
 			
 			// Définition des codes comptables
-			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $facture->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+			$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $facture->thirdparty->code_compta : $conf_code_compta_client_defaut;
 			
 			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 			//Cas particulier des factures de situation
@@ -980,7 +981,8 @@ class TExportCompta extends TObjetStd {
 					$tiers = new Societe($db);
 					$tiers->fetch($links[$key]['url_id']);
 					if($bankline->label == '(CustomerInvoicePayment)' || $bankline->label == 'Règlement client') {
-						$codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+						$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+						$codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf_code_compta_client_defaut;
 					} else {
 						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
 					}
