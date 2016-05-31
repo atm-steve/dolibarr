@@ -72,7 +72,7 @@ class modExportCompta extends DolibarrModules
 		$this->picto='generic';
 
 		// Defined if the directory /mymodule/includes/triggers/ contains triggers or not
-	
+
         $this->module_parts = array(
                     // Set this to 1 if module has its own trigger directory
                     'triggers' => 1,
@@ -145,7 +145,7 @@ class modExportCompta extends DolibarrModules
 		// 'contact'          to add a tab in contact view
 		// 'categories_x'	  to add a tab in category view (replace 'x' by type of category (0=product, 1=supplier, 2=customer, 3=member)
         $this->tabs = array();
-		
+
 
         // Dictionnaries
         $this->dictionnaries=array();
@@ -184,12 +184,12 @@ class modExportCompta extends DolibarrModules
 		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'generate';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
-		
-		
+
+
 
 		// Main menu entries
 		$this->menus = array();			// List of menus to add
-		
+
 		$this->menu[$r]=array('fk_menu'=>'fk_mainmenu=accountancy',		// Use r=value where r is index key used for the parent menu entry (higher parent must be a top menu entry)
 			'type'=>'left',			// This is a Left menu entry
 			'titre'=>'Exports comptables',
@@ -203,7 +203,7 @@ class modExportCompta extends DolibarrModules
 			'target'=>'',
 			'level'=>1,
 			'user'=>0);
-		
+
 		$r++;
 		// Exports
 		$r=1;
@@ -228,25 +228,25 @@ class modExportCompta extends DolibarrModules
 	 *		It also creates data directories.
 	 *      @return     int             1 if OK, 0 if KO
 	 */
-	function init()
+	function init($options = '')
 	{
 		$sql = array();
 
 		dol_include_once('/core/class/extrafields.class.php');
         $extrafields=new ExtraFields($this->db);
 		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture');
-		
+
         $res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture_fourn');
-        
+
         $res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'product',0,0,'');
         $res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'product',0,0,'');
 
         $res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'societe',0,0,'');
         $res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'societe',0,0,'');
-        		
+
         $res = $extrafields->addExtraField('fk_soc_affacturage', 'Tiers pour  affacturage', 'sellist', 0, '', 'societe',0,0,'',serialize(array('options'=>array('societe:nom:rowid'=>null))));
-                
-                
+
+
 		$result=$this->load_tables();
 
 		return $this->_init($sql);
@@ -258,7 +258,7 @@ class modExportCompta extends DolibarrModules
 	 *		Data directories are not deleted.
 	 *      @return     int             1 if OK, 0 if KO
 	 */
-	function remove()
+	function remove($options = '')
 	{
 		$sql = array();
 
