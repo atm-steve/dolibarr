@@ -26,6 +26,9 @@ class TExportComptaCegid extends TExportCompta {
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_banque[1]['default'] = '';
 
+		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_ndf[1]['default'] = '';
+
 		$this->_format_reglement_tiers = $this->_format_ecritures_comptables_vente;
 
 		$this->lineSeparator = "\r\n";
