@@ -144,7 +144,9 @@ class modExportCompta extends DolibarrModules
 		// 'group'            to add a tab in group view
 		// 'contact'          to add a tab in contact view
 		// 'categories_x'	  to add a tab in category view (replace 'x' by type of category (0=product, 1=supplier, 2=customer, 3=member)
-        $this->tabs = array();
+        $this->tabs = array(
+			'categories_2:+exportcompta:Comptabilité:exportcompta@exportcompta:$user->rights->exportcompta->linkcat:/exportcompta/linkcategory.php?id=__ID__&type=customer'
+		);
 
 
         // Dictionnaries
@@ -183,6 +185,14 @@ class modExportCompta extends DolibarrModules
 		$this->rights[$r][1] = 'Générer des export comptables';	// Permission label
 		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'generate';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
+		$r++;
+
+		$this->rights = array();		// Permission array used by this module
+		$r=0;
+		$this->rights[$r][0] = $this->numero.$r; 				// Permission id (must not be already used)
+		$this->rights[$r][1] = 'Lier une catégorie client à un code comptable produit';	// Permission label
+		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
+		$this->rights[$r][4] = 'linkcat';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
 
 
