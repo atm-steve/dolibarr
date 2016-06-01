@@ -15,7 +15,7 @@ class TExportComptaLinkCat extends TObjetStd {
 
 	static function getCategoryProduct(&$PDOdb, $fk_category, $type) {
 		$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."exportcompta_link_category
-			WHERE fk_category=".$fk_category_customer." AND type_category='".$type."' 
+			WHERE fk_category=".$fk_category." AND type_category='".$type."' 
 		";
 		$Tab = $PDOdb->ExecuteAsArray($sql);
 		
