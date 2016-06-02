@@ -40,6 +40,27 @@
 			_fiche($PDOdb,$id,$type);
 			
 			break;
+			
+		case 'save':
+			
+			if(!empty($_POST['TExportComptaLinkCat'])) {
+				
+				foreach($_POST['TExportComptaLinkCat'] as $linkid=>$data) {
+					$l=new TExportComptaLinkCat;
+					
+					if($l->load($PDOdb, $linkid)) {
+						$l->set_values($data);
+						$l->save($PDOdb);	
+					}
+				}
+				
+			}
+			
+			_fiche($PDOdb,$id,$type);
+			
+			
+			break;
+			
 		default:
 		
 			_fiche($PDOdb,$id,$type);
@@ -86,19 +107,26 @@ function _fiche(&$PDOdb,$id,$type) {
 	print '</td></tr>';
 	print '</table>';
 	
+	$formCore=new TFormCore('auto','formLink','post');
+	echo $formCore->hidden('id', $id);
+	echo $formCore->hidden('action', 'save');
+	echo $formCore->hidden('type', $type);
 	
-	echo '<table class="border" width="100%"><tr class="liste_titre"><td>categorie produit</td><td>code compta</tr>';
+	echo '<table class="border" width="100%"><tr class="liste_titre"><td>categorie produit</td><td>code compta</td><td></td></tr>';
 	$TCategory = TExportComptaLinkCat::getCategoryProduct($PDOdb, $object->id,$type);
 	if(!empty($TCategory)) {
 		
 		foreach($TCategory as &$cat) {
 			
-				
+				echo '<tr>
+					<td>'.$form->select_all_categories(0,$cat->fk_category_product,'TExportComptaLinkCat['.$cat->getId().'][fk_category_product]').'</td>
+					<td>'.$formCore->texte('', 'TExportComptaLinkCat['.$cat->getId().'][code_compta]', $cat->code_compta, 20,255).'</td>
+					<td><a href="?id='.$object->id.'&type='.$type.'&linkid='.$cat->getId().'&action=delete">';
+				    print img_delete();
+				    print '</a></td>
+				</tr>';
 			
-			    print '<a href="?id='.$object->id.'&commid='.$u->id.'&action=delete">';
-			    print img_delete();
-			    print '</a>';
-			
+			    
 			
 		}
 	}
@@ -107,7 +135,10 @@ function _fiche(&$PDOdb,$id,$type) {
 	
 	echo '<div class="tabsAction">
 		<a href="?id='.$id.'&type='.$type.'&action=add" class="butAction">'.$langs->trans('Add').'</a>
+		<input class="butAction" type="submit" value="'.$langs->trans('Save').'" />
 	</div>';
+	
+	$formCore->end();
 	
 	dol_fiche_end();
 	
