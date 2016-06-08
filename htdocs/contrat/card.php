@@ -647,6 +647,12 @@ if (empty($reshook))
 	    }
 	}
 
+	else if ($action == 'updateligne' && $user->rights->contrat->creer && GETPOST('cancel'))
+	{
+		header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id);
+		exit;
+	}
+
 	else if ($action == 'updateline' && $user->rights->contrat->creer && ! GETPOST('cancel'))
 	{
 	    $objectline = new ContratLigne($db);
@@ -722,6 +728,8 @@ if (empty($reshook))
 	        if ($result > 0)
 	        {
 	            $db->commit();
+			header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id);
+			exit;
 	        }
 	        else
 	        {
