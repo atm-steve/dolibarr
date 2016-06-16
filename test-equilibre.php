@@ -17,11 +17,13 @@ var_dump($Tab);
 
 */
 
+$file = $_REQUEST['file'] or die('file ?');
 
 
-$file = file('ebpecritures_comptables_vente20150518171714.txt');
 
 if(isset($_REQUEST['SAGE'])){
+	$file = file($file);
+
 	foreach($file as $row) {
 		$piece = substr($row,25,9);
 		$amount = (double)substr($row,96,14);
@@ -39,15 +41,23 @@ if(isset($_REQUEST['SAGE'])){
 }
 $Tab = array();
 if(isset($_REQUEST['EBP'])){
-	$filename = fopen('ebpecritures_comptables_vente20150518171714.txt', 'r');
+	$filename = fopen($file, 'r');
 	while ($line = fgetcsv($filename,1024,',','"')) {
 		$fact = $line[6];
+		if(empty($Tab[$fact]))$Tab[$fact] = 0;
+
 		if($line[8] == 'D') $Tab[$fact] += $line[7];
 		if($line[8] == 'C') $Tab[$fact] -= $line[7];
 		
 		//var_dump($line);
 	}
 	
+}
+
+foreach($Tab as $fact=>$val) {
+
+	if($val>0.001) echo 'Erreur : '.$fact.' => '.$val.'<hr />';
+
 }
 
 var_dump($Tab);

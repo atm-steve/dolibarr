@@ -275,6 +275,12 @@ class TExportCompta extends TObjetStd {
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
 				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
 
+				if($ligne->info_bits == 2 ) { // cas d'une réduction
+					$ligne->total_ttc = -$ligne->total_ttc;
+					$ligne->total_ht = -$ligne->total_ht;
+					$ligne->total_tva = -$ligne->total_tva;
+				}
+
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
@@ -357,9 +363,9 @@ class TExportCompta extends TObjetStd {
 
 		if(empty($codeComptableProduit)) {
 			if($ligne->product_type == 0) {
-				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
-			} else if($ligne->product_type == 1) {
 				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT : $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
+			} else if($ligne->product_type == 1) {
+				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
 			}/* else {
 				$codeComptableProduit = 'NOCODE';
 			} Milestone ! */
