@@ -358,9 +358,9 @@ class TExportCompta extends TObjetStd {
 
 		if(empty($codeComptableProduit)) {
 			if($ligne->product_type == 0) {
-				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
-			} else if($ligne->product_type == 1) {
 				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT : $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
+			} else if($ligne->product_type == 1) {
+				$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
 			}/* else {
 				$codeComptableProduit = 'NOCODE';
 			} Milestone ! */
