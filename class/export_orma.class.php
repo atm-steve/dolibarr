@@ -4,27 +4,25 @@
  *************************************************************************************************************************************************/
 
 
-class TExportComptaCiel extends TExportCompta {
+class TExportComptaOrma extends TExportCompta {
 	
 	function __construct($db, $exportAllreadyExported=false,$addExportTime=false) {
 		
 		parent::__construct($db, $exportAllreadyExported, $addExportTime);
 		
 		$this->_format_ecritures_comptables_vente = array(
-			array('name' => 'num_unique',			'length' => 5,	'default' => '0',	'type' => 'text'),
-			array('name' => 'code_journal',			'length' => 2,	'default' => 'VE',	'type' => 'text'),
-			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
-			array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
-			array('name' => 'numero_piece',		'length' => 12,	'default' => '',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 11,	'default' => '0',	'type' => 'text'),
-			array('name' => 'libelle_libre',		'length' => 25,	'default' => '',	'type' => 'text'),
-			array('name' => 'montant',				'length' => 13,	'default' => '0',	'type' => 'text'),
-			array('name' => 'sens',					'length' => 1,	'default' => 'C',	'type' => 'text'),
-			array('name' => 'numero_pointage',		'length' => 12,	'default' => '',	'type' => 'text'),
-			array('name' => 'compte_contrepartie',	'length' => 6,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle_compte',		'length' => 34,	'default' => '',	'type' => 'text'),
-			array('name' => 'code_devise',			'length' => 1,	'default' => 'E',	'type' => 'text'),
-			array('name' => 'version',				'length' => 4,	'default' => '',	'type' => 'text'),
+			array('name' => 'id_ligne',					'length' => 1,	'default' => '',	'type' => 'text'),
+			array('name' => 'code_journal',				'length' => 3,	'default' => 'VE',	'type' => 'text'),
+			array('name' => 'date_ecriture',			'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
+			array('name' => 'numero_piece',				'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',			'length' => 10,	'default' => '0',	'type' => 'text'),
+			array('name' => 'code_operation',			'length' => 4,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle_ecriture',			'length' => 34,	'default' => '',	'type' => 'text'),
+			array('name' => 'mode_reglement',			'length' => 4,	'default' => '',	'type' => 'text'),
+			array('name' => 'date_echeance',			'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
+			array('name' => 'sens',						'length' => 1,	'default' => 'C',	'type' => 'text'),
+			array('name' => 'montant',					'length' => 11,	'default' => '0',	'type' => 'text'),
+			array('name' => 'code_devise',				'length' => 1,	'default' => 'E',	'type' => 'text'),
 		);
 	
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
