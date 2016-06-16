@@ -318,6 +318,10 @@ class TExportCompta extends TObjetStd {
 
 		//pre($facture->thirdparty,true);exit;
 
+		// Cas des codes comptables par catégories clients
+		$codeComptableProduit = self::get_code_compta_by_categ_tiers($facture, $produit);
+		if(!empty($codeComptableProduit)) return $codeComptableProduit;
+		
 		// Cas des DOM-TOM
 		if($facture->thirdparty->country_code == 'PM'
 				|| $facture->thirdparty->country_code == 'BL'
@@ -362,6 +366,42 @@ class TExportCompta extends TObjetStd {
 		}
 
 		return $codeComptableProduit;
+	}
+
+	static function get_code_compta_by_categ_tiers(&$facture, &$produit) {
+		
+		global $db;
+		
+		$TCategClient = array();
+		// On récupère les catégories du client
+		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_societe WHERE fk_soc = '.$facture->socid;
+		$resql = $db->query($sql);
+		while($res = $db->fetch_object($resql)) $TCategClient[] = $res->fk_categorie;
+		
+		$TCategProduits = array();
+		// On récupère les catégories du produit
+		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_product WHERE fk_product = '.$produit->id;
+		$resql = $db->query($sql);
+		while($res = $db->fetch_object($resql)) $TCategProduits[] = $res->fk_categorie;
+		
+		// On récupère le code compta paramétré si existant
+		if(!empty($TCategClient) && !empty($TCategProduits)) {
+			foreach($TCategClient as $id_categ_client) {
+				foreach($TCategProduits as $id_categ_prod) {
+					$sql = 'SELECT code_compta FROM '.MAIN_DB_PREFIX.'exportcompta_link_category
+							WHERE type_category = "customer"
+							AND fk_category = '.$id_categ_client.'
+							AND fk_category_product = '.$id_categ_prod;
+					$resql = $db->query($sql);
+					while($res = $db->fetch_object($resql)) {
+						return $res->code_compta;
+					}
+				}
+			}
+		}
+		
+		return 0;
+		
 	}
 
     static function equilibreFacture(&$TFactures) {
