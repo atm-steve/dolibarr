@@ -17,7 +17,7 @@ class TExportComptaOrma extends TExportCompta {
 			array('name' => 'numero_piece',				'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_compte',			'length' => 10,	'default' => '0',	'type' => 'text'),
 			array('name' => 'code_operation',			'length' => 4,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle_ecriture',			'length' => 34,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle_libre',			'length' => 34,	'default' => '',	'type' => 'text'),
 			array('name' => 'mode_reglement',			'length' => 4,	'default' => '',	'type' => 'text'),
 			array('name' => 'date_echeance',			'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 			array('name' => 'sens',						'length' => 1,	'default' => 'C',	'type' => 'text'),
@@ -47,47 +47,34 @@ class TExportComptaOrma extends TExportCompta {
 		
 		);
 		
+		$this->_format_compte=array(
+	
+			array('name' => 'id_ligne',					'length' => 1,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',			'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte_collectif',	'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'intitule_compte',			'length' => 25,	'default' => '',	'type' => 'text'),
+			
+		);
+		
 		$this->_format_tiers=array(
 	
-			array('name' => 'type',					'length' => 1,	'default' => 'C',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 8,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'clef',					'length' => 7,	'default' => ' ',	'type' => 'text'),
-			array('name' => 'debit_N1',				'length' => 13,	'default' => '0',	'type' => 'text'),
-			array('name' => 'credit_N1',			'length' => 13,	'default' => '0',	'type' => 'text'),
-			array('name' => 'debit_N2',				'length' => 13,	'default' => '0',	'type' => 'text'),
-			array('name' => 'credit_N2',			'length' => 13,	'default' => '0',	'type' => 'text'),
-			array('name' => 'compte_collectif',		'length' => 8,	'default' => '',	'type' => 'text'),
-			array('name' => 'adresse1',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'adresse2',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'ville',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'telephone',		'length' => 20,	'default' => '',	'type' => 'text'),
-			array('name' => 'flag',		'length' => 1,	'default' => ' ',	'type' => 'text'),
-			array('name' => 'type_compte',		'length' => 1,	'default' => 'C',	'type' => 'text'),
-			array('name' => 'centraliser_compte',		'length' => 1,	'default' => 'N',	'type' => 'text'),
-			array('name' => 'domiciliation',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'rib',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'mode_reglement',		'length' => 2,	'default' => 'CB',	'type' => 'text'),
-			array('name' => 'nb_jour_echeance',		'length' => 2,	'default' => '0',	'type' => 'text'),
-			array('name' => 'term_echeance',		'length' => 2,	'default' => '31',	'type' => 'text'),
-			array('name' => 'depart_calcul_echeance',		'length' => 2,	'default' => '01',	'type' => 'text'),
-			array('name' => 'code_tva',		'length' => 2,	'default' => '',	'type' => 'text'),
-			array('name' => 'compte_contrepartie',		'length' => 8,	'default' => '0',	'type' => 'text'),
-			array('name' => 'nb_jour_echeance2',		'length' => 3,	'default' => '0',	'type' => 'text'),
-			array('name' => 'flag_tva',		'length' => 1,	'default' => '0',	'type' => 'text'),
-			array('name' => 'fax',		'length' => 20,	'default' => '',	'type' => 'text'),
-			array('name' => 'mode_reglement2',		'length' => 4,	'default' => 'CB',	'type' => 'text'),
-			array('name' => 'groupe4',		'length' => 8,	'default' => '',	'type' => 'text'),
-			array('name' => 'siret',		'length' => 14,	'default' => '',	'type' => 'text'),
-			array('name' => 'edit_m2',		'length' => 1,	'default' => '',	'type' => 'text'),
-			array('name' => 'profession',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'pays',		'length' => 50,	'default' => '',	'type' => 'text'),
-			array('name' => 'code_journal_treso',		'length' => 3,	'default' => '',	'type' => 'text'),
-			array('name' => 'personne_morale',		'length' => 1,	'default' => '0',	'type' => 'text'),
-			array('name' => 'bon_a_payer',			'length' => 1,	'default' => '1',	'type' => 'text'),
-			array('name' => 'iban',					'length' => 4,	'default' => '',	'type' => 'text'),
-			array('name' => 'bic',					'length' => 11,	'default' => '',	'type' => 'text'),
-			array('name' => 'code_imputation',		'length' => 2,	'default' => '14',	'type' => 'text'),
+			array('name' => 'id_ligne',				'length' => 1,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'adresse1',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'adresse2',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'adresse3',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'adresse4',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'ligne_cp_ville',		'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'ligne_pays',			'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'contact',				'length' => 25,	'default' => '',	'type' => 'text'),
+			array('name' => 'contact_tel',			'length' => 25,	'default' => '',	'type' => 'text'),
+			array('name' => 'contact_mobile',		'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'telecopie',			'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'messagerie',			'length' => 25,	'default' => '',	'type' => 'text'),
+			array('name' => 'telex',				'length' => 20,	'default' => '',	'type' => 'text'),
+			array('name' => 'mode_reglement',		'length' => 4,	'default' => '',	'type' => 'text'),
+			array('name' => 'credit',				'length' => 3,	'default' => '',	'type' => 'text'),
+			array('name' => 'jour_echeance',		'length' => 2,	'default' => '',	'type' => 'text'),
 			
 		);
 		
@@ -172,7 +159,7 @@ class TExportComptaOrma extends TExportCompta {
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
 		$type = 'E';
-		$codeJournal='VE';
+		$codeJournal='VEN';
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
@@ -193,6 +180,7 @@ class TExportComptaOrma extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 			$label = $tiers['nom'];
+			$mode_reglement = parent::_get_mode_reglement_label($infosFacture['facture']['mode_reglement_id']);
 			$label.= (!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:'');
 //var_dump($infosFacture);exit;
 			// Lignes client
@@ -202,19 +190,20 @@ class TExportComptaOrma extends TExportCompta {
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 			
 				$ligneFichier = array(
+					'id_ligne'						=> 'E',
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'C' : 'D'),
-					
+					'code_operation'				=> '', // TODO ???
 					'montant'						=> abs(number_format($montant,2,'.','')),
 					//'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					
 					'num_unique'					=> $numEcriture,
-				
+					'mode_reglement'				=> $mode_reglement,
 					
 				);
 				
@@ -231,17 +220,19 @@ class TExportComptaOrma extends TExportCompta {
 				if($montant!=0) {
 
 				$ligneFichier = array(
+					'id_ligne'						=> 'E',
 					'numero_compte'					=> $code_compta,
 					'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
-					//'montant_signe'					=> floatval($facture['total_ttc']) < 0 ? '-' : '+',
+					'code_operation'				=> '', // TODO ???
 					'montant'						=>  abs(number_format($montant,2,'.','')),
 					//'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					'num_unique'					=> $numEcriture,
+					'mode_reglement'				=> $mode_reglement,
 					
 					
 				);
@@ -269,17 +260,19 @@ class TExportComptaOrma extends TExportCompta {
 					
 					if($montant!=0) {
 					$ligneFichier = array(
+						'id_ligne'						=> 'E',
 						'numero_compte'					=> $code_compta,
 						'code_journal'					=> $codeJournal,
 						'date_ecriture'					=> $facture['date'],
 						'libelle_libre'					=> $label,
 						'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
-						//'montant_signe'					=> floatval($facture['tva']) < 0 ? '-' : '+',
+						'code_operation'				=> '', // TODO ???
 					//	'montant'						=> abs($montant),
 						'montant'						=>  abs(number_format($montant,2,'.','')),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece'					=> $facture['ref'],
 						'num_unique'					=> $numEcriture,
+						'mode_reglement'				=> $mode_reglement,
 					
 					);
 					}

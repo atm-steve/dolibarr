@@ -410,6 +410,20 @@ class TExportCompta extends TObjetStd {
 
     }
 
+	static function _get_mode_reglement_label($id) {
+		
+		global $db;
+		
+		if(empty($id)) return '';
+		
+		$sql = 'SELECT libelle FROM '.MAIN_DB_PREFIX.'c_paiement WHERE id = '.$id;
+		$resql = $db->query($sql);
+		$res = $db->fetch_object($resql);
+		
+		return $res->libelle;
+		
+	}
+
 	/*
 	 * Récupération dans Dolibarr de la liste des factures fournisseur avec détails ligne + produit + fournisseur
 	 * Toutes les factures validées, payées, abandonnées, pour l'entité concernée, avec date entre les bornes sélectionnées
