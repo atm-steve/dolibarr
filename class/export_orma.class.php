@@ -52,7 +52,7 @@ class TExportComptaOrma extends TExportCompta {
 			array('name' => 'id_ligne',					'length' => 1,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_compte',			'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_compte_collectif',	'length' => 10,	'default' => '',	'type' => 'text'),
-			array('name' => 'intitule_compte',			'length' => 25,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle',					'length' => 25,	'default' => '',	'type' => 'text'),
 			
 		);
 		
@@ -64,8 +64,8 @@ class TExportComptaOrma extends TExportCompta {
 			array('name' => 'adresse2',				'length' => 30,	'default' => '',	'type' => 'text'),
 			array('name' => 'adresse3',				'length' => 30,	'default' => '',	'type' => 'text'),
 			array('name' => 'adresse4',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'ligne_cp_ville',		'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'ligne_pays',			'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'cp_ville',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'pays',					'length' => 30,	'default' => '',	'type' => 'text'),
 			array('name' => 'contact',				'length' => 25,	'default' => '',	'type' => 'text'),
 			array('name' => 'contact_tel',			'length' => 25,	'default' => '',	'type' => 'text'),
 			array('name' => 'contact_mobile',		'length' => 20,	'default' => '',	'type' => 'text'),
@@ -117,7 +117,7 @@ class TExportComptaOrma extends TExportCompta {
 	}
 	
 
-	function get_file_tiers($format, $dt_deb, $dt_fin) {
+	function get_file_tiers($format, $dt_deb, $dt_fin, $id_ligne='C') {
 		global $conf;
 
 		$separateurLigne="\r\n";
@@ -129,11 +129,13 @@ class TExportComptaOrma extends TExportCompta {
 		foreach($Tab as $code_compta=>$tiers) {
 			
 			$ligneFichier=array_merge($tiers, array(
+				'id_ligne'=>$id_ligne,
 				'numero_compte'=>$code_compta,
 				'libelle'=>$tiers['nom'], 
-				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
-				'adresse1'>$tiers['address'],
-				'ville'=>$tiers['town'],
+				'numero_compte_collectif'=>$conf->global->ACCOUNTING_ACCOUNT_CUSTOMER,
+				'adresse1'=>$tiers['address'],
+				'cp_ville'=>$tiers['zip'].' '.$tiers['town'],
+				'pays'=>$tiers['pays'],
 				'telephone'=>$tiers['phone'],
 				'domiciliation'=>$tiers['domiciliation'],
 				'rib'=>$tiers['code_banque'].$tiers['code_quichet'].$tiers['code_banque'].$tiers['compte_bancaire'].$tiers['cle_rib'],
@@ -167,6 +169,8 @@ class TExportComptaOrma extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		$contenuFichier.= $this->get_file_tiers($this->_format_compte, $dt_deb, $dt_fin);
+		$contenuFichier.= $this->get_file_tiers($this->_format_tiers, $dt_deb, $dt_fin, 'A');
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 //var_dump($infosFacture);exit;
