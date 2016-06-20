@@ -997,7 +997,7 @@ class TExportCompta extends TObjetStd {
 		if($onlyReconciled) $sql.= " AND b.rappro = 1";
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		if(!empty($TExcludedBankAcount)) $sql.= ' AND ba.ref NOT IN("'.$TExcludedBankAcount.'")';
-		$sql.= " ORDER BY b.".$datefield." ASC";
+		$sql.= " ORDER BY b.".$datefield." ASC, b.rowid";
 
 		//echo $sql;
 
