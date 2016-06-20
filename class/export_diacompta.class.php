@@ -612,6 +612,16 @@ class TExportComptaDiacompta extends TExportCompta {
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
 			
+			// Comportement ajouté après dev pour reze
+			if (!empty($conf->global->EXPORT_COMPTA_DIAFORMAT_REPLACE_NUMCHQ_BY_NUM_BORDEREAU) && !empty($bankline['fk_bordereau']))
+			{
+				$bordereau = new RemiseCheque($this->db);
+				if ($bordereau->fetch($bankline['fk_bordereau']) > 0)
+				{
+					$numchq = $bordereau->number;
+				}
+			}
+			
 			$label = $bankline['label'];
 			//pre($object, true);exit;
 			if(!empty($object)) {
