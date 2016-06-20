@@ -588,12 +588,57 @@ class TExportComptaDiacompta extends TExportCompta {
 		return $contenuFichier;
 	}
 
+	/* TODO remove
 	function sortByDate($a, $b)
 	{
 		if ($a['bankline']['dateo'] < $b['bankline']['dateo']) return -1;
 		elseif ($a['bankline']['dateo'] > $b['bankline']['dateo']) return 1;
 		
 		return 0;
+	}*/
+
+	function getAmount(&$TInfo)
+	{
+		$amount_tiers = $amount_banque = 0;
+		foreach ($TInfo['ligne_tiers'] as $code_compta => $amount)
+		{
+			$amount_tiers += $amount;
+		}
+		
+		foreach ($TInfo['ligne_banque'] as $code_compta => $amount)
+		{
+			$amount_banque += $amount;
+		}
+		
+		return array('montant_tiers' => $amount_tiers, 'montant_banque' => $amount_banque);
+	}
+
+	function regroupLinesByDate($Tab, $fk_type)
+	{
+		$TRes = $Tab2 = array();
+		
+		foreach ($Tab as &$TInfo)
+		{
+			$Tab2[date('Y-m-d', $TInfo['bankline']['datev'])][] = $TInfo;
+		}
+		
+		foreach ($Tab2 as $date => &$T)
+		{
+			$total_tiers = $total_banque = 0;
+			foreach ($T as &$TInfo)
+			{
+				$TAmount = $this->getAmount($TInfo);
+				$total_tiers += $TAmount['montant_tiers'];
+				$total_banque += $TAmount['montant_banque'];
+			}
+			
+			$TRes[$fk_type.$date] = $TInfo;
+			$TRes[$fk_type.$date]['object']->nom = '';
+			$TRes[$fk_type.$date]['ligne_tiers'] = array(0 => $total_tiers);
+			$TRes[$fk_type.$date]['ligne_banque'] = array(0 => $total_banque);
+		}
+		
+		return $TRes;
 	}
 
 	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
@@ -633,9 +678,11 @@ class TExportComptaDiacompta extends TExportCompta {
 			$TabBank = array();
 			foreach ($TType as $fk_type)
 			{
-				uasort($Tab[$fk_type], array('TExportComptaDiacompta', 'sortByDate'));
+				//uasort($Tab[$fk_type], array('TExportComptaDiacompta', 'sortByDate')); // TODO remove
+				$Tab[$fk_type] = $this->regroupLinesByDate($Tab[$fk_type], $fk_type);
 				$TabBank += $Tab[$fk_type];
 			}
+			
 			$TabBank += $Tab['other'];
 		}
 		
