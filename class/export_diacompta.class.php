@@ -588,11 +588,17 @@ class TExportComptaDiacompta extends TExportCompta {
 		return $contenuFichier;
 	}
 
+	function sortByDate($a, $b)
+	{
+		if ($a['bankline']['dateo'] < $b['bankline']['dateo']) return -1;
+		elseif ($a['bankline']['dateo'] > $b['bankline']['dateo']) return 1;
+		
+		return 0;
+	}
+
 	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
 		global $conf;
-
 		
-
 		if(empty($format)) $format = $this->_format_ecritures_comptables_banque;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
@@ -605,6 +611,33 @@ class TExportComptaDiacompta extends TExportCompta {
 
 		$numEcriture = 1;
 		$numLignes = 1;
+		
+		// Comportement ajouté après dev pour reze
+		// CHQ,CB,CBVAD,VAD,ANCV
+		if (!empty($conf->global->EXPORT_COMPTA_DIAFORMAT_GROUP_BY_TYPE_RGLT))
+		{
+			$Tab = array();
+			$TType = explode(',', $conf->global->EXPORT_COMPTA_DIAFORMAT_GROUP_BY_TYPE_RGLT);
+			
+			foreach ($TabBank as $id_bank => $infosBank) {
+				if (in_array($infosBank['bankline']['fk_type'], $TType))
+				{
+					$Tab[$infosBank['bankline']['fk_type']][$id_bank] = $infosBank;
+				}
+				else
+				{
+					$Tab['other'][$id_bank] = $infosBank;
+				}
+			}
+			
+			$TabBank = array();
+			foreach ($TType as $fk_type)
+			{
+				uasort($Tab[$fk_type], array('TExportComptaDiacompta', 'sortByDate'));
+				$TabBank += $Tab[$fk_type];
+			}
+			$TabBank += $Tab['other'];
+		}
 		
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
@@ -633,7 +666,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			
 			$nom_tiers = '';
 			if (!empty($object) && $object->element== 'societe') $nom_tiers = $object->nom;
-			
+		
 			// Lignes tiers
 			if (!empty($infosBank['ligne_tiers']))
 			{
