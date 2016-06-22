@@ -196,11 +196,13 @@ class TExportCompta extends TObjetStd {
 				$TFactures[$facture->id]['entity'] = get_object_vars($entity);
 			}
 			
+			// Si EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER est activé, on récupère les infos du tiers de la propal et non de celui de la facture
 			if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER) && !empty($idFacture['id_propal_origin'])) {
 				$propal = new Propal($db);
 				$propal->fetch($idFacture['id_propal_origin']);
 				$propal->fetch_thirdparty();
 				$used_object = &$propal;
+				$TFactures[$facture->id]['tiers'] = get_object_vars($used_object->thirdparty);
 			}
 			else $used_object = &$facture;
 			
