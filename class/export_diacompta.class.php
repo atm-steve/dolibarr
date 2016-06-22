@@ -607,6 +607,7 @@ class TExportComptaDiacompta extends TExportCompta {
 	function regroupLinesByDate($Tab, $fk_type)
 	{
 		$TRes = $Tab2 = array();
+		if (empty($Tab))  return $TRes;
 		
 		// Groupement par date et par client
 		foreach ($Tab as &$TInfo)
@@ -616,10 +617,12 @@ class TExportComptaDiacompta extends TExportCompta {
 		
 		foreach ($Tab2 as $date => &$T)
 		{
+			$i=0;
+			$total_banque = 0;
 			foreach ($T as $fk_user => &$row)
 			{
 				// Somme pour 1 client
-				$total_tiers = $total_banque = 0;
+				$total_tiers = 0;
 				foreach ($row as &$TInfo)
 				{
 					$TAmount = $this->getAmount($TInfo);
@@ -630,14 +633,34 @@ class TExportComptaDiacompta extends TExportCompta {
 				// Get first key - Récupération des codes comptables
 				reset($TInfo['ligne_tiers']);
 				$code_comptable_tiers = key($TInfo['ligne_tiers']);
+				
+				
+				// Affectation au nouveau tableau pour respecter le format utilisé à l'origine
+				$TRes[$fk_type.$date.$i] = $TInfo;
+				$TRes[$fk_type.$date.$i]['ligne_tiers'] = array($code_comptable_tiers => $total_tiers);
+				// Je veux pas de ligne banque maintenant
+				$TRes[$fk_type.$date.$i]['ligne_banque'] = array();
+				
+				$i++;
+			}
+			
+			// Si mon total_banque > 0 alors c'est que j'ai trouvé des paiement client avant
+			if ($total_banque > 0)
+			{
 				reset($TInfo['ligne_banque']);
 				$code_comptable_banque = key($TInfo['ligne_banque']);
 				
-				// Affectation au nouveau tableau pour respecter le format utilisé à l'origine
-				$TRes[$fk_type.$date] = $TInfo;
-				$TRes[$fk_type.$date]['ligne_tiers'] = array($code_comptable_tiers => $total_tiers);
-				$TRes[$fk_type.$date]['ligne_banque'] = array($code_comptable_banque => $total_banque);
+				$TRes[$fk_type.$date.'@total'] = $TInfo;
+				
+				// Je veux le total banque qui été associé à user dans la bloucle du dessus
+				$TRes[$fk_type.$date.'@total']['ligne_tiers'] = array();
+				$TRes[$fk_type.$date.'@total']['ligne_banque'] = array($code_comptable_banque => $total_banque);
+				
+				// Je fait un clone car l'affectation d'objet à une variable le passe en référence et si j'efface le nom alors la ligne qui précède ma ligne banque aura pas de nom 
+				$TRes[$fk_type.$date.'@total']['object'] = clone $TRes[$fk_type.$date.'@total']['object'];
+				$TRes[$fk_type.$date.'@total']['object']->nom = '';
 			}
+			
 		}
 		
 		return $TRes;
