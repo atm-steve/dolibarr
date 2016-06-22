@@ -588,11 +588,64 @@ class TExportComptaDiacompta extends TExportCompta {
 		return $contenuFichier;
 	}
 
+	function getAmount(&$TInfo)
+	{
+		$amount_tiers = $amount_banque = 0;
+		foreach ($TInfo['ligne_tiers'] as $code_compta => $amount)
+		{
+			$amount_tiers += $amount;
+		}
+		
+		foreach ($TInfo['ligne_banque'] as $code_compta => $amount)
+		{
+			$amount_banque += $amount;
+		}
+		
+		return array('montant_tiers' => $amount_tiers, 'montant_banque' => $amount_banque);
+	}
+
+	function regroupLinesByDate($Tab, $fk_type)
+	{
+		$TRes = $Tab2 = array();
+		
+		// Groupement par date et par client
+		foreach ($Tab as &$TInfo)
+		{
+			$Tab2[date('Y-m-d', $TInfo['bankline']['datev'])][$TInfo['object']->id][] = $TInfo;
+		}
+		
+		foreach ($Tab2 as $date => &$T)
+		{
+			foreach ($T as $fk_user => &$row)
+			{
+				// Somme pour 1 client
+				$total_tiers = $total_banque = 0;
+				foreach ($row as &$TInfo)
+				{
+					$TAmount = $this->getAmount($TInfo);
+					$total_tiers += $TAmount['montant_tiers'];
+					$total_banque += $TAmount['montant_banque'];
+				}
+				
+				// Get first key - Récupération des codes comptables
+				reset($TInfo['ligne_tiers']);
+				$code_comptable_tiers = key($TInfo['ligne_tiers']);
+				reset($TInfo['ligne_banque']);
+				$code_comptable_banque = key($TInfo['ligne_banque']);
+				
+				// Affectation au nouveau tableau pour respecter le format utilisé à l'origine
+				$TRes[$fk_type.$date] = $TInfo;
+				$TRes[$fk_type.$date]['ligne_tiers'] = array($code_comptable_tiers => $total_tiers);
+				$TRes[$fk_type.$date]['ligne_banque'] = array($code_comptable_banque => $total_banque);
+			}
+		}
+		
+		return $TRes;
+	}
+
 	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
 		global $conf;
-
 		
-
 		if(empty($format)) $format = $this->_format_ecritures_comptables_banque;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
@@ -606,11 +659,49 @@ class TExportComptaDiacompta extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		// Comportement ajouté après dev pour reze
+		// CHQ,CB,CBVAD,VAD,ANCV
+		if (!empty($conf->global->EXPORT_COMPTA_DIAFORMAT_GROUP_BY_TYPE_RGLT))
+		{
+			$Tab = array();
+			$TType = explode(',', $conf->global->EXPORT_COMPTA_DIAFORMAT_GROUP_BY_TYPE_RGLT);
+			
+			foreach ($TabBank as $id_bank => $infosBank) {
+				if (in_array($infosBank['bankline']['fk_type'], $TType))
+				{
+					$Tab[$infosBank['bankline']['fk_type']][$id_bank] = $infosBank;
+				}
+				else
+				{
+					$Tab['other'][$id_bank] = $infosBank;
+				}
+			}
+			
+			$TabBank = array();
+			foreach ($TType as $fk_type)
+			{
+				$Tab[$fk_type] = $this->regroupLinesByDate($Tab[$fk_type], $fk_type);
+				$TabBank += $Tab[$fk_type];
+			}
+			
+			$TabBank += $Tab['other'];
+		}
+		
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
 			$numchq = $bankline['num_chq'];
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
+			
+			// Comportement ajouté après dev pour reze
+			if (!empty($conf->global->EXPORT_COMPTA_DIAFORMAT_REPLACE_NUMCHQ_BY_NUM_BORDEREAU) && !empty($bankline['fk_bordereau']))
+			{
+				$bordereau = new RemiseCheque($this->db);
+				if ($bordereau->fetch($bankline['fk_bordereau']) > 0)
+				{
+					$numchq = $bordereau->number;
+				}
+			}
 			
 			$label = $bankline['label'];
 			//pre($object, true);exit;
@@ -623,7 +714,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			
 			$nom_tiers = '';
 			if (!empty($object) && $object->element== 'societe') $nom_tiers = $object->nom;
-			
+		
 			// Lignes tiers
 			if (!empty($infosBank['ligne_tiers']))
 			{
