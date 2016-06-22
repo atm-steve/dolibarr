@@ -12,7 +12,7 @@ class TExportComptaOrma extends TExportCompta {
 		
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'id_ligne',					'length' => 1,	'default' => '',	'type' => 'text'),
-			array('name' => 'code_journal',				'length' => 3,	'default' => 'VE',	'type' => 'text'),
+			array('name' => 'code_journal',				'length' => 3,	'default' => 'VEN',	'type' => 'text'),
 			array('name' => 'date_ecriture',			'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 			array('name' => 'numero_piece',				'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_compte',			'length' => 10,	'default' => '0',	'type' => 'text'),
@@ -161,7 +161,7 @@ class TExportComptaOrma extends TExportCompta {
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
 		$type = 'E';
-		$codeJournal='VEN';
+		//$codeJournal='VEN';
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
@@ -196,7 +196,7 @@ class TExportComptaOrma extends TExportCompta {
 				$ligneFichier = array(
 					'id_ligne'						=> 'E',
 					'numero_compte'					=> $code_compta,
-					'code_journal'					=> $codeJournal,
+					//'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'C' : 'D'),
@@ -226,7 +226,7 @@ class TExportComptaOrma extends TExportCompta {
 				$ligneFichier = array(
 					'id_ligne'						=> 'E',
 					'numero_compte'					=> $code_compta,
-					'code_journal'					=> $codeJournal,
+					//'code_journal'					=> $codeJournal,
 					'date_ecriture'					=> $facture['date'],
 					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
@@ -266,7 +266,7 @@ class TExportComptaOrma extends TExportCompta {
 					$ligneFichier = array(
 						'id_ligne'						=> 'E',
 						'numero_compte'					=> $code_compta,
-						'code_journal'					=> $codeJournal,
+						//'code_journal'					=> $codeJournal,
 						'date_ecriture'					=> $facture['date'],
 						'libelle_libre'					=> $label,
 						'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
