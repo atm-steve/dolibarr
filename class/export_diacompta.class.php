@@ -588,15 +588,6 @@ class TExportComptaDiacompta extends TExportCompta {
 		return $contenuFichier;
 	}
 
-	/* TODO remove
-	function sortByDate($a, $b)
-	{
-		if ($a['bankline']['dateo'] < $b['bankline']['dateo']) return -1;
-		elseif ($a['bankline']['dateo'] > $b['bankline']['dateo']) return 1;
-		
-		return 0;
-	}*/
-
 	function getAmount(&$TInfo)
 	{
 		$amount_tiers = $amount_banque = 0;
@@ -617,25 +608,36 @@ class TExportComptaDiacompta extends TExportCompta {
 	{
 		$TRes = $Tab2 = array();
 		
+		// Groupement par date et par client
 		foreach ($Tab as &$TInfo)
 		{
-			$Tab2[date('Y-m-d', $TInfo['bankline']['datev'])][] = $TInfo;
+			$Tab2[date('Y-m-d', $TInfo['bankline']['datev'])][$TInfo['object']->id][] = $TInfo;
 		}
 		
 		foreach ($Tab2 as $date => &$T)
 		{
-			$total_tiers = $total_banque = 0;
-			foreach ($T as &$TInfo)
+			foreach ($T as $fk_user => &$row)
 			{
-				$TAmount = $this->getAmount($TInfo);
-				$total_tiers += $TAmount['montant_tiers'];
-				$total_banque += $TAmount['montant_banque'];
+				// Somme pour 1 client
+				$total_tiers = $total_banque = 0;
+				foreach ($row as &$TInfo)
+				{
+					$TAmount = $this->getAmount($TInfo);
+					$total_tiers += $TAmount['montant_tiers'];
+					$total_banque += $TAmount['montant_banque'];
+				}
+				
+				// Get first key - Récupération des codes comptables
+				reset($TInfo['ligne_tiers']);
+				$code_comptable_tiers = key($TInfo['ligne_tiers']);
+				reset($TInfo['ligne_banque']);
+				$code_comptable_banque = key($TInfo['ligne_banque']);
+				
+				// Affectation au nouveau tableau pour respecter le format utilisé à l'origine
+				$TRes[$fk_type.$date] = $TInfo;
+				$TRes[$fk_type.$date]['ligne_tiers'] = array($code_comptable_tiers => $total_tiers);
+				$TRes[$fk_type.$date]['ligne_banque'] = array($code_comptable_banque => $total_banque);
 			}
-			
-			$TRes[$fk_type.$date] = $TInfo;
-			$TRes[$fk_type.$date]['object']->nom = '';
-			$TRes[$fk_type.$date]['ligne_tiers'] = array(0 => $total_tiers);
-			$TRes[$fk_type.$date]['ligne_banque'] = array(0 => $total_banque);
 		}
 		
 		return $TRes;
@@ -678,7 +680,6 @@ class TExportComptaDiacompta extends TExportCompta {
 			$TabBank = array();
 			foreach ($TType as $fk_type)
 			{
-				//uasort($Tab[$fk_type], array('TExportComptaDiacompta', 'sortByDate')); // TODO remove
 				$Tab[$fk_type] = $this->regroupLinesByDate($Tab[$fk_type], $fk_type);
 				$TabBank += $Tab[$fk_type];
 			}
