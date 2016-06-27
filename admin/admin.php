@@ -410,6 +410,19 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" /
 print "</td></tr>\n";
 $form->end();
 
+// Code compta pour les acomptes
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_product_export_field');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_ACOMPTE');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("AccountForDeposit");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_ACOMPTE',$conf->global->EXPORT_COMPTA_ACOMPTE,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
 // Comptes bancaires contenant les écritures à exclure de l'export du journal de banque
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_bank_excluded');

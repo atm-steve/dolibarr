@@ -251,6 +251,13 @@ class TExportCompta extends TObjetStd {
 					}
 				}
 				
+				// Compte spécifique pour les acomptes
+				if(empty($codeComptableProduit)) {
+					if($facture->type == $facture::TYPE_DEPOSIT) {
+						$codeComptableProduit = $conf->global->EXPORT_COMPTA_ACOMPTE;
+					}
+				}
+				
 				if(empty($codeComptableProduit)) {
 					if($ligne->product_type == 0) {
 						$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
