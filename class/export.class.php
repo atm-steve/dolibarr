@@ -1067,7 +1067,7 @@ class TExportCompta extends TObjetStd {
 						$codeCompta = $tiers->code_compta_fournisseur;
 						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf_code_compta_fourn_defaut;
 					} else {
-						$codeCompta = $conf_code_compta_client_defaut
+						$codeCompta = $conf_code_compta_client_defaut;
 					}
 					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = $tiers;
