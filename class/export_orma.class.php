@@ -185,7 +185,7 @@ class TExportComptaOrma extends TExportCompta {
 			}
 			$label = $tiers['nom'];
 			$mode_reglement = parent::_get_mode_reglement_label($infosFacture['facture']['mode_reglement_id']);
-			$label.= (!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:'');
+			//$label.= (!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:'');
 //var_dump($infosFacture);exit;
 			// Lignes client
 
