@@ -21,7 +21,7 @@ class TExportComptaOrma extends TExportCompta {
 			array('name' => 'mode_reglement',			'length' => 5,	'default' => '',	'type' => 'text', 'pad_type'=>1),
 			array('name' => 'date_echeance',			'length' => 9,	'default' => '',	'type' => 'date', 'pad_type'=>1, 'format' => 'Ymd'),
 			array('name' => 'sens',						'length' => 2,	'default' => 'C',	'type' => 'text', 'pad_type'=>1),
-			array('name' => 'montant',					'length' => 12,	'default' => '0',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'montant',					'length' => 12,	'default' => '0',	'type' => 'text'),
 			array('name' => 'code_devise',				'length' => 2,	'default' => 'E',	'type' => 'text', 'pad_type'=>1),
 		);
 	
