@@ -973,10 +973,12 @@ class TExportCompta extends TObjetStd {
 				if($lineType == 'company') {
 					$tiers = new Societe($db);
 					$tiers->fetch($links[$key]['url_id']);
-					if($bankline->label == '(CustomerInvoicePayment)' || $bankline->label == 'Règlement client') {
+					if(in_array($bankline->label, array('(CustomerInvoicePayment)', 'Règlement client', '(InvoiceRefused)'))) {
 						$codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
-					} else {
+					} else if(in_array($bankline->label, array('(SupplierInvoicePayment)', 'Règlement fournisseur'))) {
 						$codeCompta = !empty($tiers->code_compta_fournisseur) ? $tiers->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+					} else {
+						$codeCompta = $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 					}
 					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = $tiers;
