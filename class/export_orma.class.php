@@ -50,22 +50,22 @@ class TExportComptaOrma extends TExportCompta {
 		$this->_format_compte=array(
 	
 			array('name' => 'id_ligne',					'length' => 1,	'default' => '',	'type' => 'text'),
-			array('name' => 'numero_compte',			'length' => 10,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',			'length' => 10,	'default' => '',	'type' => 'text', 'pad_type'=>1),
 			array('name' => 'numero_compte_collectif',	'length' => 10,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle',					'length' => 25,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle',					'length' => 25,	'default' => '',	'type' => 'text', 'pad_type'=>1),
 			
 		);
 		
 		$this->_format_tiers=array(
 	
 			array('name' => 'id_ligne',				'length' => 1,	'default' => '',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 10,	'default' => '',	'type' => 'text'),
-			array('name' => 'adresse1',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'adresse2',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'adresse3',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'adresse4',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'cp_ville',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'pays',					'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 10,	'default' => '',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'adresse1',				'length' => 30,	'default' => '',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'adresse2',				'length' => 30,	'default' => '',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'adresse3',				'length' => 30,	'default' => '',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'adresse4',				'length' => 30,	'default' => '',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'cp_ville',				'length' => 30,	'default' => '',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'pays',					'length' => 30,	'default' => '',	'type' => 'text', 'pad_type'=>1),
 			array('name' => 'contact',				'length' => 25,	'default' => '',	'type' => 'text'),
 			array('name' => 'contact_tel',			'length' => 25,	'default' => '',	'type' => 'text'),
 			array('name' => 'contact_mobile',		'length' => 20,	'default' => '',	'type' => 'text'),
