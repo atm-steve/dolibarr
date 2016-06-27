@@ -4,11 +4,11 @@
  *************************************************************************************************************************************************/
 
 class TExportComptaCegid extends TExportCompta {
-	
+
 	function __construct($db, $exportAllreadyExported=false) {
-		
+
 		parent::__construct($db, $exportAllreadyExported);
-		
+
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmY'),
 			array('name' => 'code_journal',			'length' => 3,	'default' => 'VEN',	'type' => 'text'),
@@ -19,36 +19,39 @@ class TExportComptaCegid extends TExportCompta {
 			array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_piece',			'length' => 35,	'default' => '',	'type' => 'text')
 		);
-				
+
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_achat[1]['default'] = 'AC';
-		
+
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_banque[1]['default'] = '';
-		
+
+		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_ndf[1]['default'] = '';
+
 		$this->_format_reglement_tiers = $this->_format_ecritures_comptables_vente;
-		
+
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
 		$this->fieldPadding = false;
-		
+
 		unset($this->TTypeExport['produits']); // pas encore pris en charge
 		unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
 		unset($this->TTypeExport['tiers']); // pas encore pris en charge
 	}
-	
+
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		if(empty($format)) $format = $this->_format_ecritures_comptables_vente;
 
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -64,12 +67,12 @@ class TExportComptaCegid extends TExportCompta {
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					'montant'						=> number_format(abs($montant),2,',',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -80,10 +83,10 @@ class TExportComptaCegid extends TExportCompta {
 					'sens'							=> (($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'),
 					'montant'						=> number_format(abs($montant),2,',',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				
+
 				$numLignes++;
 			}
 
@@ -98,13 +101,13 @@ class TExportComptaCegid extends TExportCompta {
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 						'montant'						=> number_format(abs($montant),2,',',''),
 					);
-					
+
 					// Ecriture générale
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
 					$numLignes++;
 				}
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -117,26 +120,26 @@ class TExportComptaCegid extends TExportCompta {
 		if(empty($format)) $format = $this->_format_ecritures_comptables_achat;
 
 		$TabFactures = parent::get_factures_fournisseur($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		$type = 'M';
 		$codeJournal='AC';
-		
+
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
-			
+
 			if(!empty($infosFacture['entity'])) {
 				$entity = $infosFacture['entity'];
 				$tmp = explode(";", $entity['description']);
 				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
-			
+
 			$label = $tiers['nom'];
 			$label.= (!empty($facture['ref_client']) ? ' - '.$facture['ref_client']:'');
 
@@ -152,12 +155,12 @@ class TExportComptaCegid extends TExportCompta {
 					'libelle'				=> $label,
 					'numero_piece'			=> $facture['ref']
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -169,10 +172,10 @@ class TExportComptaCegid extends TExportCompta {
 					'libelle'				=> $label,
 					'numero_piece'			=> $facture['ref']
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				
+
 				// Ecriture analytique
 				$numLignes++;
 			}
@@ -189,7 +192,7 @@ class TExportComptaCegid extends TExportCompta {
 							'libelle'						=> $label,
 							'numero_piece'					=> $facture['ref']
 						);
-					
+
 					// Ecriture générale
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
 					$numLignes++;
@@ -200,25 +203,25 @@ class TExportComptaCegid extends TExportCompta {
 
 		return $contenuFichier;
 	}
-	
+
 	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		if(empty($format)) $format = $this->_format_ecritures_comptables_banque;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
-			
+
 			$label = $bankline['label'];
 			//pre($object, true);exit;
 			if(!empty($object)) {
@@ -226,7 +229,7 @@ class TExportComptaCegid extends TExportCompta {
 				if($object->element == 'chargesociales')	$label = $object->type_libelle;
 				if($object->element == 'user')				$label = $object->firstname.' '.$object->lastname;
 			}
-			
+
 			// Lignes tiers
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -237,12 +240,12 @@ class TExportComptaCegid extends TExportCompta {
 					'montant'				=> number_format(abs($montant),2,',',''),
 					'libelle'				=> $label
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -253,12 +256,12 @@ class TExportComptaCegid extends TExportCompta {
 					'montant'				=> number_format(abs($montant),2,',',''),
 					'libelle'				=> $label
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -266,22 +269,22 @@ class TExportComptaCegid extends TExportCompta {
 	}
 
 	function get_file_reglement_tiers($format, $dt_deb, $dt_fin) {
-		global $conf,$db;	
-		
+		global $conf,$db;
+
 		if(empty($format)) $format = $this->_format_reglement_tiers;
-		
+
 		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 		$type = 'R';
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		foreach ($TabReglement as $infosReglement) {
 			$tiers = &$infosReglement['client'];
 			$reglement = &$infosReglement['reglement'];
-			
+
 			// Ligne Banque
 			$ligneFichier = array(
 				'date_ecriture'			=> $reglement['datep'],
@@ -292,7 +295,7 @@ class TExportComptaCegid extends TExportCompta {
 				'libelle'				=> $tiers['nom'],
 				'numero_piece'			=> $reglement['num_fact']
 			);
-			
+
 			$contenuFichier .= parent::get_line($format, $ligneFichier);
 			$numLignes++;
 
@@ -308,12 +311,83 @@ class TExportComptaCegid extends TExportCompta {
 
 			$contenuFichier .= parent::get_line($format, $ligneFichier);
 			$numLignes++;
-			
 
-			
+
+
 			$numEcriture++;
 		}
 
 		return $contenuFichier;
-	}	
+	}
+
+	/**
+	 *
+	 * @param unknown $format
+	 * @param unknown $dt_deb
+	 * @param unknown $dt_fin
+	 * @return string
+	 */
+	function get_file_ecritures_comptables_ndf($format, $dt_deb, $dt_fin) {
+
+		//TODO : need real test, I don't realy know if this will work
+
+		global $conf;
+
+		$TabNDF = parent::get_notes_de_frais($dt_deb, $dt_fin);
+
+		$contenuFichier = '';
+		$separateurLigne = "\r\n";
+
+		$numEcriture = 1;
+		$numLignes = 1;
+
+		$type = 'M';
+		$codeJournal='AC';
+
+		foreach ($TabNDF as $id_ndf => $infosNDF) {
+			$tiers = &$infosNDF['tiers'];
+			$ndf = &$infosNDF['ndf'];
+			$user = &$infosNDF['user'];
+
+			// Lignes client
+			foreach($infosNDF['ligne_tiers'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_ecriture'		=> $ndf['datee'],
+					'code_journal'		=> 'C',
+					'numero_compte'		=> $tiers['code_compta'],
+					'sens'				=> 'C',
+					'montant'			=> number_format(abs($montant),2,',',''),
+					'libelle'			=> $tiers['nom'],
+					'numero_piece'		=> $ndf['ref']
+				);
+
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$numLignes++;
+			}
+
+			// Lignes de produits
+			foreach($infosNDF['ligne_produit'] as $code_compta => $montant) {
+				$ligneFichier = array(
+					'date_ecriture'			=> $ndf['date'],
+					'code_journal'			=> $codeJournal,
+					'numero_compte'			=> $code_compta,
+					'sens'					=> ($montant > 0 ? 'D' : 'C'),
+					'montant'				=> number_format(abs($montant),2,',',''),
+					'libelle'				=> $label,
+					'numero_piece'			=> $ndf['ref']
+				);
+
+				// Ecriture générale
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
+
+				// Ecriture analytique
+				$numLignes++;
+			}
+
+			$numEcriture++;
+		}
+
+		return $contenuFichier;
+	}
 }
