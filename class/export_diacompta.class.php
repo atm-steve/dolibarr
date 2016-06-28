@@ -9,7 +9,7 @@ class TExportComptaDiacompta extends TExportCompta {
 	public static $TCodeReglement = array(
 		'VAD' => '1'
 		,'CB' => 'B'
-		,'CHQ' => 'C'
+		,'CHQ' => 'R'
 		,'LIQ' => 'E'
 		,'VIR' => 'V'
 		,'ANCV' => '2'
@@ -742,6 +742,12 @@ class TExportComptaDiacompta extends TExportCompta {
 			if (!empty($infosBank['ligne_tiers']))
 			{
 				foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
+					
+					/*if ($nom_tiers == 'Anita DURBAN') {
+					
+					var_dump($object);
+					exit;	
+					}*/
 					
 					$ligneFichier = array(
 						'code_journal'					=> $bank['ref']
