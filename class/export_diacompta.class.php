@@ -809,7 +809,11 @@ class TExportComptaDiacompta extends TExportCompta {
 				$numLignes++;
 			}
 			
-			$numEcriture++;
+			if (!empty($conf->global->EXPORT_COMPTA_DIAFORMAT_GROUP_BY_TYPE_RGLT))
+			{
+				if (!empty($infosBank['ligne_banque'])) $numEcriture++;
+			}
+			else $numEcriture++;
 		}
 
 		return $contenuFichier;
