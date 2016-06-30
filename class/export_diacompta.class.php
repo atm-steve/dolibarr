@@ -13,9 +13,13 @@ class TExportComptaDiacompta extends TExportCompta {
 		,'LIQ' => 'E'
 		,'VIR' => 'V'
 		,'ANCV' => '2'
+		,'CBVAD' => '3'
 	);
 	
+	public $TCodeComptaRglt = array();
+	
 	function __construct($db, $exportAllreadyExported=false,$addExportTimeToBill=false) {
+		global $db;
 		
 		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
 		
@@ -144,7 +148,16 @@ class TExportComptaDiacompta extends TExportCompta {
 			array('name' => 'code',		'length' => 10,	'default' => '',	'type' => 'text'),
 			array('name' => 'libelle',		'length' => 30,	'default' => '',	'type' => 'text'),
 			
-		);		
+		);
+		
+		
+		$sql = 'SELECT code, accountancy_code FROM '.MAIN_DB_PREFIX.'c_paiement WHERE active = 1 AND accountancy_code IS NOT NULL';
+		$resql = $db->query($sql);
+		if ($resql) {
+			while ($r = $db->fetch_object($resql)) {
+				$this->TCodeComptaRglt[$r->code] = $r->accountancy_code;
+			}
+		}
 	}
 
 	function get_file_produits($format, $dt_deb, $dt_fin) {
@@ -612,6 +625,10 @@ class TExportComptaDiacompta extends TExportCompta {
 		// Groupement par date et par client
 		foreach ($Tab as &$TInfo)
 		{
+			if(in_array($TInfo['bankline']['label'], array('(SupplierInvoicePayment)', 'Règlement fournisseur'))) {
+				$TRes[] = $TInfo;
+				continue; // Pas de groupement fournisseur on les ajoute tel quel
+			}
 			$Tab2[date('Y-m-d', $TInfo['bankline']['datev'])][$TInfo['object']->id][] = $TInfo;
 		}
 		
@@ -743,12 +760,6 @@ class TExportComptaDiacompta extends TExportCompta {
 			{
 				foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 					
-					/*if ($nom_tiers == 'Anita DURBAN') {
-					
-					var_dump($object);
-					exit;	
-					}*/
-					
 					$ligneFichier = array(
 						'code_journal'					=> $bank['ref']
 						,'numero_lot_ecriture'			=> $numEcriture
@@ -780,11 +791,10 @@ class TExportComptaDiacompta extends TExportCompta {
 		
 			// Lignes banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
-				
 				$ligneFichier = array(
 					'code_journal'					=> $bank['ref']
 					,'numero_lot_ecriture'			=> $numEcriture
-					,'numero_compte'				=> $code_compta
+					,'numero_compte'				=> !empty($this->TCodeComptaRglt[$bankline['fk_type']]) ? $this->TCodeComptaRglt[$bankline['fk_type']] : $code_compta 
 					,'sens'							=> ($montant < 0) ? 'C' : 'D'
 					,'montant'						=> abs($montant*100)
 					,'code_libelle'					=> ''
