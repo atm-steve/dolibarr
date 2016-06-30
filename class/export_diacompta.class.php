@@ -760,6 +760,9 @@ class TExportComptaDiacompta extends TExportCompta {
 			{
 				foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 					
+					$code_reglement = !empty(self::$TCodeReglement[$bankline['fk_type']]) ? self::$TCodeReglement[$bankline['fk_type']] : '';
+					if(in_array($bankline['label'], array('(SupplierInvoicePayment)', 'Règlement fournisseur')) && $code_reglement == 'R') $code_reglement = 'C';
+					
 					$ligneFichier = array(
 						'code_journal'					=> $bank['ref']
 						,'numero_lot_ecriture'			=> $numEcriture
@@ -773,7 +776,7 @@ class TExportComptaDiacompta extends TExportCompta {
 						,'date_echeance'				=> ''
 						,'numero_piece16'				=> empty($numchq) ? $bankline['ref'] : $numchq
 						,'quantite'						=> ''
-						,'code_reglement'				=> !empty(self::$TCodeReglement[$bankline['fk_type']]) ? self::$TCodeReglement[$bankline['fk_type']] : '' 
+						,'code_reglement'				=> $code_reglement
 						,'intitule_compte'				=> $bank['label']
 						,'numero_compte_collectif'		=> ''
 						,'code_regroupement'			=> ''
@@ -791,6 +794,10 @@ class TExportComptaDiacompta extends TExportCompta {
 		
 			// Lignes banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
+				
+				$code_reglement = !empty(self::$TCodeReglement[$bankline['fk_type']]) ? self::$TCodeReglement[$bankline['fk_type']] : '';
+				if(in_array($bankline['label'], array('(SupplierInvoicePayment)', 'Règlement fournisseur')) && $code_reglement == 'R') $code_reglement = 'C';
+				
 				$ligneFichier = array(
 					'code_journal'					=> $bank['ref']
 					,'numero_lot_ecriture'			=> $numEcriture
@@ -804,7 +811,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					,'date_echeance'				=> ''
 					,'numero_piece16'				=> $numchq
 					,'quantite'						=> ''
-					,'code_reglement'				=> !empty(self::$TCodeReglement[$bankline['fk_type']]) ? self::$TCodeReglement[$bankline['fk_type']] : '' 
+					,'code_reglement'				=> $code_reglement 
 					,'intitule_compte'				=> $bank['label']
 					,'numero_compte_collectif'		=> ''
 					,'code_regroupement'			=> ''
