@@ -14,7 +14,7 @@ class TExportComptaOrma extends TExportCompta {
 			array('name' => 'id_ligne',					'length' => 1,	'default' => '',	'type' => 'text', 'pad_type'=>1),
 			array('name' => 'code_journal',				'length' => 3,	'default' => 'VEN',	'type' => 'text', 'pad_type'=>1),
 			array('name' => 'date_ecriture',			'length' => 8,	'default' => '',	'type' => 'date', 'pad_type'=>1, 'format' => 'Ymd'),
-			array('name' => 'numero_piece',				'length' => 10,	'default' => '',	'type' => 'text', 'pad_type'=>1),
+			array('name' => 'numero_piece',				'length' => 10,	'default' => '',	'type' => 'text', 'pad_type'=>0),
 			array('name' => 'numero_compte',			'length' => 10,	'default' => '0',	'type' => 'text', 'pad_type'=>1),
 			array('name' => 'code_operation',			'length' => 4,	'default' => '',	'type' => 'text', 'pad_type'=>1),
 			array('name' => 'libelle_libre',			'length' => 34,	'default' => '',	'type' => 'text', 'pad_type'=>1),
