@@ -619,16 +619,21 @@ class TExportComptaDiacompta extends TExportCompta {
 
 	function regroupLinesByDate($Tab, $fk_type)
 	{
-		$TRes = $Tab2 = array();
+		$TRes = $TResSupplier = $TResCustomer = $Tab2 = array();
 		if (empty($Tab))  return $TRes;
-		
+		$i=0;
 		// Groupement par date et par client
 		foreach ($Tab as &$TInfo)
 		{
+			$i++;
 			if(in_array($TInfo['bankline']['label'], array('(SupplierInvoicePayment)', 'Règlement fournisseur'))) {
-				$TRes[] = $TInfo;
+				$TResSupplier['@supplierPayment'.$i] = $TInfo;
 				continue; // Pas de groupement fournisseur on les ajoute tel quel
+			} elseif (in_array($TInfo['bankline']['label'], array('(CustomerInvoicePaymentBack)', 'Remboursement client'))) {
+				$TResCustomer['@customerPaymentBack'.$i] = $TInfo;
+				continue; // Pas de groupement pour les remboursement client
 			}
+			
 			$Tab2[date('Y-m-d', $TInfo['bankline']['datev'])][$TInfo['object']->id][] = $TInfo;
 		}
 		
@@ -679,7 +684,9 @@ class TExportComptaDiacompta extends TExportCompta {
 			}
 			
 		}
-		
+
+		$TRes = $TRes + $TResSupplier + $TResCustomer;
+	
 		return $TRes;
 	}
 
@@ -754,7 +761,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			
 			$nom_tiers = '';
 			if (!empty($object) && $object->element== 'societe') $nom_tiers = $object->nom;
-		
+
 			// Lignes tiers
 			if (!empty($infosBank['ligne_tiers']))
 			{
