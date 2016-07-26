@@ -2,7 +2,7 @@
 
 	require 'config.php';
 	
-	
+//ini_set('display_errors',1);	
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 	require_once DOL_DOCUMENT_ROOT.'/core/lib/categories.lib.php';
 	
@@ -115,9 +115,8 @@ function _fiche(&$PDOdb,$id,$type) {
 	echo '<table class="border" width="100%"><tr class="liste_titre"><td>categorie produit</td><td>code compta</td><td></td></tr>';
 	$TCategory = TExportComptaLinkCat::getCategoryProduct($PDOdb, $object->id,$type);
 	if(!empty($TCategory)) {
-		
+		$form=new Form($db);
 		foreach($TCategory as &$cat) {
-			
 				echo '<tr>
 					<td>'.$form->select_all_categories(0,$cat->fk_category_product,'TExportComptaLinkCat['.$cat->getId().'][fk_category_product]').'</td>
 					<td>'.$formCore->texte('', 'TExportComptaLinkCat['.$cat->getId().'][code_compta]', $cat->code_compta, 20,255).'</td>
