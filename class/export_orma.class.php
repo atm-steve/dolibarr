@@ -201,7 +201,7 @@ class TExportComptaOrma extends TExportCompta {
 					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'C' : 'D'),
 					'code_operation'				=> '', // TODO ???
-					'montant'						=> abs(number_format($montant,2,'.','')),
+					'montant'						=> number_format(abs($montant),2,'.',''),
 					//'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
@@ -231,7 +231,7 @@ class TExportComptaOrma extends TExportCompta {
 					'libelle_libre'					=> $label,
 					'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
 					'code_operation'				=> '', // TODO ???
-					'montant'						=>  abs(number_format($montant,2,'.','')),
+					'montant'						=>  number_format(abs($montant),2,'.',''),
 					//'montant'						=> abs($montant),
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
@@ -272,7 +272,7 @@ class TExportComptaOrma extends TExportCompta {
 						'sens'							=> ($facture['type'] == 2 || $montant<0 ? 'D' : 'C'),
 						'code_operation'				=> '', // TODO ???
 					//	'montant'						=> abs($montant),
-						'montant'						=>  abs(number_format($montant,2,'.','')),
+						'montant'						=>  number_format(abs($montant),2,'.',''),
 						'date_echeance'					=> $facture['date_lim_reglement'],
 						'numero_piece'					=> $facture['ref'],
 						'num_unique'					=> $numEcriture,
@@ -494,7 +494,7 @@ class TExportComptaOrma extends TExportCompta {
 					'date_ecriture'					=> $bankline['datev'],
 					'libelle_libre'					=> $label,
 					'sens'							=> ($montant < 0) ? 'D' : 'C',
-					'montant'						=> abs(number_format($montant,2,'.','')),
+					'montant'						=> number_format(abs($montant),2,'.',''),
 					'num_unique'					=> $numLignes,
 				);
 				
@@ -511,7 +511,7 @@ class TExportComptaOrma extends TExportCompta {
 					'date_ecriture'					=> $bankline['datev'],
 					'libelle_libre'					=> $label,
 					'sens'							=> ($montant < 0) ? 'C' : 'D',
-					'montant'						=> abs(number_format($montant,2,'.','')),
+					'montant'						=> number_format(abs($montant),2,'.',''),
 					'num_unique'					=> $numLignes,
 				);
 				
