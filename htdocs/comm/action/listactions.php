@@ -383,13 +383,16 @@ if ($resql)
 	print '<tr class="liste_titre_filter">';
 	print '<td class="liste_titre"></td>';
 	print '<td class="liste_titre"><input type="text" name="search_title" value="'.$search_title.'"></td>';
-    print '<td class="liste_titre"></td>';
+    	print '<td class="liste_titre"></td>';
 	print '<td class="liste_titre" align="center">';
 	print $form->select_date($datestart, 'datestart', 0, 0, 1, '', 1, 0, 1);
 	print '</td>';
+	/** Spécifique  Bonne Impression (pas besoin de la date fin)
 	print '<td class="liste_titre" align="center">';
 	print $form->select_date($dateend, 'dateend', 0, 0, 1, '', 1, 0, 1);
 	print '</td>';
+	*/
+
 	print '<td class="liste_titre"></td>';
 	print '<td class="liste_titre"></td>';
     if (! empty($conf->global->AGENDA_SHOW_LINKED_OBJECT)) print '<td class="liste_titre"></td>';
@@ -410,7 +413,9 @@ if ($resql)
 	//if (! empty($conf->global->AGENDA_USE_EVENT_TYPE))
 	print_liste_field_titre("Type",$_SERVER["PHP_SELF"],"c.libelle",$param,"","",$sortfield,$sortorder);
 	print_liste_field_titre("DateStart",$_SERVER["PHP_SELF"],"a.datep",$param,'','align="center"',$sortfield,$sortorder);
+	/** Spécifique  Bonne Impression (pas besoin de la date fin)
 	print_liste_field_titre("DateEnd",$_SERVER["PHP_SELF"],"a.datep2",$param,'','align="center"',$sortfield,$sortorder);
+	*/
 	print_liste_field_titre("ThirdParty",$_SERVER["PHP_SELF"],"s.nom",$param,"","",$sortfield,$sortorder);
 	print_liste_field_titre("Contact",$_SERVER["PHP_SELF"],"a.fk_contact",$param,"","",$sortfield,$sortorder);
     if (! empty($conf->global->AGENDA_SHOW_LINKED_OBJECT)) print_liste_field_titre("LinkedObject",$_SERVER["PHP_SELF"],"a.fk_element",$param,"","",$sortfield,$sortorder);
@@ -487,10 +492,13 @@ if ($resql)
 		if ($late) print img_warning($langs->trans("Late")).' ';
 		print '</td>';
 
+		/** Spécifique  Bonne Impression (pas besoin de la date fin)
+		 *
 		// End date
 		print '<td align="center" class="nowrap">';
 		print dol_print_date($db->jdate($obj->dp2),"dayhour");
 		print '</td>';
+		*/
 
 		// Third party
 		print '<td>';
@@ -499,7 +507,9 @@ if ($resql)
 			$societestatic->id=$obj->socid;
 			$societestatic->client=$obj->client;
 			$societestatic->name=$obj->societe;
-			print $societestatic->getNomUrl(1,'',28);
+			// Spécifique  Bonne Impression (besoin du nom complet)
+			// print $societestatic->getNomUrl(1,'',28);
+			print $societestatic->getNomUrl(1,'');
 		}
 		else print '&nbsp;';
 		print '</td>';
