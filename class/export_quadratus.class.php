@@ -656,14 +656,14 @@ class TExportComptaQuadratus extends TExportCompta {
 		$numLignes = 1;
 		
 		foreach ($TabReglement as $infosReglement) {
-			$tiers = &$infosReglement['client'];
-			$reglement = &$infosReglement['reglement'];
-		
+			$tiers = &$infosReglement[0]['client'];
+			$reglement = &$infosReglement[0]['reglement'];
+			
 			// Ligne Banque
 			$ligneFichier = array(
 				'type'							=> 'M',
 				'numero_compte'					=> $reglement['code_compta'],
-				'code_journal'					=>  $reglement['code_compta'],
+				'code_journal'					=> $reglement['code_compta'],
 				'date_ecriture'					=> strtotime($reglement['datep']),
 				'libelle_libre'					=> $tiers['nom'],
 				'montant'						=> abs($reglement['amount'] * 100),
@@ -687,8 +687,6 @@ class TExportComptaQuadratus extends TExportCompta {
 			
 			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
 			$numLignes++;
-			
-
 			
 			$numEcriture++;
 		}
