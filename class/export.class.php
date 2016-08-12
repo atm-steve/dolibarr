@@ -168,7 +168,7 @@ class TExportCompta extends TObjetStd {
 			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']);
-			$facture->fetchPreviousNextSituationInvoice();
+			if($conf->global->INVOICE_USE_SITUATION) $facture->fetchPreviousNextSituationInvoice();
 			//if(!empty($facture->tab_previous_situation_invoice)){ pre($facture->tab_previous_situation_invoice,true);exit; }
 
 			if($this->addExportTime) {
