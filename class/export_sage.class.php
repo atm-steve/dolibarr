@@ -1,13 +1,15 @@
 <?php
 /*************************************************************************************************************************************************
- * Format d'export comptable Quadratus
+ * Format d'export comptable Sage
  *************************************************************************************************************************************************/
 
-dol_include_once("/export-compta/class/export.class.php");
+dol_include_once("/exportcompta/class/export.class.php");
 
 class TExportComptaSage extends TExportCompta {
-	function __construct(&$db) {
-		parent::__construct($db);
+	function __construct(&$db, $exportAllreadyExported=false, $addExportTime=false) {
+		
+		parent::__construct($db, $exportAllreadyExported, $addExportTime);
+		
 	}
 	
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
@@ -34,6 +36,7 @@ class TExportComptaSage extends TExportCompta {
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
+//var_dump($facture);exit;
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
@@ -118,14 +121,17 @@ class TExportComptaSage extends TExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 
+
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $facture['ref_supplier'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
 					'numero_compte_general'			=> "40100000",
 					'numero_compte_tiers'			=> $code_compta,
 	
+//					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
@@ -143,10 +149,12 @@ class TExportComptaSage extends TExportCompta {
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $facture['ref_supplier'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
 					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> $tiers['nom'],
+//					'libelle'						=> $tiers['nom'],
+					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
@@ -167,7 +175,8 @@ class TExportComptaSage extends TExportCompta {
 			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $facture['ref_supplier'],
+					'numero_piece'					=> $facture['ref'],
+					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
 					'numero_compte_general'			=> $code_compta,
 					
 					'libelle'						=> $tiers['nom'],
@@ -336,7 +345,7 @@ class TExportComptaSage extends TExportCompta {
 		return $contenuFichier;
 	}
 
-	function get_file_ecritures_bancaires($format, $dt_deb, $dt_fin) {
+	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
@@ -409,5 +418,49 @@ class TExportComptaSage extends TExportCompta {
 
 		return $contenuFichier;
 	}
+
+		function get_file_tiers($format, $dt_deb, $dt_fin) {
+		global $conf;
+
+		$TabTiers = parent::get_tiers($dt_deb, $dt_fin);
+		$separateurLigne="\r\n";
+		$numEcriture = 1;
+		$numLignes = 1;
+		
+		foreach($TabTiers as $code_compta=>$tiers) {
+			
+			foreach($tiers as $key=>$value){
+				$tiers[$key] = strtr($value,array('amp;'=>'&','gt;'=>'>'));
+			}
+			
+			$ligneFichier=array_merge($tiers, array(
+				'numero_compte'=>$code_compta,
+				'numero_compte_general'	=> ($tiers['fournisseur']) ? "40100000" : "41100000",
+				'libelle'=>$tiers['nom'],
+				'type_tiers'=>($tiers['fournisseur']) ? '1' : '0',
+				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
+				'adresse1'=>html_entity_decode($tiers['address'],ENT_QUOTES,'UTF-8'),
+				'zip'=>$tiers['zip'],
+				'ville'=>html_entity_decode($tiers['town'],ENT_QUOTES,'UTF-8'),
+				'telephone'=>$tiers['phone'],
+				'domiciliation'=>html_entity_decode($tiers['domiciliation'],ENT_QUOTES,'UTF-8'),
+				'rib'=>$tiers['code_banque'].$tiers['code_quichet'].$tiers['code_banque'].$tiers['compte_bancaire'].$tiers['cle_rib'],
+				'phone'=>$tiers['phone'],
+				'fax'=>$tiers['fax'],
+				'email'=>$tiers['email'],
+				'siret'=>$tiers['siret'],
+				'pays'=>$tiers['pays'],
+				'iban'=>$tiers['iban'],
+				'bic'=>$tiers['bic'],
+				'mode_rglt'	=> $this->TModeRglt[$tiers['mode_reglement_code']],
+				'tms'=>strtotime($tiers['tms']),
+			));
+			
+			$contenuFichier .= parent::get_line($format, $ligneFichier).$separateurLigne;
+		}
+
+		return $contenuFichier;
+	}
+
 }
 ?>
