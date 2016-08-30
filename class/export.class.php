@@ -11,6 +11,7 @@
  *************************************************************************************************************************************************/
 
 dol_include_once('/compta/facture/class/facture.class.php');
+dol_include_once('/comm/propal/class/propal.class.php');
 dol_include_once('/compta/paiement/cheque/class/remisecheque.class.php');
 dol_include_once('/fourn/class/fournisseur.facture.class.php');
 dol_include_once('/societe/class/client.class.php');
@@ -131,11 +132,11 @@ class TExportCompta extends TObjetStd {
 		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 
-
-
 		// Requête de récupération des factures
 		$sql = "SELECT f.rowid, f.entity";
+		if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER)) $sql.= ", ee.fk_source";
 		$sql.= " FROM ".MAIN_DB_PREFIX."facture f LEFT JOIN ".MAIN_DB_PREFIX."facture_extrafields fex ON (fex.fk_object=f.rowid)";
+		if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."element_element ee ON (ee.fk_target = f.rowid AND ee.targettype = 'facture' AND ee.sourcetype = 'propal')";
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
@@ -158,6 +159,7 @@ class TExportCompta extends TObjetStd {
 			$TIdFactures[] = array(
 				'rowid' => $obj->rowid
 				,'entity' => $obj->entity
+				,'id_propal_origin' => $obj->fk_source
 			);
 		}
 		$trueEntity = $conf->entity;
@@ -170,7 +172,7 @@ class TExportCompta extends TObjetStd {
 			$facture->fetch($idFacture['rowid']);
 			if($conf->global->INVOICE_USE_SITUATION) $facture->fetchPreviousNextSituationInvoice();
 			//if(!empty($facture->tab_previous_situation_invoice)){ pre($facture->tab_previous_situation_invoice,true);exit; }
-
+			
 			if($this->addExportTime) {
 				$facture->array_options['options_date_compta'] = time();
 				$facture->insertExtraFields();
@@ -193,10 +195,20 @@ class TExportCompta extends TObjetStd {
 				$entity->fetch($idFacture['entity']);
 				$TFactures[$facture->id]['entity'] = get_object_vars($entity);
 			}
-
+			
+			// Si EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER est activé, on récupère les infos du tiers de la propal et non de celui de la facture
+			if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER) && !empty($idFacture['id_propal_origin'])) {
+				$propal = new Propal($db);
+				$propal->fetch($idFacture['id_propal_origin']);
+				$propal->fetch_thirdparty();
+				$used_object = &$propal;
+				$TFactures[$facture->id]['tiers'] = get_object_vars($used_object->thirdparty);
+			}
+			else $used_object = &$facture;
+			
 			// Définition des codes comptables
 			$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
-			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $facture->thirdparty->code_compta : $conf_code_compta_client_defaut;
+			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $used_object->thirdparty->code_compta : $conf_code_compta_client_defaut;
 
 			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 			//Cas particulier des factures de situation
