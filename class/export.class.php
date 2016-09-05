@@ -152,7 +152,7 @@ class TExportCompta extends TObjetStd {
 		$sql.= " ORDER BY f.".$datefield." ASC";
 
 		$resql = $db->query($sql);
-
+//echo $sql;
 		// Construction du tableau de données
 		$TIdFactures = array();
 		while($obj = $db->fetch_object($resql)) {
@@ -208,7 +208,7 @@ class TExportCompta extends TObjetStd {
 			
 			// Définition des codes comptables
 			$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
-			$codeComptableClient = !empty($facture->thirdparty->code_compta) ? $used_object->thirdparty->code_compta : $conf_code_compta_client_defaut;
+			$codeComptableClient = !empty($used_object->thirdparty->code_compta) ? $used_object->thirdparty->code_compta : $conf_code_compta_client_defaut;
 
 			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 			//Cas particulier des factures de situation
