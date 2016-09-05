@@ -149,7 +149,7 @@ class TExportCompta extends TObjetStd {
 			$sql.=" AND fex.date_compta IS NULL ";
 		}
 
-		$sql.= " ORDER BY f.".$datefield." ASC";
+		$sql.= " ORDER BY f.".$datefield.", f.facnumber ASC";
 
 		$resql = $db->query($sql);
 //echo $sql;
@@ -523,7 +523,7 @@ class TExportCompta extends TObjetStd {
 			$sql.=" AND fex.date_compta IS NULL ";
 		}
 
-		$sql.= " ORDER BY f.".$datefield." ASC";
+		$sql.= " ORDER BY f.".$datefield.", f.ref ASC";
 
 		$resql = $db->query($sql);
 
@@ -662,7 +662,7 @@ class TExportCompta extends TObjetStd {
 		$sql.= " WHERE n.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND n.entity = {$conf->entity}";
 		$sql.= " AND n.statut IN (1,2,3)";
-		$sql.= " ORDER BY n.".$datefield." ASC";
+		$sql.= " ORDER BY n.".$datefield.", n.ref ASC";
 
 		$resql = $db->query($sql);
 		if (!$resql) {
