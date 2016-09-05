@@ -50,6 +50,7 @@ class TExportComptaEbp extends TExportCompta {
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
+			$tiers['nom'] = substr($tiers['nom'], 0, 33); // Bug si nom trop long car coupé et les guillemets ne sont plus présentes
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
@@ -126,6 +127,7 @@ class TExportComptaEbp extends TExportCompta {
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
+			$tiers['nom'] = substr($tiers['nom'], 0, 33); // Bug si nom trop long car coupé et les guillemets ne sont plus présentes
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
@@ -134,7 +136,7 @@ class TExportComptaEbp extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> '"'.$tiers['nom']."'",
 					'sens'							=> ($montant > 0 ? 'C' : 'D'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
@@ -151,7 +153,7 @@ class TExportComptaEbp extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> '"'.$tiers['nom']."'",
 					'sens'							=> ($montant > 0? 'D' : 'C'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
@@ -170,7 +172,7 @@ class TExportComptaEbp extends TExportCompta {
 						'date_ecriture'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
-						'libelle'						=> $tiers['nom'],
+						'libelle'						=> '"'.$tiers['nom']."'",
 						'sens'							=> ($montant > 0? 'D' : 'C'),
 						'montant'						=> number_format(abs($montant),2,'.',''),
 					);
