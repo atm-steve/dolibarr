@@ -498,7 +498,7 @@ class ActionComm extends CommonObject
     {
         global $langs;
 
-        $sql = "SELECT a.id,";
+        $sql = "SELECT a.id, a.entity,";
         $sql.= " a.id as ref,";
         $sql.= " a.ref_ext,";
         $sql.= " a.datep,";
@@ -536,6 +536,7 @@ class ActionComm extends CommonObject
                 $obj = $this->db->fetch_object($resql);
 
                 $this->id         = $obj->id;
+		$this->entity     = $obj->entity;
                 $this->ref        = $obj->ref;
                 $this->ref_ext    = $obj->ref_ext;
 
