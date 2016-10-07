@@ -1237,6 +1237,10 @@ function _getElementFromOtherEntity($id, &$element) {
 		
 		$element->fetch($id);
 		
+		$element->total_ht = null;
+		$element->total = null;
+		$element->total_ttc = null;
+
 		$conf = clone $conf_backup;
 		
 	}
