@@ -117,7 +117,7 @@ class TExportComptaOrma extends TExportCompta {
 	}
 	
 
-	function get_file_tiers($format, $dt_deb, $dt_fin, $id_ligne='C') {
+	function get_file_tiers($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		$separateurLigne="\r\n";
@@ -129,7 +129,7 @@ class TExportComptaOrma extends TExportCompta {
 		foreach($Tab as $code_compta=>$tiers) {
 			
 			$ligneFichier=array_merge($tiers, array(
-				'id_ligne'=>$id_ligne,
+				'id_ligne'=>'C',
 				'numero_compte'=>$code_compta,
 				'libelle'=>$tiers['nom'], 
 				'numero_compte_collectif'=>$conf->global->ACCOUNTING_ACCOUNT_CUSTOMER,
@@ -146,7 +146,10 @@ class TExportComptaOrma extends TExportCompta {
 				'bic'=>$tiers['bic'],
 			));
 			
-			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;	
+			$contenuFichier .= parent::get_line($this->_format_compte, $ligneFichier) . $separateurLigne;
+			
+			$ligneFichier['id_ligne'] = 'A';
+			$contenuFichier .= parent::get_line($this->_format_tiers, $ligneFichier) . $separateurLigne;
 		}
 	
 		return $contenuFichier;
@@ -168,9 +171,6 @@ class TExportComptaOrma extends TExportCompta {
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
-		$contenuFichier.= $this->get_file_tiers($this->_format_compte, $dt_deb, $dt_fin);
-		$contenuFichier.= $this->get_file_tiers($this->_format_tiers, $dt_deb, $dt_fin, 'A');
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 //var_dump($infosFacture);exit;
