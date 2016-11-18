@@ -301,12 +301,13 @@ class TExportCompta extends TObjetStd {
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
 				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
-
-				if($ligne->info_bits == 2 ) { // cas d'une réduction
+				
+				// TODO, ce cas pose problème dans le cadre des acomptes, tk5148
+				/*if($ligne->info_bits == 2 ) { // cas d'une réduction
 					$ligne->total_ttc = -$ligne->total_ttc;
 					$ligne->total_ht = -$ligne->total_ht;
 					$ligne->total_tva = -$ligne->total_tva;
-				}
+				}*/
 
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
