@@ -437,6 +437,35 @@ print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
 print "</td></tr>\n";
 $form->end();
+
+// Code compta général pour les client (SAGE)
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_compta_general_client');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("AccountGeneralForCustomer");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT',$conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
+// Code compta général pour les fournisseurs (SAGE)
+$var=! $var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_compta_general_fourn');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT');
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("AccountGeneralForSupplier");
+print '</td><td width="60" align="right">';
+print $form->texte('', 'EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT',$conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT,30,255);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'" />';
+print "</td></tr>\n";
+$form->end();
+
 // Comptes bancaires contenant les écritures à exclure de l'export du journal de banque
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_bank_excluded');

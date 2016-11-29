@@ -18,7 +18,6 @@ ecritures_comptables_banque=Écritures comptables banque
 reglement_tiers=Règlements tiers
 ecritures_comptables_vente=Ecritures comptables ventes
 ecritures_comptables_achat=Ecritures comptables achats
-BlockIfNoAccount=Bloquer l'export si un compte comptable est manquant
 
 #ADMIN
 ExportAllEntities=Exporter les données de toutes les entités dans un même fichier
@@ -58,3 +57,6 @@ BillAlreadyExported=Facture déjà exportée
 ExportJustMM=Exporter uniquement les maisons mères
 ExportOnlyReconciled=Exporter uniquement les écritures bancaires rapprochées
 ExcludedBank=Exclure du journal de banque les écritures provenant des comptes suivants (sous la forme REFCOMPTE1,REFCOMPTE2,REFCOMPTE3)
+BlockIfNoAccount=Bloquer l'export si un compte comptable est manquant
+AccountGeneralForCustomer=Compte général pour les clients
+AccountGeneralForSupplier=Compte général pour les fournisseurs

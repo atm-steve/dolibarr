@@ -48,6 +48,9 @@ class TExportComptaSage extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
+		if(empty($compte_general_fournisseur)) $compte_general_client = '41100000';
+		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -68,7 +71,7 @@ class TExportComptaSage extends TExportCompta {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> $compte_general_fournisseur,
 					'numero_compte_tiers'			=> $code_compta,
 	
 					'libelle'						=> $libelle,
@@ -145,6 +148,9 @@ class TExportComptaSage extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
+		if(empty($compte_general_client)) $compte_general_client = '40100000';
+		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -156,7 +162,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
-					'numero_compte_general'			=> "40100000",
+					'numero_compte_general'			=> $compte_general_client,
 					'numero_compte_tiers'			=> $code_compta,
 	
 //					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
@@ -385,6 +391,12 @@ class TExportComptaSage extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
+		if(empty($compte_general_client)) $compte_general_client = '40100000';
+		
+		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
+		if(empty($compte_general_fournisseur)) $compte_general_client = '41100000';
+		
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$tiers = &$infosBank['tiers'];
 			$banque = &$infosBank['bank'];
@@ -407,7 +419,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $datepiece,
 					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> $banqueligne['label'] == '(SupplierInvoicePayment)' ? '40100000' : '41100000',
+					'numero_compte_general'			=> $banqueligne['label'] == '(SupplierInvoicePayment)' ? $compte_general_fournisseur : $compte_general_client,
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> $label,
@@ -455,6 +467,12 @@ class TExportComptaSage extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
+		if(empty($compte_general_client)) $compte_general_client = '40100000';
+		
+		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
+		if(empty($compte_general_fournisseur)) $compte_general_client = '41100000';
+		
 		foreach($TabTiers as $code_compta=>$tiers) {
 			
 			foreach($tiers as $key=>$value){
@@ -463,7 +481,7 @@ class TExportComptaSage extends TExportCompta {
 			
 			$ligneFichier=array_merge($tiers, array(
 				'numero_compte'=>$code_compta,
-				'numero_compte_general'	=> ($tiers['fournisseur']) ? "40100000" : "41100000",
+				'numero_compte_general'	=> ($tiers['fournisseur']) ? $compte_general_fournisseur : $compte_general_client,
 				'libelle'=>$tiers['nom'],
 				'type_tiers'=>($tiers['fournisseur']) ? '1' : '0',
 				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
