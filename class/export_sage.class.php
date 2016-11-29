@@ -49,7 +49,7 @@ class TExportComptaSage extends TExportCompta {
 		$numLignes = 1;
 		
 		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
-		if(empty($compte_general_fournisseur)) $compte_general_client = '41100000';
+		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '41100000';
 		
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
@@ -243,6 +243,9 @@ class TExportComptaSage extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 		
+		$compte_general_user = $conf->global->EXPORT_COMPTA_GENERAL_USER_ACCOUNT;
+		if(empty($compte_general_user)) $compte_general_user = '40100000';
+		
 		foreach ($TabNDF as $id_ndf => $infosNDF) {
 			$tiers = &$infosNDF['tiers'];
 			$ndf = &$infosNDF['ndf'];
@@ -260,7 +263,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> mktime(0,0,0,date('m', $ndf['datee']), date('t', $ndf['datee']), date('Y', $ndf['datee'])),
 					'numero_piece'					=> $ndf['ref'],
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> "40100000",
+					'numero_compte_general'			=> $compte_general_user,
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
@@ -395,7 +398,7 @@ class TExportComptaSage extends TExportCompta {
 		if(empty($compte_general_client)) $compte_general_client = '40100000';
 		
 		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
-		if(empty($compte_general_fournisseur)) $compte_general_client = '41100000';
+		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '41100000';
 		
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$tiers = &$infosBank['tiers'];
@@ -471,7 +474,7 @@ class TExportComptaSage extends TExportCompta {
 		if(empty($compte_general_client)) $compte_general_client = '40100000';
 		
 		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
-		if(empty($compte_general_fournisseur)) $compte_general_client = '41100000';
+		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '41100000';
 		
 		foreach($TabTiers as $code_compta=>$tiers) {
 			

@@ -60,3 +60,4 @@ ExcludedBank=Exclure du journal de banque les écritures provenant des comptes s
 BlockIfNoAccount=Bloquer l'export si un compte comptable est manquant
 AccountGeneralForCustomer=Compte général pour les clients
 AccountGeneralForSupplier=Compte général pour les fournisseurs
+AccountGeneralForSupplier=Compte général pour les utilisateurs
