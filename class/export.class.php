@@ -172,12 +172,6 @@ class TExportCompta extends TObjetStd {
 			$facture->fetch($idFacture['rowid']);
 			if($conf->global->INVOICE_USE_SITUATION) $facture->fetchPreviousNextSituationInvoice();
 			//if(!empty($facture->tab_previous_situation_invoice)){ pre($facture->tab_previous_situation_invoice,true);exit; }
-			
-			if($this->addExportTime) {
-				$facture->array_options['options_date_compta'] = time();
-				$facture->insertExtraFields();
-
-			}
 
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
@@ -209,6 +203,8 @@ class TExportCompta extends TObjetStd {
 			// Définition des codes comptables
 			$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 			$codeComptableClient = !empty($used_object->thirdparty->code_compta) ? $used_object->thirdparty->code_compta : $conf_code_compta_client_defaut;
+			
+			
 
 			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 			//Cas particulier des factures de situation
@@ -312,6 +308,12 @@ class TExportCompta extends TObjetStd {
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+
+			// Déclarer la facture comme exportée
+			if($this->addExportTime) {
+				$facture->array_options['options_date_compta'] = time();
+				$facture->insertExtraFields();
 			}
 
 			$i++;
