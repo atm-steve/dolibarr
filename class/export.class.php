@@ -163,7 +163,7 @@ class TExportCompta extends TObjetStd {
 			);
 		}
 		
-		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED))
+		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))
 		{
 			/*
 			 * Liste des acomptes (bons d'achats) emis non consommés
@@ -290,7 +290,7 @@ class TExportCompta extends TObjetStd {
 				}
 
 				// Compte spécifique pour les acomptes provenant du module caisse (bon d'achat) non consommés
-				if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && $facture->type == $facture::TYPE_DEPOSIT && !empty($TAcompteNotUsed[$facture->id]))
+				if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled) && $facture->type == $facture::TYPE_DEPOSIT && !empty($TAcompteNotUsed[$facture->id]))
 				{
 					$codeComptableProduit = $conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED;
 				}
