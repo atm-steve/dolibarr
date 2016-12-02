@@ -172,12 +172,6 @@ class TExportCompta extends TObjetStd {
 			$facture->fetch($idFacture['rowid']);
 			if($conf->global->INVOICE_USE_SITUATION) $facture->fetchPreviousNextSituationInvoice();
 			//if(!empty($facture->tab_previous_situation_invoice)){ pre($facture->tab_previous_situation_invoice,true);exit; }
-			
-			if($this->addExportTime) {
-				$facture->array_options['options_date_compta'] = time();
-				$facture->insertExtraFields();
-
-			}
 
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
@@ -209,6 +203,11 @@ class TExportCompta extends TObjetStd {
 			// Définition des codes comptables
 			$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 			$codeComptableClient = !empty($used_object->thirdparty->code_compta) ? $used_object->thirdparty->code_compta : $conf_code_compta_client_defaut;
+			
+			// Blocage si compte comptable non défini (client)
+			if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && $codeComptableClient == $conf_code_compta_client_defaut) {
+				exit('Code compta manquant sur client '.$used_object->thirdparty->nom.', facture '.$facture->ref);
+			}
 
 			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 			//Cas particulier des factures de situation
@@ -276,6 +275,11 @@ class TExportCompta extends TObjetStd {
 					}
 				}
 				
+				// Blocage si compte comptable non défini (produit)
+				if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && empty($codeComptableProduit)) {
+					exit('Code compta manquant sur ligne de facture '.$ligne->rang.', facture '.$facture->ref);
+				}
+				
 				if(empty($codeComptableProduit)) {
 					if($ligne->product_type == 0) {
 						$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
@@ -312,6 +316,12 @@ class TExportCompta extends TObjetStd {
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+
+			// Déclarer la facture comme exportée
+			if($this->addExportTime) {
+				$facture->array_options['options_date_compta'] = time();
+				$facture->insertExtraFields();
 			}
 
 			$i++;
@@ -537,11 +547,6 @@ class TExportCompta extends TObjetStd {
 
 			$facture->date_lim_reglement = $facture->date_echeance;
 
-			if($this->addExportTime) {
-				 $facture->array_options['options_date_compta'] = time();
-				 $facture->insertExtraFields();
-			}
-
 			$TFactures[$facture->id] = array();
 			$TFactures[$facture->id]['compteur']['piece'] = $i;
 
@@ -562,6 +567,12 @@ class TExportCompta extends TObjetStd {
 
 			// Définition des codes comptables
 			$codeComptableFournisseur = !empty($facture->thirdparty->code_compta_fournisseur) ? $facture->thirdparty->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+			
+			
+			// Blocage si compte comptable non défini (client)
+			if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && $codeComptableFournisseur == $conf->global->COMPTA_ACCOUNT_SUPPLIER) {
+				exit('Code compta manquant sur fournisseur '.$facture->thirdparty->nom.', facture '.$facture->ref);
+			}
 
 			// Récupération lignes de facture
 			$facture->fetch_lines();
@@ -605,6 +616,11 @@ class TExportCompta extends TObjetStd {
 					if(empty($codeComptableProduit)) $codeComptableProduit = $produit->accountancy_code_buy;
 				}
 
+				// Blocage si compte comptable non défini (produit)
+				if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && empty($codeComptableProduit)) {
+					exit('Code compta manquant sur ligne de facture '.$ligne->rang.', facture '.$facture->ref);
+				}
+
 				if(empty($codeComptableProduit)) {
 					if($ligne->fk_product_type == 0) {
 						$codeComptableProduit = $conf->global->COMPTA_SERVICE_BUY_ACCOUNT;
@@ -631,6 +647,12 @@ class TExportCompta extends TObjetStd {
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+
+			// Déclarer la facture comme exportée
+			if($this->addExportTime) {
+				 $facture->array_options['options_date_compta'] = time();
+				 $facture->insertExtraFields();
 			}
 
 			$i++;

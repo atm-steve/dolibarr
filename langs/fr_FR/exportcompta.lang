@@ -18,6 +18,7 @@ ecritures_comptables_banque=Écritures comptables banque
 reglement_tiers=Règlements tiers
 ecritures_comptables_vente=Ecritures comptables ventes
 ecritures_comptables_achat=Ecritures comptables achats
+BlockIfNoAccount=Bloquer l'export si un compte comptable est manquant
 
 #ADMIN
 ExportAllEntities=Exporter les données de toutes les entités dans un même fichier

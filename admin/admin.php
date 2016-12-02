@@ -129,6 +129,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print "</td></tr>\n";
 $form->end();
 
+// Bloquer l'export si comptes comptables manquants
+$var=!$var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_block_if_noaccount');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORTCOMPTA_BLOCK_IF_NOACCOUNT');
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("BlockIfNoAccount").'</td>';
+print '<td width="60" align="right">';
+print $formDoli->selectyesno("EXPORTCOMPTA_BLOCK_IF_NOACCOUNT",$conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT,1);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print "</td></tr>\n";
+$form->end();
+
 // Champ date utilisé pour les bornes sur factures client
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_datefaccli');
