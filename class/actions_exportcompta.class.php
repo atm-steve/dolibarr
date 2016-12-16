@@ -97,6 +97,13 @@ class ActionsExportCompta
 	 
 	function doActions($parameters, &$object, &$action, $hookmanager)
 	{
-		
+		global $langs,$conf;
+		if($object->element == 'facture' && !empty($conf->global->EXPORT_COMPTA_HIDE_REOPEN_INVOICE) && !empty($object->array_options['options_date_compta'])) {
+			if($action == 'reopen' || $action == 'modif' || $action == 'canceled'){
+				$this->error = 1;
+				$this->errors = $langs->trans('ErrorForbidden');
+				return -1;
+			}
+		}
 	}
 }
