@@ -102,6 +102,7 @@ class ActionsExportCompta
 			if($action == 'reopen' || $action == 'modif' || $action == 'canceled'){
 				$this->error = 1;
 				$this->errors = $langs->trans('ErrorForbidden');
+				$action = '';
 				return -1;
 			}
 		}
