@@ -10,6 +10,31 @@ class TExportComptaSage extends TExportCompta {
 		
 		parent::__construct($db, $exportAllreadyExported, $addExportTime);
 		
+		$this->_format_ecritures_comptables_vente = array(
+			array('name' => 'date_piece',			'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmY'),
+			array('name' => 'code_journal',			'length' => 3,	'default' => 'VEN',	'type' => 'text'),
+			array('name' => 'numero_compte_general','length' => 17,	'default' => '0',	'type' => 'text'),
+			array('name' => 'numero_compte_tiers',	'length' => 17,	'default' => '0',	'type' => 'text'),
+			array('name' => 'montant_debit',		'length' => 20,	'default' => '0',	'type' => 'text',),
+			array('name' => 'montant_crebit',		'length' => 20,	'default' => '0',	'type' => 'text',),
+			array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_piece',			'length' => 35,	'default' => '',	'type' => 'text')
+		);
+
+		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_achat[1]['default'] = 'AC';
+
+		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_banque[1]['default'] = '';
+		
+		$this->lineSeparator = "\r\n";
+		$this->fieldSeparator = ';';
+		$this->fieldPadding = false;
+
+		unset($this->TTypeExport['produits']); // pas encore pris en charge
+		unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
+		unset($this->TTypeExport['tiers']); // pas encore pris en charge
+		
 	}
 	
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
@@ -33,6 +58,9 @@ class TExportComptaSage extends TExportCompta {
 				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
+			
+			$libelle = $tiers['nom'];
+			if(!empty($facture['ref_client'])) $libelle.= ' - '.$facture['ref_client'];
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
@@ -43,7 +71,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_compte_general'			=> "41100000",
 					'numero_compte_tiers'			=> $code_compta,
 	
-					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
+					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
@@ -52,7 +80,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -63,7 +91,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
+					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
@@ -72,11 +100,11 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				
 				// Ecriture analytique
 				//$ligneFichier['type_ecriture'] = 'A';
-				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				//$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 
@@ -87,7 +115,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> $code_compta,
 					
-					'libelle'						=> $tiers['nom'].' - '.$facture['ref_client'],
+					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
@@ -96,7 +124,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -141,7 +169,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -163,11 +191,11 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				
 				// Ecriture analytique
 				//$ligneFichier['type_ecriture'] = 'A';
-				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				//$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 
@@ -188,7 +216,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -237,7 +265,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -258,11 +286,11 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				
 				// Ecriture analytique
 				//$ligneFichier['type_ecriture'] = 'A';
-				//$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				//$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 
@@ -282,7 +310,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -320,7 +348,7 @@ class TExportComptaSage extends TExportCompta {
 				'date_systeme'					=> time(),
 			);
 			
-			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			$contenuFichier .= parent::get_line($format, $ligneFichier);
 			$numLignes++;
 			
 			// Ligne Banque
@@ -336,7 +364,7 @@ class TExportComptaSage extends TExportCompta {
 				'date_systeme'					=> time(),
 			);
 			
-			$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+			$contenuFichier .= parent::get_line($format, $ligneFichier);
 			$numLignes++;
 			
 			$numEcriture++;
@@ -389,7 +417,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 			
@@ -410,7 +438,7 @@ class TExportComptaSage extends TExportCompta {
 				);
 				
 				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier) . $separateurLigne;
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 			}
 			
 			$numEcriture++;

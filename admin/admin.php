@@ -129,6 +129,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print "</td></tr>\n";
 $form->end();
 
+// Bloquer l'export si comptes comptables manquants
+$var=!$var;
+$form = new TFormCore($_SERVER["PHP_SELF"],'const_block_if_noaccount');
+print $form->hidden('action','setconst');
+print $form->hidden('const','EXPORTCOMPTA_BLOCK_IF_NOACCOUNT');
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("BlockIfNoAccount").'</td>';
+print '<td width="60" align="right">';
+print $formDoli->selectyesno("EXPORTCOMPTA_BLOCK_IF_NOACCOUNT",$conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT,1);
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print "</td></tr>\n";
+$form->end();
+
 // Champ date utilisé pour les bornes sur factures client
 $var=! $var;
 $form = new TFormCore($_SERVER["PHP_SELF"],'const_datefaccli');
@@ -439,6 +453,33 @@ $form->end();
 
 
 print "</table>";
+
+if (!empty($conf->caisse->enabled))
+{
+	$var=false;
+	print '<table class="noborder" width="100%">';
+	print '<tr class="liste_titre">';
+	print '<td>'.$langs->trans("CaisseParameters").'</td>'."\n";
+	print '<td align="center" width="20">&nbsp;</td>';
+	print '<td align="center" width="100">'.$langs->trans("Value").'</td>'."\n";
+	
+	$var=!$var;
+	print '<tr '.$bc[$var].'>';
+	print '<td>'.$langs->trans("EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED").'</td>';
+	print '<td align="center" width="20">&nbsp;</td>';
+	print '<td align="right" width="300">';
+	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+	print $form->hidden('action','setconst');
+	print $form->hidden('const','EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED');
+	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+	print $form->texte('', 'EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED',$conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED,8,255);
+	print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+	print '</form>';
+	print '</td></tr>';
+	
+	
+	print '</table>';
+}
 
 llxFooter();
 

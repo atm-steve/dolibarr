@@ -71,13 +71,19 @@ class TExportComptaEbp extends TExportCompta {
 			
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
+				if($facture['type'] == 2 && $montant > 0) {
+					$sens = 'C';
+				}
+				else {
+					$sens = ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C';
+				}
 				$ligneFichier = array(
 					'num_ecriture'					=> $numLignes,
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> '"'.$tiers['nom'].'"',
-					'sens'							=> (($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'),
+					'sens'							=> $sens,
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
 				
