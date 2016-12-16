@@ -82,7 +82,7 @@ class ActionsExportCompta
 		            $(document).ready(function() {
 		                $('.butAction').each(function(){
 		                	href = $(this).attr('href');
-		                	if(href.indexOf('action=reopen') > 0){
+		                	if(href.indexOf('action=reopen') > 0 || href.indexOf('action=modif') > 0 || href.indexOf('action=canceled') > 0){
 		                		$(this).hide();
 		                	}
 		                })
