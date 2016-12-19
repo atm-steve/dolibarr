@@ -1195,7 +1195,9 @@ if ($action == 'edit_price' && $object->getRights()->creer)
 
 		// VAT
 		print '<tr><td class="titlefield">' . $langs->trans("DefaultTaxRate") . '</td><td>';
-		print $form->load_tva("tva_tx", $object->default_vat_code ? $object->tva_tx.' ('.$object->default_vat_code.')' : $object->tva_tx, $mysoc, '', $object->id, $object->tva_npr, $object->type, false, 1);
+		//print $form->load_tva("tva_tx", $object->default_vat_code ? $object->tva_tx.' ('.$object->default_vat_code.')' : $object->tva_tx, $mysoc, '', $object->id, $object->tva_npr, $object->type, false, 1);
+		// Demande client tk 5288, on met toujours 20 % par défaut
+		print $form->load_tva("tva_tx", 20, $mysoc, '', $object->id, $object->tva_npr, $object->type, false, 1);
 		print '</td></tr>';
 
 		// Price base
