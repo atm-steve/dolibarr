@@ -162,6 +162,32 @@ class TExportCompta extends TObjetStd {
 				,'id_propal_origin' => $obj->fk_source
 			);
 		}
+		
+		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))
+		{
+			/*
+			 * Liste des acomptes (bons d'achats) emis non consommés
+			 */
+			$TAcompteNotUsed = array();
+			$sql = 'SELECT rc.fk_facture_source, rc.fk_soc';
+			$sql.= ' FROM llx_societe_remise_except as rc'; 
+			$sql.= ' LEFT JOIN llx_facture as fa ON rc.fk_facture_source = fa.rowid'; 
+			$sql.= ' INNER JOIN llx_caisse_bonachat cb ON (cb.fk_facture = rc.fk_facture_source)';
+			$sql.= ' WHERE (rc.fk_facture_line IS NULL AND rc.fk_facture IS NULL)';
+			$sql.= ' AND cb.statut = 0';
+			$sql.= ' AND cb.type = "ACOMPTE"';
+			$sql.= ' ORDER BY rc.datec DESC';
+		
+			$resql=$db->query($sql);
+			if ($resql)
+			{
+				while ($o = $db->fetch_object($resql))
+				{
+					$TAcompteNotUsed[$o->fk_facture_source] = array('fk_facture' => $o->fk_facture_source, 'fk_soc' => $o->fk_soc);
+				}
+			}
+		}
+		
 		$trueEntity = $conf->entity;
 
 		$i = 0;
@@ -249,6 +275,8 @@ class TExportCompta extends TObjetStd {
 			// Récupération lignes de facture
 			$facture->fetch_lines();
 			foreach ($facture->lines as $ligne) {
+				$codeComptableProduit='';
+				
 				if($ligne->special_code != 0) continue;
 				if($ligne->total_ht == 0) continue;
 
@@ -261,6 +289,12 @@ class TExportCompta extends TObjetStd {
 					$codeComptableProduit = $this->_get_code_compta_product($facture,$produit);
 				}
 
+				// Compte spécifique pour les acomptes provenant du module caisse (bon d'achat) non consommés
+				if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled) && $facture->type == $facture::TYPE_DEPOSIT && !empty($TAcompteNotUsed[$facture->id]))
+				{
+					$codeComptableProduit = $conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED;
+				}
+				
 				// Compte spécifique pour les remises
 				if(empty($codeComptableProduit)) {
 					if($ligne->fk_remise_except !== 0) {

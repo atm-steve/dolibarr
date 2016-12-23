@@ -61,3 +61,7 @@ BlockIfNoAccount=Bloquer l'export si un compte comptable est manquant
 AccountGeneralForCustomer=Compte général pour les clients
 AccountGeneralForSupplier=Compte général pour les fournisseurs
 AccountGeneralForSupplier=Compte général pour les utilisateurs
+
+#CAISSE
+CaisseParameters=Paramètre module Caisse
+EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED=Compte comptable pour les acomptes (bons d'achats) émis non consommés

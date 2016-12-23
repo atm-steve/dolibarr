@@ -64,7 +64,7 @@ class ActionsExportCompta
         if (in_array('invoicecard', explode(':', $parameters['context'])))
         {
           global $conf;
-		  $object->fetch_optionals();
+		  $object->fetch_optionals($object->id);
 		  if(!empty($conf->global->EXPORT_COMPTA_HIDE_GENERATE_FACTURE) && !empty($object->array_options['options_date_compta'])  ) {
           ?>
           <script language="javascript">
@@ -82,7 +82,7 @@ class ActionsExportCompta
 		            $(document).ready(function() {
 		                $('.butAction').each(function(){
 		                	href = $(this).attr('href');
-		                	if(href.indexOf('action=reopen') > 0){
+		                	if(href.indexOf('action=reopen') > 0 || href.indexOf('action=modif') > 0 || href.indexOf('action=canceled') > 0){
 		                		$(this).hide();
 		                	}
 		                })
@@ -97,6 +97,14 @@ class ActionsExportCompta
 	 
 	function doActions($parameters, &$object, &$action, $hookmanager)
 	{
-		
+		global $langs,$conf;
+		if($object->element == 'facture' && !empty($conf->global->EXPORT_COMPTA_HIDE_REOPEN_INVOICE) && !empty($object->array_options['options_date_compta'])) {
+			if($action == 'reopen' || $action == 'modif' || $action == 'canceled'){
+				$this->error = 1;
+				$this->errors = $langs->trans('ErrorForbidden');
+				$action = '';
+				return -1;
+			}
+		}
 	}
 }

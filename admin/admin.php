@@ -497,6 +497,33 @@ $form->end();
 
 print "</table>";
 
+if (!empty($conf->caisse->enabled))
+{
+	$var=false;
+	print '<table class="noborder" width="100%">';
+	print '<tr class="liste_titre">';
+	print '<td>'.$langs->trans("CaisseParameters").'</td>'."\n";
+	print '<td align="center" width="20">&nbsp;</td>';
+	print '<td align="center" width="100">'.$langs->trans("Value").'</td>'."\n";
+	
+	$var=!$var;
+	print '<tr '.$bc[$var].'>';
+	print '<td>'.$langs->trans("EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED").'</td>';
+	print '<td align="center" width="20">&nbsp;</td>';
+	print '<td align="right" width="300">';
+	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+	print $form->hidden('action','setconst');
+	print $form->hidden('const','EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED');
+	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+	print $form->texte('', 'EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED',$conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED,8,255);
+	print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+	print '</form>';
+	print '</td></tr>';
+	
+	
+	print '</table>';
+}
+
 llxFooter();
 
 ?>
