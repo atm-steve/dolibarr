@@ -33,7 +33,7 @@ class TExportComptaSage extends TExportCompta {
 
 		unset($this->TTypeExport['produits']); // pas encore pris en charge
 		//unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
-		//unset($this->TTypeExport['tiers']); // pas encore pris en charge
+		unset($this->TTypeExport['tiers']); // pas encore pris en charge
 		
 	}
 	
@@ -43,7 +43,6 @@ class TExportComptaSage extends TExportCompta {
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
-		$separateurLigne = "\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
@@ -143,7 +142,6 @@ class TExportComptaSage extends TExportCompta {
 		$TabFactures = parent::get_factures_fournisseur($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
-		$separateurLigne = "\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
@@ -238,7 +236,6 @@ class TExportComptaSage extends TExportCompta {
 		$TabNDF = parent::get_notes_de_frais($dt_deb, $dt_fin);
 		
 		$contenuFichier = '';
-		$separateurLigne = "\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
@@ -462,11 +459,10 @@ class TExportComptaSage extends TExportCompta {
 		return $contenuFichier;
 	}
 
-		function get_file_tiers($format, $dt_deb, $dt_fin) {
+	function get_file_tiers($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		$TabTiers = parent::get_tiers($dt_deb, $dt_fin);
-		$separateurLigne="\r\n";
 		$numEcriture = 1;
 		$numLignes = 1;
 		
@@ -505,7 +501,7 @@ class TExportComptaSage extends TExportCompta {
 				'tms'=>strtotime($tiers['tms']),
 			));
 			
-			$contenuFichier .= parent::get_line($format, $ligneFichier).$separateurLigne;
+			$contenuFichier .= parent::get_line($format, $ligneFichier);
 		}
 
 		return $contenuFichier;
