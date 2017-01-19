@@ -33,7 +33,7 @@ class TExportComptaSage extends TExportCompta {
 
 		unset($this->TTypeExport['produits']); // pas encore pris en charge
 		//unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
-		unset($this->TTypeExport['tiers']); // pas encore pris en charge
+		//unset($this->TTypeExport['tiers']); // pas encore pris en charge
 		
 	}
 	
