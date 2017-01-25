@@ -38,7 +38,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> "41100005",
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
@@ -135,7 +135,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> "41100005",
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 
 					'libelle'						=> isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'],
@@ -336,7 +336,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $datepiece,
 					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> "41100000",
+					'numero_compte_general'			=> "41100005",
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 
 					'libelle'						=> $label,
