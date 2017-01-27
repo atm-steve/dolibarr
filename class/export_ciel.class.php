@@ -770,8 +770,8 @@ class TExportComptaCiel extends TExportCompta
 		$numLignes = 1;
 
 		foreach ( $TabReglement as $infosReglement ) {
-			$tiers = &$infosReglement['client'];
-			$reglement = &$infosReglement['reglement'];
+			$tiers = &$infosReglement[0]['client'];
+			$reglement = &$infosReglement[0]['reglement'];
 
 			// Ligne Banque
 			$ligneFichier = array(
