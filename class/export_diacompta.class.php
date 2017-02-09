@@ -710,7 +710,7 @@ class TExportComptaDiacompta extends TExportCompta {
 		// CHQ,CB,CBVAD,VAD,ANCV
 		if (!empty($conf->global->EXPORT_COMPTA_DIAFORMAT_GROUP_BY_TYPE_RGLT))
 		{
-			$Tab = array();
+			$Tab = array('other'=>array());
 			$TType = explode(',', $conf->global->EXPORT_COMPTA_DIAFORMAT_GROUP_BY_TYPE_RGLT);
 			
 			foreach ($TabBank as $id_bank => $infosBank) {
