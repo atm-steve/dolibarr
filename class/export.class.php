@@ -1229,7 +1229,7 @@ class TExportCompta extends TObjetStd {
 		}
 
 		// Enregistrement des écritures dans une catégorie
-		if($this->addExportTime) {
+		if(!empty($TBank) && $this->addExportTime) {
 			
 			$req = 'INSERT INTO '.MAIN_DB_PREFIX.'bank_categ (label, entity)
 					VALUES (NOW(),'.$conf->entity.')';
