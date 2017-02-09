@@ -1077,13 +1077,13 @@ class TExportCompta extends TObjetStd {
 		$sql = "SELECT b.rowid, ba.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
+		if(!$this->exportAllreadyExported) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank_class bc ON(b.rowid = bc.lineid)';
 		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if($onlyReconciled) $sql.= " AND b.rappro = 1";
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		if(!empty($TExcludedBankAcount)) $sql.= ' AND ba.ref NOT IN("'.$TExcludedBankAcount.'")';
+		if(!$this->exportAllreadyExported) $sql.= ' AND bc.lineid IS NULL';
 		$sql.= " ORDER BY b.".$datefield." ASC, b.rowid";
-
-		//echo $sql;
 
 		$resql = $db->query($sql);
 
