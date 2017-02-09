@@ -1228,6 +1228,26 @@ class TExportCompta extends TObjetStd {
 			$TBank[$bankline->id]['ligne_banque'][$codeComptableBank] += $bankline->amount;
 		}
 
+		// Enregistrement des écritures dans une catégorie
+		if($this->addExportTime) {
+			
+			$req = 'INSERT INTO '.MAIN_DB_PREFIX.'bank_categ (label, entity)
+					VALUES (NOW(),'.$conf->entity.')';
+			$result = $db->query($req);
+			$id_categ = $db->last_insert_id('bank_categ');
+			
+			if(!empty($id_categ)) {
+				foreach($TBank as $id_bank=>$TData) {
+				    $req = "DELETE FROM ".MAIN_DB_PREFIX."bank_class WHERE lineid = ".$id_bank." AND fk_categ = ".$id_categ;
+				    $db->query($req);
+				
+				    $req = "INSERT INTO ".MAIN_DB_PREFIX."bank_class (lineid, fk_categ) VALUES (".$id_bank.", ".$id_categ.")";
+				    $db->query($req);
+				}
+			}
+			
+		}
+
 		/*
 		// Requête de récupération des écritures bancaires (CHQ)
 		$sql = "SELECT bc.rowid";
