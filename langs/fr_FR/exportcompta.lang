@@ -57,6 +57,7 @@ BillAlreadyExported=Facture déjà exportée
 ExportJustMM=Exporter uniquement les maisons mères
 ExportOnlyReconciled=Exporter uniquement les écritures bancaires rapprochées
 ExcludedBank=Exclure du journal de banque les écritures provenant des comptes suivants (sous la forme REFCOMPTE1,REFCOMPTE2,REFCOMPTE3)
+AuthorizedSpecialCode=Inclure les lignes ayant le champ special_code avec les valeurs suivantes (de la forme 0,2,5)
 BlockIfNoAccount=Bloquer l'export si un compte comptable est manquant
 AccountGeneralForCustomer=Compte général pour les clients
 AccountGeneralForSupplier=Compte général pour les fournisseurs

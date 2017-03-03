@@ -128,6 +128,8 @@ class TExportCompta extends TObjetStd {
 
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_FACTURES_CLIENT;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
+		if(empty($conf->global->EXPORT_COMPTA_AUTHORIZED_SPECIAL_CODE)) $TAuthorizedSpecialCode=array(0);
+		else $TAuthorizedSpecialCode=array_unique(array_merge(array(0), explode(',', $conf->global->EXPORT_COMPTA_AUTHORIZED_SPECIAL_CODE)));
 
 		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
@@ -277,7 +279,7 @@ class TExportCompta extends TObjetStd {
 			foreach ($facture->lines as $ligne) {
 				$codeComptableProduit='';
 				
-				if($ligne->special_code != 0) continue;
+				if(!in_array($ligne->special_code, $TAuthorizedSpecialCode)) continue;
 				if($ligne->total_ht == 0) continue;
 
 				// Code compta produit
