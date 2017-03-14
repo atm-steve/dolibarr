@@ -198,6 +198,8 @@ class TExportCompta extends TObjetStd {
 			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']);
+			$TContacts = $facture->liste_contact(-1,'external');
+			
 			if($conf->global->INVOICE_USE_SITUATION) $facture->fetchPreviousNextSituationInvoice();
 			//if(!empty($facture->tab_previous_situation_invoice)){ pre($facture->tab_previous_situation_invoice,true);exit; }
 
@@ -210,6 +212,20 @@ class TExportCompta extends TObjetStd {
 			// Récupération client
 			$facture->fetch_thirdparty();
 			$TFactures[$facture->id]['tiers'] = get_object_vars($facture->thirdparty);
+
+			//Si on a un contact "Contact client facturation" lié à la facture alors on l'ajoute dans la clé "libelle_tiers_contact" disponible dans la conf
+			//pour le format OpenSi de l'export des factures de vente
+			$nom_contact = $facture->thirdparty->nom;
+			if(is_array($TContacts)){
+				foreach($TContacts as $contact){
+					if($contact['fk_c_type_contact'] == 60){
+						$societe_temp = new Societe($db);
+						$societe_temp->fetch($contact['socid']);
+						$nom_contact = $societe_temp->name;
+					}
+				}
+			}
+			$TFactures[$facture->id]['tiers']['nom_contact'] = $nom_contact;
 
 			// Récupération entity
 			if($conf->multicompany->enabled) {
@@ -225,6 +241,7 @@ class TExportCompta extends TObjetStd {
 				$propal->fetch_thirdparty();
 				$used_object = &$propal;
 				$TFactures[$facture->id]['tiers'] = get_object_vars($used_object->thirdparty);
+				$TFactures[$facture->id]['tiers']['nom_contact'] = $nom_contact;
 			}
 			else $used_object = &$facture;
 			
