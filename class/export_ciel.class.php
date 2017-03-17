@@ -566,7 +566,7 @@ class TExportComptaCiel extends TExportCompta
 						// 'montant' => abs($montant),
 						'date_echeance' => $facture['date_lim_reglement'],
 						'numero_piece' => $facture['ref'],
-
+						'libelle_compte' => $tiers['nom'],
 						'num_unique' => $numEcriture
 				)
 				;
@@ -594,6 +594,7 @@ class TExportComptaCiel extends TExportCompta
 							// 'montant' => abs($montant),
 							'date_echeance' => $facture['date_lim_reglement'],
 							'numero_piece' => $facture['ref'],
+							'libelle_compte' => $tiers['nom'],
 							'num_unique' => $numEcriture
 					)
 					;
