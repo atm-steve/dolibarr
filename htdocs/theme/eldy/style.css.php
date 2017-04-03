@@ -1769,14 +1769,14 @@ form#login {
 	border-right:solid 1px rgba(180,180,180,.4);
 	border-bottom:solid 1px rgba(180,180,180,.4);*/
 }
-.login_table input#username, .login_table input#password, .login_table input#securitycode {
+.login_table input#company_code,.login_table input#username, .login_table input#password, .login_table input#securitycode {
 	border: none;
 	border-bottom: solid 1px rgba(180,180,180,.4);
 	padding: 5px;
 	margin-left: 5px;
 	margin-top: 5px;
 }
-.login_table input#username:focus, .login_table input#password:focus, .login_table input#securitycode:focus {
+.login_table input#username:focus,.login_table input#company_code:focus, .login_table input#password:focus, .login_table input#securitycode:focus {
 	outline: none !important;
 	/* box-shadow: none;
 	-webkit-box-shadow: 0 0 0 50px #FFF inset;
