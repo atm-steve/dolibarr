@@ -14,10 +14,10 @@ class TExportComptaComptor extends TExportCompta {
 			array('name' => 'code_journal',			'length' => 5,	'default' => '',	'type' => 'text'),
 			array('name' => 'date_piece',			'length' => 10,	'default' => '',	'type' => 'date',	'format' => 'd/m/Y'),
 			array('name' => 'numero_piece',			'length' => 10,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
-			array('name' => 'numero_compte_general','length' => 8,	'default' => '0',	'type' => 'text'),
-			array('name' => 'numero_compte_tiers',	'length' => 8,	'default' => '0',	'type' => 'text'),
-			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle2',				'length' => 30,	'default' => '',	'type' => 'text'),
+			array('name' => 'numero_compte',		'length' => 8,	'default' => '0',	'type' => 'text'),
+			array('name' => 'numero_compte_general','length' => 8,	'default' => '',	'type' => 'text'),
+			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
+			array('name' => 'libelle2',				'length' => 30,	'default' => '',	'type' => 'text',	'pad_type' => STR_PAD_RIGHT),
 			array('name' => 'sens',					'length' => 1,	'default' => 'C',	'type' => 'text'),
 			array('name' => 'montant',				'length' => 15,	'default' => '0',	'type' => 'text'),
 			array('name' => 'code2',				'length' => 4,	'default' => '',	'type' => 'text'),
@@ -26,7 +26,6 @@ class TExportComptaComptor extends TExportCompta {
 		
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = '';
-		$this->fieldPadding = false;
 
 		unset($this->TTypeExport['ecritures_comptables_achat']);
 		unset($this->TTypeExport['ecritures_comptables_banque']);
@@ -56,20 +55,23 @@ class TExportComptaComptor extends TExportCompta {
 			
 			$libelle = $tiers['nom'];
 			if(!empty($facture['ref_client'])) $libelle.= ' - '.$facture['ref_client'];
+			
+			$journal = '01VFH';
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
+					'code_journal'					=> $journal,
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> $compte_general_client,
-					'numero_compte_tiers'			=> $code_compta,
+					'numero_compte'					=> $code_compta,
 	
 					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					'montant'						=> abs($montant * 100),
+					'montant'						=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -81,15 +83,16 @@ class TExportComptaComptor extends TExportCompta {
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
+					'code_journal'					=> $journal,
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					'numero_compte_general'			=> $code_compta,
+					'numero_compte'					=> $code_compta,
 					
 					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'sens'							=> ($montant<0 ) ? 'D' : 'C',
-					'montant'						=> abs($montant * 100),
+					'montant'						=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
@@ -101,15 +104,16 @@ class TExportComptaComptor extends TExportCompta {
 			// Lignes TVA
 			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 				$ligneFichier = array(
+					'code_journal'					=> $journal,
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					'numero_compte_general'			=> $code_compta,
+					'numero_compte'					=> $code_compta,
 					
 					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
 					'sens'							=> ($montant<0 ) ? 'D' : 'C',
-					'montant'						=> abs($montant * 100),
+					'montant'						=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
 				
