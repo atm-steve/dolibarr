@@ -46,6 +46,7 @@ class TExportCompta extends TObjetStd {
 			,'inextenso' => 'In Extenso'
 			,'diacompta' => 'Diacompta'
 			,'orma' => 'Orma'
+			,'comptor' => 'Comptor'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture'
