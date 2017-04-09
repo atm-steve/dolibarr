@@ -2583,6 +2583,22 @@ function img_printer($titlealt = "default", $other='')
 }
 
 /**
+ *  Show delete logo
+ *
+ *  @param	string	$titlealt   Text on alt and title of image. Alt only if param notitle is set to 1. If text is "TextA:TextB", use Text A on alt and Text B on title.
+ *	@param  string	$other      Add more attributes on img
+ *  @return string      		Retourne tag img
+ */
+function img_split($titlealt = 'default', $other = 'class="pictosplit"')
+{
+	global $conf, $langs;
+
+	if ($titlealt == 'default') $titlealt = $langs->trans('Split');
+
+	return img_picto($titlealt, 'split.png', $other);
+}
+
+/**
  *	Show help logo with cursor "?"
  *
  * 	@param	int              	$usehelpcursor		Use help cursor
