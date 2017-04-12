@@ -315,12 +315,20 @@ class TExportCompta extends TObjetStd {
 					$codeComptableProduit = $conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED;
 				}
 				
+				// Compte spécifique pour les EcoTaxe
+				if ($conf->ecotaxdeee->enabled) {
+					if($ligne->desc==$conf->global->ECOTAXDEEE_LABEL_LINE) {
+						$codeComptableProduit = $conf->global->EXPORT_COMPTA_ECOTAX;
+					}
+				}
+				
 				// Compte spécifique pour les remises
 				if(empty($codeComptableProduit)) {
-					if($ligne->fk_remise_except !== 0) {
+					if(!empty($ligne->fk_remise_except)) {
 						$codeComptableProduit = $conf->global->EXPORT_COMPTA_REMISE;
 					}
 				}
+							
 				
 				// Compte spécifique pour les acomptes
 				if(empty($codeComptableProduit)) {
