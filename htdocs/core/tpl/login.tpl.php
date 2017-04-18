@@ -252,7 +252,7 @@ if (isset($conf->file->main_authentication) && preg_match('/openid/',$conf->file
 if (! empty($_SESSION['dol_loginmesg']))
 {
 ?>
-	<div class="center" style="max-width: 500px; margin-left: 10px; margin-right: 10px;"><div class="error">
+	<div class="center" style="background-color:#666;max-width: 500px; margin-left: 10px; margin-right: 10px;"><div class="error">
 	<?php echo $_SESSION['dol_loginmesg']; ?>
 	</div></div>
 <?php
@@ -279,7 +279,7 @@ if (!empty($conf->global->MAIN_EASTER_EGG_COMMITSTRIP)) {
 <?php if ($main_home)
 {
 ?>
-	<div class="center login_main_home paddingtopbottom <?php echo empty($conf->global->MAIN_LOGIN_BACKGROUND)?'':' backgroundsemitransparent'; ?>" style="max-width: 70%">
+	<div class="center login_main_home paddingtopbottom <?php echo empty($conf->global->MAIN_LOGIN_BACKGROUND)?'':' backgroundsemitransparent'; ?>" style="max-width:80%; background-color:#666;padding:20px;border-radius:10px;">
 	<?php echo $main_home; ?>
 	</div><br>
 <?php
