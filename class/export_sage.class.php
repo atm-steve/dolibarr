@@ -16,7 +16,7 @@ class TExportComptaSage extends TExportCompta {
 			array('name' => 'numero_compte_general','length' => 17,	'default' => '0',	'type' => 'text'),
 			array('name' => 'numero_compte_tiers',	'length' => 17,	'default' => '0',	'type' => 'text'),
 			array('name' => 'montant_debit',		'length' => 20,	'default' => '0',	'type' => 'text',),
-			array('name' => 'montant_crebit',		'length' => 20,	'default' => '0',	'type' => 'text',),
+			array('name' => 'montant_credit',		'length' => 20,	'default' => '0',	'type' => 'text',),
 			array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text'),
 			array('name' => 'numero_piece',			'length' => 35,	'default' => '',	'type' => 'text')
 		);
@@ -398,9 +398,18 @@ class TExportComptaSage extends TExportCompta {
 		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '41100000';
 		
 		foreach ($TabBank as $id_bank => $infosBank) {
-			$tiers = &$infosBank['tiers'];
-			$banque = &$infosBank['bank'];
-			$banqueligne = &$infosBank['bankline'];
+			$bankline = &$infosBank['bankline'];
+			$bank = &$infosBank['bank'];
+			$object = &$infosBank['object'];
+			
+			$label = $bankline['label'];
+			//pre($object, true);exit;
+			if(!empty($object)) {
+				if($object->element == 'societe')			$label = $object->name;
+				if($object->element == 'chargesociales')	$label = $object->type_libelle;
+				if($object->element == 'user')				$label = $object->firstname.' '.$object->lastname;
+				if(get_class($object) == 'BonPrelevement')	$label = $object->ref;
+			}
 
 			if(!empty($infosBank['entity'])) {
 				$entity = $infosBank['entity'];
@@ -409,17 +418,16 @@ class TExportComptaSage extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
-			$label = $banqueligne['fk_type'].' '.$tiers['nom'];
-			$datepiece = $banqueligne['datev'];
+			$datepiece = $bankline['datev'];
 
 			// Lignes client
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'code_journal'					=> $banque['ref'],
+					'code_journal'					=> $bank['ref'],
 					'date_piece'					=> $datepiece,
-					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
+					'numero_piece'					=> 'BK'.str_pad($bankline['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '0',
-					'numero_compte_general'			=> $banqueligne['label'] == '(SupplierInvoicePayment)' ? $compte_general_fournisseur : $compte_general_client,
+					'numero_compte_general'			=> $bankline['label'] == '(SupplierInvoicePayment)' ? $compte_general_fournisseur : $compte_general_client,
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 	
 					'libelle'						=> $label,
@@ -436,10 +444,10 @@ class TExportComptaSage extends TExportCompta {
 			// Lignes de banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'code_journal'					=> $banque['ref'],
+					'code_journal'					=> $bank['ref'],
 					'date_piece'					=> $datepiece,
 					'numero_compte_general'			=> $code_compta,
-					'numero_piece'					=> 'BK'.str_pad($banqueligne['id'],6,'0',STR_PAD_LEFT),
+					'numero_piece'					=> 'BK'.str_pad($bankline['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '2',
 					'numero_section'				=> $codeAnalytique,
 					
