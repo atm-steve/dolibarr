@@ -392,10 +392,10 @@ class TExportComptaSage extends TExportCompta {
 		$numLignes = 1;
 		
 		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
-		if(empty($compte_general_client)) $compte_general_client = '40100000';
+		if(empty($compte_general_client)) $compte_general_client = '41100000';
 		
 		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
-		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '41100000';
+		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '40100000';
 		
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
