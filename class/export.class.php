@@ -1365,6 +1365,58 @@ class TExportCompta extends TObjetStd {
 		return $TBank;
 	}
 
+	function getODVATTransfer($infosBank) {
+		global $conf;
+		
+		// Récupération du montant de TVA des factures liées au règlement, uniquement si facture payée
+		$sql = "SELECT ff.total_tva FROM llx_bank_url bu
+				LEFT JOIN llx_paiementfourn pf ON (pf.rowid = bu.url_id)
+				LEFT JOIN llx_paiementfourn_facturefourn pff ON (pff.fk_paiementfourn = pf.rowid)
+				LEFT JOIN llx_facture_fourn ff ON (ff.rowid = pff.fk_facturefourn)
+				WHERE bu.type = 'payment_supplier'
+				AND ff.paye = 1 ";
+		
+		$sql.= "AND bu.fk_bank = ".$infosBank['bankline']['id'];
+		
+		$resql = $this->db->query($sql);
+		
+		// Calcul du total TVA sur les factures payées (totalement) par le règlement
+		$vat_amount = 0;
+		while($obj = $this->db->fetch_object($resql)) {
+			$vat_amount+=$obj->total_tva;
+		}
+		
+		$TOD = array();
+		if(empty($vat_amount)) return $TOD;
+		
+		// Création d'une écriture d'OF pour transférer le montant de la TVA d'un compte d'attente à un compte définitif
+		$TOD[] = $ligneFichier = array(
+			'code_journal'					=> 'OD',
+			'date_piece'					=> $infosBank['bankline']['datev'],
+			'numero_compte_general'			=> $conf->EXPORT_COMPTA_ODTVA_FROM,
+			'numero_piece'					=> 'BK'.str_pad($infosBank['bankline']['id'],6,'0',STR_PAD_LEFT),
+			
+			'libelle'						=> 'Transfert TVA',
+			'montant_debit'					=> $vat_amount,
+			'montant_credit'				=> 0,
+			'type_ecriture'					=> 'G'
+		);
+		
+		$TOD[] = $ligneFichier = array(
+			'code_journal'					=> 'OD',
+			'date_piece'					=> $infosBank['bankline']['datev'],
+			'numero_compte_general'			=> $conf->EXPORT_COMPTA_ODTVA_TO,
+			'numero_piece'					=> 'BK'.str_pad($infosBank['bankline']['id'],6,'0',STR_PAD_LEFT),
+			
+			'libelle'						=> 'Transfert TVA',
+			'montant_debit'					=> 0,
+			'montant_credit'				=> $vat_amount,
+			'type_ecriture'					=> 'G'
+		);
+		
+		return $TOD;
+	}
+
 	function get_line(&$format, $dataline) {
 		$ligneFichierTxtFixe = '';
 

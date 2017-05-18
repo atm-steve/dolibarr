@@ -383,7 +383,7 @@ class TExportComptaSage extends TExportCompta {
 		global $conf;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
-		//pre($TabBank);return;
+		//pre($TabBank, true);exit;
 		
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
@@ -459,6 +459,14 @@ class TExportComptaSage extends TExportCompta {
 				
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
+			}
+			
+			// Ajout de ligne de transfert de TVA lorsqu'une facture d'achat est totalement payée
+			if($bankline['label'] == '(SupplierInvoicePayment)') {
+				$TOD = $this->getODVATTransfer($infosBank);
+				foreach ($TOD as $ligneFichier) {
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
+				}
 			}
 			
 			$numEcriture++;
