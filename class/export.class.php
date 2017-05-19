@@ -1393,7 +1393,7 @@ class TExportCompta extends TObjetStd {
 		$TOD[] = $ligneFichier = array(
 			'code_journal'					=> 'OD',
 			'date_piece'					=> $infosBank['bankline']['datev'],
-			'numero_compte_general'			=> $conf->EXPORT_COMPTA_ODTVA_FROM,
+			'numero_compte_general'			=> $conf->global->EXPORT_COMPTA_ODTVA_FROM,
 			'numero_piece'					=> 'BK'.str_pad($infosBank['bankline']['id'],6,'0',STR_PAD_LEFT),
 			
 			'libelle'						=> 'Transfert TVA',
@@ -1405,7 +1405,7 @@ class TExportCompta extends TObjetStd {
 		$TOD[] = $ligneFichier = array(
 			'code_journal'					=> 'OD',
 			'date_piece'					=> $infosBank['bankline']['datev'],
-			'numero_compte_general'			=> $conf->EXPORT_COMPTA_ODTVA_TO,
+			'numero_compte_general'			=> $conf->global->EXPORT_COMPTA_ODTVA_TO,
 			'numero_piece'					=> 'BK'.str_pad($infosBank['bankline']['id'],6,'0',STR_PAD_LEFT),
 			
 			'libelle'						=> 'Transfert TVA',
