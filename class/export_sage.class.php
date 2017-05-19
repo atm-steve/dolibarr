@@ -462,7 +462,7 @@ class TExportComptaSage extends TExportCompta {
 			}
 			
 			// Ajout de ligne de transfert de TVA lorsqu'une facture d'achat est totalement payée
-			if(in_array($bankline['label'], array('(SupplierInvoicePayment)','Règlement fournisseur')) {
+			if(in_array($bankline['label'], array('(SupplierInvoicePayment)','Règlement fournisseur'))) {
 				$TOD = $this->getODVATTransfer($infosBank);
 				foreach ($TOD as $ligneFichier) {
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
