@@ -1,5 +1,5 @@
 <?php
 
 $TPriceModule=array(
-	
+
 );
