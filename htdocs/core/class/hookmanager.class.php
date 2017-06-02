@@ -133,10 +133,12 @@ class HookManager
 		if (in_array(
 			$method,
 			array(
-				'addMoreActionsButtons',
+                'addCalendarChoice',
+			    'addMoreActionsButtons',
+			    'addMoreMassActions',
 			    'addSearchEntry',
 				'addStatisticLine',
-				'deleteFile',
+			    'deleteFile',
 				'doActions',
 				'formCreateThirdpartyOptions',
 				'formObjectOptions',
@@ -167,7 +169,6 @@ class HookManager
 				'printSearchForm',
 				'printTabsHead',
 				'formatEvent',
-                'addCalendarChoice',
                 'printObjectLine',
                 'printObjectSubLine',
 				'createDictionaryFieldList',
@@ -179,14 +180,16 @@ class HookManager
 
         if ($method == 'insertExtraFields')
         {
-        	$hooktype='returnvalue';	// deprecated. TODO Remove all code with "executeHooks('insertExtraFields'" as soon as there is a trigger available.
+        	$hooktype='returnvalue';	// @deprecated. TODO Remove all code with "executeHooks('insertExtraFields'" as soon as there is a trigger available.
         	dol_syslog("Warning: The hook 'insertExtraFields' is deprecated and must not be used. Use instead trigger on CRUD event (ask it to dev team if not implemented)", LOG_WARNING);
         }
+
+        // Init return properties
+        $this->resPrint=''; $this->resArray=array();
 
         // Loop on each hook to qualify modules that have declared context
         $modulealreadyexecuted=array();
         $resaction=0; $error=0; $result='';
-		$this->resPrint=''; $this->resArray=array();
         foreach($this->hooks as $context => $modules)    // $this->hooks is an array with context as key and value is an array of modules that handle this context
         {
             if (! empty($modules))
