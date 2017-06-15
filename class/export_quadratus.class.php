@@ -3,7 +3,6 @@
  * Format d'export comptable Quadratus
  *************************************************************************************************************************************************/
 
-
 class TExportComptaQuadratus extends TExportCompta {
 	
 	function __construct($db, $exportAllreadyExported=false,$addExportTimeToBill=false) {
