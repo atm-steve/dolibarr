@@ -165,7 +165,7 @@ class FormProjets
 		    }
 		}
 		if (!empty($filterkey)) $sql .= natural_search(array('p.title', 'p.ref'), $filterkey);
-		$sql.= " ORDER BY p.ref ASC";
+		$sql.= " ORDER BY s.nom ASC, p.title DESC";
 
 		$resql=$this->db->query($sql);
 		if ($resql)
@@ -208,6 +208,7 @@ class FormProjets
 						}
 
 						$labeltoshow=dol_trunc($obj->ref,18);
+						$labeltoshow=$obj->nom . ' - ' . $obj->title;
 						//if ($obj->public) $labeltoshow.=' ('.$langs->trans("SharedProject").')';
 						//else $labeltoshow.=' ('.$langs->trans("Private").')';
 						$labeltoshow.=', '.dol_trunc($obj->title, $maxlength);
@@ -231,7 +232,7 @@ class FormProjets
 						else if ( empty($conf->global->PROJECT_ALLOW_TO_LINK_FROM_OTHER_COMPANY) &&  $socid > 0 && (! empty($obj->fk_soc) && $obj->fk_soc != $socid))
 						{
 							$disabled=1;
-							$labeltoshow.=' - '.$langs->trans("LinkedToAnotherCompany");
+							//$labeltoshow.=' - '.$langs->trans("LinkedToAnotherCompany");
 						}
 
 						if (!empty($selected) && $selected == $obj->rowid)
@@ -402,7 +403,7 @@ class FormProjets
 							// FIXME : Hack for Quimper project in Draft can be selected
 							//$disabled=1;
 							$disabled=0;
-							$labeltoshow.=' - '.$langs->trans("LinkedToAnotherCompany");
+							//$labeltoshow.=' - '.$langs->trans("LinkedToAnotherCompany");
 						}
 						// Label for task
 						$labeltoshow.=' - '.$obj->tref.' '.dol_trunc($obj->tlabel,$maxlength);
