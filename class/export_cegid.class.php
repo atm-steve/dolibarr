@@ -64,8 +64,10 @@ class TExportComptaCegid extends TExportCompta {
 					'numero_compte'					=> '41100000',
 					'numero_compte_aux'				=> $code_compta,
 					'libelle'						=> $tiers['nom'],
-					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
+					'sens'							=> ($facture['type'] == 2 || $montant < 0 ? 'C' : 'D'),
 					'montant'						=> number_format(abs($montant),2,',',''),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
 				);
 
 				// Ecriture générale
@@ -82,6 +84,8 @@ class TExportComptaCegid extends TExportCompta {
 					'libelle'						=> $tiers['nom'],
 					'sens'							=> (($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'),
 					'montant'						=> number_format(abs($montant),2,',',''),
+					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
+					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
 				);
 
 				// Ecriture générale
@@ -98,8 +102,10 @@ class TExportComptaCegid extends TExportCompta {
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
 						'libelle'						=> $tiers['nom'],
-						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+						'sens'							=> ($facture['type'] == 2 || $montant < 0 ? 'D' : 'C'),
 						'montant'						=> number_format(abs($montant),2,',',''),
+						'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
+						'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
 					);
 
 					// Ecriture générale
