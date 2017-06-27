@@ -104,7 +104,7 @@ class TExportCompta extends TObjetStd {
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
 		$this->TTVAbyId = array();
-		$sql = "SELECT t.rowid, t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
+		$sql = "SELECT t.rowid, t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy, t.accountancy_code_sell_service, t.accountancy_code_buy_service";
 		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t WHERE active=1";
 
 		$resql = $this->db->query($sql);
@@ -113,9 +113,17 @@ class TExportCompta extends TObjetStd {
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
 			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 
+			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
+			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
+			
 			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell'] = $obj->accountancy_code_sell;
 			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy'] = $obj->accountancy_code_buy;
+
+			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
+			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
+			
 		}
+		
 	}
 
 	/*
@@ -287,7 +295,12 @@ class TExportCompta extends TObjetStd {
 		                else{
 						    // Code compta TVA
 						    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
-						    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
+						    if($ligneSituation->fk_product_type == 1) {
+						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service'] : $conf_compte_tva;
+						    }
+						    else{
+						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
+						    }
 		                }
 
 						$codeComptableProduit = $this->_get_code_compta_product($FactureSituation,$produit);
@@ -359,6 +372,7 @@ class TExportCompta extends TObjetStd {
 					} Milestone ! */
 				}
 				
+				$codeComptableTVA = '';
                 if(!empty($facture->thirdparty->array_options['options_code_tva'])) {
                     $codeComptableTVA  = $facture->thirdparty->array_options['options_code_tva'];
                 }
@@ -366,9 +380,16 @@ class TExportCompta extends TObjetStd {
                     $codeComptableTVA  = $produit->array_options['options_code_tva'];
                 }
                 else{
+				    
 				    // Code compta TVA
 				    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
-				    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf_compte_tva;
+				    if($ligne->fk_product_type == 1) {
+				    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell_service'] : $conf_compte_tva;
+				    }
+				    else{
+				    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf_compte_tva;
+				    }
+				    
                 }
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
@@ -715,7 +736,12 @@ class TExportCompta extends TObjetStd {
                     $codeComptableTVA  = $produit->array_options['options_code_tva_achat'];
 				}
                 else{
-                    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                	if($ligne->fk_product_type == 1) {
+                		$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                	}
+                    else{
+                    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                    }
                 }
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = 0;
