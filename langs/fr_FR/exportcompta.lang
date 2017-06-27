@@ -67,3 +67,9 @@ AccountGeneralForUser=Compte général pour les utilisateurs
 #CAISSE
 CaisseParameters=Paramètre module Caisse
 EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED=Compte comptable pour les acomptes (bons d'achats) émis non consommés
+
+AccountancySellCode=Code de vente produit
+AccountancyBuyCode=Code d'achat produit
+AccountancySellCodeService=Code de vente service
+AccountancyBuyCodeService=Code d'achat service
+

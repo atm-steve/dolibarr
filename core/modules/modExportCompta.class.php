@@ -259,7 +259,10 @@ class modExportCompta extends DolibarrModules
         $res = $extrafields->addExtraField('fk_soc_affacturage', 'Tiers pour  affacturage', 'sellist', 0, '', 'societe',0,0,'',serialize(array('options'=>array('societe:nom:rowid'=>null))));
 
 
-		$result=$this->load_tables();
+        $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_sell_service varchar(32) NULL");
+        $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_buy_service varchar(32) NULL");
+		
+        $result=$this->load_tables();
 
 		return $this->_init($sql);
 	}
