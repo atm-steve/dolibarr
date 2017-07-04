@@ -4236,6 +4236,12 @@ function print_barre_liste($titre, $page, $file, $options='', $sortfield='', $so
 	if ($sortorder) $options .= "&sortorder=".urlencode($sortorder);
 	// Show navigation bar
 	$pagelist = '';
+	if($num > $limit){
+		$maxNum = $num;
+	} else {
+		$maxNum = $totalnboflines;
+	}
+
 	if ($savlimit != 0 && ($page > 0 || $num > $limit))
 	{
 		if ($totalnboflines)	// If we know total nb of lines
