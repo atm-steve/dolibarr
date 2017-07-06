@@ -1459,8 +1459,27 @@ class TExportCompta extends TObjetStd {
 	}
 
 	function get_line(&$format, $dataline) {
+		global $conf;
+		
 		$ligneFichierTxtFixe = '';
-
+		
+		$fieldSeparator = $this->fieldSeparator;
+		$fieldPadding = $this->fieldPadding;
+		
+		if(!empty( $conf->global->EXPORT_COMPTA_DATASEPARATOR )) {
+			if($conf->global->EXPORT_COMPTA_DATASEPARATOR == 'none') {
+				$fieldSeparator =  '';
+				$fieldPadding = true;
+			}
+			else{
+				$fieldSeparator =  $conf->global->EXPORT_COMPTA_DATASEPARATOR;
+				$fieldPadding = false;
+			}
+		}
+		
+		/*=
+		$this->fieldPadding=empty($conf->global->EXPORT_COMPTA_DATASEPARATOR) ? true : false;
+		*/
 		$TVal = array();
 		if (is_array($format) && count($format)>0) {
 			foreach($format as $fmt) {
@@ -1486,7 +1505,7 @@ class TExportCompta extends TObjetStd {
 
 				// Ajout padding ou troncature
 				$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
-				if(strlen($valeur) < $fmt['length'] && $this->fieldPadding) {
+				if(strlen($valeur) < $fmt['length'] && $fieldPadding) {
 					$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
 					$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
 				} else if(iconv_strlen($valeur) > $fmt['length']) {
@@ -1504,7 +1523,7 @@ class TExportCompta extends TObjetStd {
 			}
 		}
 
-		$ligneFichierTxtFixe = implode($this->fieldSeparator, $TVal);
+		$ligneFichierTxtFixe = implode($fieldSeparator, $TVal);
 
 		if(!empty($this->lineSeparator)) $ligneFichierTxtFixe .= $this->lineSeparator;
 
