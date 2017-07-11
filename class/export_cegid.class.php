@@ -5,9 +5,9 @@
 
 class TExportComptaCegid extends TExportCompta {
 
-	function __construct($db, $exportAllreadyExported=false) {
+	function __construct($db, $exportAllreadyExported=false, $addExportTime = false) {
 
-		parent::__construct($db, $exportAllreadyExported);
+		parent::__construct($db, $exportAllreadyExported, $addExportTime);
 
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmY'),
