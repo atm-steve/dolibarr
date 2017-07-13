@@ -774,6 +774,11 @@ foreach ($listofreferent as $key => $value)
 		print '<td style="width: 24px"></td>';
 		// Ref
 		print '<td'.(($tablename != 'actioncomm' && $tablename != 'projet_task') ? ' style="width: 200px"':'').'>'.$langs->trans("Ref").'</td>';
+		// Ref Client
+		if (property_exists($element, 'ref_client')) print '<td width="100px">'.$langs->trans('RefCustomer').'</td>';
+		// Ref Supplier
+		if (property_exists($element, 'ref_supplier')) print '<td width="130px">'.$langs->trans('RefSupplier').'</td>';
+		
 		// Date
 		print '<td'.(($tablename != 'actioncomm' && $tablename != 'projet_task') ? ' style="width: 200px"':'').' align="center">';
 		if (in_array($tablename, array('projet_task'))) print $langs->trans("TimeSpent");
@@ -906,6 +911,9 @@ foreach ($listofreferent as $key => $value)
 					if (! empty($element->ref_customer)) print ' - '.$element->ref_customer;
 				}
 				print "</td>\n";
+
+				if (property_exists($element, 'ref_client')) print '<td>'.$element->ref_client.'</td>';
+				if (property_exists($element, 'ref_supplier')) print '<td>'.$element->ref_supplier.'</td>';
 
 				// Date or TimeSpent
 				$date=''; $total_time_by_line = null;
