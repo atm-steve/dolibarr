@@ -108,22 +108,23 @@ class TExportCompta extends TObjetStd {
 		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t WHERE active=1";
 
 		$resql = $this->db->query($sql);
+                if(!empty($resql)){
+                    
+                    while($obj = $this->db->fetch_object($resql)) {
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 
-		while($obj = $this->db->fetch_object($resql)) {
-			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
-			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
 
-			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
-			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
-			
-			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell'] = $obj->accountancy_code_sell;
-			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy'] = $obj->accountancy_code_buy;
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell'] = $obj->accountancy_code_sell;
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy'] = $obj->accountancy_code_buy;
 
-			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
-			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
-			
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
+
+                    }
 		}
-		
 	}
 
 	/*
@@ -131,7 +132,7 @@ class TExportCompta extends TObjetStd {
 	 * Toutes les factures validées, payées, abandonnées, pour l'entité concernée, avec date de facture entre les bornes sélectionnées
 	 */
 	function get_factures_client($dt_deb, $dt_fin) {
-		global $db, $conf, $user;
+		global $db, $conf, $user, $hookmanager;
 
 		if(!$conf->facture->enabled) return array();
 
@@ -142,7 +143,10 @@ class TExportCompta extends TObjetStd {
 
 		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
-
+                
+                $hookmanager->initHooks(array('exportcomptadao'));
+		
+                
 		// Requête de récupération des factures
 		$sql = "SELECT f.rowid, f.entity";
 		if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER)) $sql.= ", ee.fk_source";
@@ -161,8 +165,11 @@ class TExportCompta extends TObjetStd {
 		}
 
 		$sql.= " ORDER BY f.".$datefield.", f.facnumber ASC";
+                
+               
+                
 		$resql = $db->query($sql);
-
+                
 		if(!$resql) {
 			var_dump($db);exit;
 		}
@@ -177,7 +184,12 @@ class TExportCompta extends TObjetStd {
 				,'id_propal_origin' => $obj->fk_source
 			);
 		}
-		
+                
+                
+		$parameters=array('TIdFactures'=>&$TIdFactures);
+		$reshook=$hookmanager->executeHooks('get_data',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
+		if ($reshook < 0) $error++;
+                
 		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))
 		{
 			/*
