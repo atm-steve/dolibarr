@@ -166,7 +166,11 @@ class TExportCompta extends TObjetStd {
 
 		$sql.= " ORDER BY f.".$datefield.", f.facnumber ASC";
                 
-               
+                //Hook to set sql
+		$parameters=array('sql'=>&$sql, 'dt_deb'=>$dt_deb,'dt_fin'=>$dt_fin);
+		$reshook=$hookmanager->executeHooks('setSql',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
+		if ($reshook < 0) $error++;
+                
                 
 		$resql = $db->query($sql);
                 
@@ -184,11 +188,6 @@ class TExportCompta extends TObjetStd {
 				,'id_propal_origin' => $obj->fk_source
 			);
 		}
-                
-                
-		$parameters=array('TIdFactures'=>&$TIdFactures);
-		$reshook=$hookmanager->executeHooks('get_data',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
-		if ($reshook < 0) $error++;
                 
 		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))
 		{
