@@ -451,8 +451,10 @@ class TExportCompta extends TObjetStd {
 		//pre($facture->thirdparty,true);exit;
 
 		// Cas des codes comptables par catégories clients
-		$codeComptableProduit = self::get_code_compta_by_categ_tiers($facture, $produit);
-		if(!empty($codeComptableProduit)) return $codeComptableProduit;
+		if(!empty($produit->id)) {
+			$codeComptableProduit = self::get_code_compta_by_categ_tiers($facture, $produit);
+			if(!empty($codeComptableProduit)) return $codeComptableProduit;
+		}
 		
 		// Cas des DOM-TOM
 		if($facture->thirdparty->country_code == 'PM'
