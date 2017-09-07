@@ -548,16 +548,10 @@ if ($id > 0 || $ref)
 
 				if (is_object($hookmanager))
 				{
-					$parameters=array('id_fourn'=>$id_fourn,'prod_id'=>$object->id);
+					$parameters=array('id_fourn'=>$id_fourn,'prod_id'=>$object->id,'filtre'=>"fournisseur=1",'html_name'=>'id_fourn','selected'=>GETPOST("id_fourn"),'showempty'=>1);
 				    $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);
                     print $hookmanager->resPrint;
 				}
-
-				if (is_object($hookmanager))
-{
-	$parameters=array('filtre'=>"fournisseur=1",'html_name'=>'id_fourn','selected'=>GETPOST("id_fourn"),'showempty'=>1,'prod_id'=>$product->id);
-    $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);
-}
 
 				print '</table>';
 
