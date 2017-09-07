@@ -707,12 +707,6 @@ if ($id > 0 || $ref)
 						    $reshook=$hookmanager->executeHooks('printObjectLine',$parameters,$object,$action);
 						}
 
-						if (is_object($hookmanager))
-{
-	$parameters=array('id_pfp'=>$productfourn->product_fourn_price_id,'id_fourn'=>$id_fourn,'prod_id'=>$product->id);
-    $reshook=$hookmanager->executeHooks('printObjectLine',$parameters,$object,$action);
-}
-
 						// Modify-Remove
 						print '<td align="center">';
 						if ($user->rights->produit->creer || $user->rights->service->creer)
