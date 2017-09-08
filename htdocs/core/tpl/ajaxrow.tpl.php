@@ -49,6 +49,7 @@ $(document).ready(function(){
     $(".tdlineupdown").css("background-repeat","no-repeat");
     $(".tdlineupdown").css("background-position","center center");
 
+	var TExtrafields = new Array;
     console.log("Prepare tableDnd for #<?php echo $tagidfortablednd; ?>");
     $("#<?php echo $tagidfortablednd; ?>").tableDnD({
 		onDrop: function(table, row) {
@@ -74,6 +75,10 @@ $(document).ready(function(){
 							//console.log('<?php echo dol_escape_js($_SERVER['QUERY_STRING']); ?>');
 							location.href = '<?php echo dol_escape_js($_SERVER['PHP_SELF']).'?'.dol_escape_js($_SERVER['QUERY_STRING']); ?>';
 						} else {
+							for (var i=TExtrafields.length; i>=0; i--)
+							{
+								$(row).after(TExtrafields[i]);
+							}
 							$("#<?php echo $tagidfortablednd; ?> .drag").each(
 									function( intIndex ) {
 										// $(this).removeClass("pair impair");
@@ -84,7 +89,23 @@ $(document).ready(function(){
 					});
 		},
 		onDragClass: "dragClass",
-		dragHandle: "td.tdlineupdown"
+		dragHandle: "td.tdlineupdown",
+		onDragStart: function(table, row) {
+			TExtrafields = [];
+			var current_element = $(row).parent();
+			while (next_element = $(current_element).next())
+			{
+				if (next_element.is('tr'))
+				{
+					var id = $(next_element).attr('id');
+					if (typeof id != 'undefined' && id.indexOf('row-') !== -1) break;
+					else if ($(next_element).hasClass('liste_titre')) break;
+					else TExtrafields.push(next_element);
+				}
+				
+				current_element = next_element;
+			}
+		}
 	});
     $(".tdlineupdown").hover( function() { $(this).addClass('showDragHandle'); },
     	function() { $(this).removeClass('showDragHandle'); }
