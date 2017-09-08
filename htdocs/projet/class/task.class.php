@@ -1807,6 +1807,7 @@ class Task extends CommonObject
 	 */
 	public function fetchComments()
 	{		
+		$this->comments = array();
 		$sql = "SELECT";
 		$sql.= " c.rowid";
 		$sql.= " FROM ".MAIN_DB_PREFIX."projet_task_comment as c";
