@@ -3780,8 +3780,10 @@ a.cke_dialog_ui_button_ok span {
 }
 #comment .comment-info {
     font-size:0.8em;
-    color:#555;
     margin-top:5px;
+}
+#comment .comment-info a {
+    color:inherit;
 }
 #comment textarea {
     width: 100%;
