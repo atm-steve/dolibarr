@@ -6271,27 +6271,27 @@ function natural_search($fields, $value, $mode=0, $nofirstand=0)
 					{
 						$newres .= $field . " LIKE '";
 
-	            		$tmpcrit=trim($tmpcrit);
-	            		$tmpcrit2=$tmpcrit;
-	            		$tmpbefore='%'; $tmpafter='%';
-	            		if (preg_match('/^[\^\$]/', $tmpcrit))
-	            		{
-	            		    $tmpbefore='';
-	            		    $tmpcrit2 = preg_replace('/^[\^\$]/', '', $tmpcrit2);
-	            		}
+		            	$tmpcrit=trim($tmpcrit);
+		            	$tmpcrit2=$tmpcrit;
+		            	$tmpbefore='%'; $tmpafter='%';
+		            	if (preg_match('/^[\^\$]/', $tmpcrit))
+		            	{
+		            	    $tmpbefore='';
+		            	    $tmpcrit2 = preg_replace('/^[\^\$]/', '', $tmpcrit2);
+		            	}
 						if (preg_match('/[\^\$]$/', $tmpcrit))
-	            		{
-	            		    $tmpafter='';
-	            		    $tmpcrit2 = preg_replace('/[\^\$]$/', '', $tmpcrit2);
-	            		}
-	            		$newres .= $tmpbefore;
-	            		$newres .= $db->escape($tmpcrit2);
-	            		$newres .= $tmpafter;
-	            		$newres .= "'";
-	            		if ($tmpcrit2 == '')
-	            		{
-	            		    $newres .= ' OR ' . $field . " IS NULL";
-	            		}
+		            	{
+		            	    $tmpafter='';
+		            	    $tmpcrit2 = preg_replace('/[\^\$]$/', '', $tmpcrit2);
+		            	}
+		            	$newres .= $tmpbefore;
+		            	$newres .= $db->escape($tmpcrit2);
+		            	$newres .= $tmpafter;
+		            	$newres .= "'";
+		            	if ($tmpcrit2 == '')
+		            	{
+		            	    $newres .= ' OR ' . $field . " IS NULL";
+		            	}
 					}
 
 	            	$i3++;
