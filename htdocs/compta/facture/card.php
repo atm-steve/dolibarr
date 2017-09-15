@@ -400,6 +400,22 @@ if (empty($reshook))
 				setEventMessages($discount->error, $discount->errors, 'errors');
 			}
 		}
+
+		if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+		{
+			$outputlangs = $langs;
+			$newlang = '';
+			if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id','aZ09')) $newlang = GETPOST('lang_id','aZ09');
+			if ($conf->global->MAIN_MULTILANGS && empty($newlang))	$newlang = $object->thirdparty->default_lang;
+			if (! empty($newlang)) {
+				$outputlangs = new Translate("", $conf);
+				$outputlangs->setDefaultLang($newlang);
+			}
+			$ret = $object->fetch($id); // Reload to get new records
+
+			$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+			if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
+		}
 	}
 
 	else if ($action == 'setref_client' && $user->rights->facture->creer)
@@ -650,7 +666,7 @@ if (empty($reshook))
 				// If we're on a standard invoice, we have to get excess received to create a discount in TTC without VAT
 				$sql = 'SELECT SUM(pf.amount) as total_paiements
 						FROM llx_c_paiement as c, llx_paiement_facture as pf, llx_paiement as p
-						WHERE pf.fk_facture = '.$object->id.' AND p.fk_paiement = c.id AND pf.fk_paiement = p.rowid';
+						WHERE pf.fk_facture = '.$object->id.' AND p.fk_paiement = c.id AND pf.fk_paiement = p.rowid ORDER BY p.datep, p.tms';
 
 				$resql = $db->query($sql);
 				if (! $resql) dol_print_error($db);
@@ -1106,8 +1122,17 @@ if (empty($reshook))
 
 							foreach ($amountdeposit as $tva => $amount)
 							{
+								$arraylist = array('amount' => 'FixAmount','variable' => 'VarAmount');
+								$descline = $langs->trans('Deposit');
+								$descline.= ' - '.$langs->trans($arraylist[$typeamount]);
+								if ($typeamount=='amount') {
+									$descline.= ' ('. price($valuedeposit, '', $langs, 0, - 1, - 1, (!empty($object->multicurrency_code) ? $object->multicurrency_code : $conf->currency)).')';
+								} elseif ($typeamount=='variable') {
+									$descline.= ' ('. $valuedeposit.'%)';
+								}
+								$descline.= ' - '.$srcobject->ref;
 								$result = $object->addline(
-										$langs->trans('Deposit'),
+										$descline,
 										$amount,		 	// subprice
 										1, 						// quantity
 										$tva,     // vat rate
@@ -1129,8 +1154,8 @@ if (empty($reshook))
 										0,
 										0,
 										0,
-										0,
-										$langs->trans('Deposit')
+										0
+										//,$langs->trans('Deposit') //Deprecated
 									);
 							}
 
@@ -2930,7 +2955,7 @@ else if ($id > 0 || ! empty($ref))
 								// => 1),
 								array('type' => 'other','name' => 'idwarehouse','label' => $label,'value' => $value));
 		}
-		if (!($object->type == Facture::TYPE_CREDIT_NOTE ||$object->type == Facture::TYPE_SITUATION )&& $object->total_ttc < 0) 		// Can happen only if $conf->global->FACTURE_ENABLE_NEGATIVE is on
+		if (!($object->type == Facture::TYPE_CREDIT_NOTE || $object->type == Facture::TYPE_SITUATION )&& $object->total_ttc < 0) 		// Can happen only if $conf->global->FACTURE_ENABLE_NEGATIVE is on
 		{
 			$text .= '<br>' . img_warning() . ' ' . $langs->trans("ErrorInvoiceOfThisTypeMustBePositive");
 		}
