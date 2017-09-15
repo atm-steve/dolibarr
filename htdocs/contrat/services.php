@@ -243,16 +243,17 @@ foreach ($search_array_options as $key => $val)
 	$crit=$val;
 	$tmpkey=preg_replace('/search_options_/','',$key);
 	$typ=$extrafields->attribute_type[$tmpkey];
-	$mode=0;
-	if (in_array($typ, array('int','double'))) $mode=1;    // Search on a numeric
+	$mode_search_extrafields=0;
+	if (in_array($typ, array('int','double'))) $mode_search_extrafields=1;    // Search on a numeric
 	
 	if ($val && ( ($crit != '' && in_array($typ, array('sellist'))) || ! empty($crit)))
 	{
 		$sql .= ' AND ef.'.$tmpkey.'='.$crit;
 	} else if ($val && ( ($crit != '' && ! in_array($typ, array('select'))) || ! empty($crit))) {		
-		$sql .= natural_search('ef.'.$tmpkey, $crit, $mode);
+		$sql .= natural_search('ef.'.$tmpkey, $crit, $mode_search_extrafields);
 	}
 }
+
 $sql .= $db->order($sortfield,$sortorder);
 
 $nbtotalofrecords = '';
