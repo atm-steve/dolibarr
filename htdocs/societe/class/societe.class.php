@@ -1699,9 +1699,8 @@ class Societe extends CommonObject
         	$sql.= " OR u.admin = 1)";
         }
         else
-        	$sql.= "1 ";//  " WHERE entity in (0, ".$conf->entity.")";
-
-        $sql.= " AND u.rowid = sc.fk_user AND sc.fk_soc =".$this->id;
+        	//$sql.= " WHERE entity in (0, ".$conf->entity.")";
+			$sql.= " WHERE 1";
 
         $resql = $this->db->query($sql);
         if ($resql)
