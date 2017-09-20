@@ -34,7 +34,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
 
 /**
- *	Classe de gestion des factures recurrentes/Modeles
+ *	Class to manage invoice templates
  */
 class FactureRec extends CommonInvoice
 {
@@ -59,6 +59,9 @@ class FactureRec extends CommonInvoice
 	var $nb_gen_done;
 	var $nb_gen_max;
 	
+	var $frequency;
+	var $unit_frequency;
+
 	var $rang;
 	var $special_code;
 
@@ -579,6 +582,9 @@ class FactureRec extends CommonInvoice
 			$txtva=price2num($txtva);
 			$txlocaltax1	= price2num($txlocaltax1);
 			$txlocaltax2	= price2num($txlocaltax2);
+			if (empty($txtva)) $txtva=0;
+			if (empty($txlocaltax1)) $txlocaltax1=0;
+			if (empty($txlocaltax2)) $txlocaltax2=0;
 
 			if ($price_base_type=='HT')
 			{
