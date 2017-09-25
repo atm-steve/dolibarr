@@ -3291,8 +3291,10 @@ class Form
                 else
                 {
                     $return.='<option value="'.$res->rowid.'">'.($langs->trans('unit'.$res->code)!=$res->label?$langs->trans('unit'.$res->code):$res->label).'</option>';
+					
                 }
             }
+			
             $return.='</select>';
         }
         return $return;
