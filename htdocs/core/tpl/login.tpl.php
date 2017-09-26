@@ -267,7 +267,7 @@ if (!empty($conf->global->MAIN_EASTER_EGG_COMMITSTRIP)) {
 <?php if ($main_home)
 {
 ?>
-	<div class="center login_main_home" style="max-width: 80%; background-color:#666;padding:20px;border-radius:10px;">
+	<div class="center login_main_home" style="max-width: 80%; background-color:#cfd6e5; background-color:rgba(207, 214, 229, 0.5);padding:20px;border-radius:10px;">
 	<?php echo $main_home; ?>
 	</div><br>
 <?php
