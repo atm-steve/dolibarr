@@ -500,6 +500,7 @@ foreach ($listofreferent as $key => $value)
 		{
 			$total_ht = 0;
 			$total_ttc = 0;
+			$nb_tasks_cir = 0;
 
 			$num=count($elementarray);
 			for ($i = 0; $i < $num; $i++)
@@ -509,6 +510,13 @@ foreach ($listofreferent as $key => $value)
 				$idofelementuser=$tmp[1];
 
 				$element->fetch($idofelement);
+
+				if($element->element == 'project_task') {
+					$element->fetch_optionals();
+					if(! empty($element->array_options['options_valorisable_cir'])) {
+						$nb_tasks_cir++;
+					}
+				}
 				if ($idofelementuser) $elementuser->fetch($idofelementuser);
 
                 // Special cases				
@@ -547,6 +555,8 @@ foreach ($listofreferent as $key => $value)
 
 				if ($qualifiedfortotal) $total_ttc = $total_ttc + $total_ttc_by_line;
 			}
+
+			$i -= $nb_tasks_cir;
 
 			// Calculate margin
 			if ($margin=="add")
@@ -748,6 +758,12 @@ foreach ($listofreferent as $key => $value)
 				$idofelementuser=$tmp[1];
 
 				$element->fetch($idofelement);
+				$element->fetch_optionals();
+
+				if(! empty($element->array_options['options_valorisable_cir'])) {
+					continue;
+				}
+
 				if ($idofelementuser) $elementuser->fetch($idofelementuser);
 
 				// Special cases
