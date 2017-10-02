@@ -3690,7 +3690,7 @@ else if ($id > 0 || ! empty($ref))
 			}
 
 			// Reopen a standard paid invoice
-			if ((($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_REPLACEMENT)
+			if ((($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_REPLACEMENT || $object->type == Facture::TYPE_SITUATION)
 				|| ($object->type == Facture::TYPE_CREDIT_NOTE && empty($discount->id))
 				|| ($object->type == Facture::TYPE_DEPOSIT && empty($discount->id)))
 				&& ($object->statut == 2 || $object->statut == 3)
