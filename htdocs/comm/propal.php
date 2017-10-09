@@ -1641,7 +1641,7 @@ if ($object->statut == 0 && $user->rights->propal->creer)
 		if ($conf->global->MAIN_FEATURES_LEVEL > 1)
 		{
 			// Add free or predefined products/services
-			$object->formAddObjectLine(0,$mysoc,$soc,$hookmanager);
+			//$object->formAddObjectLine(0,$mysoc,$soc,$hookmanager);
 		}
 		else
 		{
