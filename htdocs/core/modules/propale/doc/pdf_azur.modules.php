@@ -383,7 +383,7 @@ class pdf_azur extends ModelePDFPropales
 				    $notetoshow.='Affaire suivi par '.$tmpuser->getFullName($langs);
 				    if ($tmpuser->email) $notetoshow.=',  Mail: '.$tmpuser->email;
 				    if ($tmpuser->office_phone) $notetoshow.=', Tel: '.$tmpuser->office_phone;
-				}				
+				}
 				if ($notetoshow)
 				{
 					$tab_top = 88 + $height_incoterms;
@@ -554,7 +554,7 @@ class pdf_azur extends ModelePDFPropales
 					// Collecte des totaux par valeur de tva dans $this->tva["taux"]=total_tva
 					if ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) $tvaligne=$object->lines[$i]->multicurrency_total_tva;
 					else $tvaligne=$object->lines[$i]->total_tva;
-					
+
 					$localtax1ligne=$object->lines[$i]->total_localtax1;
 					$localtax2ligne=$object->lines[$i]->total_localtax2;
 					$localtax1_rate=$object->lines[$i]->localtax1_tx;
@@ -1039,6 +1039,8 @@ class pdf_azur extends ModelePDFPropales
 		// Show VAT by rates and total
 		$pdf->SetFillColor(248,248,248);
 
+		$total_ttc = ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) ? $object->multicurrency_total_ttc : $object->total_ttc;
+
 		$this->atleastoneratenotnull=0;
 		if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT))
 		{
@@ -1508,7 +1510,7 @@ class pdf_azur extends ModelePDFPropales
 		        $pdf->MultiCell(100, 3, $langs->trans("SalesRepresentative")." : ".$usertmp->getFullName($langs), '', 'R');
 		    }
 		}
-		
+
 		$posy+=2;
 
 		// Show list of linked objects
@@ -1655,3 +1657,4 @@ class pdf_azur extends ModelePDFPropales
 		return ($tab_hl*7);
 	}
 }
+
