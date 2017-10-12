@@ -372,6 +372,8 @@ if (dol_strlen($search_dv_end) > 0)   $param .= '&search_end_dvmonth=' . GETPOST
 if ($search_req_nb) $param.='&amp;req_nb='.urlencode($search_req_nb);
 if (GETPOST("thirdparty")) $param.='&amp;thirdparty='.urlencode(GETPOST("thirdparty"));
 if ($optioncss != '')       $param.='&optioncss='.$optioncss;
+if(!empty($search_conciliated) || $search_conciliated === 0) $param.='&search_conciliated='.$search_conciliated;
+
 // Add $param from extra fields
 foreach ($search_array_options as $key => $val)
 {
@@ -433,7 +435,7 @@ if ($id > 0 || ! empty($ref))
         if ($object->canBeConciliated() > 0) {
             // If not cash account and can be reconciliate
             if ($user->rights->banque->consolidate) {
-                print '<a class="butAction" href="'.DOL_URL_ROOT.'/compta/bank/bankentries.php?action=reconcile'.$param.'">'.$langs->trans("Conciliate").'</a>';
+                print '<a class="butAction" href="'.DOL_URL_ROOT.'/compta/bank/bankentries.php?action=reconcile'.$param.(!empty($page)?('&page='.$page):'').'">'.$langs->trans("Conciliate").'</a>';
             } else {
                 print '<a class="butActionRefused" title="'.$langs->trans("NotEnoughPermissions").'" href="#">'.$langs->trans("Conciliate").'</a>';
             }
