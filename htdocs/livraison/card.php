@@ -74,7 +74,7 @@ $extralabelslines=$extrafieldsline->fetch_name_optionals_label($object->table_el
 // Load object. Make an object->fetch
 include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php';  // Must be include, not include_once
 
-// Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('deliverycard','globalcard'));
 
 /*
@@ -142,7 +142,7 @@ else if ($action == 'confirm_valid' && $confirm == 'yes' &&
 	{
 		$outputlangs = $langs;
 		$newlang = '';
-		if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id')) $newlang = GETPOST('lang_id','alpha');
+		if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id','aZ09')) $newlang = GETPOST('lang_id','aZ09');
 		if ($conf->global->MAIN_MULTILANGS && empty($newlang))	$newlang = $object->thirdparty->default_lang;
 		if (! empty($newlang)) {
 			$outputlangs = new Translate("", $conf);
@@ -259,7 +259,7 @@ if ($action == 'builddoc')	// En get ou en post
 	// Define output language
 	$outputlangs = $langs;
 	$newlang='';
-	if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id')) $newlang=GETPOST('lang_id');
+	if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id','aZ09')) $newlang=GETPOST('lang_id','aZ09');
 	if ($conf->global->MAIN_MULTILANGS && empty($newlang)) $newlang=$object->thirdparty->default_lang;
 	if (! empty($newlang))
 	{
@@ -565,6 +565,14 @@ else
 			}
 			
 			// Other attributes
+			if ($action = 'create_delivery') {
+				// copy from expedition
+				$expeditionExtrafields = new Extrafields($db);
+				$expeditionExtrafieldLabels = $expeditionExtrafields->fetch_name_optionals_label($expedition->table_element);
+				if ($expedition->fetch_optionals($object->origin_id, $expeditionExtrafieldLabels) > 0) {
+					$object->array_options = array_merge($object->array_options, $expedition->array_options);
+				}
+			}
 			$cols = 2;
 			include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
 
@@ -594,9 +602,9 @@ else
 			$var=true;
 			while ($i < $num_prod)
 			{
-				$var=!$var;
+				
 
-				print "<tr ".$bc[$var].">";
+				print '<tr class="oddeven">';
 				if ($object->lines[$i]->fk_product > 0)
 				{
 					$product = new Product($db);
@@ -665,7 +673,14 @@ else
 					$mode = ($object->statut == 0) ? 'edit' : 'view';
 					$line = new LivraisonLigne($db);
 					$line->fetch_optionals($object->lines[$i]->id,$extralabelslines);
-					print '<tr '.$bc[$var].'>';
+					if ($action = 'create_delivery') {
+						$srcLine = new ExpeditionLigne($db);
+						$expeditionLineExtrafields = new Extrafields($db);
+						$expeditionLineExtrafieldLabels = $expeditionLineExtrafields->fetch_name_optionals_label($srcLine->table_element);
+						$srcLine->fetch_optionals($expedition->lines[$i]->id,$expeditionLineExtrafieldLabels);
+						$line->array_options = array_merge($line->array_options, $srcLine->array_options);
+					}
+					print '<tr class="oddeven">';
 					print $line->showOptionals($extrafieldsline, $mode, array('style'=>$bc[$var], 'colspan'=>$colspan),$i);
 					print '</tr>';
 				}
