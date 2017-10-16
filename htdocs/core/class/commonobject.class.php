@@ -4489,18 +4489,19 @@ abstract class CommonObject
     }
 
    /**
-     * Function to show lines of extrafields with output datas
-     *
-	 * @param Extrafields   $extrafields    Extrafield Object
-	 * @param string        $mode           Show output (view) or input (edit) for extrafield
-	 * @param array         $params         Optional parameters
-	 * @param string        $keyprefix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
-     *
-     * @return string
-     */
-    function showOptionals($extrafields, $mode='view', $params=null, $keyprefix='')
-    {
-		global $_POST, $conf, $langs;
+    * Function to show lines of extrafields with output datas
+    *
+    * @param Extrafields   $extrafields    Extrafield Object
+    * @param string        $mode           Show output (view) or input (edit) for extrafield
+    * @param array         $params         Optional parameters
+    * @param string        $keyprefix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+    * @param string        $keysuffix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
+    *
+    * @return string
+    */
+	function showOptionals($extrafields, $mode='view', $params=null, $keyprefix='', $keysuffix='')
+	{
+		global $_POST, $conf, $langs, $action;
 
 		$out = '';
 
@@ -4513,6 +4514,9 @@ abstract class CommonObject
 			$e = 0;
 			foreach($extrafields->attribute_label as $key=>$label)
 			{
+				// Load language if required
+				if (! empty($extrafields->attributes[$this->table_element]['langfile'][$key])) $langs->load($extrafields->attributes[$this->table_element]['langfile'][$key]);
+
 				if (is_array($params) && count($params)>0) {
 					if (array_key_exists('colspan',$params)) {
 						$colspan=$params['colspan'];
@@ -4520,23 +4524,29 @@ abstract class CommonObject
 				}else {
 					$colspan='3';
 				}
+
 				switch($mode) {
 					case "view":
-						$value=$this->array_options["options_".$key];
+						$value=$this->array_options["options_".$key.$keyprefix];
 						break;
 					case "edit":
-						if (isset($_POST["options_" . $key])) {
-							if (is_array($_POST["options_" . $key])) {
-								// $_POST["options"] is an array but following code expects a comma separated string
-								$value = implode(",", $_POST["options_" . $key]);
+						$getposttemp = GETPOST($keysuffix.'options_'.$key.$keyprefix, 'none');				// GETPOST can get value from GET, POST or setup of default values.
+						// GETPOST("options_" . $key) can be 'abc' or array(0=>'abc')
+						if (is_array($getposttemp) || $getposttemp != '' || GETPOSTISSET($keysuffix.'options_'.$key.$keyprefix))
+						{
+							if (is_array($getposttemp)) {
+								// $getposttemp is an array but following code expects a comma separated string
+								$value = implode(",", $getposttemp);
 							} else {
-								$value = $_POST["options_" . $key];
+								$value = $getposttemp;
 							}
 						} else {
-							$value = $this->array_options["options_" . $key];
+							$value = $this->array_options["options_" . $key];			// No GET, no POST, no default value, so we take value of object.
 						}
 						break;
 				}
+				//var_dump($value);
+
 				if ($extrafields->attribute_type[$key] == 'separate')
 				{
 					$out .= $extrafields->showSeparator($key);
@@ -4562,27 +4572,32 @@ abstract class CommonObject
 					// Convert date into timestamp format (value in memory must be a timestamp)
 					if (in_array($extrafields->attribute_type[$key],array('date','datetime')))
 					{
-						$value = isset($_POST["options_".$key])?dol_mktime($_POST["options_".$key."hour"], $_POST["options_".$key."min"], 0, $_POST["options_".$key."month"], $_POST["options_".$key."day"], $_POST["options_".$key."year"]):$this->db->jdate($this->array_options['options_'.$key]);
+						$value = GETPOSTISSET($keysuffix.'options_'.$key.$keyprefix)?dol_mktime(GETPOST($keysuffix.'options_'.$key.$keyprefix."hour",'int',3), GETPOST($keysuffix.'options_'.$key.$keyprefix."min",'int',3), 0, GETPOST($keysuffix.'options_'.$key.$keyprefix."month",'int',3), GETPOST($keysuffix.'options_'.$key.$keyprefix."day",'int',3), GETPOST($keysuffix.'options_'.$key.$keyprefix."year",'int',3)):$this->db->jdate($this->array_options['options_'.$key]);
 					}
 					// Convert float submited string into real php numeric (value in memory must be a php numeric)
 					if (in_array($extrafields->attribute_type[$key],array('price','double')))
 					{
-						$value = isset($_POST["options_".$key])?price2num($_POST["options_".$key]):$this->array_options['options_'.$key];
+						$value = GETPOSTISSET($keysuffix.'options_'.$key.$keyprefix)?price2num(GETPOST($keysuffix.'options_'.$key.$keyprefix,'int',3)):$this->array_options['options_'.$key];
 					}
-					if($extrafields->attribute_required[$key])
-						$label = '<span'.($mode != 'view' ? ' class="fieldrequired"':'').'>'.$label.'</span>';
 
-					$out .= '<td>'.$langs->trans($label).'</td>';
+					$labeltoshow = $langs->trans($label);
+
+					if($extrafields->attribute_required[$key])
+					{
+						$labeltoshow = '<span'.($mode != 'view' ? ' class="fieldrequired"':'').'>'.$labeltoshow.'</span>';
+					}
+					$out .= '<td>'.$labeltoshow.'</td>';
+
 					$html_id = !empty($this->id) ? $this->element.'_extras_'.$key.'_'.$this->id : '';
 					$out .='<td id="'.$html_id.'" class="'.$this->element.'_extras_'.$key.'" '.($colspan?' colspan="'.$colspan.'"':'').'>';
 
 					switch($mode) {
-    					case "view":
-    						$out .= $extrafields->showOutputField($key, $value);
-    						break;
-    					case "edit":
-    						$out .= $extrafields->showInputField($key, $value, '', $keyprefix, '', 0, $this->id);
-    						break;
+						case "view":
+							$out .= $extrafields->showOutputField($key, $value);
+							break;
+						case "edit":
+							$out .= $extrafields->showInputField($key, $value, '', $keyprefix, '', 0, $this->id);
+							break;
 					}
 
 					$out .= '</td>';

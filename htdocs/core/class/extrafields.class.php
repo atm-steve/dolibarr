@@ -65,7 +65,9 @@ class ExtraFields
 	var $attribute_alwayseditable;
 	// Array to store permission to check
 	var $attribute_perms;
-	// Array to store permission to check
+	// Array to store language file to translate label of values
+	var $attribute_langfile;
+	// Array to store if field is visible by default on list
 	var $attribute_list;
 	// Array to store if extra field is hidden
 	var $attribute_hidden;		// warning, do not rely on this. If your module need a hidden data, it must use its own table.
@@ -759,7 +761,7 @@ class ExtraFields
 		$unique=$this->attribute_unique[$key];
 		$required=$this->attribute_required[$key];
 		$param=$this->attribute_param[$key];
-		$perms=$this->attribute_perms[$key];
+		$langfile=$this->attribute_langfile[$key];
 		$list=$this->attribute_list[$key];
 		$hidden=$this->attribute_hidden[$key];
 
@@ -827,21 +829,21 @@ class ExtraFields
 			if (! is_object($form)) $form=new Form($this->db);
 
 			// TODO Must also support $moreparam
-			$out = $form->select_date($value, $keysuffix.'options_'.$key.$keyprefix, $showtime, $showtime, $required, '', 1, 1, 1, 0, 1);
+			$out = $form->select_date($value, $keysuffix.'options_'.$key.$keyprefix, $showtime, $showtime, $required, '', 1, ($keysuffix != 'search_' ? 1 : 0), 1, 0, 1);
 		}
 		elseif (in_array($type,array('int')))
 		{
 			$tmp=explode(',',$size);
 			$newsize=$tmp[0];
-			$out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" maxlength="'.$newsize.'" value="'.$value.'"'.($moreparam?$moreparam:'').'>';
+			$out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" maxlength="'.$newsize.'" value="'.$value.'"'.($moreparam?$moreparam:'').'>';
 		}
 		elseif ($type == 'varchar')
 		{
-            $out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" maxlength="'.$size.'" value="'.dol_escape_htmltag($value).'"'.($moreparam?$moreparam:'').'>';
+            $out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" maxlength="'.$size.'" value="'.dol_escape_htmltag($value).'"'.($moreparam?$moreparam:'').'>';
 		}
 		elseif (in_array($type, array('mail', 'phone', 'url')))
 		{
-			$out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
+			$out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
 		}
 		elseif ($type == 'text')
 		{
@@ -857,21 +859,21 @@ class ExtraFields
 			} else {
 				$checked=' value="1" ';
 			}
-			$out='<input type="checkbox" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" '.$checked.' '.($moreparam?$moreparam:'').'>';
+			$out='<input type="checkbox" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" '.$checked.' '.($moreparam?$moreparam:'').'>';
 		}
 		elseif ($type == 'price')
 		{
 			if (!empty($value)) {		// $value in memory is a php numeric, we format it into user number format.
 				$value=price($value);
 			}
-			$out.='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'> '.$langs->getCurrencySymbol($conf->currency);
+			$out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'> '.$langs->getCurrencySymbol($conf->currency);
 		}
 		elseif ($type == 'double')
 		{
 			if (!empty($value)) {		// $value in memory is a php numeric, we format it into user number format.
 				$value=price($value);
 			}
-			$out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'> ';
+			$out='<input type="text" class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'> ';
 		}
 		elseif ($type == 'select')
 		{
@@ -882,7 +884,7 @@ class ExtraFields
 				$out.= ajax_combobox($keysuffix.'options_'.$key.$keyprefix, array(), 0);
 			}
 
-			$out.='<select class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="options_'.$key.$keyprefix.'" '.($moreparam?$moreparam:'').'>';
+			$out.='<select class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" '.($moreparam?$moreparam:'').'>';
 			$out.='<option value="0">&nbsp;</option>';
 			foreach ($param['options'] as $key => $val)
 			{
@@ -904,7 +906,7 @@ class ExtraFields
 				$out.= ajax_combobox($keysuffix.'options_'.$key.$keyprefix, array(), 0);
 			}
 
-			$out.='<select class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="options_'.$key.$keyprefix.'" '.($moreparam?$moreparam:'').'>';
+			$out.='<select class="flat '.$showsize.' maxwidthonsmartphone" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" '.($moreparam?$moreparam:'').'>';
 			if (is_array($param['options']))
 			{
 				$param_list=array_keys($param['options']);
@@ -1074,7 +1076,7 @@ class ExtraFields
 			$out='';
 			foreach ($param['options'] as $keyopt => $val)
 			{
-				$out.='<input class="flat '.$showsize.'" type="radio" name="'.$keysuffix.'options_'.$key.$keyprefix.'" '.($moreparam?$moreparam:'');
+				$out.='<input class="flat '.$showsize.'" type="radio" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" '.($moreparam?$moreparam:'');
 				$out.=' value="'.$keyopt.'"';
 				$out.=' id="'.$keysuffix.'options_'.$key.$keyprefix.'_'.$keyopt.'"';
 				$out.= ($value==$keyopt?'checked':'');
@@ -1250,7 +1252,7 @@ class ExtraFields
                         if ($object->element == 'societe') $valuetoshow=$object->name;  // Special case for thirdparty because ->ref is not name but id (because name is not unique)
                     }
                 }
-                $out.='<input type="text" class="flat '.$showsize.'" name="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$valuetoshow.'" >';
+                $out.='<input type="text" class="flat '.$showsize.'" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$valuetoshow.'" >';
 			}
 			else
 			{
@@ -1260,7 +1262,8 @@ class ExtraFields
 		}
 		elseif ($type == 'password')
 		{
-			$out='<input type="password" class="flat '.$showsize.'" name="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
+			// If prefix is 'search_', field is used as a filter, we use a common text field.
+			$out='<input type="'.($keysuffix=='search_'?'text':'password').'" class="flat '.$showsize.'" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'" value="'.$value.'" '.($moreparam?$moreparam:'').'>';
 		}
 		if (!empty($hidden)) {
 			$out='<input type="hidden" value="'.$value.'" name="'.$keysuffix.'options_'.$key.$keyprefix.'" id="'.$keysuffix.'options_'.$key.$keyprefix.'"/>';
