@@ -684,6 +684,7 @@ if ($id > 0 || $ref)
 		{
 		    if ($found) $helpondiff.='<br>'; else $found=1;
 		    $helpondiff.=$langs->trans("ProductQtyInSuppliersShipmentAlreadyRecevied").': '.$object->stats_reception['qty'];
+	
 		}
 
         // Calculating a theorical value
@@ -692,16 +693,15 @@ if ($id > 0 || $ref)
         print '</td>';
         print "<td>";
 
-	$parameters=array();
-	$reshook=$hookmanager->executeHooks('addMoreLine',$parameters,$product,$action);    // Note that $action and $object may have been modified by some hooks
-	if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-
-
         //print (empty($stocktheo)?0:$stocktheo);
         print $form->textwithpicto((empty($stocktheo)?0:$stocktheo), $helpondiff);
         if ($object->seuil_stock_alerte != '' && ($object->stock_theorique < $object->seuil_stock_alerte)) print ' '.img_warning($langs->trans("StockLowerThanLimit", $object->seuil_stock_alerte));
         print '</td>';
         print '</tr>';
+
+	$parameters=array();
+	$reshook=$hookmanager->executeHooks('addMoreLine',$parameters,$product,$action);    // Note that $action and $object may have been modified by some hooks
+	if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
 		// Last movement
 		$sql = "SELECT max(m.datem) as datem";
