@@ -1356,6 +1356,7 @@ if (empty($reshook))
 					{
 						$line->origin = $object->origin;
 						$line->origin_id = $line->id;
+						$line->fetch_optionals($line->id);
 					}
 				}
 
@@ -1377,7 +1378,21 @@ if (empty($reshook))
 
 				$object->situation_counter = $object->situation_counter + 1;
 				$id = $object->createFromCurrent($user);
-				if ($id <= 0) $mesg = $object->error;
+				if ($id <= 0) 
+				{
+					$mesg = $object->error;
+				}
+				else
+				{
+					$nextSituationInvoice = new Facture($db);
+					$nextSituationInvoice->fetch($id);
+					// create extrafields with data from create form
+					$extralabels = $extrafields->fetch_name_optionals_label($nextSituationInvoice->table_element);
+					$ret = $extrafields->setOptionalsFromPost($extralabels, $nextSituationInvoice);
+					if ($ret > 0) {
+						$nextSituationInvoice->insertExtraFields();
+					}
+				}
 			}
 		}
 
@@ -2828,12 +2843,12 @@ else if ($id > 0 || ! empty($ref))
 		$resteapayer = 0;
 	$resteapayeraffiche = $resteapayer;
 
-	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
+	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {	// Never use this
 		$filterabsolutediscount = "fk_facture_source IS NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
 		$filtercreditnote = "fk_facture_source IS NOT NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
 	} else {
-		$filterabsolutediscount = "fk_facture_source IS NULL OR (fk_facture_source IS NOT NULL AND (description LIKE '(DEPOSIT)%' OR description LIKE '(EXCESS RECEIVED)%'))";
-		$filtercreditnote = "fk_facture_source IS NOT NULL AND description NOT LIKE '(DEPOSIT)%' AND description NOT LIKE '(EXCESS RECEIVED)%'";
+		$filterabsolutediscount = "fk_facture_source IS NULL OR (fk_facture_source IS NOT NULL AND (description LIKE '(DEPOSIT)%' AND description NOT LIKE '(EXCESS RECEIVED)%'))";
+		$filtercreditnote = "fk_facture_source IS NOT NULL AND (description NOT LIKE '(DEPOSIT)%' OR description LIKE '(EXCESS RECEIVED)%')";
 	}
 
 	$absolute_discount = $soc->getAvailableDiscounts('', $filterabsolutediscount);
@@ -2856,9 +2871,9 @@ else if ($id > 0 || ! empty($ref))
 
 	// Confirmation de la conversion de l'avoir en reduc
 	if ($action == 'converttoreduc') {
-		if($object->type == 0) $type_fac = 'ExcessReceived';
-		elseif($object->type == 2) $type_fac = 'CreditNote';
-		elseif($object->type == 3) $type_fac = 'Deposit';
+		if($object->type == Facture::TYPE_STANDARD) $type_fac = 'ExcessReceived';
+		elseif($object->type == Facture::TYPE_CREDIT_NOTE) $type_fac = 'CreditNote';
+		elseif($object->type == Facture::TYPE_DEPOSIT) $type_fac = 'Deposit';
 		$text = $langs->trans('ConfirmConvertToReduc', strtolower($langs->transnoentities($type_fac)));
 		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('ConvertToReduc'), $text, 'confirm_converttoreduc', '', "yes", 2);
 	}
