@@ -2393,20 +2393,23 @@ if ($action == 'create' && $user->rights->commande->creer) {
 			$fileparams = dol_most_recent_file($conf->commande->dir_output . '/' . $ref, preg_quote($ref, '/'));
 			$file = $fileparams ['fullname'];
 
+			// Define output language
+			$outputlangs = $langs;
+			$newlang = '';
+			if ($conf->global->MAIN_MULTILANGS && empty($newlang) && ! empty($_REQUEST['lang_id']))
+				$newlang = $_REQUEST['lang_id'];
+			if ($conf->global->MAIN_MULTILANGS && empty($newlang))
+				$newlang = $object->client->default_lang;
+
+			if (!empty($newlang))
+			{
+				$outputlangs = new Translate('', $conf);
+				$outputlangs->setDefaultLang($newlang);
+				$outputlangs->load('commercial');
+			}
+
 			// Build document if it not exists
 			if (! $file || ! is_readable($file)) {
-				// Define output language
-				$outputlangs = $langs;
-				$newlang = '';
-				if ($conf->global->MAIN_MULTILANGS && empty($newlang) && ! empty($_REQUEST['lang_id']))
-					$newlang = $_REQUEST['lang_id'];
-				if ($conf->global->MAIN_MULTILANGS && empty($newlang))
-					$newlang = $object->client->default_lang;
-				if (! empty($newlang)) {
-					$outputlangs = new Translate("", $conf);
-					$outputlangs->setDefaultLang($newlang);
-				}
-
 				$result = commande_pdf_create($db, $object, GETPOST('model') ? GETPOST('model') : $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 				if ($result <= 0) {
 					dol_print_error($db, $result);
@@ -2422,6 +2425,7 @@ if ($action == 'create' && $user->rights->commande->creer) {
 			// Cree l'objet formulaire mail
 			include_once DOL_DOCUMENT_ROOT . '/core/class/html.formmail.class.php';
 			$formmail = new FormMail($db);
+			$formmail->param['langsmodels']=(empty($newlang)?$langs->defaultlang:$newlang);
 			$formmail->fromtype = 'user';
 			$formmail->fromid = $user->id;
 			$formmail->fromname = $user->getFullName($langs);
@@ -2434,9 +2438,9 @@ if ($action == 'create' && $user->rights->commande->creer) {
 			$formmail->withtocc = $liste;
 			$formmail->withtoccc = $conf->global->MAIN_EMAIL_USECCC;
 			if (empty($object->ref_client)) {
-				$formmail->withtopic = $langs->trans('SendOrderRef', '__ORDERREF__');
+				$formmail->withtopic = $outputlangs->trans('SendOrderRef', '__ORDERREF__');
 			} else if (! empty($object->ref_client)) {
-				$formmail->withtopic = $langs->trans('SendOrderRef', '__ORDERREF__(__REFCLIENT__)');
+				$formmail->withtopic = $outputlangs->trans('SendOrderRef', '__ORDERREF__(__REFCLIENT__)');
 			}
 			$formmail->withfile = 2;
 			$formmail->withbody = 1;

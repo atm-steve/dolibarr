@@ -65,7 +65,7 @@ abstract class CommonObject
      */
     static function isExistingObject($element, $id, $ref='', $ref_ext='')
     {
-    	global $db;
+    	global $db, $conf;
 
 		$sql = "SELECT rowid, ref, ref_ext";
 		$sql.= " FROM ".MAIN_DB_PREFIX.$element;
@@ -77,6 +77,7 @@ abstract class CommonObject
 			dol_print_error(get_class()."::isExistingObject ".$error, LOG_ERR);
 			return -1;
 		}
+		if ($ref || $ref_ext) $sql.= " AND entity = ".$conf->entity;
 
 		dol_syslog(get_class()."::isExistingObject sql=".$sql);
 		$resql = $db->query($sql);

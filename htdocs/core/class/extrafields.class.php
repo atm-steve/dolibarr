@@ -756,6 +756,8 @@ class ExtraFields
 				//$sql.=preg_replace('/^ AND /','',$sqlwhere);
 				//print $sql;
 
+				$sql .= ' ORDER BY ' . implode(', ', $fields_label);
+
 				dol_syslog(get_class($this).'::showInputField type=sellist sql='.$sql);
 				$resql = $this->db->query($sql);
 				if ($resql)
