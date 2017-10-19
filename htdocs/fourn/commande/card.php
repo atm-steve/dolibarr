@@ -54,16 +54,7 @@ if (!empty($conf->variants->enabled)) {
 	require_once DOL_DOCUMENT_ROOT.'/variants/class/ProductCombination.class.php';
 }
 
-$langs->load('admin');
-$langs->load('orders');
-$langs->load('sendings');
-$langs->load('companies');
-$langs->load('bills');
-$langs->load('propal');
-$langs->load('supplier_proposal');
-$langs->load('deliveries');
-$langs->load('products');
-$langs->load('stocks');
+$langs->loadLangs(array('admin','orders','sendings','companies','bills','propal','supplier_proposal','deliveries','products','stocks','productbatch'));
 if (!empty($conf->incoterm->enabled)) $langs->load('incoterm');
 
 $id 			= GETPOST('id','int');
@@ -2757,8 +2748,8 @@ if ($action != 'makeorder')
     		$relativepath =	$comfournref.'/'.$comfournref.'.pdf';
     		$filedir = $conf->fournisseur->dir_output	. '/commande/' .	$comfournref;
     		$urlsource=$_SERVER["PHP_SELF"]."?id=".$object->id;
-    		$genallowed=$user->rights->fournisseur->commande->creer;
-    		$delallowed=$user->rights->fournisseur->commande->supprimer;
+    		$genallowed=$user->rights->fournisseur->commande->lire;
+    		$delallowed=$user->rights->fournisseur->commande->creer;
 
     		print $formfile->showdocuments('commande_fournisseur',$comfournref,$filedir,$urlsource,$genallowed,$delallowed,$object->modelpdf,1,0,0,0,0,'','','',$object->thirdparty->default_lang);
     		$somethingshown=$formfile->numoffiles;
