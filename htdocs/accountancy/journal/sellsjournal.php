@@ -436,8 +436,11 @@ $form = new Form($db);
 // Export
 if ($action == 'exportcsv') {
 
-	$sep = $conf->global->ACCOUNTING_EXPORT_SEPARATORCSV;
-	$sell_journal = $conf->global->ACCOUNTING_SELL_JOURNAL;
+	//$sep = $conf->global->ACCOUNTING_EXPORT_SEPARATORCSV;
+	//$sell_journal = $conf->global->ACCOUNTING_SELL_JOURNAL;
+
+	$sep = "\t";
+	$sell_journal = 'VEN';
 
 	include DOL_DOCUMENT_ROOT . '/accountancy/tpl/export_journal.tpl.php';
 
@@ -453,11 +456,22 @@ if ($action == 'exportcsv') {
 		$invoicestatic->id = $key;
 		$invoicestatic->ref = $val["ref"];
 
-		$date = dol_print_date($val["date"], 'day');
+		//$date = dol_print_date($val["date"], 'day');
+		$date = dol_print_date($val["date"], '%d/%m/%y');
 
 		// Third party
 		foreach ($tabttc[$key] as $k => $mt) {
-			print '"' . $key . '"' . $sep;
+			print '"' . $date . '"' . $sep;
+			print '"' . $sell_journal . '"'. $sep;
+			print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
+			print '"' . $val["ref"] . '"' . $sep;
+			print '"' . utf8_decode(dol_trunc($companystatic->name, 35)). '"' . $sep;
+			print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+			print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+			print '"E"' . $sep;
+			print "\r\n";
+
+			/*print '"' . $key . '"' . $sep;
 			print '"' . $date . '"' . $sep;
 			print '"' . $val["ref"] . '"' . $sep;
 			print '"' . utf8_decode(dol_trunc($companystatic->name, 32)) . '"' . $sep;
@@ -469,7 +483,7 @@ if ($action == 'exportcsv') {
 			print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 			print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 			print '"' . $sell_journal . '"';
-			print "\n";
+			print "\n";*/
 		}
 
 		// Product / Service
@@ -477,7 +491,17 @@ if ($action == 'exportcsv') {
 			$accountingaccount = new AccountingAccount($db);
 			$accountingaccount->fetch(null, $k, true);
 			if ($mt) {
-				print '"' . $key . '"' . $sep;
+				print '"' . $date . '"' . $sep;
+				print '"' . $sell_journal . '"'. $sep;
+				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
+				print '"' . $val["ref"] . '"' . $sep;
+				print '"' . utf8_decode(dol_trunc($companystatic->name, 35)). '"' . $sep;
+				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+				print '"E"' . $sep;
+				print "\r\n";
+
+				/*print '"' . $key . '"' . $sep;
 				print '"' . $date . '"' . $sep;
 				print '"' . $val["ref"] . '"' . $sep;
 				print '"' . utf8_decode(dol_trunc($companystatic->name, 32)) . '"' . $sep;
@@ -489,7 +513,7 @@ if ($action == 'exportcsv') {
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 				print '"' . $sell_journal . '"';
-				print "\n";
+				print "\n";*/
 			}
 		}
 
@@ -502,7 +526,16 @@ if ($action == 'exportcsv') {
 
 			foreach ($arrayofvat[$key] as $k => $mt) {
 				if ($mt) {
-					print '"' . $key . '"' . $sep;
+					print '"' . $date . '"' . $sep;
+					print '"' . $sell_journal . '"'. $sep;
+					print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
+					print '"' . $val["ref"] . '"' . $sep;
+					print '"' . utf8_decode(dol_trunc($companystatic->name, 35)). '"' . $sep;
+					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+					print '"E"'. $sep;
+					print "\r\n";
+					/*print '"' . $key . '"' . $sep;
 					print '"' . $date . '"' . $sep;
 					print '"' . $val["ref"] . '"' . $sep;
 					print '"' . utf8_decode(dol_trunc($companystatic->name, 32)) . '"' . $sep;
@@ -514,7 +547,7 @@ if ($action == 'exportcsv') {
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . $sell_journal . '"';
-					print "\n";
+					print "\n";*/
 				}
 			}
 		}
