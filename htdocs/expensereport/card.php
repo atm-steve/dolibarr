@@ -180,6 +180,7 @@ if (empty($reshook))
     	$object = new ExpenseReport($db);
     	$result = $object->fetch($id);
     	$result = $object->delete($user);
+	
     	if ($result >= 0)
     	{
     		header("Location: index.php");
@@ -305,10 +306,15 @@ if (empty($reshook))
     {
     	$object = new ExpenseReport($db);
     	$object->fetch($id);
+	$lastRef = $object->ref;
     	$result = $object->setValidate($user);
+	$newRef = $object->ref;
 
     	if ($result > 0)
     	{
+		//Rename du répertoire PROV avec la ref définitive
+		rename(DOL_DATA_ROOT.'/expensereport/'.$lastRef,DOL_DATA_ROOT.'/expensereport/'.$newRef);
+
     		// Define output language
     		if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
     		{

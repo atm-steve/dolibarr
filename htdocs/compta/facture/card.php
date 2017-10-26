@@ -36,6 +36,9 @@
  */
 
 require '../../main.inc.php';
+
+ini_set('memory_limit','512M');
+
 require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
 require_once DOL_DOCUMENT_ROOT . '/compta/paiement/class/paiement.class.php';
