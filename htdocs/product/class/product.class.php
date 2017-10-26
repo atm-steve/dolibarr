@@ -3964,6 +3964,37 @@ class Product extends CommonObject
 		return false;
 	}
 
+	function is_photo_available_gifi() {
+		global $conf;
+
+		if(! empty($conf->global->PRODUCT_PHOTO_URL_GIFI)) {
+			$url = str_replace('__REF__', $this->ref, $conf->global->PRODUCT_PHOTO_URL_GIFI);
+
+			$headers = @get_headers($url);
+
+			if(empty($headers) || ! preg_match('/^HTTP\/[0-9]\.[0-9] 2/', $headers[0])) {
+				return false;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	function show_photos_gifi() {
+		global $conf;
+
+		$html = '<!-- Photo -->';
+
+		if(! empty($conf->global->PRODUCT_PHOTO_URL_GIFI)) {
+			$url = str_replace('__REF__', $this->ref, $conf->global->PRODUCT_PHOTO_URL_GIFI);
+
+			$html.= '<img class="photo photowithmargin" border="0" src="'.$url.'" />';
+		}
+
+		return $html;
+	}
 
 	/**
 	 *  Show photos of a product (nbmax maximum), into several columns
