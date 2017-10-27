@@ -23,6 +23,8 @@
  *       \brief      Page to ask a new password
  */
 
+exit("You are nice :) ".$_SERVER['REMOTE_ADDR']);
+
 define("NOLOGIN",1);	// This means this output page does not require to be logged.
 
 require '../main.inc.php';
