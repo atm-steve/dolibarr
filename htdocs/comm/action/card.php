@@ -73,12 +73,16 @@ $id = GETPOST('id','int');
 if ($user->societe_id) $socid=$user->societe_id;
 $result = restrictedArea($user, 'agenda', $id, 'actioncomm&societe', 'myactions|allactions', 'fk_soc', 'id');
 if ($user->societe_id && $socid) $result = restrictedArea($user,'societe',$socid);
+$object = new ActionComm($db);
+if($id>0) {
+	$result=$object->fetch($id); // Migration 3.5->6.0 commit dcd89319863bbd7395c981d556492e0cbcf16f64
+	if(!empty($object->fk_project)) $result = restrictedArea($user, 'projet', $object->fk_project);
+}
 
 $error=GETPOST("error");
 $donotclearsession=GETPOST('donotclearsession')?GETPOST('donotclearsession'):0;
 
 $cactioncomm = new CActionComm($db);
-$object = new ActionComm($db);
 $contact = new Contact($db);
 $extrafields = new ExtraFields($db);
 $formfile = new FormFile($db);
