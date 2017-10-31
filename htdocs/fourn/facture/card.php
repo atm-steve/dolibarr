@@ -1767,7 +1767,7 @@ if ($action == 'create')
 		$formproject = new FormProjets($db);
 
 		$langs->load('projects');
-		print '<tr><td>' . $langs->trans('Project') . '</td><td>';
+		print '<tr><td class="fieldrequired">' . $langs->trans('Project') . '</td><td>';
 		$formproject->select_projects((empty($conf->global->PROJECT_CAN_ALWAYS_LINK_TO_ALL_SUPPLIERS)?$societe->id:-1), $projectid, 'projectid', 0, 0, 1, 1);
 		print '</td></tr>';
 	}
