@@ -1114,6 +1114,14 @@ if ($resql)
 			$filename=dol_sanitizeFileName($obj->ref);
 			$filedir=$conf->fournisseur->dir_output.'/commande/' . dol_sanitizeFileName($obj->ref);
 			print $formfile->getDocumentsLink($objectstatic->element, $filename, $filedir);
+			// Display picto if invoice do not exists
+			$display_picto=true;
+			$objectstatic->fetch($obj->rowid);
+			$objectstatic->fetchObjectLinked();
+			foreach($objectstatic->linkedObjects as $objecttype => $invoice) {
+				if ($objecttype == 'invoice_supplier') $display_picto=false;
+			}
+			if ($display_picto) print img_picto("Pas de Facture Fournisseur", 'warning');
 			print '</td></tr></table>';
 
 			print '</td>'."\n";
