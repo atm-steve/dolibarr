@@ -87,7 +87,7 @@ class RejetPrelevement
 
 		dol_syslog("RejetPrelevement::Create id $id");
 		$bankaccount = $conf->global->PRELEVEMENT_ID_BANKACCOUNT;
-		$facs = $this->getListInvoices(1);
+		$facs = $this->getListInvoices();
 
 		$this->db->begin();
 
@@ -132,7 +132,7 @@ class RejetPrelevement
 		for ($i = 0; $i < $num; $i++)
 		{
 			$fac = new Facture($this->db);
-			$fac->fetch($facs[$i][0]);
+			$fac->fetch($facs[$i]);
 
 			// Make a negative payment
 			$pai = new Paiement($this->db);
@@ -144,7 +144,7 @@ class RejetPrelevement
 			 * PHP installs sends only the part integer negative
 			*/
 
-			$pai->amounts[$facs[$i][0]] = price2num($facs[$i][1] * -1);
+			$pai->amounts[$facs[$i]] = price2num($fac->total_ttc * -1);
 			$pai->datepaye = $date_rejet;
 			$pai->paiementid = 3; // type of payment: withdrawal
 			$pai->num_paiement = $fac->ref;
@@ -152,7 +152,7 @@ class RejetPrelevement
 			if ($pai->create($this->user) < 0)  // we call with no_commit
 			{
 				$error++;
-				dol_syslog("RejetPrelevement::Create Error creation payment invoice ".$facs[$i][0]);
+				dol_syslog("RejetPrelevement::Create Error creation payment invoice ".$facs[$i]);
 			}
 			else
 			{
@@ -270,24 +270,22 @@ class RejetPrelevement
 	}
 
 	/**
-	 * Retrieve the list of invoices
+	 *    Retrieve the list of invoices
 	 *
-	 * @param 	int		$amounts 	If you want to get the amount of the order for each invoice
-	 * @return	array				Array List of invoices related to the withdrawal line
-	 * @TODO	A withdrawal line is today linked to one and only one invoice. So the function should return only one object ?
+	 *    @return	array
 	 */
-	private function getListInvoices($amounts=0)
+	private function getListInvoices()
 	{
 		global $conf;
 
 		$arr = array();
 
 		 //Returns all invoices of a withdrawal
-		$sql = "SELECT f.rowid as facid, pl.amount";
+		$sql = "SELECT f.rowid as facid";
 		$sql.= " FROM ".MAIN_DB_PREFIX."prelevement_facture as pf";
-		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture as f ON (pf.fk_facture = f.rowid)";
-		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."prelevement_lignes as pl ON (pf.fk_prelevement_lignes = pl.rowid)";
+		$sql.= ", ".MAIN_DB_PREFIX."facture as f";
 		$sql.= " WHERE pf.fk_prelevement_lignes = ".$this->id;
+		$sql.= " AND pf.fk_facture = f.rowid";
 		$sql.= " AND f.entity = ".$conf->entity;
 
 		$resql=$this->db->query($sql);
@@ -301,14 +299,7 @@ class RejetPrelevement
 				while ($i < $num)
 				{
 					$row = $this->db->fetch_row($resql);
-					if (!$amounts) $arr[$i] = $row[0];
-					else
-					{
-						$arr[$i] = array(
-							$row[0],
-							$row[1]
-						);
-					}
+					$arr[$i] = $row[0];
 					$i++;
 				}
 			}
@@ -316,7 +307,7 @@ class RejetPrelevement
 		}
 		else
 		{
-			dol_syslog("getListInvoices", LOG_ERR);
+			dol_syslog("RejetPrelevement Erreur");
 		}
 
 		return $arr;

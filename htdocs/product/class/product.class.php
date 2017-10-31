@@ -42,7 +42,7 @@ class Product extends CommonObject
 	public $element='product';
 	public $table_element='product';
 	public $fk_element='fk_product';
-	protected $childtables=array('askpricesupplierdet','propaldet','commandedet','facturedet','contratdet','facture_fourn_det','commande_fournisseurdet');    // To test if we can delete object
+	protected $childtables=array('propaldet','commandedet','facturedet','contratdet','facture_fourn_det','commande_fournisseurdet');    // To test if we can delete object
 	protected $isnolinkedbythird = 1;     // No field fk_soc
 	protected $ismultientitymanaged = 1;	// 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
 
@@ -812,7 +812,7 @@ class Product extends CommonObject
    			// Delete all child tables
 			if (! $error)
 			{
-			    $elements = array('product_fournisseur_price','product_price','product_lang','categorie_product','product_stock','product_customer_price');
+    			$elements = array('product_fournisseur_price','product_price','product_lang','categorie_product','product_stock');
     			foreach($elements as $table)
     			{
     				if (! $error)
@@ -1515,7 +1515,7 @@ class Product extends CommonObject
 						$sql.= " WHERE entity IN (".getEntity('productprice', 1).")";
 						$sql.= " AND price_level=".$i;
 						$sql.= " AND fk_product = '".$this->id."'";
-						$sql.= " ORDER BY date_price DESC, rowid DESC";
+						$sql.= " ORDER BY date_price DESC";
 						$sql.= " LIMIT 1";
 						$resql = $this->db->query($sql);
 						if ($resql)
@@ -1576,7 +1576,7 @@ class Product extends CommonObject
 					$sql.= " price_base_type, tva_tx, tosell, price_by_qty, rowid";
 					$sql.= " FROM ".MAIN_DB_PREFIX."product_price";
 					$sql.= " WHERE fk_product = '".$this->id."'";
-					$sql.= " ORDER BY date_price DESC, rowid DESC";
+					$sql.= " ORDER BY date_price DESC";
 					$sql.= " LIMIT 1";
 					$resql = $this->db->query($sql);
 					if ($resql)
@@ -2169,7 +2169,7 @@ class Product extends CommonObject
 		$sql = "SELECT sum(d.qty), date_format(c.date_commande, '%Y%m')";
 		if ($mode == 'bynumber') $sql.= ", count(DISTINCT c.rowid)";
 		$sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as d, ".MAIN_DB_PREFIX."commande_fournisseur as c, ".MAIN_DB_PREFIX."societe as s";
-		if (!$user->rights->societe->client->voir && !$socid) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+		if (!$user->rights->fournisseur->lire && !$socid) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		$sql.= " WHERE c.rowid = d.fk_commande";
 		$sql.= " AND d.fk_product =".$this->id;
 		$sql.= " AND c.fk_soc = s.rowid";
@@ -2317,7 +2317,29 @@ class Product extends CommonObject
 
 		$now=dol_now();
 
-		
+		if ($ref_fourn)
+		{
+    		$sql = "SELECT rowid, fk_product";
+    		$sql.= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price";
+    		$sql.= " WHERE fk_soc = ".$id_fourn;
+    		$sql.= " AND ref_fourn = '".$ref_fourn."'";
+    		$sql.= " AND fk_product != ".$this->id;
+    		$sql.= " AND entity = ".$conf->entity;
+
+    		dol_syslog(get_class($this)."::add_fournisseur", LOG_DEBUG);
+    		$resql=$this->db->query($sql);
+    		if ($resql)
+    		{
+    			$obj = $this->db->fetch_object($resql);
+                if ($obj)
+                {
+        			// If the supplier ref already exists but for another product (duplicate ref is accepted for different quantity only or different companies)
+                    $this->product_id_already_linked = $obj->fk_product;
+    				return -3;
+    			}
+                $this->db->free($resql);
+    		}
+		}
 
 		$sql = "SELECT rowid";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price";
@@ -2845,7 +2867,7 @@ class Product extends CommonObject
 	{
 		global $langs;
 		$langs->load('products');
-		if (! empty($conf->productbatch->enabled)) $langs->load("productbatch");
+		if (!empty($conf->productbatch->enabled)) $langs->load("productbatch");
 
 		if ($type == 2)
 		{
@@ -2976,7 +2998,7 @@ class Product extends CommonObject
 		$sql = "SELECT ps.reel, ps.fk_entrepot, ps.pmp, ps.rowid";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product_stock as ps";
 		$sql.= ", ".MAIN_DB_PREFIX."entrepot as w";
-		$sql.= " WHERE w.entity IN (".getEntity('stock', 1).")";
+		$sql.= " WHERE w.entity IN (".getEntity('warehouse', 1).")";
 		$sql.= " AND w.rowid = ps.fk_entrepot";
 		$sql.= " AND ps.fk_product = ".$this->id;
 
@@ -3421,12 +3443,6 @@ class Product extends CommonObject
 		if (preg_match('/('.$this->regeximgext.')$/i',$filename,$regs))
 		{
 			$photo_vignette=preg_replace('/'.$regs[0].'/i','',$filename).'_small'.$regs[0];
-			if (file_exists(dol_osencode($dirthumb.$photo_vignette)))
-			{
-				dol_delete_file($dirthumb.$photo_vignette);
-			}
-
-			$photo_vignette=preg_replace('/'.$regs[0].'/i','',$filename).'_mini'.$regs[0];
 			if (file_exists(dol_osencode($dirthumb.$photo_vignette)))
 			{
 				dol_delete_file($dirthumb.$photo_vignette);

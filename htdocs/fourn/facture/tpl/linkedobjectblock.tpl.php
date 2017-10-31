@@ -41,7 +41,6 @@ else print_titre($langs->trans("RelatedBill"));
 	<td align="right"><?php echo $langs->trans("Status"); ?></td>
 </tr>
 <?php
-$total=0;
 $var=true;
 foreach($linkedObjectBlock as $object)
 {

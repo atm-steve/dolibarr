@@ -1,6 +1,5 @@
 <?php
 /* Copyright (C) 2011-2014      Juanjo Menent <jmenent@2byte.es>
- * Copyright (C) 2015			Marcos García <marcosgdf@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,7 +104,7 @@ if ($_GET["action"] == 'delete')
 			if ($result > 0)
 			{
 				$db->commit();
-				header("Location: ".DOL_URL_ROOT.'/compta/localtax/reglement.php?localTaxType='.$localtax->ltt);
+				header("Location: ".DOL_URL_ROOT.'/compta/localtax/reglement.php');
 				exit;
 			}
 			else

@@ -156,7 +156,6 @@ class Interfaces
 
 				if (method_exists($objMod, 'runTrigger'))	// New method to implement
 				{
-					print_r($user,true);
 	                dol_syslog(get_class($this)."::run_triggers action=".$action." Launch runTrigger for file '".$files[$key]."'", LOG_INFO);
 	                $result=$objMod->runTrigger($action,$object,$user,$langs,$conf);
 				}
@@ -231,7 +230,8 @@ class Interfaces
         {
             $dir=dol_buildpath($reldir,0);
             $newdir=dol_osencode($dir);
-            
+            //print "xx".$dir;exit;
+
             // Check if directory exists (we do not use dol_is_dir to avoid loading files.lib.php at each call)
             if (! is_dir($newdir)) continue;
 
@@ -240,7 +240,6 @@ class Interfaces
             {
                 while (($file = readdir($handle))!==false)
                 {
-                    
                     if (is_readable($newdir.'/'.$file) && preg_match('/^interface_([0-9]+)_([^_]+)_(.+)\.class\.php/',$file,$reg))
                     {
 						$part1=$reg[1];
@@ -248,6 +247,7 @@ class Interfaces
 						$part3=$reg[3];
 
                         $modName = 'Interface'.ucfirst($reg[3]);
+                        //print "file=$file"; print "modName=$modName"; exit;
                         if (in_array($modName,$modules))
                         {
                             $langs->load("errors");

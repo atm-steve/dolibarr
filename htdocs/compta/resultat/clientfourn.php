@@ -304,7 +304,7 @@ if ($modecompta == 'CREANCES-DETTES')
 }
 else
 {
-    $sql = "SELECT s.nom as name, s.rowid as socid, sum(pf.amount) as amount_ttc";
+    $sql = "SELECT s.nom, s.rowid as socid, sum(pf.amount) as amount_ttc";
     $sql.= " FROM ".MAIN_DB_PREFIX."paiementfourn as p";
     $sql.= ", ".MAIN_DB_PREFIX."paiementfourn_facturefourn as pf";
     $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture_fourn as f";
@@ -547,22 +547,15 @@ if ($mysoc->tva_assuj == 'franchise')	// Non assujeti
  * Salaries
  */
 
-if (! empty($conf->salaries->enabled))
+if ($conf->salaries->enabled)
 {
-	if ($modecompta == 'CREANCES-DETTES') {
-	    $column = 'p.datev';
-	} else {
-	    $column = 'p.datep';
-	}
-
-	print '<tr><td colspan="4">'.$langs->trans("Salaries").'</td></tr>';    
-	$sql = "SELECT u.rowid, u.firstname, u.lastname, p.fk_user, p.label as label, date_format($column,'%Y-%m') as dm, sum(p.amount) as amount";
+	print '<tr><td colspan="4">'.$langs->trans("Salaries").'</td></tr>';
+	$sql = "SELECT u.rowid, u.firstname, u.lastname, p.fk_user, p.label as label, date_format(p.datep,'%Y-%m') as dm, sum(p.amount) as amount";
 	$sql.= " FROM ".MAIN_DB_PREFIX."payment_salary as p";
 	$sql.= " INNER JOIN ".MAIN_DB_PREFIX."user as u ON u.rowid=p.fk_user";
 	$sql.= " WHERE p.entity = ".$conf->entity;
 	if (! empty($date_start) && ! empty($date_end))
-		$sql.= " AND $column >= '".$db->idate($date_start)."' AND $column <= '".$db->idate($date_end)."'";
-		
+		$sql.= " AND p.datep >= '".$db->idate($date_start)."' AND p.datep <= '".$db->idate($date_end)."'";
 	$sql.= " GROUP BY u.rowid, u.firstname, u.lastname, p.fk_user, p.label, dm";
 	$sql.= " ORDER BY u.firstname";
 
@@ -621,16 +614,13 @@ if (! empty($conf->salaries->enabled))
  * Donation
  */
 
-if (! empty($conf->don->enabled))
+if ($conf->donation->enabled)
 {
 	print '<tr><td colspan="4">'.$langs->trans("Donation").'</td></tr>';
 	$sql = "SELECT p.societe as name, p.firstname, p.lastname, date_format(p.datedon,'%Y-%m') as dm, sum(p.amount) as amount";
 	$sql.= " FROM ".MAIN_DB_PREFIX."don as p";
 	$sql.= " WHERE p.entity = ".$conf->entity;
-	if ($modecompta == 'CREANCES-DETTES')
-	   $sql.= " AND fk_statut in (1,2)";
-	else
-	   $sql.= " AND fk_statut=2";
+	$sql.= " AND fk_statut=2";
 	if (! empty($date_start) && ! empty($date_end))
 		$sql.= " AND p.datedon >= '".$db->idate($date_start)."' AND p.datedon <= '".$db->idate($date_end)."'";
 	$sql.= " GROUP BY p.societe, p.firstname, p.lastname, dm";

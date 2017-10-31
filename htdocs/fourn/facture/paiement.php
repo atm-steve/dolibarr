@@ -5,8 +5,11 @@
  * Copyright (C) 2004		Christophe Combelles	<ccomb@free.fr>
  * Copyright (C) 2005		Marc Barilley / Ocebo	<marc@ocebo.com>
  * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@capnetworks.com>
+<<<<<<< HEAD
  * Copyright (C) 2014		Teddy Andreotti			<125155@supinfo.com>
+=======
  * Copyright (C) 2015       Marcos García           <marcosgdf@gmail.com>
+>>>>>>> refs/remotes/origin/3.6
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +46,6 @@ $confirm	= GETPOST('confirm');
 
 $facid=GETPOST('facid','int');
 $socid=GETPOST('socid','int');
-$accountid	= GETPOST('accountid');
 
 $sortfield = GETPOST("sortfield",'alpha');
 $sortorder = GETPOST("sortorder",'alpha');
@@ -198,7 +200,7 @@ if (empty($reshook))
 
 	        if (! $error)
 	        {
-	            $result=$paiement->addPaymentToBank($user,'payment_supplier','(SupplierInvoicePayment)',$accountid,'','');
+	            $result=$paiement->addPaymentToBank($user,'payment_supplier','(SupplierInvoicePayment)',$_POST['accountid'],'','');
 	            if ($result < 0)
 	            {
 	            	setEventMessage($paiement->error, 'errors');
@@ -302,7 +304,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
             if (! empty($conf->banque->enabled))
             {
                 print '<tr><td class="fieldrequired">'.$langs->trans('Account').'</td><td>';
-                $form->select_comptes(empty($accountid)?'':$accountid,'accountid',0,'',2);
+                $form->select_comptes(empty($_POST['accountid'])?'':$_POST['accountid'],'accountid',0,'',2);
                 print '</td></tr>';
             }
             else
@@ -432,7 +434,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 	            $preselectedchoice=$addwarning?'no':'yes';
 
 	            print '<br>';
-	            $text=$langs->trans('ConfirmSupplierPayment', price($totalpayment),$langs->trans("Currency".$conf->currency));
+	            $text=$langs->trans('ConfirmSupplierPayment',$totalpayment,$langs->trans("Currency".$conf->currency));
 	            if (GETPOST('closepaidinvoices'))
 	            {
 	                $text.='<br>'.$langs->trans("AllCompletelyPayedInvoiceWillBeClosed");

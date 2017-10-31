@@ -261,7 +261,7 @@ class MouvementStock extends CommonObject
 		}
 
 		// Add movement for sub products (recursive call)
-		if (! $error && ! empty($conf->global->PRODUIT_SOUSPRODUITS) && empty($conf->global->INDEPENDANT_SUBPRODUCT_STOCK))
+		if (! $error && ! empty($conf->global->PRODUIT_SOUSPRODUITS))
 		{
 			$error = $this->_createSubProduct($user, $fk_product, $entrepot_id, $qty, $type, 0, $label);	// we use 0 as price, because pmp is not changed for subproduct
 		}
@@ -451,7 +451,7 @@ class MouvementStock extends CommonObject
 	 * @param	int			$qty	Quantity of product with batch number
 	 * @return 	int   				<0 if KO, else return productbatch id
 	 */
-	function _create_batch($dluo, $qty) {
+	function _create_batch($dluo, $qty ) {
 		$pdluo=New Productbatch($this->db);
 
 		//Try to find an existing record with batch same batch number or id
@@ -497,15 +497,7 @@ class MouvementStock extends CommonObject
 
 	}
 
-	/**
-	 * Return Url link of origin object
-	 * 
-	 * @param  int     $fk_origin      Id origin
-	 * @param  int     $origintype     Type origin
-	 * @return string
-	 */
-	function get_origin($fk_origin, $origintype) 
-	{
+	function get_origin($fk_origin, $origintype) {
 		switch ($origintype) {
 			case 'commande':
 				require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
@@ -533,10 +525,7 @@ class MouvementStock extends CommonObject
 				break;
 		}
 
-		if ($origin->fetch($fk_origin) > 0) {
-			return $origin->getNomUrl(1);
-		}
-
-		return '';
+		$origin->fetch($fk_origin);
+		return $origin->getNomUrl(1);
 	}
 }

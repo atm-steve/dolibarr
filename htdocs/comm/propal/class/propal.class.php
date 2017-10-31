@@ -368,7 +368,7 @@ class Propal extends CommonObject
 
             $localtaxes_type=getLocalTaxesFromRate($txtva,0,$this->thirdparty,$mysoc);
 
-            $tabprice=calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $type, $mysoc, $localtaxes_type);
+            $tabprice=calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $type, '', $localtaxes_type);
             $total_ht  = $tabprice[0];
             $total_tva = $tabprice[1];
             $total_ttc = $tabprice[2];
@@ -547,15 +547,15 @@ class Propal extends CommonObject
                 $price = $pu - $remise;
             }
 
-            //Fetch current line from the database and then clone the object and set it in $oldline property
-            $line = new PropaleLigne($this->db);
-            $line->fetch($rowid);
+            // Update line
+            $this->line=new PropaleLigne($this->db);
 
-            $staticline = clone $line;
-
-            $line->oldline = $staticline;
-            $this->line = $line;
             $this->line->context = $this->context;
+
+            // Stock previous line records
+            $staticline=new PropaleLigne($this->db);
+            $staticline->fetch($rowid);
+            $this->line->oldline = $staticline;
 
             // Reorder if fk_parent_line change
             if (! empty($fk_parent_line) && ! empty($staticline->fk_parent_line) && $fk_parent_line != $staticline->fk_parent_line)
@@ -946,7 +946,6 @@ class Propal extends CommonObject
      */
     function create_from($user)
     {
-    	// i love this function because $this->products is not used in create function...
         $this->products=$this->lines;
 
         return $this->create($user);
@@ -960,9 +959,7 @@ class Propal extends CommonObject
      */
     function createFromClone($socid=0)
     {
-        global $db, $user,$langs,$conf,$hookmanager;
-
-		dol_include_once('/projet/class/project.class.php');
+        global $user,$langs,$conf,$hookmanager;
 
         $this->context['createfromclone']='createfromclone';
 
@@ -975,42 +972,35 @@ class Propal extends CommonObject
 		foreach($this->lines as $line)
 			$line->fetch_optionals($line->rowid);
 
-        // Load dest object
-        $clonedObj = clone $this;
+        // Load source object
+        $objFrom = dol_clone($this);
 
         $objsoc=new Societe($this->db);
 
         // Change socid if needed
-        if (! empty($socid) && $socid != $clonedObj->socid)
+        if (! empty($socid) && $socid != $this->socid)
         {
             if ($objsoc->fetch($socid) > 0)
             {
-                $clonedObj->socid 				= $objsoc->id;
-                $clonedObj->cond_reglement_id	= (! empty($objsoc->cond_reglement_id) ? $objsoc->cond_reglement_id : 0);
-                $clonedObj->mode_reglement_id	= (! empty($objsoc->mode_reglement_id) ? $objsoc->mode_reglement_id : 0);
-                $clonedObj->fk_delivery_address	= '';
-            	
-            	$project = new Project($db);
-				if ($this->fk_project > 0 && $project->fetch($this->fk_project)) {
-					if ($project->socid <= 0) $clonedObj->fk_project = $this->fk_project;
-					else $clonedObj->fk_project = '';
-				} else {
-					$clonedObj->fk_project = '';
-				}
+                $this->socid 				= $objsoc->id;
+                $this->cond_reglement_id	= (! empty($objsoc->cond_reglement_id) ? $objsoc->cond_reglement_id : 0);
+                $this->mode_reglement_id	= (! empty($objsoc->mode_reglement_id) ? $objsoc->mode_reglement_id : 0);
+                $this->fk_project			= '';
+                $this->fk_delivery_address	= '';
             }
 
             // reset ref_client
-            $clonedObj->ref_client  = '';
+             $this->ref_client  = '';
 
             // TODO Change product price if multi-prices
         }
         else
         {
-            $objsoc->fetch($clonedObj->socid);
+            $objsoc->fetch($this->socid);
         }
 
-        $clonedObj->id=0;
-        $clonedObj->statut=0;
+        $this->id=0;
+        $this->statut=0;
 
         if (empty($conf->global->PROPALE_ADDON) || ! is_readable(DOL_DOCUMENT_ROOT ."/core/modules/propale/".$conf->global->PROPALE_ADDON.".php"))
         {
@@ -1019,32 +1009,32 @@ class Propal extends CommonObject
         }
 
         // Clear fields
-        $clonedObj->user_author	= $user->id;
-        $clonedObj->user_valid	= '';
-        $clonedObj->date			= $now;
-        $clonedObj->datep		= $now;    // deprecated
-        $clonedObj->fin_validite	= $clonedObj->date + ($clonedObj->duree_validite * 24 * 3600);
-        if (empty($conf->global->MAIN_KEEP_REF_CUSTOMER_ON_CLONING)) $clonedObj->ref_client	= '';
+        $this->user_author	= $user->id;
+        $this->user_valid	= '';
+        $this->date			= $now;
+        $this->datep		= $now;    // deprecated
+        $this->fin_validite	= $this->date + ($this->duree_validite * 24 * 3600);
+        if (empty($conf->global->MAIN_KEEP_REF_CUSTOMER_ON_CLONING)) $this->ref_client	= '';
 
         // Set ref
         require_once DOL_DOCUMENT_ROOT ."/core/modules/propale/".$conf->global->PROPALE_ADDON.'.php';
         $obj = $conf->global->PROPALE_ADDON;
         $modPropale = new $obj;
-        $clonedObj->ref = $modPropale->getNextValue($objsoc,$clonedObj);
+        $this->ref = $modPropale->getNextValue($objsoc,$this);
 
         // Create clone
-        $result=$clonedObj->create($user);
+        $result=$this->create($user);
         if ($result < 0) $error++;
         else
         {
 			// copy internal contacts
-    		if ($clonedObj->copy_linked_contact($this, 'internal') < 0)
+    		if ($this->copy_linked_contact($objFrom, 'internal') < 0)
             	$error++;
 
             // copy external contacts if same company
-            elseif ($this->socid == $clonedObj->socid)
+            elseif ($objFrom->socid == $this->socid)
             {
-		        if ($clonedObj->copy_linked_contact($this, 'external') < 0)
+		        if ($this->copy_linked_contact($objFrom, 'external') < 0)
 					$error++;
             }
         }
@@ -1054,9 +1044,9 @@ class Propal extends CommonObject
             // Hook of thirdparty module
             if (is_object($hookmanager))
             {
-                $parameters=array('objFrom'=>$this,'clonedObj'=>$clonedObj);
+                $parameters=array('objFrom'=>$objFrom);
                 $action='';
-                $reshook=$hookmanager->executeHooks('createFrom',$parameters,$clonedObj,$action);    // Note that $action and $object may have been modified by some hooks
+                $reshook=$hookmanager->executeHooks('createFrom',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
                 if ($reshook < 0) $error++;
             }
 
@@ -1072,7 +1062,7 @@ class Propal extends CommonObject
         if (! $error)
         {
             $this->db->commit();
-            return $clonedObj->id;
+            return $this->id;
         }
         else
         {
@@ -2905,12 +2895,10 @@ class PropaleLigne  extends CommonObject
             $this->date_end         = $this->db->jdate($objp->date_end);
 
 			$this->db->free($result);
-
-            return 1;
 		}
 		else
 		{
-			return -1;
+			dol_print_error($this->db);
 		}
 	}
 
@@ -2938,12 +2926,11 @@ class PropaleLigne  extends CommonObject
         if (empty($this->total_localtax2)) $this->total_localtax2=0;
         if (empty($this->rang)) $this->rang=0;
         if (empty($this->remise)) $this->remise=0;
-        if (empty($this->remise_percent) || ! is_numeric($this->remise_percent)) $this->remise_percent=0;
+        if (empty($this->remise_percent)) $this->remise_percent=0;
         if (empty($this->info_bits)) $this->info_bits=0;
         if (empty($this->special_code)) $this->special_code=0;
         if (empty($this->fk_parent_line)) $this->fk_parent_line=0;
         if (empty($this->fk_fournprice)) $this->fk_fournprice=0;
-		if (! is_numeric($this->qty)) $this->qty = 0;
 
         if (empty($this->pa_ht)) $this->pa_ht=0;
 

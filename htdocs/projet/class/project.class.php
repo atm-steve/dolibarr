@@ -533,7 +533,7 @@ class Project extends CommonObject
 	        $resql = $this->db->query($sql);
 	        if (!$resql)
 	        {
-	        	$this->errors[] = $langs->trans("CantRemoveProject");
+	        	$this->errors[] = $this->db->lasterror();
 	        	$error++;
 	        }
         }

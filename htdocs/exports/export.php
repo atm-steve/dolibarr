@@ -99,7 +99,7 @@ $entitytolang = array(
 );
 
 $array_selected=isset($_SESSION["export_selected_fields"])?$_SESSION["export_selected_fields"]:array();
-$array_filtervalue=isset($_SESSION["export_filtered_fields"])?$_SESSION["export_filtered_fields"]:array();
+$array_filtervalue=isset($_SESSION["export_FilterValue_fields"])?$_SESSION["export_FilterValue_fields"]:array();
 $datatoexport=GETPOST("datatoexport");
 $action=GETPOST('action', 'alpha');
 $confirm=GETPOST('confirm', 'alpha');
@@ -112,7 +112,7 @@ $field=GETPOST("field");
 $objexport=new Export($db);
 $objexport->load_arrays($user,$datatoexport);
 
-$objmodelexport=new ModeleExports($db);
+$objmodelexport=new ModeleExports();
 $form = new Form($db);
 $htmlother = new FormOther($db);
 $formfile = new FormFile($db);
@@ -222,6 +222,7 @@ if ($action=='downfield' || $action=='upfield')
 if ($step == 1 || $action == 'cleanselect')
 {
     $_SESSION["export_selected_fields"]=array();
+    //$_SESSION["export_FilterValue_fields"]=array();
     $_SESSION["export_filtered_fields"]=array();
     $array_selected=array();
     $array_filtervalue=array();
@@ -279,15 +280,12 @@ if ($action == 'add_export_model')
 		}
 
 		$hexafiltervalue='';
-		if (! empty($array_filtervalue) && is_array($array_filtervalue))
+		foreach($array_filtervalue as $key=>$val)
 		{
-			foreach($array_filtervalue as $key=>$val)
-			{
-				if ($hexafiltervalue) $hexafiltervalue.=',';
-				$hexafiltervalue.=$key.'='.$val;
-			}
+			if ($hexafilter) $hexafiltervalue.=',';
+			$hexafiltervalue.=$key.'='.$val;
 		}
-		
+
 	    $objexport->model_name = $export_name;
 	    $objexport->datatoexport = $datatoexport;
 	    $objexport->hexa = $hexa;
@@ -313,11 +311,10 @@ if ($action == 'add_export_model')
 	}
 }
 
-// Reload an predefined export model
 if ($step == 2 && $action == 'select_model')
 {
     $_SESSION["export_selected_fields"]=array();
-    $_SESSION["export_filtered_fields"]=array();
+    $_SESSION["export_FilterValue_fields"]=array();
 
     $array_selected=array();
     $array_filtervalue=array();
@@ -334,15 +331,16 @@ if ($step == 2 && $action == 'select_model')
 		}
 		$_SESSION["export_selected_fields"]=$array_selected;
 
+		$fieldsarray=explode(',',$objexport->hexafilter);
 		$fieldsarrayvalue=explode(',',$objexport->hexafiltervalue);
 		$i=1;
-		foreach($fieldsarrayvalue as $val)
+		foreach($fieldsarray as $val)
 		{
 			$tmp=explode('=',$val);
 			$array_filtervalue[$tmp[0]]=$tmp[1];
 			$i++;
 		}
-		$_SESSION["export_filtered_fields"]=$array_filtervalue;
+		$_SESSION["export_FilterValue_fields"]=$array_filtervalue;
     }
 }
 
@@ -352,7 +350,7 @@ if ($step == 4 && $action == 'submitFormField')
 	// on boucle sur les champs selectionne pour recuperer la valeur
 	if (is_array($objexport->array_export_TypeFields[0]))
 	{
-		$_SESSION["export_filtered_fields"]=array();
+		$_SESSION["export_FilterValue_fields"]=array();
 		//var_dump($_POST);
 		foreach($objexport->array_export_TypeFields[0] as $code => $type)	// $code: s.fieldname $value: Text|Boolean|List:ccc
 		{
@@ -368,7 +366,7 @@ if ($step == 4 && $action == 'submitFormField')
 			}
 		}
 		$array_filtervalue=(! empty($objexport->array_export_FilterValue[0])?$objexport->array_export_FilterValue[0]:'');
-		$_SESSION["export_filtered_fields"]=$array_filtervalue;
+		$_SESSION["export_FilterValue_fields"]=$array_filtervalue;
 	}
 }
 

@@ -75,7 +75,6 @@ class mailing_contacts1 extends MailingTargets
 		$statssql[0].= " WHERE c.entity IN (".getEntity('societe', 1).")";
 		$statssql[0].= " AND c.email != ''";      // Note that null != '' is false
 		$statssql[0].= " AND c.no_email = 0";
-		$statssql[0].= " AND c.statut = 1";
 
 		return $statssql;
 	}
@@ -99,7 +98,6 @@ class mailing_contacts1 extends MailingTargets
 		$sql.= " WHERE c.entity IN (".getEntity('societe', 1).")";
 		$sql.= " AND c.email != ''"; // Note that null != '' is false
 		$sql.= " AND c.no_email = 0";
-		$sql.= " AND c.statut = 1";
 
 		// La requete doit retourner un champ "nb" pour etre comprise
 		// par parent::getNbOfRecipients
@@ -206,7 +204,6 @@ class mailing_contacts1 extends MailingTargets
 		$sql.= " WHERE c.entity IN (".getEntity('societe', 1).")";
 		$sql.= " AND c.email <> ''";
 		$sql.= " AND c.no_email = 0";
-		$sql.= " AND c.statut = 1";
 		$sql.= " AND c.email NOT IN (SELECT email FROM ".MAIN_DB_PREFIX."mailing_cibles WHERE fk_mailing=".$mailing_id.")";
 		foreach($filtersarray as $key)
 		{

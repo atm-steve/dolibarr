@@ -106,8 +106,8 @@ class ActionComm extends CommonObject
     var $note;          // Description
 
 	var $userassigned = array();	// Array of user ids
-    var $userownerid;	// Id of user owner = fk_user_action into table
-    var $userdoneid;	// Id of user done (deprecated)
+    var $userownerid;		// Id of user owner
+    var $userdoneid;	// Id of user done
 
     /**
      * Object user of owner
@@ -376,12 +376,11 @@ class ActionComm extends CommonObject
     /**
      *    Load object from database
      *
-     *    @param	int		$id     	Id of action to get
-     *    @param	string	$ref    	Ref of action to get
-     *    @param	string	$ref_ext	Ref ext to get
-     *    @return	int					<0 if KO, >0 if OK
+     *    @param	int		$id     Id of action to get
+     *    @param	string	$ref    Ref of action to get
+     *    @return	int				<0 if KO, >0 if OK
      */
-    function fetch($id, $ref='',$ref_ext='')
+    function fetch($id, $ref='')
     {
         global $langs;
 
@@ -405,12 +404,11 @@ class ActionComm extends CommonObject
         $sql.= " s.nom as socname,";
         $sql.= " u.firstname, u.lastname as lastname";
         $sql.= " FROM ".MAIN_DB_PREFIX."actioncomm as a ";
-        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_actioncomm as c ON a.fk_action=c.id ";
+        $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_actioncomm as c ON a.fk_action=c.id ";
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."user as u on u.rowid = a.fk_user_author";
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s on s.rowid = a.fk_soc";
         $sql.= " WHERE ";
-        if ($ref) $sql.= " a.id=".$ref;											// No field ref, we use id
-        elseif ($ref_ext) $sql.= " a.ref_ext='".$this->db->escape($ref_ext)."'";
+        if ($ref) $sql.= " a.id=".$ref;		// No field ref, we use id
         else $sql.= " a.id=".$id;
 
         dol_syslog(get_class($this)."::fetch", LOG_DEBUG);
@@ -542,19 +540,7 @@ class ActionComm extends CommonObject
         	$this->error=$this->db->lasterror();
         	$error++;
         }
-        
-        if (! $error) {
-	        $sql = "DELETE FROM ".MAIN_DB_PREFIX."actioncomm_resources";
-	        $sql.= " WHERE fk_actioncomm=".$this->id;
-	        
-	        dol_syslog(get_class($this)."::delete", LOG_DEBUG);
-	        $res=$this->db->query($sql);
-	        if ($res < 0) {
-	        	$this->error=$this->db->lasterror();
-	        	$error++;
-	        }
-        }
-        
+
         // Removed extrafields
         if (! $error) {
         	$result=$this->deleteExtraFields();

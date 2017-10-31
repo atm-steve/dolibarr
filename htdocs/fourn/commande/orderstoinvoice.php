@@ -44,7 +44,7 @@ $langs->load('orders');
 $langs->load('deliveries');
 $langs->load('companies');
 
-if (! $user->rights->fournisseur->facture->creer)
+if (! $user->rights->facture->creer)
 	accessforbidden();
 
 $id = (GETPOST('id') ? GETPOST('id', 'int') : GETPOST("facid")); // For backward compatibility

@@ -232,7 +232,7 @@ if (empty($reshook))
 	    	if ($result < 0)
 	    	{
 	    		$error++;
-		        setEventMessages($object->error, $object->errors,'errors');
+	    		setEventMessage($object->errors,'errors');
 	    	}
 	    }
 
@@ -314,7 +314,7 @@ if (empty($reshook))
 	    $result = $object->setClose($user);
 	    if ($result <= 0)
 	    {
-	        setEventMessages($object->error, $object->errors, 'errors');
+		    setEventMessage($object->error, 'errors');
 	    }
 	}
 
@@ -323,7 +323,7 @@ if (empty($reshook))
 	    $result = $object->setValid($user);
 	    if ($result <= 0)
 	    {
-	        setEventMessages($object->error, $object->errors, 'errors');
+		    setEventMessage($object->error, 'errors');
 	    }
 	}
 
@@ -339,7 +339,8 @@ if (empty($reshook))
 	    else
 	    {
 	        dol_syslog($object->error,LOG_DEBUG);
-	        setEventMessages($object->error, $object->errors, 'errors');
+	        setEventMessage($object->error,'errors');
+	        setEventMessage($object->errors,'errors');
 	    }
 	}
 
@@ -353,7 +354,7 @@ if (empty($reshook))
 	    $result=$object->createFromClone($object->id,$clone_contacts,$clone_tasks,$clone_project_files,$clone_task_files,$clone_notes);
 	    if ($result <= 0)
 	    {
-	        setEventMessages($object->error, $object->errors, 'errors');
+		    setEventMessage($object->error, 'errors');
 	    }
 	    else
 	    {

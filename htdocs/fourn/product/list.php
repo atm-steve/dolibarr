@@ -108,7 +108,7 @@ if ($sref)
 }
 if ($snom)
 {
-	$sql .= natural_search('p.label', $snom);
+	$sql .= natural_search('s.nom', $snom);
 }
 if($catid)
 {

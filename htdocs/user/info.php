@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2004-2007 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2015 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ $langs->load("users");
 
 // Security check
 $id = GETPOST('id','int');
-$object = new User($db);
-$object->fetch($id);
+$fuser = new User($db);
+$fuser->fetch($id);
 
 // Security check
 $socid=0;
@@ -45,7 +45,7 @@ if ($user->id == $id)	// A user can always read its own card
 $result = restrictedArea($user, 'user', $id, '&user', $feature2);
 
 // If user is not user read and no permission to read other users, we stop
-if (($object->id != $user->id) && (! $user->rights->user->user->lire))
+if (($fuser->id != $user->id) && (! $user->rights->user->user->lire))
   accessforbidden();
 
 
@@ -56,16 +56,16 @@ if (($object->id != $user->id) && (! $user->rights->user->user->lire))
 
 llxHeader();
 
-$object->info($id);
+$fuser->info($id);
 
-$head = user_prepare_head($object);
+$head = user_prepare_head($fuser);
 
 $title = $langs->trans("User");
 dol_fiche_head($head, 'info', $title, 0, 'user');
 
 
 print '<table width="100%"><tr><td>';
-dol_print_object_info($object);
+dol_print_object_info($fuser);
 print '</td></tr></table>';
 
 print '</div>';

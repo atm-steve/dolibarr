@@ -35,25 +35,22 @@
 *    @param 	string				$exportlink     Link for export or ''
 *    @param		array				$moreparam		Array with list of params to add into form
 *    @param		string				$calcmode		Calculation mode
-*    @param     string              $varlink        Add a variable into the address of the page
 *    @return	void
 */
-function report_header($nom,$variante,$period,$periodlink,$description,$builddate,$exportlink='',$moreparam=array(),$calcmode='', $varlink='')
+function report_header($nom,$variante,$period,$periodlink,$description,$builddate,$exportlink='',$moreparam=array(),$calcmode='')
 {
-	global $langs;
+	global $langs, $hselected;
 
 	print "\n\n<!-- debut cartouche rapport -->\n";
-	
-	if(! empty($varlink)) $varlink = '?'.$varlink;
 
 	$h=0;
-	$head[$h][0] = $_SERVER["PHP_SELF"].$varlink;
+	$head[$h][0] = $_SERVER["PHP_SELF"];
 	$head[$h][1] = $langs->trans("Report");
 	$head[$h][2] = 'report';
 
-	dol_fiche_head($head, 'report');
+	dol_fiche_head($head, $hselected);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].$varlink.'">';
+	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	foreach($moreparam as $key => $value)
 	{
 	     print '<input type="hidden" name="'.$key.'" value="'.$value.'">';

@@ -115,7 +115,7 @@ if (empty($reshook))
 	// Action clone object
 	if ($action == 'confirm_clone' && $confirm == 'yes')
 	{
-		if (! GETPOST('socid', 3))
+		if (1 == 0 && ! GETPOST('clone_content') && ! GETPOST('clone_receivers'))
 		{
 			setEventMessage($langs->trans("NoCloneOptionsSpecified"), 'errors');
 		}
@@ -127,7 +127,7 @@ if (empty($reshook))
 					header("Location: " . $_SERVER['PHP_SELF'] . '?id=' . $result);
 					exit();
 				} else {
-					if (count($object->errors) > 0) setEventMessage($object->errors, 'errors');
+					setEventMessage($object->error, 'errors');
 					$action = '';
 				}
 			}
@@ -268,7 +268,7 @@ if (empty($reshook))
 		{
 			$db->begin();
 
-			// If we select proposal to clone during creation (when option PROPAL_CLONE_ON_CREATE_PAGE is on)
+			// Si on a selectionne une propal a copier, on realise la copie
 			if (GETPOST('createmode') == 'copy' && GETPOST('copie_propal'))
 			{
 				if ($object->fetch(GETPOST('copie_propal')) > 0) {
@@ -293,8 +293,7 @@ if (empty($reshook))
 					$object->note = GETPOST('note');
 					$object->statut = 0;
 
-					// the create is done below and further more the existing create_from function is quite hilarating
-					//$id = $object->create_from($user);
+					$id = $object->create_from($user);
 				} else {
 					setEventMessage($langs->trans("ErrorFailedToCopyProposal", GETPOST('copie_propal')), 'errors');
 				}
@@ -1268,7 +1267,7 @@ if ($action == 'create')
 		print '</td>';
 	} else {
 		print '<td colspan="2">';
-		print $form->select_company('', 'socid', '(s.client = 1 OR s.client = 2 OR s.client = 3) AND status=1', 1);
+		print $form->select_company('', 'socid', 's.client = 1 OR s.client = 2 OR s.client = 3', 1);
 		print '</td>';
 	}
 	print '</tr>' . "\n";
@@ -2195,7 +2194,7 @@ if ($action == 'create')
 
 		$ref = dol_sanitizeFileName($object->ref);
 		include_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-		$fileparams = dol_most_recent_file($conf->propal->dir_output . '/' . $ref, preg_quote($ref, '/').'([^\-])+');
+		$fileparams = dol_most_recent_file($conf->propal->dir_output . '/' . $ref, preg_quote($ref, '/'));
 		$file = $fileparams ['fullname'];
 
 		// Define output language
@@ -2220,7 +2219,7 @@ if ($action == 'create')
 				dol_print_error($db, $result);
 				exit();
 			}
-			$fileparams = dol_most_recent_file($conf->propal->dir_output . '/' . $ref, preg_quote($ref, '/').'([^\-])+');
+			$fileparams = dol_most_recent_file($conf->propal->dir_output . '/' . $ref, preg_quote($ref, '/'));
 			$file = $fileparams ['fullname'];
 		}
 
@@ -2256,7 +2255,7 @@ if ($action == 'create')
 		$formmail->substit['__PROPREF__'] = $object->ref;
 		$formmail->substit['__SIGNATURE__'] = $user->signature;
 		$formmail->substit['__REFCLIENT__'] = $object->ref_client;
-		$formmail->substit['__THIRDPARTY_NAME__'] = $object->thirdparty->name;
+		$formmail->substit['__THIRPARTY_NAME__'] = $object->thirdparty->name;
 		$formmail->substit['__PROJECT_REF__'] = (is_object($object->projet)?$object->projet->ref:'');
 		$formmail->substit['__PERSONALIZED__'] = '';
 		$formmail->substit['__CONTACTCIVNAME__'] = '';

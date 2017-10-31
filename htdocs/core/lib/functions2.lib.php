@@ -1536,9 +1536,6 @@ function dolGetElementUrl($objectid,$objecttype,$withpicto=0,$option='')
 	if ($objecttype == 'propal')  {
 		$classpath = 'comm/propal/class';
 	}
-	if ($objecttype == 'askpricesupplier')  {
-		$classpath = 'comm/askpricesupplier/class';
-	}
 	if ($objecttype == 'shipping') {
 		$classpath = 'expedition/class';
 		$subelement = 'expedition';
@@ -1770,9 +1767,6 @@ function getElementProperties($element_type)
     if ($element_type == 'propal')  {
         $classpath = 'comm/propal/class';
     }
-	if ($element_type == 'askpricesupplier')  {
-        $classpath = 'comm/askpricesupplier/class';
-    }
     if ($element_type == 'shipping') {
         $classpath = 'expedition/class';
         $subelement = 'expedition';
@@ -1850,24 +1844,22 @@ function fetchObjectByElement($element_id,$element_type) {
  *	Convert an array with RGB value into hex RGB value
  *
  *  @param	array	$arraycolor			Array
- *  @param	string	$colorifnotfound	Color code to return if entry not defined or not a RGB format
+ *  @param	string	$colorifnotfound	Color code to return if entry not defined
  *  @return	string						RGB hex value (without # before). For example: FF00FF
  *  @see	Make the opposite of colorStringToArray
  */
 function colorArrayToHex($arraycolor,$colorifnotfound='888888')
 {
 	if (! is_array($arraycolor)) return $colorifnotfound;
-	if (empty($arraycolor)) return $colorifnotfound;
 	return dechex($arraycolor[0]).dechex($arraycolor[1]).dechex($arraycolor[2]);
 }
 
 
 /**
- *	Convert a string RGB value ('FFFFFF', '255,255,255') into an array RGB array(255,255,255).
- *  If entry is already an array, return it.
+ *	Convert a string RGB value ('FFFFFF', '255,255,255') into an array RGB array(255,255,255)
  *
  *  @param	string	$stringcolor		String with hex (FFFFFF) or comma RGB ('255,255,255')
- *  @param	array	$colorifnotfound	Color code array to return if entry not defined
+ *  @param	string	$colorifnotfound	Color code to return if entry not defined
  *  @return	string						RGB hex value (without # before). For example: FF00FF
  *  @see	Make the opposite of colorArrayToHex
  */

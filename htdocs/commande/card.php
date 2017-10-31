@@ -2,7 +2,7 @@
 /* Copyright (C) 2003-2006	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2004-2014	Laurent Destailleur		<eldy@users.sourceforge.net>
  * Copyright (C) 2005		Marc Barilley / Ocebo	<marc@ocebo.com>
- * Copyright (C) 2005-2015	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2013	Regis Houssin			<regis.houssin@capnetworks.com>
  * Copyright (C) 2006		Andre Cianfarani		<acianfa@free.fr>
  * Copyright (C) 2010-2013	Juanjo Menent			<jmenent@2byte.es>
  * Copyright (C) 2011		Philippe Grand			<philippe.grand@atoo-net.com>
@@ -1239,9 +1239,6 @@ if ($action == 'create' && $user->rights->commande->creer) {
 	if ($socid > 0)
 		$res = $soc->fetch($socid);
 
-	$projectid = 0;
-	$remise_absolue = 0;
-		
 	if (! empty($origin) && ! empty($originid)) {
 		// Parse element/subelement (ex: project_task)
 		$element = $subelement = $origin;
@@ -1252,20 +1249,6 @@ if ($action == 'create' && $user->rights->commande->creer) {
 
 		if ($element == 'project') {
 			$projectid = $originid;
-			
-			if (!$cond_reglement_id) {
-				$cond_reglement_id = $soc->cond_reglement_id;
-			}
-			if (!$mode_reglement_id) {
-				$mode_reglement_id = $soc->mode_reglement_id;
-			}
-			if (!$remise_percent) {
-				$remise_percent = $soc->remise_percent;
-			}
-			if (!$dateorder) {
-				// Do not set 0 here (0 for a date is 1970)
-				$dateorder = (empty($dateinvoice)?(empty($conf->global->MAIN_AUTOFILL_DATE_ODER)?-1:''):$dateorder);
-			}
 		} else {
 			// For compatibility
 			if ($element == 'order' || $element == 'commande') {
@@ -1509,23 +1492,9 @@ if ($action == 'create' && $user->rights->commande->creer) {
 		print '<input type="hidden" name="origin"         value="' . $objectsrc->element . '">';
 		print '<input type="hidden" name="originid"       value="' . $objectsrc->id . '">';
 
-		switch ($classname) {
-			case 'Propal':
-				$newclassname = 'CommercialProposal';
-				break;
-			case 'Commande':
-				$newclassname = 'Order';
-				break;
-			case 'Expedition':
-				$newclassname = 'Sending';
-				break;
-			case 'Contrat':
-				$newclassname = 'Contract';
-				break;
-			default:
-				$newclassname = $classname;
-		}
-		
+		$newclassname = $classname;
+		if ($newclassname == 'Propal')
+			$newclassname = 'CommercialProposal';
 		print '<tr><td>' . $langs->trans($newclassname) . '</td><td colspan="2">' . $objectsrc->getNomUrl(1) . '</td></tr>';
 		print '<tr><td>' . $langs->trans('TotalHT') . '</td><td colspan="2">' . price($objectsrc->total_ht) . '</td></tr>';
 		print '<tr><td>' . $langs->trans('TotalVAT') . '</td><td colspan="2">' . price($objectsrc->total_tva) . "</td></tr>";
@@ -2316,7 +2285,7 @@ if ($action == 'create' && $user->rights->commande->creer) {
 
 			$ref = dol_sanitizeFileName($object->ref);
 			include_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-			$fileparams = dol_most_recent_file($conf->commande->dir_output . '/' . $ref, preg_quote($ref, '/').'([^\-])+');
+			$fileparams = dol_most_recent_file($conf->commande->dir_output . '/' . $ref, preg_quote($ref, '/'));
 			$file = $fileparams ['fullname'];
 
 			// Define output language
@@ -2341,7 +2310,7 @@ if ($action == 'create' && $user->rights->commande->creer) {
 					dol_print_error($db, $result);
 					exit();
 				}
-				$fileparams = dol_most_recent_file($conf->commande->dir_output . '/' . $ref, preg_quote($ref, '/').'([^\-])+');
+				$fileparams = dol_most_recent_file($conf->commande->dir_output . '/' . $ref, preg_quote($ref, '/'));
 				$file = $fileparams ['fullname'];
 			}
 
@@ -2376,7 +2345,7 @@ if ($action == 'create' && $user->rights->commande->creer) {
 			$formmail->substit ['__ORDERREF__'] = $object->ref;
 			$formmail->substit ['__SIGNATURE__'] = $user->signature;
 			$formmail->substit ['__REFCLIENT__'] = $object->ref_client;
-			$formmail->substit ['__THIRDPARTY_NAME__'] = $object->thirdparty->name;
+			$formmail->substit ['__THIRPARTY_NAME__'] = $object->thirdparty->name;
 			$formmail->substit ['__PROJECT_REF__'] = (is_object($object->projet)?$object->projet->ref:'');
 			$formmail->substit ['__PERSONALIZED__'] = '';
 			$formmail->substit ['__CONTACTCIVNAME__'] = '';

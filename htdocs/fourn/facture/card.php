@@ -824,7 +824,7 @@ elseif ($action == 'reopen' && $user->rights->fournisseur->facture->creer)
 if (GETPOST('linkedOrder')) {
 	$object->fetch($id);
 	$object->fetch_thirdparty();
-	$result = $object->add_object_linked('order_supplier', GETPOST('linkedOrder'));
+	$result = $object->add_object_linked('commande', GETPOST('linkedOrder'));
 }
 
 // Add file in email form
@@ -1577,6 +1577,12 @@ else
             if ($objectref == 'PROV')
             {
                 $savdate=$object->date;
+                if (! empty($conf->global->FAC_FORCE_DATE_VALIDATION))
+                {
+                    $object->date=dol_now();
+                    //TODO: Possibly will have to control payment information into suppliers
+                    //$object->date_lim_reglement=$object->calculate_date_lim_reglement();
+                }
                 $numref = $object->getNextNumRef($societe);
             }
             else
@@ -2270,11 +2276,7 @@ else
             // Delete
             if ($action != 'edit' && $user->rights->fournisseur->facture->supprimer)
             {
-                if ($object->getSommePaiement()) {
-                    print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="' . $langs->trans("DisabledBecausePayments") . '">' . $langs->trans('Delete') . '</a></div>';
-                } else {
-                    print '<a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=delete">'.$langs->trans('Delete').'</a>';
-                }
+                print '<a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=delete">'.$langs->trans('Delete').'</a>';
             }
             print '</div>';
             print '<br>';
@@ -2394,7 +2396,7 @@ else
         {
             $ref = dol_sanitizeFileName($object->ref);
             include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
-            $fileparams = dol_most_recent_file($conf->fournisseur->facture->dir_output.'/'.get_exdir($object->id,2).$ref, preg_quote($ref, '/').'([^\-])+');
+            $fileparams = dol_most_recent_file($conf->fournisseur->facture->dir_output.'/'.get_exdir($object->id,2).$ref, preg_quote($ref,'/'));
             $file=$fileparams['fullname'];
 
             // Define output language
@@ -2421,7 +2423,7 @@ else
                     dol_print_error($db,$result);
                     exit;
                 }
-                $fileparams = dol_most_recent_file($conf->fournisseur->facture->dir_output.'/'.get_exdir($object->id,2).$ref, preg_quote($ref, '/').'([^\-])+');
+                $fileparams = dol_most_recent_file($conf->fournisseur->facture->dir_output.'/'.get_exdir($object->id,2).$ref, preg_quote($ref,'/'));
                 $file=$fileparams['fullname'];
             }
 

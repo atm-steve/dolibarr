@@ -29,7 +29,7 @@
 
 
 $usemargins=0;
-if (! empty($conf->margin->enabled) && ! empty($object->element) && in_array($object->element,array('facture','propal','askpricesupplier','commande'))) $usemargins=1;
+if (! empty($conf->margin->enabled) && ! empty($object->element) && in_array($object->element,array('facture','propal','commande'))) $usemargins=1;
 
 global $forceall, $senderissupplier, $inputalsopricewithtax;
 if (empty($dateSelector)) $dateSelector=0;
@@ -41,7 +41,7 @@ if (empty($inputalsopricewithtax)) $inputalsopricewithtax=0;
 // Define colspan for button Add
 $colspan = 3;	// Col total ht + col edit + col delete
 if (! empty($inputalsopricewithtax)) $colspan++;	// We add 1 if col total ttc
-if (in_array($object->element,array('propal','askpricesupplier','facture','invoice','commande','order'))) $colspan++;	// With this, there is a column move button
+if (in_array($object->element,array('propal','facture','invoice','commande','order'))) $colspan++;	// With this, there is a column move button
 ?>
 
 <!-- BEGIN PHP TEMPLATE objectline_edit.tpl.php -->
@@ -92,16 +92,8 @@ $coldisplay=-1; // We remove first td
 	if (! empty($conf->global->FCKEDITOR_ENABLE_DETAILS_FULL)) $toolbarname='dolibarr_notes';
 	$doleditor=new DolEditor('product_desc',$line->description,'',164,$toolbarname,'',false,true,$enable,$nbrows,'98%');
 	$doleditor->Create();
-	
-	$reshook=$hookmanager->executeHooks('editObjectLineProducts', $parameters, $line, $action);    // Note that $action and $object may have been modified by some hooks
-	
-	
 	?>
 	</td>
-
-	<?php if ($object->element == 'askpricesupplier') { ?>
-		<td align="right"><input id="fourn_ref" name="fourn_ref" class="flat" value="<?php echo $line->ref_fourn; ?>" size="12"></td>
-	<?php } ?>
 
 	<td align="right"><?php $coldisplay++; ?><?php echo $form->load_tva('tva_tx',$line->tva_tx,$seller,$buyer,0,$line->info_bits,$line->product_type); ?></td>
 
@@ -255,16 +247,22 @@ if (! empty($conf->margin->enabled))
 		if (! empty($conf->global->DISPLAY_MARGIN_RATES))
 		{
 		?>
+			$('#savelinebutton').click(function (e) {
+				return checkEditLine(e, "marginRate");
+			});
 			$("input[name='np_marginRate']:first").blur(function(e) {
-				return checkEditLine(e, "np_marginRate");
+				return checkEditLine(e, "marginRate");
 			});
 		<?php
 		}
 		if (! empty($conf->global->DISPLAY_MARK_RATES))
 		{
 		?>
+			$('#savelinebutton').click(function (e) {
+				return checkEditLine(e, "markRate");
+			});
 			$("input[name='np_markRate']:first").blur(function(e) {
-				return checkEditLine(e, "np_markRate");
+				return checkEditLine(e, "markRate");
 			});
 		<?php
 		}
@@ -280,19 +278,18 @@ if (! empty($conf->margin->enabled))
 		var remise = $("input[name='remise_percent']:first");
 
 		var rate = $("input[name='"+npRate+"']:first");
-		if (rate.val() == '' || (typeof rate.val()) == 'undefined' ) return true;
-		var ratejs = price2numjs(rate.val());
+		if (rate.val() == '') return true;
 
-		if (! $.isNumeric(ratejs))
+		if (! $.isNumeric(rate.val().replace(',','.')))
 		{
-			alert('<?php echo $langs->transnoentitiesnoconv("rateMustBeNumeric"); ?>');
+			alert('<?php echo $langs->trans("rateMustBeNumeric"); ?>');
 			e.stopPropagation();
 			setTimeout(function () { rate.focus() }, 50);
 			return false;
 		}
-		if (npRate == "np_markRate" && ratejs > 100)
+		if (npRate == "markRate" && rate.val() >= 100)
 		{
-			alert('<?php echo $langs->transnoentitiesnoconv("markRateShouldBeLesserThan100"); ?>');
+			alert('<?php echo $langs->trans("markRateShouldBeLesserThan100"); ?>');
 			e.stopPropagation();
 			setTimeout(function () { rate.focus() }, 50);
 			return false;
@@ -300,23 +297,19 @@ if (! empty($conf->margin->enabled))
 
 		var price = 0;
 		remisejs=price2numjs(remise.val());
+
 		if (remisejs != 100)
 		{
 			bpjs=price2numjs(buying_price.val());
 			ratejs=price2numjs(rate.val());
-			/* console.log(npRate+" - "+bpjs+" - "+ratejs); */
-			if (npRate == "np_marginRate")
+
+			if (npRate == "marginRate")
 				price = ((bpjs * (1 + ratejs / 100)) / (1 - remisejs / 100));
-			else if (npRate == "np_markRate")
-			{
-				if (ratejs != 100)	// If markRate is 100, it means buying price is 0, so it is not possible to retreive price from it and markRate. We keep it unchange
-				{
-					price = ((bpjs / (1 - (ratejs / 100))) / (1 - remisejs / 100));
-				}
-				else price=$("input[name='price_ht']:first").val();
-			}
+			else if (npRate == "markRate")
+				price = ((bpjs / (1 - ratejs / 100)) / (1 - remisejs / 100));
 		}
 		$("input[name='price_ht']:first").val(price);	// TODO Must use a function like php price to have here a formated value
+
 		return true;
 	}
 

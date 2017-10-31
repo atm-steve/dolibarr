@@ -93,6 +93,7 @@ $isblue=max(0,(2*$colblue-$colred-$colgreen)/2);       // 0 - 255
 $colorbackhmenu1=($colred-3).','.($colgreen-3).','.($colblue-3);         // topmenu
 $colorbackhmenu2=($colred+5).','.($colgreen+5).','.($colblue+5);
 $colorbackvmenu1=($colred+15).','.($colgreen+16).','.($colblue+17);      // vmenu
+$colorbackvmenu1b=($colred+5).','.($colgreen+6).','.($colblue+7);        // vmenu (not menu)
 $colorbackvmenu2=($colred-15).','.($colgreen-15).','.($colblue-15);
 $colorbacktitle1=($colred-5).','.($colgreen-5).','.($colblue-5);    // title of array
 $colorbacktitle2=($colred-15).','.($colgreen-15).','.($colblue-15);
@@ -105,7 +106,7 @@ $colorbacklineimpairhover=(230+round(($isred+$isgreen+$isblue)/9)).','.(230+roun
 $colorbacklinepair1=(244+round($isred/3)).','.(244+round($isgreen/3)).','.(244+round($isblue/3));    // line pair
 $colorbacklinepair2=(250+round($isred/3)).','.(250+round($isgreen/3)).','.(250+round($isblue/3));    // line pair
 $colorbacklinepairhover=(230+round(($isred+$isgreen+$isblue)/9)).','.(230+round(($isred+$isgreen+$isblue)/9)).','.(230+round(($isred+$isgreen+$isblue)/9));    // line pair
-$colorbackbody='249,249,249';
+$colorbackbody='#f9f9f9';
 $colortext='40,40,40';
 $fontsize='12';
 $fontsizesmaller='11';
@@ -123,7 +124,7 @@ if (empty($conf->global->THEME_ELDY_ENABLE_PERSONALIZED))
     $conf->global->THEME_ELDY_BACKTABCARD2='210,210,210';     // card
     $conf->global->THEME_ELDY_BACKTABCARD1='234,234,234';
     $conf->global->THEME_ELDY_BACKTABACTIVE='234,234,234';
-    $conf->global->THEME_ELDY_BACKBODY='249,249,249;';
+    $conf->global->THEME_ELDY_BACKBODY='#f9f9f9;';
     $conf->global->THEME_ELDY_LINEIMPAIR1='255,255,255';
     $conf->global->THEME_ELDY_LINEIMPAIR2='255,255,255';
     $conf->global->THEME_ELDY_LINEIMPAIRHOVER='238,246,252';
@@ -138,6 +139,7 @@ if (empty($conf->global->THEME_ELDY_ENABLE_PERSONALIZED))
 $colorbackhmenu1     =empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED)?(empty($conf->global->THEME_ELDY_TOPMENU_BACK1)?$colorbackhmenu1:$conf->global->THEME_ELDY_TOPMENU_BACK1)   :(empty($user->conf->THEME_ELDY_TOPMENU_BACK1)?$colorbackhmenu1:$user->conf->THEME_ELDY_TOPMENU_BACK1);
 $colorbackhmenu2     =empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED)?(empty($conf->global->THEME_ELDY_TOPMENU_BACK2)?$colorbackhmenu2:$conf->global->THEME_ELDY_TOPMENU_BACK2)   :(empty($user->conf->THEME_ELDY_TOPMENU_BACK2)?$colorbackhmenu2:$user->conf->THEME_ELDY_TOPMENU_BACK2);
 $colorbackvmenu1     =empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED)?(empty($conf->global->THEME_ELDY_VERMENU_BACK1)?$colorbackvmenu1:$conf->global->THEME_ELDY_VERMENU_BACK1)   :(empty($user->conf->THEME_ELDY_VERMENU_BACK1)?$colorbackvmenu1:$user->conf->THEME_ELDY_VERMENU_BACK1);
+$colorbackvmenu1b    =empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED)?(empty($conf->global->THEME_ELDY_VERMENU_BACK1b)?$colorbackvmenu1:$conf->global->THEME_ELDY_VERMENU_BACK1b) :(empty($user->conf->THEME_ELDY_VERMENU_BACK1b)?$colorbackvmenu1b:$user->conf->THEME_ELDY_VERMENU_BACK1b);
 $colorbackvmenu2     =empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED)?(empty($conf->global->THEME_ELDY_VERMENU_BACK2)?$colorbackvmenu2:$conf->global->THEME_ELDY_VERMENU_BACK2)   :(empty($user->conf->THEME_ELDY_VERMENU_BACK2)?$colorbackvmenu2:$user->conf->THEME_ELDY_VERMENU_BACK2);
 $colorbacktitle1     =empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED)?(empty($conf->global->THEME_ELDY_BACKTITLE1)   ?$colorbacktitle1:$conf->global->THEME_ELDY_BACKTITLE1)      :(empty($user->conf->THEME_ELDY_BACKTITLE1)?$colorbacktitle1:$user->conf->THEME_ELDY_BACKTITLE1);
 $colorbacktitle2     =empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED)?(empty($conf->global->THEME_ELDY_BACKTITLE2)   ?$colorbacktitle2:$conf->global->THEME_ELDY_BACKTITLE2)      :(empty($user->conf->THEME_ELDY_BACKTITLE2)?$colorbacktitle2:$user->conf->THEME_ELDY_BACKTITLE2);
@@ -163,11 +165,6 @@ if ((! empty($user->conf->THEME_ELDY_ENABLE_PERSONALIZED) && empty($user->conf->
 }
 
 // Format color value to match expected format (may be 'FFFFFF' or '255,255,255')
-$colorbackbody=join(',',colorStringToArray($colorbackbody));
-/*$colorbackhmenu1=join(',',colorStringToArray($colorbackhmenu1));
-$colorbackhmenu2=join(',',colorStringToArray($colorbackhmenu2));
-$colorbackvmenu1=join(',',colorStringToArray($colorbackvmenu1));
-$colorbackvmenu2=join(',',colorStringToArray($colorbackvmenu2));*/
 $colorbacktabcard1=join(',',colorStringToArray($colorbacktabcard1));
 $colorbacktabcard2=join(',',colorStringToArray($colorbacktabcard2));
 
@@ -189,6 +186,7 @@ $tmpval=(! empty($tmppart[1]) ? $tmppart[1] : '')+(! empty($tmppart[2]) ? $tmppa
 if ($tmpval <= 340) { $colortextbacktab='FFF'; }
 else { $colortextbacktab='444'; }
 
+
 $usecss3=true;
 if ($conf->browser->name == 'ie' && round($conf->browser->version,2) < 10) $usecss3=false;
 elseif ($conf->browser->name == 'iceweasel') $usecss3=false;
@@ -197,10 +195,6 @@ elseif ($conf->browser->name == 'epiphany')  $usecss3=false;
 print '/*'."\n";
 print 'colred='.$colred.' colgreen='.$colgreen.' colblue='.$colblue."\n";
 print 'isred='.$isred.' isgreen='.$isgreen.' isblue='.$isblue."\n";
-print 'colorbackbody='.$colorbackbody."\n";
-print 'colorbackvmenu1='.$colorbackvmenu1."\n";
-print 'colorbackhmenu1='.$colorbackhmenu1."\n";
-print 'colorbacktitle1='.$colorbacktitle1."\n";
 print 'colorbacklineimpair1='.$colorbacklineimpair1."\n";
 print 'colorbacklineimpair2='.$colorbacklineimpair2."\n";
 print 'colorbacklineimpairhover='.$colorbacklineimpairhover."\n";
@@ -229,7 +223,7 @@ body {
 <?php if (GETPOST("optioncss") == 'print') {  ?>
 	background-color: #FFFFFF;
 <?php } else { ?>
-	background: rgb(<?php print $colorbackbody; ?>);
+	background: <?php print $colorbackbody; ?>;
 <?php } ?>
 	color: #101010;
 	font-size: <?php print $fontsize ?>px;
@@ -1826,7 +1820,7 @@ table.liste td {
 }
 */
 
-.impair:hover {
+.impair:hover, td.nohover {
 <?php if ($colorbacklineimpairhover) { if ($usecss3) { ?>
 	background: rgb(<?php echo $colorbacklineimpairhover; ?>);
 <?php } else { ?>
@@ -1835,7 +1829,7 @@ table.liste td {
 	border: 0px;
 }
 
-.impair, .nohover .impair:hover, tr.impair td.nohover, td.nohover {
+.impair, .nohover .impair:hover, tr.impair td.nohover {
 <?php if ($usecss3) { ?>
 	background: linear-gradient(bottom, rgb(<?php echo $colorbacklineimpair1; ?>) 85%, rgb(<?php echo $colorbacklineimpair2; ?>) 100%);
 	background: -o-linear-gradient(bottom, rgb(<?php echo $colorbacklineimpair1; ?>) 85%, rgb(<?php echo $colorbacklineimpair2; ?>) 100%);
@@ -3083,18 +3077,6 @@ border-top-right-radius: 6px;
 .lilevel3
 {
 	padding-left: 54px;
-}
-
-
-/* The theme for public pages */
-.public_body {
-	margin: 20px;
-}
-.public_border {
-	border: 1px solid #888;
-}
-.public_liste_titre {
-
 }
 
 <?php

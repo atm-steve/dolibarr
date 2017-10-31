@@ -264,17 +264,9 @@ if ($id > 0 || ! empty($ref))
 			$resql = $db->query($sql);
 			if ($resql)
 			{
-				$num = $db->num_rows($resql);
-				$i = 0;
-				
-				if ($num)
+				while ( $row = $db->fetch_row($resql) )
 				{
-					while ($i < $num)
-					{
-						$objd = $db->fetch_object($resql);
-						$products_dispatched[$objd->rowid] = price2num($objd->qty, 5);
-						$i++;
-					}
+					$products_dispatched[$row[0]] = $row[2];
 				}
 				$db->free($resql);
 			}
@@ -330,7 +322,7 @@ if ($id > 0 || ! empty($ref))
 					}
 					else
 					{
-						$remaintodispatch=(price2num($objp->qty, 5) - $products_dispatched[$objp->rowid]);	// Calculation of dispatched
+						$remaintodispatch=($objp->qty - $products_dispatched[$objp->rowid]);	// Calculation of dispatched
 						if ($remaintodispatch < 0) $remaintodispatch=0;
 						if ($remaintodispatch)
 						{
@@ -411,8 +403,6 @@ if ($id > 0 || ! empty($ref))
 							print "</td>\n";
 							print "</tr>\n";
 						}
-
-                        $products_dispatched[$objp->fk_product]-=$objp->qty;
 					}
 					$i++;
 				}

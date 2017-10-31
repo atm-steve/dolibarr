@@ -828,25 +828,25 @@ if ($id > 0)
 
 	print '<div class="tabsAction">';
 
-	if (! empty($conf->propal->enabled) && $user->rights->propal->creer && $object->status==1)
+	if (! empty($conf->propal->enabled) && $user->rights->propal->creer)
 	{
 		$langs->load("propal");
 		print '<div class="inline-block divButAction"><a class="butAction" href="'.DOL_URL_ROOT.'/comm/propal.php?socid='.$object->id.'&amp;action=create">'.$langs->trans("AddProp").'</a></div>';
 	}
 
-	if (! empty($conf->commande->enabled) && $user->rights->commande->creer && $object->status==1)
+	if (! empty($conf->commande->enabled) && $user->rights->commande->creer)
 	{
 		$langs->load("orders");
 		print '<div class="inline-block divButAction"><a class="butAction" href="'.DOL_URL_ROOT.'/commande/card.php?socid='.$object->id.'&amp;action=create">'.$langs->trans("AddOrder").'</a></div>';
 	}
 
-	if ($user->rights->contrat->creer && $object->status==1)
+	if ($user->rights->contrat->creer)
 	{
 		$langs->load("contracts");
 		print '<div class="inline-block divButAction"><a class="butAction" href="'.DOL_URL_ROOT.'/contrat/card.php?socid='.$object->id.'&amp;action=create">'.$langs->trans("AddContract").'</a></div>';
 	}
 
-	if (! empty($conf->ficheinter->enabled) && $user->rights->ficheinter->creer && $object->status==1)
+	if (! empty($conf->ficheinter->enabled) && $user->rights->ficheinter->creer)
 	{
 		$langs->load("fichinter");
 		print '<div class="inline-block divButAction"><a class="butAction" href="'.DOL_URL_ROOT.'/fichinter/card.php?socid='.$object->id.'&amp;action=create">'.$langs->trans("AddIntervention").'</a></div>';
@@ -855,7 +855,7 @@ if ($id > 0)
 	// Add invoice
 	if ($user->societe_id == 0)
 	{
-		if (! empty($conf->deplacement->enabled) && $object->status==1)
+		if (! empty($conf->deplacement->enabled))
 		{
 			$langs->load("trips");
 			print '<div class="inline-block divButAction"><a class="butAction" href="'.DOL_URL_ROOT.'/compta/deplacement/card.php?socid='.$object->id.'&amp;action=create">'.$langs->trans("AddTrip").'</a></div>';
@@ -863,7 +863,7 @@ if ($id > 0)
 
 		if (! empty($conf->facture->enabled))
 		{
-			if ($user->rights->facture->creer && $object->status==1)
+			if ($user->rights->facture->creer)
 			{
 				$langs->load("bills");
 				$langs->load("orders");

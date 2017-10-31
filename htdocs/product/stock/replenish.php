@@ -57,9 +57,6 @@ $texte = '';
 $sortfield = GETPOST('sortfield','alpha');
 $sortorder = GETPOST('sortorder','alpha');
 $page = GETPOST('page','int');
-if ($page == -1) { $page = 0; }
-$limit = $conf->liste_limit;
-$offset = $limit * $page ;
 
 if (!$sortfield) {
     $sortfield = 'p.ref';
@@ -68,6 +65,11 @@ if (!$sortfield) {
 if (!$sortorder) {
     $sortorder = 'ASC';
 }
+$limit = $conf->liste_limit;
+$offset = $limit * $page ;
+
+// Force limit to no (currently solution to solve loosing selection when using pagination. No pagination on this page)
+$limit = 0;
 
 
 /*
@@ -307,7 +309,7 @@ if ($usevirtualstock)
 }
 
 $sql.= $db->order($sortfield,$sortorder);
-$sql.= $db->plimit($limit + 1, $offset);
+$sql.= $db->plimit($limit, $offset);
 
 //print $sql;
 $resql = $db->query($sql);

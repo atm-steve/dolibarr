@@ -35,8 +35,6 @@ $contactid = GETPOST("id",'int');
 if ($user->societe_id) $socid=$user->societe_id;
 $result = restrictedArea($user, 'contact', $contactid, 'socpeople&societe');
 
-$contact = new Contact($db);
-
 
 
 /*
@@ -45,25 +43,23 @@ $contact = new Contact($db);
 
 llxHeader('',$langs->trans("ContactsAddresses"),'EN:Module_Third_Parties|FR:Module_Tiers|ES:M&oacute;dulo_Empresas');
 
-if ($contactid > 0)
-{
-	$result = $contact->fetch($contactid, $user);
 
-	$contact->info($contactid);
-
-
-	$head = contact_prepare_head($contact);
-
-	dol_fiche_head($head, 'info', $langs->trans("ContactsAddresses"), 0, 'contact');
+$contact = new Contact($db);
+$contact->fetch($contactid, $user);
+$contact->info($contactid);
 
 
-	print '<table width="100%"><tr><td>';
-	print '</td></tr></table>';
+$head = contact_prepare_head($contact);
 
-	dol_print_object_info($contact);
+dol_fiche_head($head, 'info', $langs->trans("ContactsAddresses"), 0, 'contact');
 
-	print "</div>";
-}
+
+print '<table width="100%"><tr><td>';
+print '</td></tr></table>';
+
+dol_print_object_info($contact);
+
+print "</div>";
 
 llxFooter();
 

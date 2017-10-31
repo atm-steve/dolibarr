@@ -65,11 +65,7 @@ $extrafields = new ExtraFields($db);
  * View
  */
 
-$morehead='';
-if (! empty($conf->global->MEMBER_PUBLIC_CSS)) $morehead='<link rel="stylesheet" type="text/css" href="'.$conf->global->MEMBER_PUBLIC_CSS.'">';
-else $morehead='<link rel="stylesheet" type="text/css" href="'.DOL_URL_ROOT.'/theme/eldy/style.css.php'.'">';
-
-llxHeaderVierge($langs->trans("MemberCard"), $morehead);
+llxHeaderVierge($langs->trans("MemberCard"));
 
 // fetch optionals attributes and labels
 $extralabels=$extrafields->fetch_name_optionals_label('adherent');
@@ -79,7 +75,7 @@ if ($id > 0)
 	if ($res < 0) { dol_print_error($db,$object->error); exit; }
 	$res=$object->fetch_optionals($object->id,$extralabels);
 
-	print_fiche_titre($langs->trans("MemberCard"), '', '');
+	print_titre($langs->trans("MemberCard"));
 
 	if (empty($object->public))
 	{
@@ -87,7 +83,7 @@ if ($id > 0)
 	}
 	else
 	{
-		print '<table class="public_border" cellspacing="0" width="100%" cellpadding="3">';
+		print '<table class="border" cellspacing="0" width="100%" cellpadding="3">';
 
 		print '<tr><td width="15%">'.$langs->trans("Type").'</td><td class="valeur">'.$object->type."</td></tr>\n";
 		print '<tr><td>'.$langs->trans("Person").'</td><td class="valeur">'.$object->morphy.'</td></tr>';
@@ -142,7 +138,7 @@ function llxHeaderVierge($title, $head = "")
 	print "<title>".$title."</title>\n";
 	if ($head) print $head."\n";
 	print "</head>\n";
-	print '<body class="public_body">'."\n";
+	print "<body>\n";
 }
 
 /**

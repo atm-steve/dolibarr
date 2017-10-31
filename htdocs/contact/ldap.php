@@ -40,10 +40,7 @@ if ($user->societe_id) $socid=$user->societe_id;
 $result = restrictedArea($user, 'contact', $id, 'socpeople&societe');
 
 $contact = new Contact($db);
-if ($id > 0)
-{
-	$contact->fetch($id, $user);
-}
+$contact->fetch($id, $user);
 
 
 /*
@@ -135,8 +132,7 @@ print '<tr><td>LDAP '.$langs->trans("LDAPServerPort").'</td><td class="valeur" c
 
 print '</table>';
 
-dol_fiche_end();
-
+print '</div>';
 
 /*
  * Barre d'actions
@@ -208,6 +204,6 @@ print '</table>';
 
 
 
-llxFooter();
-
 $db->close();
+
+llxFooter();

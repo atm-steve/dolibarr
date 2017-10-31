@@ -32,18 +32,6 @@
 abstract class CommonDocGenerator
 {
 	var $error='';
-	protected $db;
-	
-	
-	/**
-	 *	Constructor
-	 *
-	 *  @param		DoliDB		$db      Database handler
-	*/
-	public function __construct($db) {
-		$this->db = $db;
-		return 1;
-	}
 
 
     /**
