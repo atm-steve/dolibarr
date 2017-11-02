@@ -336,6 +336,23 @@ class Paiement extends CommonObject
                                         $this->error=$invoice->error;
                                         $error++;
                                     }
+
+				    $outputlangs = $langs;
+				    $newlang='';
+				    if ($conf->global->MAIN_MULTILANGS && empty($newlang) && ! empty($_REQUEST['lang_id'])) $newlang=$_REQUEST['lang_id'];
+				    if ($conf->global->MAIN_MULTILANGS && empty($newlang)) $newlang=$invoice->client->default_lang;
+				    if (! empty($newlang))
+				    {
+					$outputlangs = new Translate("",$conf);
+					$outputlangs->setDefaultLang($newlang);
+				    }
+				    if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+				    {
+					require_once DOL_DOCUMENT_ROOT . '/core/modules/facture/modules_facture.php';
+					$ret=$invoice->fetch($invoice->id);    // Reload to get new records
+					facture_pdf_create($this->db, $invoice, $invoice->modelpdf, $outputlangs);
+				    }
+
                                 }
                             }
 					    }
