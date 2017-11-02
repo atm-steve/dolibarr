@@ -2387,6 +2387,15 @@ else
             print '<td class="nowrap">'.$langs->trans('WebServiceKey').'</td><td>'.$object->webservices_key.'</td></tr>';
         }
 
+	print '<tr><td>';
+	print $langs->trans('Code compta auxiliaire client').'</td><td colspan="3">';
+	print '401'.str_pad($object->id, 5, "0", STR_PAD_LEFT) . $sep;
+	print '</td></tr>';
+	print '<tr><td>';
+	print $langs->trans('Code compta auxiliaire fournisseur').'</td><td colspan="3">';
+	print '411'.str_pad($object->id, 5, "0", STR_PAD_LEFT) . $sep;
+	print '</td></tr>';
+
         print '</table>';
 		print '</div>';
 
