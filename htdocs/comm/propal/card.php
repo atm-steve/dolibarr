@@ -2497,12 +2497,18 @@ if ($action == 'create')
 			dol_print_error($db);
 		}
 
+		/************** Commit d8eda853c777965ada7dadf2f4cbd0559c2dcc5e ***************/
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+		$formmail->substit['__PROJECT_TITLE__'] = '';
+		$formmail->substit['__PROJECT_DATE_TASK__'] = '';
+		$formmail->substit['__PROJECT_LOCATION__'] = '';
+		$formmail->substit['__DATEPLUS30__'] = dol_print_date(dol_time_plus_duree(dol_now(), 30, 'd'));
+		/******************************************************************************/
+
 		if ($project->id) {
-			require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 			$formmail->substit['__PROJECT_TITLE__'] = (!empty($project->title)?$project->title:'');
 			$formmail->substit['__PROJECT_DATE_TASK__'] = (!empty($date_task)?$date_task:'');
 			$formmail->substit['__PROJECT_LOCATION__'] = (!empty($location_str)?$location_str:'');
-			$formmail->substit['__DATEPLUS30__'] = dol_print_date(dol_time_plus_duree(dol_now(), 30, 'd'));
 		}
 
 		/***********************************************************/
