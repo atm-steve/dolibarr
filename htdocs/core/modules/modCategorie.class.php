@@ -296,7 +296,7 @@ class modCategorie extends DolibarrModules
 			'u.label' => "Text",
 			'u.description' => "Text",
 			's.nom' => "List:societe:nom",
-			'p.rowid' => 'List:contact:lastname',
+			'p.rowid' => 'List:socpeople:lastname',
 			'p.lastname' => 'Text',
 			'p.firstname' => 'Text',
 			's.nom'=>"Text",
