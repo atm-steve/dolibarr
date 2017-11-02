@@ -387,6 +387,25 @@ if (empty($reshook))
 				$result = $object->insert_discount($_POST["remise_id"]);
 				if ($result < 0) {
 					setEventMessages($object->error, $object->errors, 'errors');
+				} else {
+
+					/******************************* Migration 3.5->6.0 commit 3334bcf2ccb778fa49fca6e7b137f0610ff42546 *********************************/
+					$outputlangs = $langs;
+					$newlang='';
+					if ($conf->global->MAIN_MULTILANGS && empty($newlang) && ! empty($_REQUEST['lang_id'])) $newlang=$_REQUEST['lang_id'];
+					if ($conf->global->MAIN_MULTILANGS && empty($newlang)) $newlang=$object->client->default_lang;
+					if (! empty($newlang))
+					{
+						$outputlangs = new Translate("",$conf);
+						$outputlangs->setDefaultLang($newlang);
+					}
+					if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+					{
+						$ret=$object->fetch($id);    // Reload to get new records
+						facture_pdf_create($db, $object, $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					}
+					/************************************************************************************************************************************/
+
 				}
 			} else {
 				dol_print_error($db, $object->error);
@@ -413,6 +432,25 @@ if (empty($reshook))
 				$result = $discount->link_to_invoice(0, $id);
 				if ($result < 0) {
 					setEventMessages($discount->error, $discount->errors, 'errors');
+				} else {
+
+					/******************************* Migration 3.5->6.0 commit 3334bcf2ccb778fa49fca6e7b137f0610ff42546 *********************************/
+					$outputlangs = $langs;
+					$newlang='';
+					if ($conf->global->MAIN_MULTILANGS && empty($newlang) && ! empty($_REQUEST['lang_id'])) $newlang=$_REQUEST['lang_id'];
+					if ($conf->global->MAIN_MULTILANGS && empty($newlang)) $newlang=$object->client->default_lang;
+					if (! empty($newlang))
+					{
+						$outputlangs = new Translate("",$conf);
+						$outputlangs->setDefaultLang($newlang);
+					}
+					if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+					{
+						$ret=$object->fetch($id);    // Reload to get new records
+						facture_pdf_create($db, $object, $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					}
+					/************************************************************************************************************************************/
+
 				}
 			}
 		}
