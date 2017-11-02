@@ -260,6 +260,16 @@ if ($id > 0)
 		print $form->editfieldval("CustomerAccountancyCode",'customeraccountancycode',$object->code_compta,$object,$user->rights->societe->creer);
 		print '</td>';
 		print '</tr>';
+
+		print '<tr><td>';
+		print $langs->trans('Code compta auxiliaire client').'</td><td colspan="3">';
+		print '401'.str_pad($object->id, 5, "0", STR_PAD_LEFT) . $sep;
+		print '</td></tr>';
+		print '<tr><td>';
+		print $langs->trans('Code compta auxiliaire fournisseur').'</td><td colspan="3">';
+		print '411'.str_pad($object->id, 5, "0", STR_PAD_LEFT) . $sep;
+		print '</td></tr>';
+
 	}
 
 	// VAT is used
