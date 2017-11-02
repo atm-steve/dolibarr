@@ -238,6 +238,8 @@ print '</td></tr>';
 // Other attributes
 include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
 
+$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);
+
 print '</table>';
 print '</div>';
 
