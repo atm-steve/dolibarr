@@ -2686,6 +2686,64 @@ if ($action == 'create' && $user->rights->commande->creer)
 			$formmail->setSubstitFromObject($object);
 			$formmail->substit ['__ORDERREF__'] = $object->ref;
 
+
+
+			/*********************** Migration 3.5->6.0 commit c3166f6775f2832b7fbaea6e4f92218d1ad852dd ***************************/
+
+			//Build project substitute text
+			require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+			require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
+			$project = new Project($db);
+			$project->fetch($object->fk_project);
+			//$str.= '<BR>'.$project->title.' '.$outputlangs->transnoentities('FromTo',dol_print_date($project->date_start,'daytext','tzserver',$outputlangs),dol_print_date($project->date_end,'daytext'),'tzserver',$outputlangs);
+			$task =new Task($db);
+			$task_array=$task->getTasksArray(0,0,$object->fk_project);
+			if(is_array($task_array) && count($task_array)>0) {
+				$date_task.='<ul>';
+				foreach ($task_array as $tsk) {
+					$date_task.= '<li>'.$tsk->label.' '.$langs->trans('FromTo',dol_print_date($tsk->date_start,'dayhourtext','tzserver',$outputlangs),dol_print_date($tsk->date_end,'dayhourtext'),'tzserver',$outputlangs).'<BR>';
+				}
+				$date_task.='</ul>';
+			}
+			
+			//Build project location substitute text
+			$location_str='';
+			if (!empty($object->fk_project)) {
+				$sql = 'SELECT pb.ref FROM ';
+				$sql .= MAIN_DB_PREFIX.'place_building as pb ';
+				$sql .= 'INNER JOIN '.MAIN_DB_PREFIX."element_resources as elmres ON elmres.element_type='project' AND elmres.resource_type='building@place' AND elmres.resource_id=pb.rowid AND element_id=".$object->fk_project;
+			
+				$resql = $db->query($sql);
+				if ($resql)
+				{
+					while ($obj = $db->fetch_object($resql))
+					{
+						$location_str.=$obj->ref.'<BR>';
+					}
+				}
+				else
+				{
+					dol_print_error($db);
+				}
+			}
+
+			require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+			$formmail->substit['__PROJECT_TITLE__'] = '';
+			$formmail->substit['__PROJECT_DATE_TASK__'] = '';
+			$formmail->substit['__PROJECT_LOCATION__'] = '';
+			$formmail->substit['__DATEPLUS30__'] = dol_print_date(dol_time_plus_duree(dol_now(), 30, 'd'));
+			if ($project->id) {
+				require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+				$formmail->substit['__PROJECT_TITLE__'] = (!empty($project->title)?$project->title:'');
+				$formmail->substit['__PROJECT_DATE_TASK__'] = (!empty($date_task)?$date_task:'');
+				$formmail->substit['__PROJECT_LOCATION__'] = (!empty($location_str)?$location_str:'');
+
+			}
+			$formmail->substit['__PERSONALIZED__']='';
+			$formmail->substit['__CONTACTCIVNAME__']='';
+
+			/************************************************************************************************************************/
+
 			$custcontact = '';
 			$contactarr = array();
 			$contactarr = $object->liste_contact(- 1, 'external');
