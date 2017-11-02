@@ -2459,6 +2459,54 @@ if ($action == 'create')
 		$formmail->setSubstitFromObject($object);
 		$formmail->substit['__PROPREF__'] = $object->ref; // For backward compatibility
 
+		/*********** MIGRATION 3.5->6.0 commit 813050127cb672daa84a49ca8dc511be8ddf0c9b ***********/
+		$formmail->substit['__THIRPARTY_NAME__'] = $object->thirdparty->name;
+
+		//Build project substitute text
+		require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+		require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
+		$project = new Project($db);
+		$project->fetch($object->fk_project);
+		//$str.= '<BR>'.$project->title.' '.$outputlangs->transnoentities('FromTo',dol_print_date($project->date_start,'daytext','tzserver',$outputlangs),dol_print_date($project->date_end,'daytext'),'tzserver',$outputlangs);
+		$task =new Task($db);
+		$task_array=$task->getTasksArray(0,0,$object->fk_project);
+		if(is_array($task_array) && count($task_array)>0) {
+			$date_task.='<ul>';
+			foreach ($task_array as $tsk) {
+				$date_task.= '<li>'.$tsk->label.' '.$langs->trans('FromTo',dol_print_date($tsk->date_start,'dayhourtext','tzserver',$outputlangs),dol_print_date($tsk->date_end,'dayhourtext'),'tzserver',$outputlangs).'<BR>';
+			}
+			$date_task.='</ul>';
+		}
+
+		//Build project location substitute text
+		$location_str='';
+		$sql = 'SELECT pb.ref FROM ';
+		$sql .= MAIN_DB_PREFIX.'place_building as pb ';
+		$sql .= 'INNER JOIN '.MAIN_DB_PREFIX."element_resources as elmres ON elmres.element_type='project' AND elmres.resource_type='building@place' AND elmres.resource_id=pb.rowid AND element_id=".$object->fk_project;
+
+		$resql = $db->query($sql);
+		if ($resql)
+		{
+			while ($obj = $db->fetch_object($resql))
+			{
+				$location_str.=$obj->ref.'<BR>';
+			}
+		}
+		else
+		{
+			dol_print_error($db);
+		}
+
+		if ($project->id) {
+			require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+			$formmail->substit['__PROJECT_TITLE__'] = (!empty($project->title)?$project->title:'');
+			$formmail->substit['__PROJECT_DATE_TASK__'] = (!empty($date_task)?$date_task:'');
+			$formmail->substit['__PROJECT_LOCATION__'] = (!empty($location_str)?$location_str:'');
+			$formmail->substit['__DATEPLUS30__'] = dol_print_date(dol_time_plus_duree(dol_now(), 30, 'd'));
+		}
+
+		/***********************************************************/
+
 		// Find the good contact adress
 		$custcontact = '';
 		$contactarr = array();
@@ -2488,6 +2536,21 @@ if ($action == 'create')
 		if (GETPOST("mode") == 'init') {
 			$formmail->clear_attached_files();
 			$formmail->add_attached_files($file, basename($file), dol_mimetype($file));
+
+			/*********** MIGRATION 3.5->6.0 commit 813050127cb672daa84a49ca8dc511be8ddf0c9b *************/
+
+			//Add specialdoc for QE
+			$file=dol_buildpath('/quimperevenement/doc/CAHIER DES CHARGES LOCATIF PARC DES EXPOSITIONS QUIMPER CORNOUAILLE.pdf');
+			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
+			$file=dol_buildpath('/quimperevenement/doc/CAHIER DES CHARGES SECURITE PARC DES EXPOSITIONS QUIMPER CORNOUAILLE.pdf');
+			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
+			$file=dol_buildpath('/quimperevenement/doc/CONVENTION OCCUPATION PARC EXPO.pdf');
+			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
+			$file=dol_buildpath('/quimperevenement/doc/FICHE DE RENSEIGNEMENT EVENEMENTS - PARTIE SECURITE.pdf');
+			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
+
+			/********************************************************************************************/
+
 		}
 
 		print $formmail->get_form();
