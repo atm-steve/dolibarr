@@ -1188,8 +1188,11 @@ else
         // Barre d'actions
         print '<div class="tabsAction">';
 
-		$parameters=array();
-		$reshook=$hookmanager->executeHooks('addMoreActionsButtons',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+
+		/******************************** Migration 3.5->6.0 commit cc2a10036931c3aacd9d546b5c64312746cfadd4 ********************************/
+		/*$parameters=array();
+		$reshook=$hookmanager->executeHooks('addMoreActionsButtons',$parameters,$object,$action);*/    // Note that $action and $object may have been modified by hook
+		/************************************************************************************************************************************/
 		if (empty($reshook))
 		{
         	if ($user->rights->societe->contact->creer)
