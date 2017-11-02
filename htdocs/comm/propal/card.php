@@ -2543,17 +2543,31 @@ if ($action == 'create')
 			$formmail->clear_attached_files();
 			$formmail->add_attached_files($file, basename($file), dol_mimetype($file));
 
-			/*********** MIGRATION 3.5->6.0 commit 813050127cb672daa84a49ca8dc511be8ddf0c9b *************/
+			/*********** MIGRATION 3.5->6.0 commit 813050127cb672daa84a49ca8dc511be8ddf0c9b & 0f3389b8be0bf3e9b9121e4aa3036737bdbd3a11*************/
 
 			//Add specialdoc for QE
-			$file=dol_buildpath('/quimperevenement/doc/CAHIER DES CHARGES LOCATIF PARC DES EXPOSITIONS QUIMPER CORNOUAILLE.pdf');
+			/*$file=dol_buildpath('/quimperevenement/doc/CAHIER DES CHARGES LOCATIF PARC DES EXPOSITIONS QUIMPER CORNOUAILLE.pdf');
 			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
 			$file=dol_buildpath('/quimperevenement/doc/CAHIER DES CHARGES SECURITE PARC DES EXPOSITIONS QUIMPER CORNOUAILLE.pdf');
 			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
 			$file=dol_buildpath('/quimperevenement/doc/CONVENTION OCCUPATION PARC EXPO.pdf');
 			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
 			$file=dol_buildpath('/quimperevenement/doc/FICHE DE RENSEIGNEMENT EVENEMENTS - PARTIE SECURITE.pdf');
-			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));
+			if (file_exists($file)) $formmail->add_attached_files($file,basename($file),dol_mimetype($file));*/
+			$file_array=dol_dir_list(DOL_DATA_ROOT.'/ecm/document pour email/propal/');
+			foreach($file_array as $file_info) {
+				if ($file_info['type']=='file') $formmail->add_attached_files($file_info['fullname'],basename($file_info['fullname']),dol_mimetype($file_info['fullname']));
+			}
+			$sql_entity='SELECT label FROM '.MAIN_DB_PREFIX.'entity WHERE rowid='.$conf->entity;
+			$resql_entity = $db->query($sql_entity);
+			if (!empty($resql_entity)) {
+				$obj_entity=$db->fetch_object($resql_entity);
+				$entityname=$obj_entity->label;
+			}
+			$file_array=dol_dir_list(DOL_DATA_ROOT.'/ecm/document pour email/propal/'.$entityname);
+			foreach($file_array as $file_info) {
+				if ($file_info['type']=='file') $formmail->add_attached_files($file_info['fullname'],basename($file_info['fullname']),dol_mimetype($file_info['fullname']));
+			}
 
 			/********************************************************************************************/
 

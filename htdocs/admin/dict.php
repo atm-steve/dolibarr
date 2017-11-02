@@ -452,7 +452,7 @@ $tabhelp[22] = array('code'=>$langs->trans("EnterAnyCode"));
 $tabhelp[23] = array();
 $tabhelp[24] = array('code'=>$langs->trans("EnterAnyCode"));
 //$tabhelp[25] = array('topic'=>$langs->trans('SeeSubstitutionVars'),'content'=>$langs->trans('SeeSubstitutionVars'),'content_lines'=>$langs->trans('SeeSubstitutionVars'),'type_template'=>$langs->trans("TemplateForElement"),'private'=>$langs->trans("TemplateIsVisibleByOwnerOnly"), 'position'=>$langs->trans("PositionIntoComboList"));
-$tabhelp[26] = array('code'=>$langs->trans("EnterAnyCode"));
+$tabhelp[26] = array('type_template'=>$langs->trans("TemplateForElement"),'private'=>$langs->trans("TemplateIsVisibleByOwnerOnly"), 'position'=>$langs->trans("PositionIntoComboList"));
 $tabhelp[27] = array('code'=>$langs->trans("EnterAnyCode"));
 $tabhelp[28] = array('affect'=>$langs->trans("FollowedByACounter"),'delay'=>$langs->trans("MinimumNoticePeriod"), 'newbymonth'=>$langs->trans("NbAddedAutomatically"));
 $tabhelp[29] = array('code'=>$langs->trans("EnterAnyCode"), 'percent'=>$langs->trans("OpportunityPercent"), 'position'=>$langs->trans("PositionIntoComboList"));
@@ -570,6 +570,24 @@ if ($id == 10)
 	);
 }
 
+if ($id == 26)
+{
+	// We save list of template type Dolibarr can manage. This list can found by a grep into code on "->param['models']"
+	$elementList = array(
+			'propal_send'    => $langs->trans('MailToSendProposal'),
+			'order_send'     => $langs->trans('MailToSendOrder'),
+			'facture_send'   => $langs->trans('MailToSendInvoice'),
+
+			'shipping_send'  => $langs->trans('MailToSendShipment'),
+			'fichinter_send' => $langs->trans('MailToSendIntervention'),
+
+			'askpricesupplier_send'  => $langs->trans('MailToSendSupplierRequestForQuotation'),
+			'order_supplier_send'    => $langs->trans('MailToSendSupplierOrder'),
+			'invoice_supplier_send'  => $langs->trans('MailToSendSupplierInvoice'),
+
+			'thirdparty'    => $langs->trans('MailToThirdparty')
+	);
+}
 
 
 /*
@@ -1057,6 +1075,8 @@ if ($id)
             if ($fieldlist[$field]=='pcg_type')        { $valuetoshow=$langs->trans("Pcg_type"); }
             if ($fieldlist[$field]=='pcg_subtype')     { $valuetoshow=$langs->trans("Pcg_subtype"); }
             if ($fieldlist[$field]=='sortorder')       { $valuetoshow=$langs->trans("SortOrder"); }
+	    // Migration 3.5->6.0 commit 0f3389b8be0bf3e9b9121e4aa3036737bdbd3a11
+	    if ($fieldlist[$field]=='type_template')   { $valuetoshow=$langs->trans("TypeOfTemplate"); }
 	        if ($fieldlist[$field]=='short_label')     { $valuetoshow=$langs->trans("ShortLabel"); }
 			if ($fieldlist[$field]=='range_account')   { $valuetoshow=$langs->trans("Range"); }
 			if ($fieldlist[$field]=='sens')            { $valuetoshow=$langs->trans("Sens"); }
@@ -1122,16 +1142,26 @@ if ($id)
 
         if ($id == 3) unset($fieldlist[2]); // Remove field ??? if dictionary Regions
 
-        if (empty($reshook))
-        {
-       		fieldList($fieldlist, $obj, $tabname[$id], 'add');
-        }
+	if (empty($reshook))
+	{
+		if ($tabname[$id] == MAIN_DB_PREFIX.'c_email_templates' && $action == 'edit')
+		{
+			fieldList($fieldlist,$obj,$tabname[$id],'hide');
+		}
+		else
+		{
+			fieldList($fieldlist,$obj,$tabname[$id],'add');
+		}
+	}
 
         if ($id == 4) print '<td></td>';
         print '<td colspan="3" align="center">';
         if ($action != 'edit')
         {
-        	print '<input type="submit" class="button" name="actionadd" value="'.$langs->trans("Add").'">';
+		if ($tabname[$id] != MAIN_DB_PREFIX.'c_email_templates' || $action != 'edit')
+		{
+			print '<input type="submit" class="button" name="actionadd" value="'.$langs->trans("Add").'">';
+		}
         }
         print '</td>';
         print "</tr>";
@@ -1274,6 +1304,8 @@ if ($id)
             if ($fieldlist[$field]=='pcg_type')        { $valuetoshow=$langs->trans("Pcg_type"); }
             if ($fieldlist[$field]=='pcg_subtype')     { $valuetoshow=$langs->trans("Pcg_subtype"); }
             if ($fieldlist[$field]=='sortorder')       { $valuetoshow=$langs->trans("SortOrder"); }
+	    // Migration 3.5->6.0 commit 0f3389b8be0bf3e9b9121e4aa3036737bdbd3a11
+	    if ($fieldlist[$field]=='type_template')   { $valuetoshow=$langs->trans("TypeOfTemplate"); }
             if ($fieldlist[$field]=='short_label')     { $valuetoshow=$langs->trans("ShortLabel"); }
 			if ($fieldlist[$field]=='range_account')   { $valuetoshow=$langs->trans("Range"); }
 			if ($fieldlist[$field]=='sens')            { $valuetoshow=$langs->trans("Sens"); }
@@ -1348,6 +1380,10 @@ if ($id)
                             $showfield=1;
                         	$align="left";
                             $valuetoshow=$obj->{$fieldlist[$field]};
+			    if ($value == 'type_template')
+			    {
+				$valuetoshow = isset($elementList[$valuetoshow])?$elementList[$valuetoshow]:$valuetoshow;
+			    }
                             if ($value == 'element')
                             {
                                 $valuetoshow = isset($elementList[$valuetoshow])?$elementList[$valuetoshow]:$valuetoshow;
@@ -1742,6 +1778,13 @@ function fieldList($fieldlist, $obj='', $tabname='', $context='')
 			print $formadmin->select_language($conf->global->MAIN_LANG_DEFAULT,'lang');
 			print '</td>';
 		}
+		// Le type de template
+		elseif ($fieldlist[$field] == 'type_template')
+		{
+			print '<td>';
+			print $form->selectarray('type_template', $elementList,(! empty($obj->$fieldlist[$field])?$obj->$fieldlist[$field]:''));
+			print '</td>';
+		}
 		// Le type de l'element (pour les type de contact)
 		elseif ($fieldlist[$field] == 'element')
 		{
@@ -1806,6 +1849,24 @@ function fieldList($fieldlist, $obj='', $tabname='', $context='')
 		    }
 		    print '</td>';
 		}
+
+		elseif (in_array($fieldlist[$field], array('content')))
+		{
+			if ($tabname == MAIN_DB_PREFIX.'c_email_templates')
+			{
+				print '<td colspan="4"></td></tr><tr class="pair nohover"><td colspan="5">';		// To create an artificial CR for the current tr we are on
+			}
+			else print '<td>';
+			if ($context != 'hide')
+			{
+				//print '<textarea cols="3" rows="'.ROWS_2.'" class="flat" name="'.$fieldlist[$field].'">'.(! empty($obj->$fieldlist[$field])?$obj->$fieldlist[$field]:'').'</textarea>';
+				$doleditor = new DolEditor($fieldlist[$field], (! empty($obj->$fieldlist[$field])?$obj->$fieldlist[$field]:''), '', 140, 'dolibarr_mailings', 'In', 0, false, true, ROWS_5, '90%');
+				print $doleditor->Create(1);
+			}
+			else print '&nbsp;';
+			print '</td>';
+		}
+
 		elseif ($fieldlist[$field] == 'price' || preg_match('/^amount/i',$fieldlist[$field])) {
 			print '<td><input type="text" class="flat minwidth75" value="'.price((! empty($obj->{$fieldlist[$field]})?$obj->{$fieldlist[$field]}:'')).'" name="'.$fieldlist[$field].'"></td>';
 		}

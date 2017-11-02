@@ -2717,6 +2717,30 @@ if ($action == 'create' && $user->rights->commande->creer)
 			if (GETPOST("mode") == 'init') {
 				$formmail->clear_attached_files();
 				$formmail->add_attached_files($file, basename($file), dol_mimetype($file));
+
+				/******************** Migration 3.5->6.0 commit 0f3389b8be0bf3e9b9121e4aa3036737bdbd3a11******************/
+				$file_array=dol_dir_list(DOL_DATA_ROOT.'/ecm/document pour email/commande/');
+				foreach($file_array as $file_info) {
+					if ($file_info['type']=='file') {
+						$formmail->add_attached_files($file_info['fullname'],basename($file_info['fullname']),dol_mimetype($file_info['fullname']));
+					}
+				}
+
+				$sql_entity='SELECT label FROM '.MAIN_DB_PREFIX.'entity WHERE rowid='.$conf->entity;
+				$resql_entity = $db->query($sql_entity);
+				if ($resql_entity)
+				{
+					$obj_entity=$db->fetch_object($resql_entity);
+					$entityname=$obj_entity->label;
+				}
+				$file_array=dol_dir_list(DOL_DATA_ROOT.'/ecm/document pour email/commande/'.$entityname);
+				foreach($file_array as $file_info) {
+					if ($file_info['type']=='file') {
+						$formmail->add_attached_files($file_info['fullname'],basename($file_info['fullname']),dol_mimetype($file_info['fullname']));
+					}
+				}
+				/*********************************************************************************************************/
+
 			}
 
 			// Show form
