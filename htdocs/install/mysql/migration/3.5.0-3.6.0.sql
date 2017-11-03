@@ -20,7 +20,7 @@
 
 
 
-
+SET FOREIGN_KEY_CHECKS=0;
 ALTER TABLE llx_expedition MODIFY COLUMN height float;
 ALTER TABLE llx_expedition MODIFY COLUMN width float;
 ALTER TABLE llx_expedition MODIFY COLUMN size float;
@@ -38,7 +38,7 @@ create table llx_c_email_templates
 (
   rowid           integer AUTO_INCREMENT PRIMARY KEY,
   entity		  integer DEFAULT 1 NOT NULL,	  -- multi company id
-  type_template   varchar(32),  -- template for which type of email (send invoice by email, send order, ...)
+  type_template   varchar(32),  -- template for wich type of email (send invoice by email, send order, ...)
   datec           datetime,
   label           varchar(255),
   content         text
@@ -214,10 +214,6 @@ DELETE FROM llx_expeditiondet_batch where fk_expeditiondet NOT IN (SELECT rowid 
 
 ALTER TABLE llx_expeditiondet_batch ADD INDEX idx_fk_expeditiondet (fk_expeditiondet);
 ALTER TABLE llx_expeditiondet_batch ADD CONSTRAINT fk_expeditiondet_batch_fk_expeditiondet FOREIGN KEY (fk_expeditiondet) REFERENCES llx_expeditiondet(rowid);
-
-
-ALTER TABLE llx_product_batch ADD INDEX ix_fk_product_stock (fk_product_stock);
-ALTER TABLE llx_product_batch ADD CONSTRAINT fk_product_batch_fk_product_stock FOREIGN KEY (fk_product_stock) REFERENCES llx_product_stock (rowid);
 
 
 -- New 1074 : Stock mouvement link to origin
@@ -1707,4 +1703,4 @@ INSERT INTO llx_accountingaccount (rowid, fk_pcg_version, pcg_type, pcg_subtype,
 
 UPDATE llx_actioncomm set fk_user_action = fk_user_done where fk_user_done > 0 and (fk_user_action is null or fk_user_action = 0);
 UPDATE llx_actioncomm set fk_user_action = fk_user_author where fk_user_author > 0 and (fk_user_action is null or fk_user_action = 0);
-
+SET FOREIGN_KEY_CHECKS=1;
