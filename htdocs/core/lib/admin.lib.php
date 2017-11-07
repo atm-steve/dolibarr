@@ -1007,6 +1007,7 @@ function complete_dictionary_with_modules(&$taborder,&$tabname,&$tablib,&$tabsql
 
                     if ($modName)
                     {
+                    	if(strpos($dir.$file, '/htdocs/core/modules/modResource.class.php') !== false) continue; // Module std avec même nom que le module /htdocs/custom/resource/core/modules/modResource.class.php, on zappe car impossible d'inclure 2 fois la même classe
                         include_once $dir.$file;
                         $objMod = new $modName($db);
 

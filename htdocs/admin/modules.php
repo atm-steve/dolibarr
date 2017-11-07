@@ -286,6 +286,7 @@ foreach ($modulesdir as $dir)
 
 		        if ($modName)
 		        {
+		        	if(strpos($dir.$file, '/htdocs/core/modules/modResource.class.php') !== false) continue; // Module std avec même nom que le module /htdocs/custom/resource/core/modules/modResource.class.php, on zappe car impossible d'inclure 2 fois la même classe
 		        	if (! empty($modNameLoaded[$modName]))   // In cache of already loaded modules ?
 		        	{
 		        		$mesg="Error: Module ".$modName." was found twice: Into ".$modNameLoaded[$modName]." and ".$dir.". You probably have an old file on your disk.<br>";
