@@ -2430,8 +2430,7 @@ if ($action == 'create')
     			print $form->selectarray('typedeposit', $arraylist, GETPOST('typedeposit'), 0, 0, 0, '', 1);
     			print '</td>';
     			print '<td class="nowrap" style="padding-left: 5px">' . $langs->trans('Value') . ':<input type="text" id="valuedeposit" name="valuedeposit" size="3" value="' . GETPOST('valuedeposit', 'int') . '"/></td>';
-			print '<td class="nowrap" style="padding-left: 5px">'.$langs->trans('VAT').':'.$form->load_tva('vatrate', -1);
-    		}
+			}
     		print '</td></tr></table>';
 
     		print '</div></div>';

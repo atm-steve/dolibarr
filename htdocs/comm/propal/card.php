@@ -2308,10 +2308,11 @@ if ($action == 'create')
 				// Create an invoice and classify billed
 				if ($object->statut == Propal::STATUS_SIGNED)
 				{
-					if (! empty($conf->facture->enabled) && $user->rights->facture->creer)
+					// Migration 3.5->6.0 commit e6820cc576fc2645a2dd698912bbea08086ac71a On interdit de créer une facture depuis la propal
+					/*if (! empty($conf->facture->enabled) && $user->rights->facture->creer)
 					{
 						print '<div class="inline-block divButAction"><a class="butAction" href="' . DOL_URL_ROOT . '/compta/facture/card.php?action=create&amp;origin=' . $object->element . '&amp;originid=' . $object->id . '&amp;socid=' . $object->socid . '">' . $langs->trans("AddBill") . '</a></div>';
-					}
+					}*/
 
 					$arrayofinvoiceforpropal = $object->getInvoiceArrayList();
 					if ((is_array($arrayofinvoiceforpropal) && count($arrayofinvoiceforpropal) > 0) || empty($conf->global->WORKFLOW_PROPAL_NEED_INVOICE_TO_BE_CLASSIFIED_BILLED))
