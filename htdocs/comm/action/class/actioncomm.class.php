@@ -1236,7 +1236,7 @@ class ActionComm extends CommonObject
         if ($withpicto==1) $result.=' ';
 		
 		
-	$result.=$lien.$libelleshort.$linkend;
+	$result.=$linkstart.$libelleshort.$linkend;
 	
 	$result = $f->textwithtooltip($result, $note_to_add, 1, 0, '', '', 3);
 		

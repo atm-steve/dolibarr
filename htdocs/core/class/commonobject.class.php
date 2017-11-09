@@ -931,6 +931,7 @@ abstract class CommonObject
                 else $tab[$obj->code]=$libelle_type;
                 $i++;
             }
+
             return $tab;
         }
         else
