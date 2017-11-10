@@ -153,6 +153,10 @@ class TExportCompta extends TObjetStd {
 
 		$resql = $db->query($sql);
 //echo $sql;
+		if($resql === false) {
+			var_dump($db);exit;
+		}
+
 		// Construction du tableau de données
 		$TIdFactures = array();
 		while($obj = $db->fetch_object($resql)) {
@@ -454,12 +458,14 @@ class TExportCompta extends TObjetStd {
 		// On récupère les catégories du client
 		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_societe WHERE fk_soc = '.$facture->socid;
 		$resql = $db->query($sql);
+		if($resql===false) { var_dump($db);exit; }
 		while($res = $db->fetch_object($resql)) $TCategClient[] = $res->fk_categorie;
 		
 		$TCategProduits = array();
 		// On récupère les catégories du produit
 		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_product WHERE fk_product = '.$produit->id;
 		$resql = $db->query($sql);
+		if($resql===false) { var_dump($db);exit; }
 		while($res = $db->fetch_object($resql)) $TCategProduits[] = $res->fk_categorie;
 		
 		// On récupère le code compta paramétré si existant
@@ -471,6 +477,7 @@ class TExportCompta extends TObjetStd {
 							AND fk_category = '.$id_categ_client.'
 							AND fk_category_product = '.$id_categ_prod;
 					$resql = $db->query($sql);
+					if($resql===false) { var_dump($db);exit; }
 					while($res = $db->fetch_object($resql)) {
 						return $res->code_compta;
 					}
