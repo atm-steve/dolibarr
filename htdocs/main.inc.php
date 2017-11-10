@@ -1938,6 +1938,8 @@ if (! function_exists("llxFooter"))
             print '<script type="text/javascript">
                 jQuery(document).ready(function () {
                   $(".dropdown dt a").on(\'click\', function () {
+                      // Cacher les dropdown déjà ouverts
+                      $("dl.dropdown dd ul").not(":hidden").slideToggle(\'fast\');
                       //console.log($(this).parent().parent().find(\'dd ul\'));
                       $(this).parent().parent().find(\'dd ul\').slideToggle(\'fast\');
                       // Note: Did not find a way to get exact height (value is update at exit) so i calculate a generic from nb of lines
