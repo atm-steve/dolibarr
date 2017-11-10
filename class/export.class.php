@@ -46,6 +46,8 @@ class TExportCompta extends TObjetStd {
 			,'inextenso' => 'In Extenso'
 			,'diacompta' => 'Diacompta'
 			,'orma' => 'Orma'
+			,'comptor' => 'Comptor'
+			,'winfic' => 'Winfic'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture'
@@ -103,17 +105,26 @@ class TExportCompta extends TObjetStd {
 		// Requête de récupération des codes tva
 		$this->TTVA = array();
 		$this->TTVAbyId = array();
-		$sql = "SELECT t.rowid, t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
+		$sql = "SELECT t.rowid, t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy, t.accountancy_code_sell_service, t.accountancy_code_buy_service";
 		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t WHERE active=1";
 
 		$resql = $this->db->query($sql);
+                if(!empty($resql)){
 
-		while($obj = $this->db->fetch_object($resql)) {
-			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
-			$this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
+                    while($obj = $this->db->fetch_object($resql)) {
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell'] = $obj->accountancy_code_sell;
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy'] = $obj->accountancy_code_buy;
 
-			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell'] = $obj->accountancy_code_sell;
-			$this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy'] = $obj->accountancy_code_buy;
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
+                            $this->TTVA[$obj->fk_pays][floatval($obj->taux)]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
+
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell'] = $obj->accountancy_code_sell;
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy'] = $obj->accountancy_code_buy;
+
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['sell_service'] = empty($obj->accountancy_code_sell_service) ? $obj->accountancy_code_sell:$obj->accountancy_code_sell_service;
+                            $this->TTVAbyId[$obj->fk_pays][$obj->rowid]['buy_service'] = empty($obj->accountancy_code_buy_service) ? $obj->accountancy_code_buy:$obj->accountancy_code_buy_service;
+
+                    }
 		}
 	}
 
@@ -122,15 +133,20 @@ class TExportCompta extends TObjetStd {
 	 * Toutes les factures validées, payées, abandonnées, pour l'entité concernée, avec date de facture entre les bornes sélectionnées
 	 */
 	function get_factures_client($dt_deb, $dt_fin) {
-		global $db, $conf, $user;
+		global $db, $conf, $user, $hookmanager;
 
 		if(!$conf->facture->enabled) return array();
 
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_FACTURES_CLIENT;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
+		if(empty($conf->global->EXPORT_COMPTA_AUTHORIZED_SPECIAL_CODE)) $TAuthorizedSpecialCode=array(0);
+		else $TAuthorizedSpecialCode=array_unique(array_merge(array(0), explode(',', $conf->global->EXPORT_COMPTA_AUTHORIZED_SPECIAL_CODE)));
 
 		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
+
+                $hookmanager->initHooks(array('exportcomptadao'));
+
 
 		// Requête de récupération des factures
 		$sql = "SELECT f.rowid, f.entity";
@@ -151,7 +167,18 @@ class TExportCompta extends TObjetStd {
 
 		$sql.= " ORDER BY f.".$datefield.", f.facnumber ASC";
 
+                //Hook to set sql
+		$parameters=array('sql'=>&$sql, 'dt_deb'=>$dt_deb,'dt_fin'=>$dt_fin);
+		$reshook=$hookmanager->executeHooks('setSql',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
+		if ($reshook < 0) $error++;
+
+
 		$resql = $db->query($sql);
+
+		if(!$resql) {
+			var_dump($db);exit;
+		}
+
 //echo $sql;
 		if($resql === false) {
 			var_dump($db);exit;
@@ -166,7 +193,7 @@ class TExportCompta extends TObjetStd {
 				,'id_propal_origin' => $obj->fk_source
 			);
 		}
-		
+
 		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))
 		{
 			/*
@@ -174,15 +201,18 @@ class TExportCompta extends TObjetStd {
 			 */
 			$TAcompteNotUsed = array();
 			$sql = 'SELECT rc.fk_facture_source, rc.fk_soc';
-			$sql.= ' FROM llx_societe_remise_except as rc'; 
-			$sql.= ' LEFT JOIN llx_facture as fa ON rc.fk_facture_source = fa.rowid'; 
+			$sql.= ' FROM llx_societe_remise_except as rc';
+			$sql.= ' LEFT JOIN llx_facture as fa ON rc.fk_facture_source = fa.rowid';
 			$sql.= ' INNER JOIN llx_caisse_bonachat cb ON (cb.fk_facture = rc.fk_facture_source)';
 			$sql.= ' WHERE (rc.fk_facture_line IS NULL AND rc.fk_facture IS NULL)';
 			$sql.= ' AND cb.statut = 0';
 			$sql.= ' AND cb.type = "ACOMPTE"';
 			$sql.= ' ORDER BY rc.datec DESC';
-		
+
 			$resql=$db->query($sql);
+			if(!$resql) {
+                        	var_dump($db);exit;
+                	}
 			if ($resql)
 			{
 				while ($o = $db->fetch_object($resql))
@@ -191,7 +221,7 @@ class TExportCompta extends TObjetStd {
 				}
 			}
 		}
-		
+
 		$trueEntity = $conf->entity;
 
 		$i = 0;
@@ -200,6 +230,8 @@ class TExportCompta extends TObjetStd {
 			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
 			$facture->fetch($idFacture['rowid']);
+			$TContacts = $facture->liste_contact(-1,'external');
+
 			if($conf->global->INVOICE_USE_SITUATION) $facture->fetchPreviousNextSituationInvoice();
 			//if(!empty($facture->tab_previous_situation_invoice)){ pre($facture->tab_previous_situation_invoice,true);exit; }
 
@@ -213,13 +245,27 @@ class TExportCompta extends TObjetStd {
 			$facture->fetch_thirdparty();
 			$TFactures[$facture->id]['tiers'] = get_object_vars($facture->thirdparty);
 
+			//Si on a un contact "Contact client facturation" lié à la facture alors on l'ajoute dans la clé "libelle_tiers_contact" disponible dans la conf
+			//pour le format OpenSi de l'export des factures de vente
+			$nom_contact = $facture->thirdparty->nom;
+			if(is_array($TContacts)){
+				foreach($TContacts as $contact){
+					if($contact['fk_c_type_contact'] == 60){
+						$societe_temp = new Societe($db);
+						$societe_temp->fetch($contact['socid']);
+						$nom_contact = $societe_temp->name;
+					}
+				}
+			}
+			$TFactures[$facture->id]['tiers']['nom_contact'] = $nom_contact;
+
 			// Récupération entity
 			if($conf->multicompany->enabled) {
 				$entity = new DaoMulticompany($db);
 				$entity->fetch($idFacture['entity']);
 				$TFactures[$facture->id]['entity'] = get_object_vars($entity);
 			}
-			
+
 			// Si EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER est activé, on récupère les infos du tiers de la propal et non de celui de la facture
 			if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER) && !empty($idFacture['id_propal_origin'])) {
 				$propal = new Propal($db);
@@ -227,13 +273,14 @@ class TExportCompta extends TObjetStd {
 				$propal->fetch_thirdparty();
 				$used_object = &$propal;
 				$TFactures[$facture->id]['tiers'] = get_object_vars($used_object->thirdparty);
+				$TFactures[$facture->id]['tiers']['nom_contact'] = $nom_contact;
 			}
 			else $used_object = &$facture;
-			
+
 			// Définition des codes comptables
 			$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 			$codeComptableClient = !empty($used_object->thirdparty->code_compta) ? $used_object->thirdparty->code_compta : $conf_code_compta_client_defaut;
-			
+
 			// Blocage si compte comptable non défini (client)
 			if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && $codeComptableClient == $conf_code_compta_client_defaut) {
 				exit('Code compta manquant sur client '.$used_object->thirdparty->nom.', facture '.$facture->ref);
@@ -264,7 +311,12 @@ class TExportCompta extends TObjetStd {
 		                else{
 						    // Code compta TVA
 						    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
-						    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
+						    if($ligneSituation->fk_product_type == 1) {
+						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service'] : $conf_compte_tva;
+						    }
+						    else{
+						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
+						    }
 		                }
 
 						$codeComptableProduit = $this->_get_code_compta_product($FactureSituation,$produit);
@@ -280,8 +332,8 @@ class TExportCompta extends TObjetStd {
 			$facture->fetch_lines();
 			foreach ($facture->lines as $ligne) {
 				$codeComptableProduit='';
-				
-				if($ligne->special_code != 0) continue;
+
+				if(!in_array($ligne->special_code, $TAuthorizedSpecialCode)) continue;
 				if($ligne->total_ht == 0) continue;
 
 				// Code compta produit
@@ -298,36 +350,45 @@ class TExportCompta extends TObjetStd {
 				{
 					$codeComptableProduit = $conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED;
 				}
-				
+
+				// Compte spécifique pour les EcoTaxe
+				if ($conf->ecotaxdeee->enabled) {
+					if($ligne->desc==$conf->global->ECOTAXDEEE_LABEL_LINE) {
+						$codeComptableProduit = $conf->global->EXPORT_COMPTA_ECOTAX;
+					}
+				}
+
 				// Compte spécifique pour les remises
 				if(empty($codeComptableProduit)) {
-					if($ligne->fk_remise_except !== 0) {
+					if(!empty($ligne->fk_remise_except)) {
 						$codeComptableProduit = $conf->global->EXPORT_COMPTA_REMISE;
 					}
 				}
-				
+
+
 				// Compte spécifique pour les acomptes
 				if(empty($codeComptableProduit)) {
 					if($facture->type == $facture::TYPE_DEPOSIT) {
 						$codeComptableProduit = $conf->global->EXPORT_COMPTA_ACOMPTE;
 					}
 				}
-				
+
 				// Blocage si compte comptable non défini (produit)
 				if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && empty($codeComptableProduit)) {
 					exit('Code compta manquant sur ligne de facture '.$ligne->rang.', facture '.$facture->ref);
 				}
-				
+
 				if(empty($codeComptableProduit)) {
-					if($ligne->product_type == 0) {
+					if($ligne->product_type == 1) {
 						$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT : $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT;
-					} else if($ligne->product_type == 1) {
+					} else if($ligne->product_type == 0) {
 						$codeComptableProduit = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT : $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT;
 					}/* else {
 						$codeComptableProduit = 'NOCODE';
 					} Milestone ! */
 				}
-				
+
+				$codeComptableTVA = '';
                 if(!empty($facture->thirdparty->array_options['options_code_tva'])) {
                     $codeComptableTVA  = $facture->thirdparty->array_options['options_code_tva'];
                 }
@@ -335,15 +396,22 @@ class TExportCompta extends TObjetStd {
                     $codeComptableTVA  = $produit->array_options['options_code_tva'];
                 }
                 else{
+
 				    // Code compta TVA
 				    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
-				    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf_compte_tva;
+				    if($ligne->fk_product_type == 1) {
+				    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell_service'] : $conf_compte_tva;
+				    }
+				    else{
+				    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['sell'] : $conf_compte_tva;
+				    }
+
                 }
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableClient])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableClient] = 0;
 				if(empty($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit])) $TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = 0;
 				if(empty($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = 0;
-				
+
 				// TODO, ce cas pose problème dans le cadre des acomptes, tk5148
 				/*if($ligne->info_bits == 2 ) { // cas d'une réduction
 					$ligne->total_ttc = -$ligne->total_ttc;
@@ -386,8 +454,6 @@ class TExportCompta extends TObjetStd {
 
 		$conf->entity = $trueEntity;
 
-		//pre($TFactures[24],true);exit;
-
         TExportCompta::equilibreFacture($TFactures);
 
 		return $TFactures;
@@ -401,9 +467,11 @@ class TExportCompta extends TObjetStd {
 		//pre($facture->thirdparty,true);exit;
 
 		// Cas des codes comptables par catégories clients
-		$codeComptableProduit = self::get_code_compta_by_categ_tiers($facture, $produit);
-		if(!empty($codeComptableProduit)) return $codeComptableProduit;
-		
+		if(!empty($produit->id)) {
+			$codeComptableProduit = self::get_code_compta_by_categ_tiers($facture, $produit);
+			if(!empty($codeComptableProduit)) return $codeComptableProduit;
+		}
+
 		// Cas des DOM-TOM
 		if($facture->thirdparty->country_code == 'PM'
 				|| $facture->thirdparty->country_code == 'BL'
@@ -451,23 +519,23 @@ class TExportCompta extends TObjetStd {
 	}
 
 	static function get_code_compta_by_categ_tiers(&$facture, &$produit) {
-		
+
 		global $db;
-		
+
 		$TCategClient = array();
 		// On récupère les catégories du client
 		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_societe WHERE fk_soc = '.$facture->socid;
 		$resql = $db->query($sql);
 		if($resql===false) { var_dump($db);exit; }
 		while($res = $db->fetch_object($resql)) $TCategClient[] = $res->fk_categorie;
-		
+
 		$TCategProduits = array();
 		// On récupère les catégories du produit
 		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_product WHERE fk_product = '.$produit->id;
 		$resql = $db->query($sql);
 		if($resql===false) { var_dump($db);exit; }
 		while($res = $db->fetch_object($resql)) $TCategProduits[] = $res->fk_categorie;
-		
+
 		// On récupère le code compta paramétré si existant
 		if(!empty($TCategClient) && !empty($TCategProduits)) {
 			foreach($TCategClient as $id_categ_client) {
@@ -484,9 +552,9 @@ class TExportCompta extends TObjetStd {
 				}
 			}
 		}
-		
+
 		return 0;
-		
+
 	}
 
     static function equilibreFacture(&$TFactures) {
@@ -536,17 +604,17 @@ class TExportCompta extends TObjetStd {
     }
 
 	static function _get_mode_reglement_label($id) {
-		
+
 		global $db;
-		
+
 		if(empty($id)) return '';
-		
+
 		$sql = 'SELECT libelle FROM '.MAIN_DB_PREFIX.'c_paiement WHERE id = '.$id;
 		$resql = $db->query($sql);
 		$res = $db->fetch_object($resql);
-		
+
 		return $res->libelle;
-		
+
 	}
 
 	/*
@@ -608,8 +676,8 @@ class TExportCompta extends TObjetStd {
 
 			// Définition des codes comptables
 			$codeComptableFournisseur = !empty($facture->thirdparty->code_compta_fournisseur) ? $facture->thirdparty->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
-			
-			
+
+
 			// Blocage si compte comptable non défini (client)
 			if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && $codeComptableFournisseur == $conf->global->COMPTA_ACCOUNT_SUPPLIER) {
 				exit('Code compta manquant sur fournisseur '.$facture->thirdparty->nom.', facture '.$facture->ref);
@@ -679,7 +747,12 @@ class TExportCompta extends TObjetStd {
                     $codeComptableTVA  = $produit->array_options['options_code_tva_achat'];
 				}
                 else{
-                    $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                	if($ligne->fk_product_type == 1) {
+                		$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                	}
+                    else{
+                    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                    }
                 }
 
 				if(empty($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur])) $TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = 0;
@@ -986,7 +1059,7 @@ class TExportCompta extends TObjetStd {
 			$sql="SELECT s.nom,s.code_client,s.code_fournisseur,s.code_compta,s.code_compta_fournisseur, s.address, s.zip, s.fournisseur
 			, s.town,s.phone,s.fax,s.email,s.tms,rglt.code as mode_reglement_code,p.code as 'code_pays',p.label as 'pays',s.siret, rib.label as 'rib_label', rib.code_banque
 			, rib.code_guichet, rib.number as 'compte_bancaire', rib.cle_rib, rib.bic, rib.iban_prefix as 'iban', rib.domiciliation, rib.proprio as 'rib_proprio'
-			, ex.fk_soc_affacturage
+			, ex.fk_soc_affacturage, s.note_public
 			FROM ".MAIN_DB_PREFIX."societe s
 			LEFT JOIN ".MAIN_DB_PREFIX."societe_rib rib ON (s.rowid=rib.fk_soc AND rib.default_rib=1)
             LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields ex ON (s.rowid=ex.fk_object)
@@ -1084,13 +1157,13 @@ class TExportCompta extends TObjetStd {
 		$sql = "SELECT b.rowid, ba.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
+		if(!$this->exportAllreadyExported) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank_class bc ON(b.rowid = bc.lineid)';
 		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if($onlyReconciled) $sql.= " AND b.rappro = 1";
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		if(!empty($TExcludedBankAcount)) $sql.= ' AND ba.ref NOT IN("'.$TExcludedBankAcount.'")';
+		if(!$this->exportAllreadyExported) $sql.= ' AND bc.lineid IS NULL';
 		$sql.= " ORDER BY b.".$datefield." ASC, b.rowid";
-
-		//echo $sql;
 
 		$resql = $db->query($sql);
 
@@ -1235,6 +1308,26 @@ class TExportCompta extends TObjetStd {
 			$TBank[$bankline->id]['ligne_banque'][$codeComptableBank] += $bankline->amount;
 		}
 
+		// Enregistrement des écritures dans une catégorie
+		if(!empty($TBank) && $this->addExportTime) {
+
+			$req = 'INSERT INTO '.MAIN_DB_PREFIX.'bank_categ (label, entity)
+					VALUES (NOW(),'.$conf->entity.')';
+			$result = $db->query($req);
+			$id_categ = $db->last_insert_id('bank_categ');
+
+			if(!empty($id_categ)) {
+				foreach($TBank as $id_bank=>$TData) {
+				    $req = "DELETE FROM ".MAIN_DB_PREFIX."bank_class WHERE lineid = ".$id_bank." AND fk_categ = ".$id_categ;
+				    $db->query($req);
+
+				    $req = "INSERT INTO ".MAIN_DB_PREFIX."bank_class (lineid, fk_categ) VALUES (".$id_bank.", ".$id_categ.")";
+				    $db->query($req);
+				}
+			}
+
+		}
+
 		/*
 		// Requête de récupération des écritures bancaires (CHQ)
 		$sql = "SELECT bc.rowid";
@@ -1324,9 +1417,80 @@ class TExportCompta extends TObjetStd {
 		return $TBank;
 	}
 
+	function getODVATTransfer($infosBank) {
+		global $conf;
+
+		// Récupération du montant de TVA des factures liées au règlement, uniquement si facture payée
+		$sql = "SELECT ff.total_tva FROM llx_bank_url bu
+				LEFT JOIN llx_paiementfourn pf ON (pf.rowid = bu.url_id)
+				LEFT JOIN llx_paiementfourn_facturefourn pff ON (pff.fk_paiementfourn = pf.rowid)
+				LEFT JOIN llx_facture_fourn ff ON (ff.rowid = pff.fk_facturefourn)
+				WHERE bu.type = 'payment_supplier'
+				AND ff.paye = 1 ";
+
+		$sql.= "AND bu.fk_bank = ".$infosBank['bankline']['id'];
+
+		$resql = $this->db->query($sql);
+
+		// Calcul du total TVA sur les factures payées (totalement) par le règlement
+		$vat_amount = 0;
+		while($obj = $this->db->fetch_object($resql)) {
+			$vat_amount+=$obj->total_tva;
+		}
+
+		$TOD = array();
+		if(empty($vat_amount)) return $TOD;
+
+		// Création d'une écriture d'OF pour transférer le montant de la TVA d'un compte d'attente à un compte définitif
+		$TOD[] = $ligneFichier = array(
+			'code_journal'					=> 'OD',
+			'date_piece'					=> $infosBank['bankline']['datev'],
+			'numero_compte_general'			=> $conf->global->EXPORT_COMPTA_ODTVA_FROM,
+			'numero_piece'					=> 'BK'.str_pad($infosBank['bankline']['id'],6,'0',STR_PAD_LEFT),
+
+			'libelle'						=> 'Transfert TVA',
+			'montant_debit'					=> $vat_amount,
+			'montant_credit'				=> 0,
+			'type_ecriture'					=> 'G'
+		);
+
+		$TOD[] = $ligneFichier = array(
+			'code_journal'					=> 'OD',
+			'date_piece'					=> $infosBank['bankline']['datev'],
+			'numero_compte_general'			=> $conf->global->EXPORT_COMPTA_ODTVA_TO,
+			'numero_piece'					=> 'BK'.str_pad($infosBank['bankline']['id'],6,'0',STR_PAD_LEFT),
+
+			'libelle'						=> 'Transfert TVA',
+			'montant_debit'					=> 0,
+			'montant_credit'				=> $vat_amount,
+			'type_ecriture'					=> 'G'
+		);
+
+		return $TOD;
+	}
+
 	function get_line(&$format, $dataline) {
+		global $conf;
+
 		$ligneFichierTxtFixe = '';
 
+		$fieldSeparator = $this->fieldSeparator;
+		$fieldPadding = $this->fieldPadding;
+
+		if(!empty( $conf->global->EXPORT_COMPTA_DATASEPARATOR )) {
+			if($conf->global->EXPORT_COMPTA_DATASEPARATOR == 'none') {
+				$fieldSeparator =  '';
+				$fieldPadding = true;
+			}
+			else{
+				$fieldSeparator =  $conf->global->EXPORT_COMPTA_DATASEPARATOR;
+				$fieldPadding = false;
+			}
+		}
+
+		/*=
+		$this->fieldPadding=empty($conf->global->EXPORT_COMPTA_DATASEPARATOR) ? true : false;
+		*/
 		$TVal = array();
 		if (is_array($format) && count($format)>0) {
 			foreach($format as $fmt) {
@@ -1346,13 +1510,16 @@ class TExportCompta extends TObjetStd {
 				if($fmt['type'] == 'date' && !empty($valeur) && !empty($fmt['format'])) {
 					$valeur = date($fmt['format'], $valeur);
 				}
-
+				else if($fmt['type'] == 'numeric' && !empty($fmt['format'])) {
+					$valeur = number_format((float)$valeur,$fmt['format'][0],isset($fmt['format'][1]) ? $fmt['format'][1] : '.',isset($fmt['format'][2]) ? $fmt['format'][2] : '');
+		//	var_dump($valeur, $fmt);exit;
+				}
 				// Suppression de tous les caractères accentués pour compatibilités tous systèmes
 				$valeur = $this->suppr_accents($valeur);
 
 				// Ajout padding ou troncature
 				$pad_type = !empty($fmt['pad_type']) ? $fmt['pad_type'] : STR_PAD_LEFT;
-				if(strlen($valeur) < $fmt['length'] && $this->fieldPadding) {
+				if(strlen($valeur) < $fmt['length'] && $fieldPadding) {
 					$pad_string = ($fmt['default'] == '') ? ' ' : $fmt['default'];
 					$valeur = str_pad($valeur, $fmt['length'], $pad_string, $pad_type);
 				} else if(iconv_strlen($valeur) > $fmt['length']) {
@@ -1369,8 +1536,7 @@ class TExportCompta extends TObjetStd {
 				//if(!empty($this->fieldSeparator)) $ligneFichierTxtFixe .= $this->fieldSeparator;
 			}
 		}
-
-		$ligneFichierTxtFixe = implode($this->fieldSeparator, $TVal);
+		$ligneFichierTxtFixe = implode($fieldSeparator, $TVal);
 
 		if(!empty($this->lineSeparator)) $ligneFichierTxtFixe .= $this->lineSeparator;
 

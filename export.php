@@ -34,24 +34,16 @@ if(isset($_REQUEST['submitBtn']) || isset($_REQUEST['showMe'])) {
 if(!empty($action) && $action == 'export') {
 
 	if(!empty($logiciel_export)) {
-		
+
 		try{
 		    $addExportTimeToBill = isset($_REQUEST['showMe']) ? 0 : (int)GETPOST('addExportTimeToBill');
-            
+
 			$export=new $className($db, (int)GETPOST('exportAllreadyExported'), $addExportTimeToBill );
 		}
 		catch(Exception $e) {
 			$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportLogiciel'). ' : ' . $logiciel_export;
 		}
-		
-		if(!empty($export->filename)) {
-			$fileName = $export->filename;
-		}
-		else{
-			$fileName = $logiciel_export.$type_export.date('YmdHis').".".$conf->global->EXPORT_COMPTA_EXTENSION;
-		}
-		
-		
+
 		if(isset($export) && is_object($export)) {
 			$formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
 			$formatvardefault = '_format_'.$type_export;
@@ -87,7 +79,15 @@ if(!empty($action) && $action == 'export') {
 					break;
 			}
 		}
-		
+
+		if(!empty($export->filename)) {
+			$fileName = $export->filename;
+		}
+		else{
+			$fileName = $logiciel_export.$type_export.date('YmdHis').".".$conf->global->EXPORT_COMPTA_EXTENSION;
+		}
+
+
 	} else {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('NoExportSelected');
 	}
@@ -95,19 +95,19 @@ if(!empty($action) && $action == 'export') {
 print nl2br($fileContent);
 exit();*/
     if(isset($_REQUEST['showMe'])) {
-        
+
         $Tab = explode("\n", $fileContent);
-        
+
         print '<pre>';
         print $fileContent;
         print '</pre>';
-        
+
         exit;
-        
+
     }
     else if($fileContent != '') {
 		$size = strlen($fileContent);
-		
+
 		header("Content-Type: application/force-download; name=\"$fileName\"");
 		header("Content-Transfer-Encoding: binary");
 		header("Content-Length: $size");
@@ -115,9 +115,9 @@ exit();*/
 		header("Expires: 0");
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Pragma: no-cache");
-		
+
 		print $fileContent;
-		
+
 		exit();
 	} else if(empty($error)) {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('EmptyExport');
@@ -155,9 +155,9 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 			<td>
                 <input type="checkbox" name="exportAllreadyExported" value="1" /> <?php echo $langs->trans('exportAllreadyExported') ?>
                 <br /> <input type="checkbox" name="addExportTimeToBill" value="1" checked="checked" /> <?php echo $langs->trans('addExportTimeToBill') ?>
-				
+
 			</td>
-		</tr>	
+		</tr>
 		<tr class="impair">
 			<td><?php echo $langs->trans('ExportType') ?></td>
 			<td>

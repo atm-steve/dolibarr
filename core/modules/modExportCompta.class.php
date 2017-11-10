@@ -61,7 +61,7 @@ class modExportCompta extends DolibarrModules
 		// Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
 		$this->description = "Export Comptabilité format propriétaires";
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
-		$this->version = '1.0';
+		$this->version = '1.1';
 		// Key used in llx_const table to save module status enabled/disabled (where MYMODULE is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		// Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
@@ -259,7 +259,10 @@ class modExportCompta extends DolibarrModules
         $res = $extrafields->addExtraField('fk_soc_affacturage', 'Tiers pour  affacturage', 'sellist', 0, '', 'societe',0,0,'',serialize(array('options'=>array('societe:nom:rowid'=>null))));
 
 
-		$result=$this->load_tables();
+        $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_sell_service varchar(32) NULL");
+        $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_buy_service varchar(32) NULL");
+		
+        $result=$this->load_tables();
 
 		return $this->_init($sql);
 	}

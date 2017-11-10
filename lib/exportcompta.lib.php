@@ -12,11 +12,16 @@ function exportcompta_admin_prepare_head()
 	$head[$h][2] = 'config';
 	$h++;
 	
+	$head[$h][0] = dol_buildpath('/exportcompta/admin/tva.php', 1);
+	$head[$h][1] = $langs->trans("VATs");
+	$head[$h][2] = 'tva';
+	$h++;
+	
 	$head[$h][0] = dol_buildpath('/exportcompta/admin/format.php', 1);
 	$head[$h][1] = $langs->trans("Formats");
 	$head[$h][2] = 'format';
 	$h++;
-
+	
 	return $head;
 }
 

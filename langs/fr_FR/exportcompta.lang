@@ -40,14 +40,15 @@ ProductExportField=Champ complémentaire contenant le code comptable de vente Ex
 ProductFRSuspField=Champ complémentaire contenant le code comptable de vente France Suspension TVA
 ProductFRDomTomField=Champ complémentaire contenant le code comptable de vente France Dom / Tom
 exportAllreadyExported=Exporter les écritures déjà marquées exportées
-addExportTimeToBill=Ajouter la date d'export sur les écritures de factures vente et achat
+addExportTimeToBill=Ajouter la date d'export sur les écritures de factures vente et achat (ou ajouter les écritures bancaires dans une nouvelle catégorie)
 FileExtension=Extension des fichiers générés
-DataSeparator=Séparateur de données (laisser vide pour un fichier à largeur fixe)
+DataSeparator=Séparateur de données (mettre "none" pour un fichier à largeur fixe)
 AllowModifyInvoiceWhenTransfered=Autoriser la modification (repassage en brouillon) des factures lorsqu'elle ont été comptabilisées
 ReopenInvoice=Empêcher la réouverture des factures lorsqu'elle ont été comptabilisées
 RegenerateInvoice=Empêcher la regénération des factures lorsqu'elle ont été comptabilisées
 AccountForBankTransfer=Compte comptable intermédiaire pour les transfert entre banques
 AccountForDiscountExcept=Compte comptable pour les remises
+AccountForEcoTax=Compte comptable pour les ecotax
 AccountForDeposit=Compte comptable pour les acomptes
 ProductCEEFieldBuying=Champ complémentaire contenant le code comptable d'achat CEE
 ProductExportFieldBuying=Champ complémentaire contenant le code comptable d'achat Export
@@ -57,6 +58,7 @@ BillAlreadyExported=Facture déjà exportée
 ExportJustMM=Exporter uniquement les maisons mères
 ExportOnlyReconciled=Exporter uniquement les écritures bancaires rapprochées
 ExcludedBank=Exclure du journal de banque les écritures provenant des comptes suivants (sous la forme REFCOMPTE1,REFCOMPTE2,REFCOMPTE3)
+AuthorizedSpecialCode=Inclure les lignes ayant le champ special_code avec les valeurs suivantes (de la forme 0,2,5)
 BlockIfNoAccount=Bloquer l'export si un compte comptable est manquant
 AccountGeneralForCustomer=Compte général pour les clients
 AccountGeneralForSupplier=Compte général pour les fournisseurs
@@ -65,3 +67,9 @@ AccountGeneralForUser=Compte général pour les utilisateurs
 #CAISSE
 CaisseParameters=Paramètre module Caisse
 EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED=Compte comptable pour les acomptes (bons d'achats) émis non consommés
+
+AccountancySellCode=Code de vente produit
+AccountancyBuyCode=Code d'achat produit
+AccountancySellCodeService=Code de vente service
+AccountancyBuyCodeService=Code d'achat service
+

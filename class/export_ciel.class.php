@@ -566,7 +566,7 @@ class TExportComptaCiel extends TExportCompta
 						// 'montant' => abs($montant),
 						'date_echeance' => $facture['date_lim_reglement'],
 						'numero_piece' => $facture['ref'],
-
+						'libelle_compte' => $tiers['nom'],
 						'num_unique' => $numEcriture
 				)
 				;
@@ -594,6 +594,7 @@ class TExportComptaCiel extends TExportCompta
 							// 'montant' => abs($montant),
 							'date_echeance' => $facture['date_lim_reglement'],
 							'numero_piece' => $facture['ref'],
+							'libelle_compte' => $tiers['nom'],
 							'num_unique' => $numEcriture
 					)
 					;
@@ -770,8 +771,8 @@ class TExportComptaCiel extends TExportCompta
 		$numLignes = 1;
 
 		foreach ( $TabReglement as $infosReglement ) {
-			$tiers = &$infosReglement['client'];
-			$reglement = &$infosReglement['reglement'];
+			$tiers = &$infosReglement[0]['client'];
+			$reglement = &$infosReglement[0]['reglement'];
 
 			// Ligne Banque
 			$ligneFichier = array(
