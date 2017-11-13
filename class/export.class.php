@@ -747,11 +747,12 @@ class TExportCompta extends TObjetStd {
                     $codeComptableTVA  = $produit->array_options['options_code_tva_achat'];
 				}
                 else{
+			$conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_BUY_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
                 	if($ligne->fk_product_type == 1) {
-                		$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                		$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service'] : $conf_compte_tva;
                 	}
                     else{
-                    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf_compte_tva;
                     }
                 }
 
