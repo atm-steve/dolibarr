@@ -402,7 +402,7 @@ if (empty($reshook))
 					if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
 					{
 						$ret=$object->fetch($id);    // Reload to get new records
-						facture_pdf_create($db, $object, $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+						$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 					}
 					/************************************************************************************************************************************/
 
@@ -447,7 +447,7 @@ if (empty($reshook))
 					if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
 					{
 						$ret=$object->fetch($id);    // Reload to get new records
-						facture_pdf_create($db, $object, $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+						$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 					}
 					/************************************************************************************************************************************/
 
