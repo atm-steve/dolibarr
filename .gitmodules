@@ -108,7 +108,7 @@
 	url = git@atmsrv1:store-mailchimp.git
 [submodule "htdocs/custom/mantis"]
 	path = htdocs/custom/mantis
-	url = git@atmsrv1:doli-mantis-connector.git
+	url = git@gogs.atm-consulting.fr:ATM-Consulting/doli-mantis-connector.git
 [submodule "htdocs/custom/multicompany"]
 	path = htdocs/custom/multicompany
 	url = git@atmsrv1:multicompany.git
