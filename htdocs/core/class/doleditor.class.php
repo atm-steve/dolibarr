@@ -58,7 +58,7 @@ class DolEditor
      *                              		      	'Out:name' share toolbar into the div called 'name'
      *      @param  boolean	$toolbarstartexpanded  	Bar is visible or not at start
 	 *		@param	int		$uselocalbrowser		Enabled to add links to local object with local browser. If false, only external images can be added in content.
-	 *      @param  int		$okforextendededitor    True=Allow usage of extended editor tool (like fckeditor)
+	 *      @param  int		$okforextendededitor    True=Allow usage of extended editor tool (like fckeditor). If false, use simple textarea.
      *      @param  int		$rows                   Size of rows for textarea tool
 	 *      @param  string	$cols                   Size of cols for textarea tool (textarea number of cols '70' or percent 'x%')
 	 *      @param	int		$readonly				0=Read/Edit, 1=Read only
@@ -81,7 +81,7 @@ class DolEditor
 
         // Check if extended editor is ok. If not we force textarea
         if (empty($conf->fckeditor->enabled) || ! $okforextendededitor) $this->tool = 'textarea';
-        //if ($conf->browser->phone) $this->tool = 'textarea';
+        //if ($conf->dol_use_jmobile) $this->tool = 'textarea';       // ckeditor and ace seems ok with mobile
 
         // Define content and some properties
         if ($this->tool == 'ckeditor')
@@ -99,8 +99,8 @@ class DolEditor
         	$this->editor->Value	= $content;
         	$this->editor->Height   = $height;
         	if (! empty($width)) $this->editor->Width = $width;
-        	$this->editor->ToolbarSet = $shorttoolbarname;
-        	$this->editor->Config['AutoDetectLanguage'] = 'true';
+        	$this->editor->ToolbarSet = $shorttoolbarname;         // Profile of this toolbar set is deinfed into theme/mytheme/ckeditor/config.js
+        	$this->editor->Config['AutoDetectLanguage'] = 'true';  // Language of user (browser)
         	$this->editor->Config['ToolbarLocation'] = $toolbarlocation ? $toolbarlocation : 'In';
         	$this->editor->Config['ToolbarStartExpanded'] = $toolbarstartexpanded;
 
@@ -140,21 +140,25 @@ class DolEditor
      *	Output edit area inside the HTML stream.
      *	Output depends on this->tool (fckeditor, ckeditor, textarea, ...)
      *
-     *  @param	int		$noprint    1=Return HTML string instead of printing it to output
-     *  @param	string	$morejs		Add more js. For example: ".on( \'saveSnapshot\', function(e) { alert(\'ee\'); });"
+     *  @param	int		$noprint             1=Return HTML string instead of printing it to output
+     *  @param	string	$morejs		         Add more js. For example: ".on( \'saveSnapshot\', function(e) { alert(\'ee\'); });"
+     *  @param  boolean $disallowAnyContent  Disallow to use any content. true=restrict to a predefined list of allowed elements.
      *  @return	void|string
      */
-    function Create($noprint=0,$morejs='')
+    function Create($noprint=0,$morejs='',$disallowAnyContent=true)
     {
     	global $conf,$langs;
 
     	$fullpage=False;
-    	$disallowAnyContent=empty($conf->global->FCKEDITOR_ALLOW_ANY_CONTENT); // Only predefined list of html tags are allowed
-    	
+    	if (isset($conf->global->FCKEDITOR_ALLOW_ANY_CONTENT))
+    	{
+    	   $disallowAnyContent=empty($conf->global->FCKEDITOR_ALLOW_ANY_CONTENT);      // Only predefined list of html tags are allowed or all
+    	}
+
     	$found=0;
 		$out='';
 
-        if ($this->tool == 'fckeditor')
+        if ($this->tool == 'fckeditor') // not used anymore
         {
             $found=1;
             $this->editor->Create();
@@ -163,22 +167,23 @@ class DolEditor
         {
             $found=1;
             //$out.= '<textarea id="'.$this->htmlname.'" name="'.$this->htmlname.'" rows="'.$this->rows.'" cols="'.$this->cols.'"'.($this->readonly?' disabled':'').' class="flat">';
-            $out.= '<textarea id="'.$this->htmlname.'" name="'.$this->htmlname.'" rows="'.$this->rows.'"'.(preg_match('/%/',$this->cols)?' style="margin-top: 2px; width: '.$this->cols.'"':' cols="'.$this->cols.'"').' class="flat">';
+            $out.= '<textarea id="'.$this->htmlname.'" name="'.$this->htmlname.'" rows="'.$this->rows.'"'.(preg_match('/%/',$this->cols)?' style="margin-top: 5px; width: '.$this->cols.'"':' cols="'.$this->cols.'"').' class="flat">';
             $out.= $this->content;
             $out.= '</textarea>';
 
-            if ($this->tool == 'ckeditor')
+            if ($this->tool == 'ckeditor' && ! empty($conf->use_javascript_ajax))
             {
             	if (! defined('REQUIRE_CKEDITOR')) define('REQUIRE_CKEDITOR','1');
 
             	if (! empty($conf->global->FCKEDITOR_SKIN)) {
 					$skin = $conf->global->FCKEDITOR_SKIN;
 				} else {
-					$skin = 'moono'; // default with ckeditor 4 : moono
+					$skin = 'moono-lisa'; // default with ckeditor 4.6 : moono-lisa
 				}
 
             	$htmlencode_force=preg_match('/_encoded$/',$this->toolbarname)?'true':'false';
 
+            	$out.= '<!-- Output ckeditor $disallowAnyContent='.$disallowAnyContent.' toolbarname='.$this->toolbarname.' -->'."\n";
             	$out.= '<script type="text/javascript">
             			$(document).ready(function () {
                             /* if (CKEDITOR.loadFullCore) CKEDITOR.loadFullCore(); */
@@ -190,7 +195,8 @@ class DolEditor
             						readOnly : '.($this->readonly?'true':'false').',
                             		htmlEncodeOutput :'.$htmlencode_force.',
             						allowedContent :'.($disallowAnyContent?'false':'true').',
-            						fullPage : '.($fullpage?'true':'false').', 
+            						extraAllowedContent : \'\',
+            						fullPage : '.($fullpage?'true':'false').',
                             		toolbar: \''.$this->toolbarname.'\',
             						toolbarStartupExpanded: '.($this->toolbarstartexpanded ? 'true' : 'false').',
             						width: '.($this->width ? '\''.$this->width.'\'' : '\'\'').',

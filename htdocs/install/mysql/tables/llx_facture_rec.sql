@@ -25,13 +25,15 @@ create table llx_facture_rec
   titre              varchar(50) NOT NULL,
   entity             integer DEFAULT 1 NOT NULL,	 -- multi company id
   fk_soc             integer NOT NULL,
-  datec              datetime,  -- date de creation
+  datec              datetime,            -- date de creation
+  tms				 timestamp,           -- date creation/modification
 
   amount             double(24,8)     DEFAULT 0 NOT NULL,
   remise             real     DEFAULT 0,
   remise_percent     real     DEFAULT 0,
   remise_absolue     real     DEFAULT 0,
   
+  vat_src_code		 varchar(10)  DEFAULT '',			-- Vat code used as source of vat fields. Not strict foreign key here.
   tva                double(24,8)     DEFAULT 0,
   localtax1			 double(24,8)     DEFAULT 0,           -- amount localtax1
   localtax2          double(24,8)     DEFAULT 0,           -- amount localtax2
@@ -39,7 +41,8 @@ create table llx_facture_rec
   total              double(24,8)     DEFAULT 0,
   total_ttc          double(24,8)     DEFAULT 0,
 
-  fk_user_author     integer,             -- createur
+  fk_user_author     integer,             -- user creating
+  fk_user_modif      integer,             -- user making last change
   
   fk_projet          integer,             -- projet auquel est associe la facture
   

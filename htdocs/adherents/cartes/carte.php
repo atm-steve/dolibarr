@@ -60,7 +60,7 @@ if ((! empty($foruserid) || ! empty($foruserlogin) || ! empty($mode)) && ! $mesg
 {
     $arrayofmembers=array();
 
-    // requete en prenant que les adherents a jour de cotisation
+    // request taking into account member with up to date subscriptions
     $sql = "SELECT d.rowid, d.firstname, d.lastname, d.login, d.societe as company, d.datefin,";
     $sql.= " d.address, d.zip, d.town, d.country, d.birth, d.email, d.photo,";
     $sql.= " t.libelle as type,";
@@ -68,6 +68,7 @@ if ((! empty($foruserid) || ! empty($foruserlogin) || ! empty($mode)) && ! $mesg
     $sql.= " FROM ".MAIN_DB_PREFIX."adherent_type as t, ".MAIN_DB_PREFIX."adherent as d";
     $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON d.country = c.rowid";
     $sql.= " WHERE d.fk_adherent_type = t.rowid AND d.statut = 1";
+    $sql.= " AND d.entity IN (".getEntity('adherent').")";
     if (is_numeric($foruserid)) $sql.=" AND d.rowid=".$foruserid;
     if ($foruserlogin) $sql.=" AND d.login='".$db->escape($foruserlogin)."'";
     $sql.= " ORDER BY d.rowid ASC";
@@ -89,25 +90,25 @@ if ((! empty($foruserid) || ! empty($foruserlogin) || ! empty($mode)) && ! $mesg
 
     		// List of values to scan for a replacement
             $substitutionarray = array (
-            '%ID%'=>$objp->rowid,
-            '%LOGIN%'=>$objp->login,
-            '%FIRSTNAME%'=>$objp->firstname,
-            '%LASTNAME%'=>$objp->lastname,
-            '%FULLNAME%'=>$adherentstatic->getFullName($langs),
-            '%COMPANY%'=>$objp->company,
-            '%ADDRESS%'=>$objp->address,
-            '%ZIP%'=>$objp->zip,
-            '%TOWN%'=>$objp->town,
-            '%COUNTRY%'=>$objp->country,
-            '%COUNTRY_CODE%'=>$objp->country_code,
-            '%EMAIL%'=>$objp->email,
-            '%BIRTH%'=>dol_print_date($objp->birth,'day'),
-            '%TYPE%'=>$objp->type,
-            '%YEAR%'=>$year,
-            '%MONTH%'=>$month,
-            '%DAY%'=>$day,
-            '%DOL_MAIN_URL_ROOT%'=>DOL_MAIN_URL_ROOT,
-            '%SERVER%'=>"http://".$_SERVER["SERVER_NAME"]."/"
+                '%ID%'=>$objp->rowid,
+                '%LOGIN%'=>$objp->login,
+                '%FIRSTNAME%'=>$objp->firstname,
+                '%LASTNAME%'=>$objp->lastname,
+                '%FULLNAME%'=>$adherentstatic->getFullName($langs),
+                '%COMPANY%'=>$objp->company,
+                '%ADDRESS%'=>$objp->address,
+                '%ZIP%'=>$objp->zip,
+                '%TOWN%'=>$objp->town,
+                '%COUNTRY%'=>$objp->country,
+                '%COUNTRY_CODE%'=>$objp->country_code,
+                '%EMAIL%'=>$objp->email,
+                '%BIRTH%'=>dol_print_date($objp->birth,'day'),
+                '%TYPE%'=>$objp->type,
+                '%YEAR%'=>$year,
+                '%MONTH%'=>$month,
+                '%DAY%'=>$day,
+                '%DOL_MAIN_URL_ROOT%'=>DOL_MAIN_URL_ROOT,
+                '%SERVER%'=>"http://".$_SERVER["SERVER_NAME"]."/"
             );
             complete_substitutions_array($substitutionarray, $langs);
 
@@ -121,7 +122,10 @@ if ((! empty($foruserid) || ! empty($foruserlogin) || ! empty($mode)) && ! $mesg
 
                 if (is_numeric($foruserid) || $foruserlogin)
                 {
-                    for($j=0;$j<100;$j++)
+                    $nb = $_Avery_Labels[$model]['NX'] * $_Avery_Labels[$model]['NY'];
+                    if ($nb <= 0) $nb=1;  // Protection to avoid empty page
+
+                    for($j=0;$j<$nb;$j++)
                     {
                         $arrayofmembers[]=array(
                         	'textleft'=>$textleft,

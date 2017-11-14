@@ -18,9 +18,11 @@
  * or see http://www.gnu.org/
  */
 
-
 // Variable $upload_dir must be defined when entering here
 // Variable $upload_dirold may also exists.
+
+//var_dump($upload_dir);
+//var_dump($upload_dirold);
 
 // Submit file/link
 if (GETPOST('sendit') && ! empty($conf->global->MAIN_UPLOAD_DOC))
@@ -28,9 +30,9 @@ if (GETPOST('sendit') && ! empty($conf->global->MAIN_UPLOAD_DOC))
     if ($object->id)
     {
     	if (! empty($upload_dirold) && ! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))
-            dol_add_file_process($upload_dirold, 0, 1, 'userfile', GETPOST('savingdocmask'));
+            $result = dol_add_file_process($upload_dirold, 0, 1, 'userfile', GETPOST('savingdocmask', 'alpha'));
         else
-            dol_add_file_process($upload_dir, 0, 1, 'userfile', GETPOST('savingdocmask'));
+            $result = dol_add_file_process($upload_dir, 0, 1, 'userfile', GETPOST('savingdocmask', 'alpha'));
     }
 }
 elseif (GETPOST('linkit') && ! empty($conf->global->MAIN_UPLOAD_DOC))
@@ -40,7 +42,7 @@ elseif (GETPOST('linkit') && ! empty($conf->global->MAIN_UPLOAD_DOC))
         $link = GETPOST('link', 'alpha');
         if ($link)
         {
-            if (substr($link, 0, 7) != 'http://' && substr($link, 0, 8) != 'https://') {
+            if (substr($link, 0, 7) != 'http://' && substr($link, 0, 8) != 'https://' && substr($link, 0, 7) != 'file://') {
                 $link = 'http://' . $link;
             }
             dol_add_file_process($upload_dir, 0, 1, 'userfile', null, $link);
@@ -54,8 +56,8 @@ if ($action == 'confirm_deletefile' && $confirm == 'yes')
 {
     if ($object->id)
     {
-        $urlfile = GETPOST('urlfile', 'alpha');	// Do not use urldecode here ($_GET and $_REQUEST are already decoded by PHP).
-        if (GETPOST('section')) $file = $upload_dir . "/" . $urlfile;	// For a delete of GED module urlfile contains full path from upload_dir
+        $urlfile = GETPOST('urlfile', 'alpha', 0, null, null, 1);	// Do not use urldecode here ($_GET and $_REQUEST are already decoded by PHP).
+        if (GETPOST('section', 'alpha')) $file = $upload_dir . "/" . $urlfile;	// For a delete of GED module urlfile contains full path from upload_dir
         else															// For documents pages, upload_dir contains already path to file from module dir, so we clean path into urlfile.
 		{
        		$urlfile=basename($urlfile);
@@ -71,7 +73,7 @@ if ($action == 'confirm_deletefile' && $confirm == 'yes')
 
             $ret = dol_delete_file($file, 0, 0, 0, $object);
             if (! empty($fileold)) dol_delete_file($fileold, 0, 0, 0, $object);     // Delete file using old path
-            
+
 	        // Si elle existe, on efface la vignette
 	        if (preg_match('/(\.jpg|\.jpeg|\.bmp|\.gif|\.png|\.tiff)$/i',$file,$regs))
 	        {
@@ -114,7 +116,7 @@ if ($action == 'confirm_deletefile' && $confirm == 'yes')
         exit;
     }
 }
-elseif ($action == 'confirm_updateline' && GETPOST('save') && GETPOST('link', 'alpha'))
+elseif ($action == 'confirm_updateline' && GETPOST('save','alpha') && GETPOST('link', 'alpha'))
 {
     require_once DOL_DOCUMENT_ROOT . '/core/class/link.class.php';
     $langs->load('link');
@@ -124,7 +126,7 @@ elseif ($action == 'confirm_updateline' && GETPOST('save') && GETPOST('link', 'a
     if ($f)
     {
         $link->url = GETPOST('link', 'alpha');
-        if (substr($link->url, 0, 7) != 'http://' && substr($link->url, 0, 8) != 'https://')
+        if (substr($link->url, 0, 7) != 'http://' && substr($link->url, 0, 8) != 'https://' && substr($link->url, 0, 7) != 'file://')
         {
             $link->url = 'http://' . $link->url;
         }
@@ -140,4 +142,46 @@ elseif ($action == 'confirm_updateline' && GETPOST('save') && GETPOST('link', 'a
         //error fetching
     }
 }
+elseif ($action == 'renamefile' && GETPOST('renamefilesave'))
+{
+    if ($object->id)
+    {
+        // For documents pages, upload_dir contains already path to file from module dir, so we clean path into urlfile.
+        //var_dump($upload_dir);exit;
+        if (! empty($upload_dir))
+        {
+            $filenamefrom=dol_sanitizeFileName(GETPOST('renamefilefrom','alpha'));
+            $filenameto=dol_sanitizeFileName(GETPOST('renamefileto','alpha'));
 
+            // Security:
+            // Disallow file with some extensions. We rename them.
+            // Because if we put the documents directory into a directory inside web root (very bad), this allows to execute on demand arbitrary code.
+            if (preg_match('/\.htm|\.html|\.php|\.pl|\.cgi$/i',$filenameto) && empty($conf->global->MAIN_DOCUMENT_IS_OUTSIDE_WEBROOT_SO_NOEXE_NOT_REQUIRED))
+            {
+                $filenameto.= '.noexe';
+            }
+
+            if ($filenamefrom && $filenameto)
+            {
+                $srcpath = $upload_dir.'/'.$filenamefrom;
+                $destpath = $upload_dir.'/'.$filenameto;
+
+                $result = dol_move($srcpath, $destpath);
+                if ($result)
+                {
+                    $object->addThumbs($destpath);
+
+                    // TODO Add revert function of addThumbs
+                    //$object->delThumbs($srcpath);
+
+                    setEventMessages($langs->trans("FileRenamed"), null);
+                }
+                else
+                {
+                    $langs->load("errors"); // key must be loaded because we can't rely on loading during output, we need var substitution to be done now.
+                    setEventMessages($langs->trans("ErrorFailToRenameFile", $filenamefrom, $filenameto), null, 'errors');
+                }
+            }
+        }
+    }
+}

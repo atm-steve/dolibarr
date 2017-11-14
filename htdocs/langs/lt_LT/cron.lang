@@ -1,13 +1,13 @@
 # Dolibarr language file - Source file is en_US - cron
 # About page
 # Right
-Permission23101 = Read Scheduled job
-Permission23102 = Create/update Scheduled job
-Permission23103 = Delete Scheduled job
-Permission23104 = Execute Scheduled job
+Permission23101 = Skaityti planinį darbą
+Permission23102 = sukurti / atnaujinti planinį darbą
+Permission23103 = Panaikinti planinį darbą
+Permission23104 = Vykdyti planinį darbą
 # Admin
 CronSetup= Numatytos užduoties valdymo nustatymas
-URLToLaunchCronJobs=URL patikrinti ir pradėti cron darbą, jei reikės
+URLToLaunchCronJobs=URL to check and launch qualified cron jobs
 OrToLaunchASpecificJob=Arba patikrinti ir pradėti spec. darbą
 KeyForCronAccess=Apsaugos raktas URL pradėti cron darbus
 FileToLaunchCronJobs=Komandinė eilutė paleisti cron darbą
@@ -17,15 +17,15 @@ CronMethodDoesNotExists=Class %s does not contains any method %s
 # Menu
 EnabledAndDisabled=Enabled and disabled
 # Page list
-CronLastOutput=Paskutinė paleista išvestis
-CronLastResult=Paskutinio rezultato kodas
+CronLastOutput=Latest run output
+CronLastResult=Latest result code
 CronCommand=Komanda
-CronList=Scheduled jobs
+CronList=Suplanuoti darbai
 CronDelete=Delete scheduled jobs
-CronConfirmDelete=Are you sure you want to delete these scheduled jobs ?
-CronExecute=Launch scheduled jobs
-CronConfirmExecute=Are you sure you want to execute these scheduled jobs now ?
-CronInfo=Scheduled job module allow to execute job that have been planned
+CronConfirmDelete=Are you sure you want to delete these scheduled jobs?
+CronExecute=Launch scheduled job
+CronConfirmExecute=Are you sure you want to execute these scheduled jobs now?
+CronInfo=Scheduled job module allows to schedule jobs to execute them automatically. Jobs can also be started manually.
 CronTask=Darbas
 CronNone=Nė vienas
 CronDtStart=Not before
@@ -33,13 +33,13 @@ CronDtEnd=Not after
 CronDtNextLaunch=Kitas vykdymas
 CronDtLastLaunch=Start date of latest execution
 CronDtLastResult=End date of latest execution
-CronFrequency=Frequency
+CronFrequency=Dažnis
 CronClass=Class
 CronMethod=Metodas
 CronModule=Modulis
 CronNoJobs=Nėra registruotų darbų
 CronPriority=Prioritetas
-CronLabel=Aprašymas
+CronLabel=Etiketė
 CronNbRun=Pradėti skaičių
 CronMaxRun=Max nb. launch
 CronEach=Kiekvienas
@@ -57,15 +57,15 @@ CronStatusActiveBtn=Įjungti
 CronStatusInactiveBtn=Išjungti
 CronTaskInactive=Šis darbas yra išjungtas
 CronId=ID
-CronClassFile=Klasės (filename.class.php)
-CronModuleHelp=Dolibarr modulio aplanko vardas (taip pat dirba su išorės Dolibarr moduliu). <BR> Pvz.: Dolibarr Produkto objekto patraukimo metodas /htdocs/<u>product</u>/class/product.class.php, modulio reikšmė yra <i>product</i>
-CronClassFileHelp=Failo pavadinimas įkėlimui. <BR> Pvz.: Dolibarr Produkto objekto patraukimo metodas /htdocs/product/class/<u>product.class.php</u>, klasės failo vardo reikšmė yra <i>product.class.php</i>
-CronObjectHelp=Objekto pavadinimas įkėlimui. <BR> Pvz.:Dolibarr Produkto objekto patraukimo metodas /htdocs/product/clas/product.class.php, klasės failo vardo reikšmė yra <i>Product</i>
-CronMethodHelp=Objekto metodas įkėlimui. <BR> Pvz.: Dolibarr Produkto objekto patraukimo metodas /htdocs/product/class/product.class.php, metodo reikšmė yra <i>fecth</i>
-CronArgsHelp=Metodo argumentai. <BR> Pvz.: Dolibarr Produkto objekto patraukimo metodas /htdocs/product/class/product.class.php, parametrų reikšmė gali būti <i>0, ProductRef</i>
+CronClassFile=Filename with class
+CronModuleHelp=Name of Dolibarr module directory (also work with external Dolibarr module). <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/<u>product</u>/class/product.class.php, the value for module is <i>product</i>
+CronClassFileHelp=The relative path and file name to load (path is relative to web server root directory). <BR> For exemple to call the fetch method of Dolibarr Product object htdocs/product/class/<u>product.class.php</u>, the value for class file name is <i>product/class/product.class.php</i>
+CronObjectHelp=The object name to load. <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/product/class/product.class.php, the value for class file name is <i>Product</i>
+CronMethodHelp=The object method to launch. <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/product/class/product.class.php, the value for method is <i>fecth</i>
+CronArgsHelp=The method arguments. <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/product/class/product.class.php, the value for paramters can be <i>0, ProductRef</i>
 CronCommandHelp=Sistemos komandinė eilutė vykdymui
 CronCreateJob=Create new Scheduled Job
-CronFrom=From
+CronFrom=Nuo
 # Info
 # Common
 CronType=Job type
@@ -76,3 +76,4 @@ UseMenuModuleToolsToAddCronJobs=Go into menu "Home - Admin tools - Scheduled job
 JobDisabled=Job disabled
 MakeLocalDatabaseDumpShort=Local database backup
 MakeLocalDatabaseDump=Create a local database dump
+WarningCronDelayed=Attention, for performance purpose, whatever is next date of execution of enabled jobs, your jobs may be delayed to a maximum of %s hours, before being run.

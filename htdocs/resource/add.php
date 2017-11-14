@@ -27,6 +27,7 @@ require '../main.inc.php';
 
 require_once DOL_DOCUMENT_ROOT.'/resource/class/dolresource.class.php';
 require_once DOL_DOCUMENT_ROOT.'/resource/class/html.formresource.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 
 // Load traductions files required by page
 $langs->load("resource");
@@ -60,57 +61,76 @@ if ($user->societe_id > 0)
 
 $object = new DolResource($db);
 
-if ($action == 'confirm_add_resource')
+$extrafields = new ExtraFields($db);
+
+// fetch optionals attributes and labels
+$extralabels=$extrafields->fetch_name_optionals_label($object->table_element);
+
+$hookmanager->initHooks(array('resource_card_add','globalcard'));
+$parameters=array();
+$reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+
+if (empty($reshook))
 {
-        if (! $cancel)
-        {
-                $error='';
 
-                $ref=GETPOST('ref','alpha');
-                $description=GETPOST('description','alpha');
-                $fk_code_type_resource=GETPOST('fk_code_type_resource','alpha');
-
-                if (empty($ref))
-                {
-                        $mesg=$langs->trans("ErrorFieldRequired",$langs->transnoentities("Ref"));
-                        setEventMessages($mesg, null, 'errors');
-                        $error++;
-                }
-
-                if (! $error)
-                {
-                        $object=new Dolresource($db);
-                        $object->ref=$ref;
-                        $object->description=$description;
-                        $object->fk_code_type_resource=$fk_code_type_resource;
-
-                        $result=$object->create($user);
-                        if ($result > 0)
-                        {
-                                // Creation OK
-                                $db->commit();
-                                setEventMessages($langs->trans('ResourceCreatedWithSuccess'), null, 'mesgs');
-                                Header("Location: card.php?id=" . $object->id);
-                                return;
-                        }
-                        else
-                        {
-                                // Creation KO
-                                setEventMessages($object->error, $object->errors, 'errors');
-                                $action = '';
-                        }
-                }
-                else
-                {
-                        $action = '';
-                }
-        }
-        else
-        {
-                Header("Location: list.php");
-        }
+	if ($action == 'confirm_add_resource')
+	{
+	        if (! $cancel)
+	        {
+	                $error='';
+	
+	                $ref=GETPOST('ref','alpha');
+	                $description=GETPOST('description','alpha');
+	                $fk_code_type_resource=GETPOST('fk_code_type_resource','alpha');
+	
+	                if (empty($ref))
+	                {
+	                        $mesg=$langs->trans("ErrorFieldRequired",$langs->transnoentities("Ref"));
+	                        setEventMessages($mesg, null, 'errors');
+	                        $error++;
+	                }
+	
+	                if (! $error)
+	                {
+	                        $object=new Dolresource($db);
+	                        $object->ref=$ref;
+	                        $object->description=$description;
+	                        $object->fk_code_type_resource=$fk_code_type_resource;
+	
+	                        // Fill array 'array_options' with data from add form
+	                        $ret = $extrafields->setOptionalsFromPost($extralabels, $object);
+	                        if ($ret < 0) {
+	                        	$error ++;
+	                        }
+	
+	                        $result=$object->create($user);
+	                        if ($result > 0)
+	                        {
+	                                // Creation OK
+	                                $db->commit();
+	                                setEventMessages($langs->trans('ResourceCreatedWithSuccess'), null, 'mesgs');
+	                                Header("Location: card.php?id=" . $object->id);
+	                                return;
+	                        }
+	                        else
+	                        {
+	                                // Creation KO
+	                                setEventMessages($object->error, $object->errors, 'errors');
+	                                $action = '';
+	                        }
+	                }
+	                else
+	                {
+	                        $action = '';
+	                }
+	        }
+	        else
+	        {
+	                Header("Location: list.php");
+	        }
+	}
 }
-
 
 /*
  * View
@@ -139,7 +159,7 @@ if (! $action)
         print $langs->trans('ResourceFormLabel_'.$field);
         print '</td>';
         print '<td>';
-        print '<input type="text" name="'.$field.'" value="'.$$field.'" />';
+        print '<input class="flat maxwidthonsmartphone" type="text" name="'.$field.'" value="'.$$field.'" />';
         print '</td>';
         print '</tr>';
 
@@ -161,6 +181,16 @@ if (! $action)
         $doleditor->Create();
         print '</td>';
         print '</tr>';
+
+        // Other attributes
+        $parameters=array('objectsrc' => $objectsrc);
+        $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+        print $hookmanager->resPrint;
+        if (empty($reshook) && ! empty($extrafields->attribute_label))
+        {
+        	print $object->showOptionals($extrafields,'edit');
+        }
+
 
         print '</table>';
 

@@ -2,8 +2,8 @@
 IdAgenda=Etkinlik kimliği
 Actions=Etkinlikler
 Agenda=Gündem
+TMenuAgenda=Gündem
 Agendas=Gündemler
-Calendar=Takvim
 LocalAgenda=İç takvim
 ActionsOwnedBy=Etkinlik sahibi
 ActionsOwnedByShort=Sahibi
@@ -34,11 +34,29 @@ AgendaAutoActionDesc= Burada Dolibarr'ın gündemde bir etkinlik olarak otomatik
 AgendaSetupOtherDesc= Bu sayfa Dolibarr etkinliklerinin dış bir takvime aktarılması için seçenekler sağlar. (thunderbird, google calendar, ...)
 AgendaExtSitesDesc=Bu sayfa takvimlerin dış kaynaklarında Dolibarr gündemindeki etkinliklerinin görünmesini sağlar.
 ActionsEvents=Dolibarr'ın otomatik olarak gündemde bir etkinlik oluşturacağı eylemler
+##### Agenda event labels #####
+NewCompanyToDolibarr=Üçüncü parti %s oluşturuldu
+ContractValidatedInDolibarr=Doğrulanan firma %s
+PropalClosedSignedInDolibarr=İmzalan teklif %s
+PropalClosedRefusedInDolibarr=Reddedilen teklif %s
 PropalValidatedInDolibarr=%s Teklifi doğrulandı
+PropalClassifiedBilledInDolibarr=Faturalandı olarak sınıflandırılan teklif %s
 InvoiceValidatedInDolibarr=%s Faturası doğrulandı
 InvoiceValidatedInDolibarrFromPos=POS tan doğrulanan fatura %s
 InvoiceBackToDraftInDolibarr=%s Faturasını taslak durumuna geri götür
 InvoiceDeleteDolibarr=%s faturası silindi
+InvoicePaidInDolibarr=Ödemeye değiştirilen fatura %s
+InvoiceCanceledInDolibarr=İptal edilen fatura %s
+MemberValidatedInDolibarr=Doğrulanan üye %s
+MemberModifiedInDolibarr=Üye %sdeğiştirildi 
+MemberResiliatedInDolibarr=%s üyeliği bitirilmiştir
+MemberDeletedInDolibarr=Silinen üyelik %s
+MemberSubscriptionAddedInDolibarr=Abonelik eklenen üye %s
+ShipmentValidatedInDolibarr=Sevkiyat %s doğrulandı
+ShipmentClassifyClosedInDolibarr=%s sevkiyatı faturalandı olarak sınıflandırıldı
+ShipmentUnClassifyCloseddInDolibarr=%s sevkiyatı yeniden açıldı olarak sınıflandırıldı
+ShipmentDeletedInDolibarr=Silinen sevkiyat %s
+OrderCreatedInDolibarr=%s siparişi oluşturuldu
 OrderValidatedInDolibarr=%s Siparişi doğrulandı
 OrderDeliveredInDolibarr=%s Sınıfı sipariş sevkedildi
 OrderCanceledInDolibarr=%s Siparişi iptal edildi
@@ -57,13 +75,17 @@ InterventionSentByEMail=%s Müdahalesi Eposta ile gönderildi
 ProposalDeleted=Teklif silindi
 OrderDeleted=Sipariş silindi
 InvoiceDeleted=Fatura silindi
-NewCompanyToDolibarr= Üçüncü parti oluşturuldu
-DateActionStart= Başlama tarihi
-DateActionEnd= Bitiş tarihi
+PRODUCT_CREATEInDolibarr=Ürün %s oluşturuldu
+PRODUCT_MODIFYInDolibarr=Ürün %s değiştirildi
+PRODUCT_DELETEInDolibarr=Ürün %s silindi
+##### End agenda events #####
+AgendaModelModule=Etkinlik için belge şablonları
+DateActionStart=Başlama tarihi
+DateActionEnd=Bitiş tarihi
 AgendaUrlOptions1=Süzgeç çıktısına ayrıca aşağıdaki parametreleri ekleyebilirsiniz:
-AgendaUrlOptions2=Eylem çıktılarını eylem, oluşturan, eylemden etkilenen ya da eylemi yapan kullanıcı <b>oturum açma=%s</b> sınırlayacak kullanıcı <b>%s</b>.
 AgendaUrlOptions3=<b>kullanıcı girişi=%s</b>,  bir <b>%s</b> kullanıcısına ait eylemlerin çıkışlarını sınırlamak içindir.
-AgendaUrlOptions4=Çıktıyı kullanıcı <b>%s</b> tarafından etkilenen etkinliklerle sınırlamak için<b>logint=%s</b>.
+AgendaUrlOptionsNotAdmin=Çıktıyı <b>%s</b> kullanıcısına ait olmayan etkinliklere sınırlamak için <b>logina=!%s</b>.
+AgendaUrlOptions4=Çıktıyı <b>%s</b> kullanıcısına (sahip ve diğerleri) atanmış etkinliklere sınırlamak için <b>logint=%s</b>.
 AgendaUrlOptionsProject=<b>proje=PROJECT_ID</b>, bu <b>PROJECT_ID</b> projesi ile ilişkilendirilmiş eylemlerin çıkışını çıkışını sınırlamak içindir.
 AgendaShowBirthdayEvents=Kişilerin doğum günlerini göster
 AgendaHideBirthdayEvents=Kişilerin doğum günlerini gizle
@@ -86,7 +108,7 @@ MyAvailability=Uygunluğum
 ActionType=Etkinlik türü
 DateActionBegin=Etkinlik başlangıç tarihi
 CloneAction=Etkinlik kopyala
-ConfirmCloneEvent=<b>%s</b> etkinliğini kopyalamak istediğinizden emin misiniz?
+ConfirmCloneEvent=<b>%s</b> etkinliğini klonlamak istediğinizden emin misiniz?
 RepeatEvent=Etkinlik tekrarla
 EveryWeek=Her hafta
 EveryMonth=Her ay

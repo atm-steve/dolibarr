@@ -47,6 +47,7 @@ create table llx_societe
   town                     varchar(50),                         		-- town
   fk_departement           integer        DEFAULT 0,            		--
   fk_pays                  integer        DEFAULT 0,            		--
+  fk_account               integer        DEFAULT 0,            		--
   phone                    varchar(20),                         		-- phone number
   fax                      varchar(20),                         		-- fax number
   url                      varchar(255),                        		--
@@ -94,13 +95,13 @@ create table llx_societe
   barcode                  varchar(255),                        		-- barcode
   fk_barcode_type          integer NULL   DEFAULT 0,                    -- barcode type
   price_level              integer NULL,                        		-- level of price for multiprices
-  outstanding_limit	       double(24,8)  DEFAULT NULL,				-- allowed outstanding limit
+  outstanding_limit	       double(24,8)   DEFAULT NULL,					-- allowed outstanding limit
   default_lang             varchar(6),									-- default language
-  logo                     varchar(255),
-  canvas				   varchar(32),			                        -- type of canvas if used (null by default)
+  logo                     varchar(255)   DEFAULT NULL,
+  canvas				   varchar(32)    DEFAULT NULL,	                -- type of canvas if used (null by default)
   import_key               varchar(14),                          		-- import key
-  webservices_url          varchar(255),                            -- supplier webservice url
-  webservices_key          varchar(128),                            -- supplier webservice key
+  webservices_url          varchar(255),                            	-- supplier webservice url
+  webservices_key          varchar(128),                            	-- supplier webservice key
   
   fk_multicurrency			integer,
   multicurrency_code		varchar(255)

@@ -4,6 +4,7 @@
  * Copyright (C) 2008      Raphael Bertrand     <raphael.bertrand@resultic.fr>
  * Copyright (C) 2010-2014 Juanjo Menent	    <jmenent@2byte.es>
  * Copyright (C) 2012      Christophe Battarel   <christophe.battarel@altairis.fr>
+ * Copyright (C) 2017      Ferran Marcet         <fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,7 +108,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 		$this->posxqty=145;
 		$this->posxdiscount=162;
 		$this->postotalht=174;
-		if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT)) $this->posxtva=$this->posxup;
+		if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) || ! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN)) $this->posxtva=$this->posxup;
 		$this->posxpicture=$this->posxtva - (empty($conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH)?20:$conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH);	// width of images
 		if ($this->page_largeur < 210) // To work with US executive format
 		{
@@ -115,6 +116,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 			$this->posxtva-=20;
 			$this->posxup-=20;
 			$this->posxqty-=20;
+			$this->posxunit-=20;
 			$this->posxdiscount-=20;
 			$this->postotalht-=20;
 		}
@@ -165,8 +167,16 @@ class pdf_aurore extends ModelePDFSupplierProposal
 				$objphoto = new Product($this->db);
 				$objphoto->fetch($object->lines[$i]->fk_product);
 
-				$pdir = get_exdir($object->lines[$i]->fk_product,2,0,0,$objphoto,'product') . $object->lines[$i]->fk_product ."/photos/";
-				$dir = $conf->product->dir_output.'/'.$pdir;
+				if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))
+				{
+					$pdir = get_exdir($object->lines[$i]->fk_product,2,0,0,$objphoto,'product') . $object->lines[$i]->fk_product ."/photos/";
+					$dir = $conf->product->dir_output.'/'.$pdir;
+				}
+				else
+				{
+					$pdir = get_exdir(0,2,0,0,$objphoto,'product') . dol_sanitizeFileName($objphoto->ref).'/';
+					$dir = $conf->product->dir_output.'/'.$pdir;
+				}
 
 				$realpath='';
 				foreach ($objphoto->liste_photos($dir,1) as $key => $obj)
@@ -435,7 +445,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 					if ($up_excl_tax > 0)
 						$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, $up_excl_tax, 0, 'R', 0);
                     */
-					
+
 					// Quantity
 					$qty = pdf_getlineqty($object, $i, $outputlangs, $hidedetails);
 					$pdf->SetXY($this->posxqty, $curY);
@@ -456,9 +466,11 @@ class pdf_aurore extends ModelePDFSupplierProposal
 					if ($total_excl_tax > 0)
 						$pdf->MultiCell($this->page_largeur-$this->marge_droite-$this->postotalht, 3, $total_excl_tax, 0, 'R', 0);
                     */
-					
+
 					// Collecte des totaux par valeur de tva dans $this->tva["taux"]=total_tva
-					$tvaligne=$object->lines[$i]->total_tva;
+					if ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) $tvaligne=$object->lines[$i]->multicurrency_total_tva;
+					else $tvaligne=$object->lines[$i]->total_tva;
+
 					$localtax1ligne=$object->lines[$i]->total_localtax1;
 					$localtax2ligne=$object->lines[$i]->total_localtax2;
 					$localtax1_rate=$object->lines[$i]->localtax1_tx;
@@ -488,7 +500,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 						$this->localtax2[$localtax2_type][$localtax2_rate]+=$localtax2ligne;
 
 					if (($object->lines[$i]->info_bits & 0x01) == 0x01) $vatrate.='*';
-					if (! isset($this->tva[$vatrate]))				$this->tva[$vatrate]='';
+					if (! isset($this->tva[$vatrate]))				$this->tva[$vatrate]=0;
 					$this->tva[$vatrate] += $tvaligne;
 
 					if ($posYAfterImage > $posYAfterDescription) $nexY=$posYAfterImage;
@@ -558,7 +570,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 				$posy=$this->_tableau_info($pdf, $object, $bottomlasttab, $outputlangs);
 
 				// Affiche zone totaux
-				$posy=$this->_tableau_tot($pdf, $object, 0, $bottomlasttab, $outputlangs);
+				//$posy=$this->_tableau_tot($pdf, $object, 0, $bottomlasttab, $outputlangs);
 
 				// Affiche zone versements
 				/*
@@ -630,16 +642,6 @@ class pdf_aurore extends ModelePDFSupplierProposal
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 
 		$pdf->SetFont('','', $default_font_size - 1);
-
-		// If France, show VAT mention if not applicable
-		if ($this->emetteur->country_code == 'FR' && $this->franchise == 1)
-		{
-			$pdf->SetFont('','B', $default_font_size - 2);
-			$pdf->SetXY($this->marge_gauche, $posy);
-			$pdf->MultiCell(100, 3, $outputlangs->transnoentities("VATIsNotUsedForInvoice"), 0, 'L', 0);
-
-			$posy=$pdf->GetY()+4;
-		}
 
 		$posxval=52;
 
@@ -719,7 +721,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 			$posy=$pdf->GetY()+3;
 		}
 
-		if (empty($conf->global->SUPPLIER_PROPOSAL_PDF_HIDE_PAYMENTTERMCOND))
+		if (! empty($conf->global->SUPPLIER_PROPOSAL_PDF_SHOW_PAYMENTTERMCOND))
 		{
 			// Show payment mode
 			if ($object->mode_reglement_code
@@ -939,7 +941,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 							$tvakey=str_replace('*','',$tvakey);
 							$tvacompl = " (".$outputlangs->transnoentities("NonPercuRecuperable").")";
 						}
-						$totalvat =$outputlangs->transnoentities("TotalVAT").' ';
+						$totalvat =$outputlangs->transcountrynoentities("TotalVAT",$mysoc->country_code).' ';
 						$totalvat.=vatrate($tvakey,1).$tvacompl;
 						$pdf->MultiCell($col2x-$col1x, $tab2_hl, $totalvat, 0, 'L', 1);
 
@@ -1087,9 +1089,10 @@ class pdf_aurore extends ModelePDFSupplierProposal
 	 *   @param		Translate	$outputlangs	Langs object
 	 *   @param		int			$hidetop		1=Hide top bar of array and title, 0=Hide nothing, -1=Hide only title
 	 *   @param		int			$hidebottom		Hide bottom bar of array
+	 *   @param		string		$currency		Currency code
 	 *   @return	void
 	 */
-	function _tableau(&$pdf, $tab_top, $tab_height, $nexY, $outputlangs, $hidetop=0, $hidebottom=0)
+	function _tableau(&$pdf, $tab_top, $tab_height, $nexY, $outputlangs, $hidetop=0, $hidebottom=0, $currency='')
 	{
 		global $conf;
 
@@ -1097,6 +1100,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 		$hidebottom=0;
 		if ($hidetop) $hidetop=-1;
 
+		$currency = !empty($currency) ? $currency : $conf->currency;
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 
 		// Amount in (at tab_top - 1)
@@ -1105,7 +1109,7 @@ class pdf_aurore extends ModelePDFSupplierProposal
 
 		if (empty($hidetop))
 		{
-			$titre = $outputlangs->transnoentities("AmountInCurrency",$outputlangs->transnoentitiesnoconv("Currency".$conf->currency));
+			$titre = $outputlangs->transnoentities("AmountInCurrency",$outputlangs->transnoentitiesnoconv("Currency".$currency));
 			$pdf->SetXY($this->page_largeur - $this->marge_droite - ($pdf->GetStringWidth($titre) + 3), $tab_top-4);
 			$pdf->MultiCell(($pdf->GetStringWidth($titre) + 3), 2, $titre);
 
@@ -1271,12 +1275,27 @@ class pdf_aurore extends ModelePDFSupplierProposal
 		$pdf->MultiCell(100, 3, $outputlangs->transnoentities("SupplierProposalDate")." : " . dol_print_date($object->date_livraison,"day",false,$outputlangs,true), '', 'R');
 */
 
-		if ($object->thirdparty->code_client)
+		if ($object->thirdparty->code_fournisseur)
 		{
 			$posy+=4;
 			$pdf->SetXY($posx,$posy);
 			$pdf->SetTextColor(0,0,60);
-			$pdf->MultiCell(100, 3, $outputlangs->transnoentities("CustomerCode")." : " . $outputlangs->transnoentities($object->thirdparty->code_client), '', 'R');
+			$pdf->MultiCell(100, 3, $outputlangs->transnoentities("SupplierCode")." : " . $outputlangs->transnoentities($object->thirdparty->code_fournisseur), '', 'R');
+		}
+
+		// Get contact
+		if (!empty($conf->global->DOC_SHOW_FIRST_SALES_REP))
+		{
+		    $arrayidcontact=$object->getIdContact('internal','SALESREPFOLL');
+		    if (count($arrayidcontact) > 0)
+		    {
+		        $usertmp=new User($this->db);
+		        $usertmp->fetch($arrayidcontact[0]);
+                $posy+=4;
+                $pdf->SetXY($posx,$posy);
+		        $pdf->SetTextColor(0,0,60);
+		        $pdf->MultiCell(100, 3, $langs->trans("BuyerName")." : ".$usertmp->getFullName($langs), '', 'R');
+		    }
 		}
 
 		$posy+=2;

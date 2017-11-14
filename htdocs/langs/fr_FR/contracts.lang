@@ -72,7 +72,7 @@ DeleteContractLine=Supprimer ligne de contrat
 ConfirmDeleteContractLine=Êtes-vous sûr de vouloir supprimer cette ligne de contrat de service ?
 MoveToAnotherContract=Déplacer le service vers un autre contrat de ce tiers.
 ConfirmMoveToAnotherContract=J'ai choisi le contrat cible et confirme le déplacement du service dans ce contrat.
-ConfirmMoveToAnotherContractQuestion=Choisissez vers quel autre contrat de ce même tiers, vous voulez déplacer ce service ?
+ConfirmMoveToAnotherContractQuestion=Choisissez vers quel autre contrat (du même tiers), vous voulez déplacer ce service ?
 PaymentRenewContractId=Renouvellement service (numéro %s)
 ExpiredSince=Expiré le
 NoExpiredServices=Pas de services actifs expirés
@@ -83,6 +83,8 @@ NoteListOfYourExpiredServices=Cette list ne contient que les contrats de service
 StandardContractsTemplate=Modèle standard de contrats
 ContactNameAndSignature=Pour %s, nom et signature:
 OnlyLinesWithTypeServiceAreUsed=Seules les lignes de type "Service" seront clonées
+CloneContract=Cloner le contrat
+ConfirmCloneContract=Etes vous sûr de vouloir cloner le contrat <b>%s</b> ?
 
 ##### Types de contacts #####
 TypeContact_contrat_internal_SALESREPSIGN=Commercial signataire du contrat

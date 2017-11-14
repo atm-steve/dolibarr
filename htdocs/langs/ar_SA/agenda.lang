@@ -2,11 +2,11 @@
 IdAgenda=رمز الحدث
 Actions=الأحداث
 Agenda=جدول الأعمال
+TMenuAgenda=جدول الأعمال
 Agendas=جداول الأعمال
-Calendar=التقويم
 LocalAgenda=تقويم الداخلي
 ActionsOwnedBy=الحدث يملكها
-ActionsOwnedByShort=Owner
+ActionsOwnedByShort=مالك
 AffectedTo=مناط لـ
 Event=حدث
 Events=الأحداث
@@ -34,11 +34,29 @@ AgendaAutoActionDesc= Define here events for which you want Dolibarr to create a
 AgendaSetupOtherDesc= تسمح لك هذه الصفحة بنقل الأحداث إلى تقويم خارجي مثل جوجل, تندربيرد وغيرها, وذلك بإستخدام الخيارات في هذه الصفحة
 AgendaExtSitesDesc=تسمح لك هذه الصفحة بتعريف مصادر خارجية للتقويم وذلك لرؤية الأحداث الخاصة بالتقويم الخاص بهم في تقويم دوليبار
 ActionsEvents=الأحداث التي ستمكن دوليبار من إنشاء أعمال تلقائية في جدول الأعمال
+##### Agenda event labels #####
+NewCompanyToDolibarr=Third party %s created
+ContractValidatedInDolibarr=عقد%s التأكد من صلاحيتها
+PropalClosedSignedInDolibarr=اقتراح٪ الصورة قعت
+PropalClosedRefusedInDolibarr=اقتراح%s رفض
 PropalValidatedInDolibarr=تم تفعيل %s من الإقتراح
+PropalClassifiedBilledInDolibarr=اقتراح%s تصنف المنقار
 InvoiceValidatedInDolibarr=تم توثيق %s من الفاتورة
 InvoiceValidatedInDolibarrFromPos=فاتورة%s التأكد من صلاحيتها من نقاط البيع
 InvoiceBackToDraftInDolibarr=الفاتورة %s للذهاب بها إلى حالة المسودة
 InvoiceDeleteDolibarr=تم حذف %s من الفاتورة
+InvoicePaidInDolibarr=تغيير فاتورة%s لدفع
+InvoiceCanceledInDolibarr=فاتورة%s إلغاء
+MemberValidatedInDolibarr=عضو%s التأكد من صلاحيتها
+MemberModifiedInDolibarr=Member %s modified
+MemberResiliatedInDolibarr=Member %s terminated
+MemberDeletedInDolibarr=عضو٪ الصورة حذفها
+MemberSubscriptionAddedInDolibarr=وأضاف الاشتراك لعضو٪ الصورة
+ShipmentValidatedInDolibarr=شحنة%s التأكد من صلاحيتها
+ShipmentClassifyClosedInDolibarr=Shipment %s classified billed
+ShipmentUnClassifyCloseddInDolibarr=Shipment %s classified reopened
+ShipmentDeletedInDolibarr=شحنة٪ الصورة حذفها
+OrderCreatedInDolibarr=Order %s created
 OrderValidatedInDolibarr=تم توثيق %s من الطلب
 OrderDeliveredInDolibarr=ترتيب %s حسب التسليم
 OrderCanceledInDolibarr=تم إلغاء %s من الطلب
@@ -57,13 +75,17 @@ InterventionSentByEMail=التدخل%s إرسالها عن طريق البريد
 ProposalDeleted=Proposal deleted
 OrderDeleted=Order deleted
 InvoiceDeleted=Invoice deleted
-NewCompanyToDolibarr= تم إنشاء طرف ثالث أو خارجي
-DateActionStart= تاريخ البدء
-DateActionEnd= تاريخ النهاية
+PRODUCT_CREATEInDolibarr=Product %s created
+PRODUCT_MODIFYInDolibarr=Product %s modified
+PRODUCT_DELETEInDolibarr=Product %s deleted
+##### End agenda events #####
+AgendaModelModule=Document templates for event
+DateActionStart=تاريخ البدء
+DateActionEnd=تاريخ النهاية
 AgendaUrlOptions1=يمكنك أيضا إضافة المعايير التالية لترشيح النتائج:
-AgendaUrlOptions2=<b>تسجيل الدخول =٪ s إلى</b> تقييد الإخراج إلى الإجراءات التي أنشأتها أو المخصصة <b>للمستخدم%s.</b>
 AgendaUrlOptions3=<b>وجينا =٪ s إلى</b> تقييد الإخراج إلى الإجراءات التي <b>يملكها%s</b> المستخدم.
-AgendaUrlOptions4=<b>logint=<b>logint=%s</b> لتقييد الانتاج للإجراءات المناطة للمستخدم <b>%s</b>
+AgendaUrlOptionsNotAdmin=<b>logina=!%s</b> to restrict output to actions not owned by user <b>%s</b>.
+AgendaUrlOptions4=<b>logint=%s</b> to restrict output to actions assigned to user <b>%s</b> (owner and others).
 AgendaUrlOptionsProject=<b>مشروع = PROJECT_ID</b> لتقييد الإخراج إلى الإجراءات المرتبطة <b>PROJECT_ID</b> المشروع.
 AgendaShowBirthdayEvents=Show birthdays of contacts
 AgendaHideBirthdayEvents=Hide birthdays of contacts
@@ -86,7 +108,7 @@ MyAvailability=تواجدي
 ActionType=نوع الحدث
 DateActionBegin=تاريخ البدء الحدث
 CloneAction=الحدث استنساخ
-ConfirmCloneEvent=هل أنت متأكد أنك تريد استنساخ <b>الحدث %s ؟</b>
+ConfirmCloneEvent=Are you sure you want to clone the event <b>%s</b>?
 RepeatEvent=تكرار الحدث
 EveryWeek=كل اسبوع
 EveryMonth=كل شهر

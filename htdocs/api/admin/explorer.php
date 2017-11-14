@@ -14,6 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @deprecated      Old explorer. Not using Swagger. See instead explorer in htdocs/api/index.php.
  */
 
 /**
@@ -59,7 +61,7 @@ foreach ($modulesdir as $dir)
     /*
      * Search available module
      */
-    dol_syslog("Scan directory ".$dir." for API modules");
+    //dol_syslog("Scan directory ".$dir." for API modules");
 
     $handle=@opendir(dol_osencode($dir));
     if (is_resource($handle))
@@ -104,17 +106,43 @@ foreach ($modulesdir as $dir)
                     {
                         while (($file_searched = readdir($handle_part))!==false)
                         {
+                            // Support of the deprecated API.
+                            if (is_readable($dir_part.$file_searched) && preg_match("/^api_deprecated_(.*)\.class\.php$/i",$file_searched,$reg))
+                            {
+                                $classname = ucwords($reg[1]).'Api';
+                                require_once $dir_part.$file_searched;
+                                if (class_exists($classname))
+                                {
+                                    dol_syslog("Found deprecated API classname=".$classname." into ".$dir);
+                                    $api->r->addAPIClass($classname, '');
+                                }
+                            }
+                            elseif (is_readable($dir_part.$file_searched) && preg_match("/^api_(.*)\.class\.php$/i",$file_searched,$reg))
+                            {
+                                $classname = ucwords($reg[1]);
+                                require_once $dir_part.$file_searched;
+                                if (class_exists($classname))
+                                {
+                                    dol_syslog("Found API classname=".$classname." into ".$dir);
+                                    $listofapis[] = $classname;
+                                }
+                            }                                
+                        
+                            /*
                             if (is_readable($dir_part.$file_searched) && preg_match("/^(api_.*)\.class\.php$/i",$file_searched,$reg))
                             {
                                 $classname=$reg[1];
                                 $classname = str_replace('Api_','',ucwords($reg[1])).'Api';
+                                //$classname = str_replace('Api_','',ucwords($reg[1]));
                                 $classname = ucfirst($classname);
                                 require_once $dir_part.$file_searched;
+
                                 if (class_exists($classname)) 
                                 {
                                     dol_syslog("Found API classname=".$classname);    
                                     $api->r->addAPIClass($classname,'');
                                     
+
                                     /*
                                     require_once DOL_DOCUMENT_ROOT.'/includes/restler/framework/Luracast/Restler/Routes.php';
                                     $tmpclass = new ReflectionClass($classname);
@@ -125,8 +153,9 @@ foreach ($modulesdir as $dir)
                                     }*/
                                     
                                     //$listofapis[]=array('classname'=>$classname, 'fullpath'=>$file_searched);
-                                }
-                            }
+                           /*     }
+                                
+                            }*/
                         }
                     }
                 }
@@ -135,8 +164,8 @@ foreach ($modulesdir as $dir)
     }
 }
 
-
-$listofapis=Routes::toArray();
+//var_dump($listofapis);
+$listofapis=Routes::toArray();          // TODO api for "status" is lost here
 //var_dump($listofapis);
 
 

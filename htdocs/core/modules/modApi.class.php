@@ -20,7 +20,7 @@
 /**
  * 	\defgroup   api     Module Api
  *  \brief      Descriptor file for Api modulee
- *  \file       htdocs/api/core/modules/modApi.class.php
+ *  \file       htdocs/core/modules/modApi.class.php
  *  \ingroup    api
  *  \brief      Description and activation file for module Api
  */
@@ -67,7 +67,7 @@ class modApi extends DolibarrModules
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
 		$this->picto='technic';
 
-		
+
 		$this->module_parts = array();
 
 		// Data directories to create when module is enabled.
@@ -155,7 +155,7 @@ class modApi extends DolibarrModules
 		// Example:
 		// $this->rights[$r][0] = $this->numero + $r;	// Permission id (must not be already used)
 		// $this->rights[$r][1] = 'Permision label';	// Permission label
-		// $this->rights[$r][3] = 1; 					// Permission by default for new user (0/1)
+		// $this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		// $this->rights[$r][4] = 'level1';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		// $this->rights[$r][5] = 'level2';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		// $r++;

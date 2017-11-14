@@ -112,12 +112,12 @@ if (! empty($socid))
 
 	$head=societe_prepare_head2($object);
 
-	dol_fiche_head($head, 'salesrepresentative', $langs->trans("ThirdParty"),0,'company');
+	dol_fiche_head($head, 'salesrepresentative', $langs->trans("ThirdParty"), -1, 'company');
 
-    $linkback = '<a href="'.DOL_URL_ROOT.'/societe/list.php">'.$langs->trans("BackToList").'</a>';
-	
+    $linkback = '<a href="'.DOL_URL_ROOT.'/societe/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
+
     dol_banner_tab($object, 'socid', $linkback, ($user->societe_id?0:1), 'rowid', 'nom');
-        
+
 	print '<div class="fichecenter">';
 
     print '<div class="underbanner clearboth"></div>';
@@ -139,16 +139,16 @@ if (! empty($socid))
 	print '<tr><td>'.$langs->trans("SalesRepresentatives").'</td>';
 	print '<td colspan="3">';
 
-	$sql = "SELECT DISTINCT u.rowid, u.login, u.fk_soc, u.lastname, u.firstname, u.statut, u.entity";
+	$sql = "SELECT DISTINCT u.rowid, u.login, u.fk_soc, u.lastname, u.firstname, u.statut, u.entity, u.photo";
 	$sql .= " FROM ".MAIN_DB_PREFIX."user as u";
 	$sql .= " , ".MAIN_DB_PREFIX."societe_commerciaux as sc";
-	if (! empty($conf->multicompany->enabled) && ! empty($conf->multicompany->transverse_mode))
+	if (! empty($conf->multicompany->enabled) && ! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE))
 	{
 	    $sql.= ", ".MAIN_DB_PREFIX."usergroup_user as ug";
 	}
 	$sql .= " WHERE sc.fk_soc =".$object->id;
 	$sql .= " AND sc.fk_user = u.rowid";
-	if (! empty($conf->multicompany->enabled) && ! empty($conf->multicompany->transverse_mode))
+	if (! empty($conf->multicompany->enabled) && ! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE))
 	{
 		$sql.= " AND ((ug.fk_user = sc.fk_user";
 		$sql.= " AND ug.entity = ".$conf->entity.")";
@@ -167,17 +167,15 @@ if (! empty($socid))
 		$i = 0;
 
 		$tmpuser = new User($db);
-		
+
 		while ($i < $num)
 		{
 			$obj = $db->fetch_object($resql);
 
  			$parameters=array('socid'=>$object->id);
         	$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$obj,$action);    // Note that $action and $object may have been modified by hook
-      		if (empty($reshook)) {
-
-				null; // actions in normal case
-      		}
+            print $hookmanager->resPrint;
+        	if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
       		$tmpuser->id = $obj->rowid;
       		$tmpuser->firstname = $obj->firstname;
@@ -186,8 +184,9 @@ if (! empty($socid))
       		$tmpuser->login = $obj->login;
       		$tmpuser->entity = $obj->entity;
       		$tmpuser->societe_id = $obj->fk_soc;
-      		print $tmpuser->getNomUrl(1);
-      		
+      		$tmpuser->photo = $obj->photo;
+      		print $tmpuser->getNomUrl(-1);
+
 			/*print '<a href="'.DOL_URL_ROOT.'/user/card.php?id='.$obj->rowid.'">';
 			print img_object($langs->trans("ShowUser"),"user").' ';
 			print dolGetFirstLastname($obj->firstname, $obj->lastname)."\n";
@@ -215,7 +214,7 @@ if (! empty($socid))
 
 	print '</table>';
 	print "</div>\n";
-	
+
 	dol_fiche_end();
 
 
@@ -229,9 +228,9 @@ if (! empty($socid))
 		$langs->load("users");
 		$title=$langs->trans("ListOfUsers");
 
-		$sql = "SELECT DISTINCT u.rowid, u.lastname, u.firstname, u.login, u.email, u.statut, u.fk_soc";
+		$sql = "SELECT DISTINCT u.rowid, u.lastname, u.firstname, u.login, u.email, u.statut, u.fk_soc, u.photo";
 		$sql.= " FROM ".MAIN_DB_PREFIX."user as u";
-		if (! empty($conf->multicompany->enabled) && ! empty($conf->multicompany->transverse_mode))
+		if (! empty($conf->multicompany->enabled) && ! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE))
 		{
 			$sql.= ", ".MAIN_DB_PREFIX."usergroup_user as ug";
 			$sql.= " WHERE ((ug.fk_user = u.rowid";
@@ -262,11 +261,11 @@ if (! empty($socid))
 
 			$var=True;
 			$tmpuser=new User($db);
-				
+
 			while ($i < $num)
 			{
 				$obj = $db->fetch_object($resql);
-				$var=!$var;
+
 				print "<tr ".$bc[$var]."><td>";
 				$tmpuser->id=$obj->rowid;
 				$tmpuser->firstname=$obj->firstname;
@@ -275,10 +274,11 @@ if (! empty($socid))
 				$tmpuser->login=$obj->login;
 				$tmpuser->email=$obj->email;
 				$tmpuser->societe_id=$obj->fk_soc;
-				print $tmpuser->getNomUrl(1);
+				$tmpuser->photo=$obj->photo;
+				print $tmpuser->getNomUrl(-1);
 				print '</td>';
 				print '<td>'.$obj->login.'</td>';
-				print '<td>'.User::LibStatut($obj->statut,0).'</td>';
+				print '<td>'.$tmpuser->getLibStatut(2).'</td>';
 				print '<td><a href="'.$_SERVER["PHP_SELF"].'?socid='.$object->id.'&amp;commid='.$obj->rowid.'">'.$langs->trans("Add").'</a></td>';
 
 				print '</tr>'."\n";

@@ -35,8 +35,10 @@ if (! defined('NOREQUIREMENU'))  define('NOREQUIREMENU',1);
 
 require_once '../main.inc.php';
 
-if (GETPOST('lang')) $langs->setDefaultLang(GETPOST('lang'));	// If language was forced on URL by the main.inc.php
+if (GETPOST('lang', 'aZ09')) $langs->setDefaultLang(GETPOST('lang', 'aZ09'));	// If language was forced on URL by the main.inc.php
+
 $langs->load("main");
+
 $right=($langs->trans("DIRECTION")=='rtl'?'left':'right');
 $left=($langs->trans("DIRECTION")=='rtl'?'right':'left');
 
@@ -76,11 +78,11 @@ if ($conf->use_javascript_ajax && 1 == 2)   // select2 is ko with jmobile
 else
 {
     $conf->global->MAIN_HTML5_PLACEHOLDER = 1;
-    
-    
+
+
     $usedbyinclude = 1; // Used into next include
     include DOL_DOCUMENT_ROOT.'/core/ajax/selectsearchbox.php';
-    
+
     $accesskeyalreadyassigned=array();
     foreach($arrayresult as $key => $val)
     {
@@ -111,7 +113,7 @@ else $searchform=$hookmanager->resPrint;
 
 print "\n";
 print "<!-- Begin SearchForm -->\n";
-print '<div class="center" data-role="page" align="center"><div align="center" style="padding: 6px;">';
+print '<div class="center" align="center"><div align="center" style="padding: 6px;">';
 print '<style>.menu_titre { padding-top: 7px; }</style>';
 //print '<div id="distance"></div><div id="container" class="center">';
 print '<div id="blockvmenusearch">'."\n";

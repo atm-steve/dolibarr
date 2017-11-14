@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2013-2014 Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013-2016 Alexandre Spangaro   <aspangaro.dolibarr@gmail.com>
+ * Copyright (C) 2013-2016 Alexandre Spangaro   <aspangaro@zendsi.com>
  * Copyright (C) 2013-2014 Florian Henry		<florian.henry@open-concept.pro>
  * Copyright (C) 2014 	   Juanjo Menent		<jmenent@2byte.es>
  * Copyright (C) 2015      Ari Elbaz (elarifr)  <github@accedinfo.com>
@@ -60,10 +60,10 @@ class AccountingAccount extends CommonObject
 	/**
 	 * Load record in memory
 	 *
-	 * @param 	int 	$rowid 				Id
-	 * @param 	string 	$account_number 	Account number
-	 * @param 	int 	$limittocurrentchart 1=Do not load record if it is into another accounting system
-	 * @return 	int <0 if KO, >0 if OK
+	 * @param 	int 	$rowid 				   Id
+	 * @param 	string 	$account_number 	   Account number
+	 * @param 	int 	$limittocurrentchart   1=Do not load record if it is into another accounting system
+	 * @return 	int                            <0 if KO, Id of record if OK and found
 	 */
 	function fetch($rowid = null, $account_number = null, $limittocurrentchart = 0) {
 		global $conf;
@@ -150,12 +150,19 @@ class AccountingAccount extends CommonObject
 		if (isset($this->active))
 			$this->active = trim($this->active);
 			
-			// Check parameters
-			// Put here code to add control on parameters values
+		if (empty($this->pcg_type) || $this->pcg_type == '-1')
+		{
+		    $this->pcg_type = 'XXXXXX';
+		}
+		if (empty($this->pcg_subtype) || $this->pcg_subtype == '-1')
+		{
+		    $this->pcg_subtype = 'XXXXXX';
+		}
+		// Check parameters
+		// Put here code to add control on parameters values
 			
 		// Insert request
 		$sql = "INSERT INTO " . MAIN_DB_PREFIX . "accounting_account(";
-		
 		$sql .= "datec";
 		$sql .= ", entity";
 		$sql .= ", fk_pcg_version";
@@ -167,21 +174,18 @@ class AccountingAccount extends CommonObject
 		$sql .= ", fk_accounting_category";
 		$sql .= ", fk_user_author";
 		$sql .= ", active";
-		
 		$sql .= ") VALUES (";
-		
 		$sql .= " '" . $this->db->idate($now) . "'";
 		$sql .= ", " . $conf->entity;
-		$sql .= ", " . (! isset($this->fk_pcg_version) ? 'NULL' : "'" . $this->db->escape($this->fk_pcg_version) . "'");
-		$sql .= ", " . (! isset($this->pcg_type) ? 'NULL' : "'" . $this->db->escape($this->pcg_type) . "'");
-		$sql .= ", " . (! isset($this->pcg_subtype) ? 'NULL' : "'" . $this->pcg_subtype . "'");
-		$sql .= ", " . (! isset($this->account_number) ? 'NULL' : "'" . $this->account_number . "'");
-		$sql .= ", " . (! isset($this->account_parent) ? 'NULL' : "'" . $this->db->escape($this->account_parent) . "'");
-		$sql .= ", " . (! isset($this->label) ? 'NULL' : "'" . $this->db->escape($this->label) . "'");
-		$sql .= ", " . (! isset($this->account_category) ? 'NULL' : "'" . $this->db->escape($this->account_category) . "'");
+		$sql .= ", " . (empty($this->fk_pcg_version) ? 'NULL' : "'" . $this->db->escape($this->fk_pcg_version) . "'");
+		$sql .= ", " . (empty($this->pcg_type) ? 'NULL' : "'" . $this->db->escape($this->pcg_type) . "'");
+		$sql .= ", " . (empty($this->pcg_subtype) ? 'NULL' : "'" . $this->pcg_subtype . "'");
+		$sql .= ", " . (empty($this->account_number) ? 'NULL' : "'" . $this->account_number . "'");
+		$sql .= ", " . (empty($this->account_parent) ? 'NULL' : "'" . $this->db->escape($this->account_parent) . "'");
+		$sql .= ", " . (empty($this->label) ? 'NULL' : "'" . $this->db->escape($this->label) . "'");
+		$sql .= ", " . (empty($this->account_category) ? 'NULL' : "'" . $this->db->escape($this->account_category) . "'");
 		$sql .= ", " . $user->id;
-		$sql .= ", " . (! isset($this->active) ? 'NULL' : "'" . $this->db->escape($this->active) . "'");
-		
+		$sql .= ", " . (! isset($this->active) ? 'NULL' : $this->db->escape($this->active));
 		$sql .= ")";
 		
 		$this->db->begin();
@@ -226,23 +230,33 @@ class AccountingAccount extends CommonObject
 	/**
 	 * Update record
 	 *
-	 * @param User $user Use making update
-	 * @return int <0 if KO, >0 if OK
+	 * @param  User $user      Use making update
+	 * @return int             <0 if KO, >0 if OK
 	 */
-	function update($user) {
-		$this->db->begin();
+	function update($user) 
+	{
+	    // Check parameters
+	    if (empty($this->pcg_type) || $this->pcg_type == '-1')
+	    {
+	        $this->pcg_type = 'XXXXXX';
+	    }
+	    if (empty($this->pcg_subtype) || $this->pcg_subtype == '-1')
+	    {
+	        $this->pcg_subtype = 'XXXXXX';
+	    }
+	     
+	    $this->db->begin();
 		
 		$sql = "UPDATE " . MAIN_DB_PREFIX . "accounting_account ";
 		$sql .= " SET fk_pcg_version = " . ($this->fk_pcg_version ? "'" . $this->db->escape($this->fk_pcg_version) . "'" : "null");
 		$sql .= " , pcg_type = " . ($this->pcg_type ? "'" . $this->db->escape($this->pcg_type) . "'" : "null");
 		$sql .= " , pcg_subtype = " . ($this->pcg_subtype ? "'" . $this->db->escape($this->pcg_subtype) . "'" : "null");
-		$sql .= " , account_number = '" . $this->account_number . "'";
-		$sql .= " , account_parent = '" . $this->account_parent . "'";
+		$sql .= " , account_number = '" . $this->db->escape($this->account_number) . "'";
+		$sql .= " , account_parent = '" . $this->db->escape($this->account_parent) . "'";
 		$sql .= " , label = " . ($this->label ? "'" . $this->db->escape($this->label) . "'" : "null");
-		$sql .= " , fk_accounting_category = '" . $this->account_category . "'";
+		$sql .= " , fk_accounting_category = '" . $this->db->escape($this->account_category) . "'";
 		$sql .= " , fk_user_modif = " . $user->id;
-		$sql .= " , active = '" . $this->active . "'";
-		
+		$sql .= " , active = " . $this->active;
 		$sql .= " WHERE rowid = " . $this->id;
 		
 		dol_syslog(get_class($this) . "::update sql=" . $sql, LOG_DEBUG);
@@ -350,27 +364,63 @@ class AccountingAccount extends CommonObject
 	/**
 	 * Return clicable name (with picto eventually)
 	 *
-	 * @param int $withpicto 0=No picto, 1=Include picto into link, 2=Only picto
-	 * @return string Chaine avec URL
+	 * @param	int		$withpicto		0=No picto, 1=Include picto into link, 2=Only picto
+	 * @param	int		$withlabel		0=No label, 1=Include label of account
+	 * @param	int  	$nourl			1=Disable url
+	 * @param	string  $moretitle		Add more text to title tooltip
+	 * @param	int  	$notooltip		1=Disable tooltip
+	 * @return	string	String with URL
 	 */
-	function getNomUrl($withpicto = 0) {
-		global $langs;
+	function getNomUrl($withpicto = 0, $withlabel = 0, $nourl = 0, $moretitle='',$notooltip=0)
+	{
+		global $langs, $conf, $user;
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
 		
+		if (! empty($conf->dol_no_mouse_hover)) $notooltip=1;   // Force disable tooltips
+
 		$result = '';
-		
-		$link = '<a href="' . DOL_URL_ROOT . '/accountancy/admin/card.php?id=' . $this->id . '">';
-		$linkend = '</a>';
-		
+
+		$url = DOL_URL_ROOT . '/accountancy/admin/card.php?id=' . $this->id;
+
 		$picto = 'billr';
-		
-		$label = $langs->trans("Show") . ': ' . $this->account_number . ' - ' . $this->label;
-		
-		if ($withpicto)
-			$result .= ($link . img_object($label, $picto) . $linkend);
-		if ($withpicto && $withpicto != 2)
-			$result .= ' ';
-		if ($withpicto != 2)
-			$result .= $link . $this->account_number . $linkend;
+		$label='';
+
+		$label = '<u>' . $langs->trans("ShowAccountingAccount") . '</u>';
+		if (! empty($this->account_number))
+			$label .= '<br><b>'.$langs->trans('AccountAccounting') . ':</b> ' . length_accountg($this->account_number);
+		if (! empty($this->label))
+			$label .= '<br><b>'.$langs->trans('Label') . ':</b> ' . $this->label;
+		if ($moretitle) $label.=' - '.$moretitle;
+
+		$linkclose='';
+		if (empty($notooltip))
+		{
+		    if (! empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER))
+		    {
+		        $label=$langs->trans("ShowAccoutingAccount");
+		        $linkclose.=' alt="'.dol_escape_htmltag($label, 1).'"';
+		    }
+		    $linkclose.= ' title="'.dol_escape_htmltag($label, 1).'"';
+		    $linkclose.=' class="classfortooltip"';
+		}
+
+        $linkstart='<a href="'.$url.'"';
+        $linkstart.=$linkclose.'>';
+		$linkend='</a>';
+
+		if ($nourl)
+		{
+			$linkstart = '';
+			$linkclose = '';
+			$linkend = '';			
+		}
+
+		$label_link = length_accountg($this->account_number);
+		if ($withlabel) $label_link .= ' - ' . $this->label;
+
+		if ($withpicto) $result.=($linkstart.img_object(($notooltip?'':$label), $picto, ($notooltip?'':'class="classfortooltip"'), 0, 0, $notooltip?0:1).$linkend);
+		if ($withpicto && $withpicto != 2) $result .= ' ';
+		if ($withpicto != 2) $result.=$linkstart . $label_link . $linkend;
 		return $result;
 	}
 	

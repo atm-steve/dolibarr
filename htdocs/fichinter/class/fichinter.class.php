@@ -38,6 +38,7 @@ class Fichinter extends CommonObject
 	public $table_element='fichinter';
 	public $fk_element='fk_fichinter';
 	public $table_element_line='fichinterdet';
+    public $picto = 'intervention';
 
 	/**
 	 * {@inheritdoc}
@@ -78,15 +79,15 @@ class Fichinter extends CommonObject
 		$this->statuts[0]='Draft';
 		$this->statuts[1]='Validated';
 		$this->statuts[2]='StatusInterInvoiced';
-		$this->statuts[3]='Close';
+		$this->statuts[3]='Done';
 		$this->statuts_short[0]='Draft';
 		$this->statuts_short[1]='Validated';
 		$this->statuts_short[2]='StatusInterInvoiced';
-		$this->statuts_short[3]='Close';
+		$this->statuts_short[3]='Done';
 		$this->statuts_logo[0]='statut0';
 		$this->statuts_logo[1]='statut1';
 		$this->statuts_logo[2]='statut6';
-		$this->statuts_logo[3]='statut4';
+		$this->statuts_logo[3]='statut6';
 	}
 
 	/**
@@ -211,7 +212,7 @@ class Fichinter extends CommonObject
 			if ($this->id)
 			{
 				$this->ref='(PROV'.$this->id.')';
-				$sql = 'UPDATE '.MAIN_DB_PREFIX."fichinter SET ref='".$this->ref."' WHERE rowid=".$this->id;
+				$sql = 'UPDATE '.MAIN_DB_PREFIX."fichinter SET ref='".$this->db->escape($this->ref)."' WHERE rowid=".$this->id;
 
 				dol_syslog(get_class($this)."::create", LOG_DEBUG);
 				$resql=$this->db->query($sql);
@@ -325,7 +326,7 @@ class Fichinter extends CommonObject
 	function fetch($rowid,$ref='')
 	{
 		$sql = "SELECT f.rowid, f.ref, f.description, f.fk_soc, f.fk_statut,";
-		$sql.= " f.datec, f.dateo, f.datee, f.datet,";
+		$sql.= " f.datec, f.dateo, f.datee, f.datet, f.fk_user_author,";
 		$sql.= " f.date_valid as datev,";
 		$sql.= " f.tms as datem,";
 		$sql.= " f.duree, f.fk_projet, f.note_public, f.note_private, f.model_pdf, f.extraparams, fk_contrat";
@@ -359,6 +360,8 @@ class Fichinter extends CommonObject
 				$this->modelpdf     = $obj->model_pdf;
 				$this->fk_contrat	= $obj->fk_contrat;
 
+				$this->user_creation= $obj->fk_user_author;
+
 				$this->extraparams	= (array) json_decode($obj->extraparams, true);
 
 				if ($this->statut == 0) $this->brouillon = 1;
@@ -382,7 +385,7 @@ class Fichinter extends CommonObject
 		}
 		else
 		{
-			$this->error=$this->db->error();
+			$this->error=$this->db->lasterror();
 			return -1;
 		}
 	}
@@ -426,7 +429,7 @@ class Fichinter extends CommonObject
 	 *	Validate a intervention
 	 *
 	 *	@param		User		$user		User that validate
-     *  @param		int			$notrigger	1=Does not execute triggers, 0= execuete triggers
+     *  @param		int			$notrigger	1=Does not execute triggers, 0= execute triggers
 	 *	@return		int						<0 if KO, >0 if OK
 	 */
 	function setValid($user, $notrigger=0)
@@ -536,6 +539,60 @@ class Fichinter extends CommonObject
 		}
 	}
 
+	/**
+	 *	Returns amount based on user thm
+	 *
+	 *	@return     float 		Amount
+	 */
+	function getAmount()
+	{
+		global $db;
+
+		$amount = 0;
+
+		$this->author = new User($db);
+		$this->author->fetch($this->user_creation);
+
+		$thm = $this->author->thm;
+
+		foreach($this->lines as $line) {
+			$amount += ($line->duration / 60 / 60 * $thm);
+		}
+
+		return price2num($amount, 'MT');
+	}
+
+	/**
+	 *  Create a document onto disk according to template module.
+	 *
+	 *  @param      string                  $modele         Force model to use ('' to not force)
+	 *  @param      Translate               $outputlangs    Object langs to use for output
+	 *  @param      int                     $hidedetails    Hide details of lines
+	 *  @param      int                     $hidedesc       Hide description
+	 *  @param      int                     $hideref        Hide ref
+	 *  @return     int                                     0 if KO, 1 if OK
+	 */
+	public function generateDocument($modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0)
+	{
+		global $conf,$langs;
+
+		$langs->load("interventions");
+
+		if (! dol_strlen($modele)) {
+
+			$modele = 'soleil';
+
+			if ($this->modelpdf) {
+				$modele = $this->modelpdf;
+			} elseif (! empty($conf->global->FICHEINTER_ADDON_PDF)) {
+				$modele = $conf->global->FICHEINTER_ADDON_PDF;
+			}
+		}
+
+		$modelpath = "core/modules/fichinter/doc/";
+
+		return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref);
+	}
 
 	/**
 	 *	Returns the label status
@@ -552,7 +609,7 @@ class Fichinter extends CommonObject
 	 *	Returns the label of a statut
 	 *
 	 *	@param      int		$statut     id statut
-	 *	@param      int		$mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto
+	 *	@param      int		$mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto, 6=Long label + Picto
 	 *	@return     string      		Label
 	 */
 	function LibStatut($statut,$mode=0)
@@ -561,22 +618,20 @@ class Fichinter extends CommonObject
 
 		if ($mode == 0)
 			return $langs->trans($this->statuts[$statut]);
-
 		if ($mode == 1)
 			return $langs->trans($this->statuts_short[$statut]);
-
 		if ($mode == 2)
 			return img_picto($langs->trans($this->statuts_short[$statut]), $this->statuts_logo[$statut]).' '.$langs->trans($this->statuts_short[$statut]);
-
 		if ($mode == 3)
 			return img_picto($langs->trans($this->statuts_short[$statut]), $this->statuts_logo[$statut]);
-
 		if ($mode == 4)
 			return img_picto($langs->trans($this->statuts_short[$statut]),$this->statuts_logo[$statut]).' '.$langs->trans($this->statuts[$statut]);
-
 		if ($mode == 5)
-			return '<span class="hideonsmartphone">'.$langs->trans($this->statuts_short[$statut]).' </span>'.img_picto($langs->trans($this->statuts_short[$statut]),$this->statuts_logo[$statut]);
+			return '<span class="hideonsmartphone">'.$langs->trans($this->statuts_short[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),$this->statuts_logo[$statut]);
+		if ($mode == 6)
+		    return '<span class="hideonsmartphone">'.$langs->trans($this->statuts[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),$this->statuts_logo[$statut]);
 
+		return '';
 	}
 
 	/**
@@ -925,7 +980,7 @@ class Fichinter extends CommonObject
 		return -2;
 	}
 
-	
+
 
     /**
      *	Load an object from its id and create a new one in database
@@ -977,7 +1032,7 @@ class Fichinter extends CommonObject
         $this->date_creation      = '';
         $this->date_validation    = '';
         $this->ref_client         = '';
-		
+
         // Create clone
         $result=$this->create($user);
         if ($result < 0) $error++;
@@ -989,7 +1044,7 @@ class Fichinter extends CommonObject
             {
             	$this->addline($user, $this->id, $line->desc, $line->datei, $line->duration);
             }
-            
+
         	// Hook of thirdparty module
             if (is_object($hookmanager))
             {
@@ -1019,8 +1074,8 @@ class Fichinter extends CommonObject
             return -1;
         }
     }
-	
-	
+
+
 	/**
 	 *	Adding a line of intervention into data base
 	 *
@@ -1351,7 +1406,7 @@ class FichinterLigne extends CommonObjectLine
 		$sql.= " description='".$this->db->escape($this->desc)."'";
 		$sql.= ",date='".$this->db->idate($this->datei)."'";
 		$sql.= ",duree=".$this->duration;
-		$sql.= ",rang='".$this->rang."'";
+		$sql.= ",rang='".$this->db->escape($this->rang)."'";
 		$sql.= " WHERE rowid = ".$this->rowid;
 
 		dol_syslog("FichinterLigne::update", LOG_DEBUG);

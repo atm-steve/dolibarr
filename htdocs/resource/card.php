@@ -29,9 +29,10 @@ if (! $res) $res=@include("../../main.inc.php");	// For "custom" directory
 if (! $res) die("Include of main fails");
 
 require_once DOL_DOCUMENT_ROOT.'/contact/class/contact.class.php';
-require_once 'class/dolresource.class.php';
-require_once 'class/html.formresource.class.php';
+require_once DOL_DOCUMENT_ROOT.'/resource/class/dolresource.class.php';
+require_once DOL_DOCUMENT_ROOT.'/resource/class/html.formresource.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/resource.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 
 // Load traductions files requiredby by page
 $langs->load("resource");
@@ -53,10 +54,18 @@ if ($user->societe_id > 0)
 	accessforbidden();
 }
 
-if( ! $user->rights->resource->read)
+if (! $user->rights->resource->read)
 	accessforbidden();
 
 $object = new Dolresource($db);
+$objectFetchRes = $object->fetch($id);
+if (! ($objectFetchRes > 0)) dol_print_error($db, $object->error);
+
+
+$extrafields = new ExtraFields($db);
+
+// fetch optionals attributes and labels
+$extralabels=$extrafields->fetch_name_optionals_label($object->table_element);
 
 $hookmanager->initHooks(array('resource_card','globalcard'));
 $parameters=array('resource_id'=>$id);
@@ -87,6 +96,12 @@ if (empty($reshook))
 				$object->ref          			= $ref;
 				$object->description  			= $description;
 				$object->fk_code_type_resource  = $fk_code_type_resource;
+
+				// Fill array 'array_options' with data from add form
+				$ret = $extrafields->setOptionalsFromPost($extralabels, $object);
+				if ($ret < 0) {
+					$error ++;
+				}
 
 				$result=$object->update($user);
 				if ($result > 0)
@@ -126,7 +141,7 @@ if (empty($reshook))
 				Header('Location: '.DOL_URL_ROOT.'/resource/list.php');
 				exit;
 			}
-			else 
+			else
 			{
 				setEventMessages($object->error, $object->errors, 'errors');
 			}
@@ -150,7 +165,7 @@ llxHeader('',$pagetitle,'');
 $form = new Form($db);
 $formresource = new FormResource($db);
 
-if ( $object->fetch($id) > 0 )
+if ( $objectFetchRes > 0 )
 {
 	$head=resource_prepare_head($object);
 
@@ -188,6 +203,15 @@ if ( $object->fetch($id) > 0 )
 		print '<textarea name="description" cols="80" rows="'.ROWS_3.'">'.($_POST['description'] ? GETPOST('description','alpha') : $object->description).'</textarea>';
 		print '</td></tr>';
 
+		// Other attributes
+		$parameters=array('objectsrc' => $objectsrc);
+		$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+        print $hookmanager->resPrint;
+		if (empty($reshook) && ! empty($extrafields->attribute_label))
+		{
+			print $object->showOptionals($extrafields,'edit');
+		}
+
 		print '</table>';
 
 		dol_fiche_end();
@@ -201,29 +225,41 @@ if ( $object->fetch($id) > 0 )
 	}
 	else
 	{
-		dol_fiche_head($head, 'resource', $langs->trans("ResourceSingular"),0,'resource');
+		dol_fiche_head($head, 'resource', $langs->trans("ResourceSingular"), -1, 'resource');
+
+		$formconfirm = '';
 
 		// Confirm deleting resource line
 	    if ($action == 'delete')
 	    {
-	        print $form->formconfirm("card.php?&id=".$id,$langs->trans("DeleteResource"),$langs->trans("ConfirmDeleteResource"),"confirm_delete_resource",'','',1);
+	        $formconfirm = $form->formconfirm("card.php?&id=".$id,$langs->trans("DeleteResource"),$langs->trans("ConfirmDeleteResource"),"confirm_delete_resource",'','',1);
 	    }
 
+	    // Print form confirm
+	    print $formconfirm;
+
+
+	    $linkback = '<a href="' . DOL_URL_ROOT . '/resource/list.php' . (! empty($socid) ? '?id=' . $socid : '') . '">' . $langs->trans("BackToList") . '</a>';
+
+
+	    $morehtmlref='<div class="refidno">';
+	    $morehtmlref.='</div>';
+
+
+	    dol_banner_tab($object, 'id', $linkback, 1, 'rowid', 'ref', $morehtmlref);
+
+
+	    print '<div class="fichecenter">';
+	    print '<div class="underbanner clearboth"></div>';
 
 		/*---------------------------------------
 		 * View object
 		 */
 		print '<table width="100%" class="border">';
 
-		print '<tr><td class="titlefield">'.$langs->trans("ResourceFormLabel_ref").'</td><td>';
-		$linkback = $objet->ref.' <a href="list.php">'.$langs->trans("BackToList").'</a>';
-		print $form->showrefnav($object, 'id', $linkback,1,"rowid");
-		print '</td>';
-		print '</tr>';
-
 		// Resource type
 		print '<tr>';
-		print '<td>' . $langs->trans("ResourceType") . '</td>';
+		print '<td class="titlefield">' . $langs->trans("ResourceType") . '</td>';
 		print '<td>';
 		print $object->type_label;
 		print '</td>';
@@ -235,12 +271,21 @@ if ( $object->fetch($id) > 0 )
 		print '<td>';
 		print $object->description;
 		print '</td>';
+
+		// Other attributes
+		include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
+
 		print '</tr>';
 
 		print '</table>';
+
+		print '</div>';
+
+		print '<div class="clearboth"></div><br>';
+
+		dol_fiche_end();
 	}
 
-	print '</div>';
 
 	/*
 	 * Boutons actions
