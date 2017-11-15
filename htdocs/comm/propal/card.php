@@ -1355,7 +1355,9 @@ if ($action == 'create')
         }
 	} else {
 		print '<td colspan="2">';
-		print $form->select_company('', 'socid', '(s.client = 1 OR s.client = 2 OR s.client = 3) AND status=1', 'SelectThirdParty');
+//		print $form->select_company('', 'socid', '(s.client = 1 OR s.client = 2 OR s.client = 3) AND status=1', 'SelectThirdParty'); // ligne originale
+ 		print $form->select_company('', 'socid', '(s.client = 1 OR s.client = 2 OR s.client = 3) AND s.status=1', 'SelectThirdParty');
+
 		// reload page to retrieve customer informations
 		if (!empty($conf->global->RELOAD_PAGE_ON_CUSTOMER_CHANGE))
 		{
