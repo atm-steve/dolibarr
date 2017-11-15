@@ -86,6 +86,7 @@ if (empty($date_start) || empty($date_end)) // We define date_start and date_end
 $idpays = $mysoc->country_id;
 
 $sql = "SELECT f.rowid, f.ref, f.type, f.datef as df, f.libelle,f.ref_supplier,";
+$sql .= " f.date_lim_reglement, ";
 $sql .= " fd.rowid as fdid, fd.description, fd.product_type, fd.total_ht, fd.tva as total_tva, fd.total_localtax1, fd.total_localtax2, fd.tva_tx, fd.total_ttc, fd.vat_src_code,";
 $sql .= " s.rowid as socid, s.nom as name, s.fournisseur, s.code_client, s.code_fournisseur, s.code_compta, s.code_compta_fournisseur,";
 $sql .= " p.accountancy_code_buy , aa.rowid as fk_compte, aa.account_number as compte, aa.label as label_compte";
@@ -158,6 +159,10 @@ if ($result) {
 		$tabfac[$obj->rowid]["ref"] = $obj->ref_supplier . ' (' . $obj->ref . ')';
 		$tabfac[$obj->rowid]["refsologest"] = $obj->ref;
 		$tabfac[$obj->rowid]["refsuppliersologest"] = $obj->ref_supplier;
+
+		$tabfac[$obj->rowid]["invoicelabel"] = $obj->libelle;
+		$tabfac[$obj->rowid]["invoicedatelimrglmnt"] = $db->jdate($obj->date_lim_reglement);
+
 
 		$tabfac[$obj->rowid]["type"] = $obj->type;
 		$tabfac[$obj->rowid]["description"] = $obj->description;
@@ -438,6 +443,9 @@ if ($action == 'exportcsv') {
 			$invoicestatic->type = $val["type"];
 			$invoicestatic->description = dol_trunc($val["description"], 32);
 
+			$invoicestatic->date_echeance = dol_print_date($val["invoicedatelimrglmnt"], 'day');
+			$invoicestatic->libelle = $val["invoicelabel"];
+
 			$date = dol_print_date($val["date"], 'day');
 
 			// Third party
@@ -449,6 +457,8 @@ if ($action == 'exportcsv') {
 				print '"' . utf8_decode(dol_trunc($companystatic->name, 35)). '"' . $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"'. $sep;
+				print '"' . $invoicestatic->date_echeance . '"' . $sep;
+				print '"' . $invoicestatic->libelle . '"' . $sep;
 				print '"E"' . $sep;
 				print "\r\n";
 				/*print '"' . $key . '"' . $sep;
@@ -478,6 +488,8 @@ if ($action == 'exportcsv') {
 					print '"' . utf8_decode(dol_trunc($companystatic->name, 35)). '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"'. $sep;
+					print '"' . $invoicestatic->date_echeance . '"' . $sep;
+					print '"' . $invoicestatic->libelle . '"' . $sep;
 					print '"E"' . $sep;
 					print "\r\n";
 
@@ -512,6 +524,8 @@ if ($action == 'exportcsv') {
 					print '"' . utf8_decode(dol_trunc($companystatic->name, 35)). '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"'. $sep;
+					print '"' . $invoicestatic->date_echeance . '"' . $sep;
+					print '"' . $invoicestatic->libelle . '"' . $sep;
 					print '"E"' . $sep;
 					print "\r\n";
 
