@@ -41,23 +41,47 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
  */
 class pdf_einstein extends ModelePDFCommandes
 {
-    var $db;
-    var $name;
-    var $description;
-    var $type;
+    /**
+     * @var DoliDb Database handler
+     */
+    public $db;
 
-    var $phpmin = array(4,3,0); // Minimum version of PHP required by module
-    var $version = 'dolibarr';
+	/**
+     * @var string model name
+     */
+    public $name;
 
-    var $page_largeur;
-    var $page_hauteur;
-    var $format;
-	var $marge_gauche;
-	var	$marge_droite;
-	var	$marge_haute;
-	var	$marge_basse;
+	/**
+     * @var string model description (short text)
+     */
+    public $description;
 
-    var $emetteur;	// Objet societe qui emet
+	/**
+     * @var string document type
+     */
+    public $type;
+
+	/**
+     * @var array() Minimum version of PHP required by module.
+	 * e.g.: PHP ≥ 5.3 = array(5, 3)
+     */
+	public $phpmin = array(5, 2);
+
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';
+
+    public $page_largeur;
+    public $page_hauteur;
+    public $format;
+	public $marge_gauche;
+	public $marge_droite;
+	public $marge_haute;
+	public $marge_basse;
+
+    public $emetteur;	// Objet societe qui emet
 
 
 	/**
@@ -65,7 +89,7 @@ class pdf_einstein extends ModelePDFCommandes
 	 *
 	 *  @param		DoliDB		$db      Database handler
 	 */
-	function __construct($db)
+	public function __construct($db)
 	{
 		global $conf,$langs,$mysoc;
 
@@ -116,7 +140,7 @@ class pdf_einstein extends ModelePDFCommandes
 		}
 		else
 		{
-			$this->posxtva=112;
+			$this->posxtva=110;
 			$this->posxup=126;
 			$this->posxqty=145;
 		}
@@ -407,8 +431,8 @@ class pdf_einstein extends ModelePDFCommandes
 					if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) && empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN))
 					{
 						$vat_rate = pdf_getlinevatrate($object, $i, $outputlangs, $hidedetails);
-						$pdf->SetXY($this->posxtva, $curY);
-						$pdf->MultiCell($this->posxup-$this->posxtva-0.8, 3, $vat_rate, 0, 'R');
+						$pdf->SetXY($this->posxtva-5, $curY);
+						$pdf->MultiCell($this->posxup-$this->posxtva+4, 3, $vat_rate, 0, 'R');
 					}
 
 					// Unit price before discount
@@ -643,13 +667,13 @@ class pdf_einstein extends ModelePDFCommandes
 			$pdf->SetFont('','B', $default_font_size - 2);
 			$pdf->SetXY($this->marge_gauche, $posy);
 			$titre = $outputlangs->transnoentities("PaymentConditions").':';
-			$pdf->MultiCell(80, 4, $titre, 0, 'L');
+			$pdf->MultiCell(43, 4, $titre, 0, 'L');
 
 			$pdf->SetFont('','', $default_font_size - 2);
 			$pdf->SetXY($posxval, $posy);
 			$lib_condition_paiement=$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code)!=('PaymentCondition'.$object->cond_reglement_code)?$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code):$outputlangs->convToOutputCharset($object->cond_reglement_doc);
 			$lib_condition_paiement=str_replace('\n',"\n",$lib_condition_paiement);
-			$pdf->MultiCell(80, 4, $lib_condition_paiement,0,'L');
+			$pdf->MultiCell(67, 4, $lib_condition_paiement,0,'L');
 
 			$posy=$pdf->GetY()+3;
 		}
@@ -931,7 +955,7 @@ class pdf_einstein extends ModelePDFCommandes
 							$tvakey=str_replace('*','',$tvakey);
 							$tvacompl = " (".$outputlangs->transnoentities("NonPercuRecuperable").")";
 						}
-						$totalvat =$outputlangs->transnoentities("TotalVAT").' ';
+						$totalvat =$outputlangs->transcountrynoentities("TotalVAT",$mysoc->country_code).' ';
 						$totalvat.=vatrate($tvakey,1).$tvacompl;
 						$pdf->MultiCell($col2x-$col1x, $tab2_hl, $totalvat, 0, 'L', 1);
 

@@ -1,13 +1,13 @@
 <?php
 /* Copyright (C) 2004-2014	Laurent Destailleur	<eldy@users.sourceforge.net>
  * Copyright (C) 2005-2012	Regis Houssin		<regis.houssin@capnetworks.com>
- * Copyright (C) 2008		Raphael Bertrand	<raphael.bertrand@resultic.fr>
+ * Copyright (C) 2008		Raphael Bertrand		<raphael.bertrand@resultic.fr>
  * Copyright (C) 2010-2014	Juanjo Menent		<jmenent@2byte.es>
- * Copyright (C) 2012      	Christophe Battarel <christophe.battarel@altairis.fr>
- * Copyright (C) 2012       Cédric Salvador     <csalvador@gpcsolutions.fr>
- * Copyright (C) 2012-2014  Raphaël Doursenaud  <rdoursenaud@gpcsolutions.fr>
- * Copyright (C) 2015       Marcos García       <marcosgdf@gmail.com>
- * Copyright (C) 2017       Ferran Marcet       <fmarcet@2byte.es>
+ * Copyright (C) 2012		Christophe Battarel	<christophe.battarel@altairis.fr>
+ * Copyright (C) 2012		Cédric Salvador		<csalvador@gpcsolutions.fr>
+ * Copyright (C) 2012-2014	Raphaël Doursenaud	<rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2015		Marcos García		<marcosgdf@gmail.com>
+ * Copyright (C) 2017		Ferran Marcet		<fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,7 +125,7 @@ class pdf_crabe extends ModelePDFFactures
 		}
 		else
 		{
-			$this->posxtva=112;
+			$this->posxtva=110;
 			$this->posxup=126;
 			$this->posxqty=145;
 		}
@@ -453,7 +453,7 @@ class pdf_crabe extends ModelePDFFactures
 						$pageposafter=$pageposbefore;
 						//print $pageposafter.'-'.$pageposbefore;exit;
 						$pdf->setPageOrientation('', 1, $heightforfooter);	// The only function to edit the bottom margin of current page to set it.
-						pdf_writelinedesc($pdf,$object,$i,$outputlangs,$this->posxpicture-$curX,3,$curX,$curY,$hideref,$hidedesc);
+						pdf_writelinedesc($pdf,$object,$i,$outputlangs,$this->posxpicture-$curX-$progress_width,3,$curX,$curY,$hideref,$hidedesc);
 						$pageposafter=$pdf->getPage();
 						$posyafter=$pdf->GetY();
 						//var_dump($posyafter); var_dump(($this->page_hauteur - ($heightforfooter+$heightforfreetext+$heightforinfotot))); exit;
@@ -496,8 +496,8 @@ class pdf_crabe extends ModelePDFFactures
 					if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) && empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN))
 					{
 						$vat_rate = pdf_getlinevatrate($object, $i, $outputlangs, $hidedetails);
-						$pdf->SetXY($this->posxtva, $curY);
-						$pdf->MultiCell($this->posxup-$this->posxtva-0.8, 3, $vat_rate, 0, 'R');
+						$pdf->SetXY($this->posxtva-5, $curY);
+						$pdf->MultiCell($this->posxup-$this->posxtva+4, 3, $vat_rate, 0, 'R');
 					}
 
 					// Unit price before discount
@@ -568,7 +568,7 @@ class pdf_crabe extends ModelePDFFactures
 					if (isset($object->type) && $object->type == 2 && ! empty($conf->global->INVOICE_POSITIVE_CREDIT_NOTE)) $sign=-1;
 					// Collecte des totaux par valeur de tva dans $this->tva["taux"]=total_tva
 					$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
-					if ($prev_progress > 0) // Compute progress from previous situation
+					if ($prev_progress > 0 && !empty($object->lines[$i]->situation_percent)) // Compute progress from previous situation
 					{
 						if ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) $tvaligne = $sign * $object->lines[$i]->multicurrency_total_tva * ($object->lines[$i]->situation_percent - $prev_progress) / $object->lines[$i]->situation_percent;
 						else $tvaligne = $sign * $object->lines[$i]->total_tva * ($object->lines[$i]->situation_percent - $prev_progress) / $object->lines[$i]->situation_percent;
@@ -892,13 +892,13 @@ class pdf_crabe extends ModelePDFFactures
 			$pdf->SetFont('','B', $default_font_size - 2);
 			$pdf->SetXY($this->marge_gauche, $posy);
 			$titre = $outputlangs->transnoentities("PaymentConditions").':';
-			$pdf->MultiCell(80, 4, $titre, 0, 'L');
+			$pdf->MultiCell(43, 4, $titre, 0, 'L');
 
 			$pdf->SetFont('','', $default_font_size - 2);
 			$pdf->SetXY($posxval, $posy);
 			$lib_condition_paiement=$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code)!=('PaymentCondition'.$object->cond_reglement_code)?$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code):$outputlangs->convToOutputCharset($object->cond_reglement_doc);
 			$lib_condition_paiement=str_replace('\n',"\n",$lib_condition_paiement);
-			$pdf->MultiCell(80, 4, $lib_condition_paiement,0,'L');
+			$pdf->MultiCell(67, 4, $lib_condition_paiement,0,'L');
 
 			$posy=$pdf->GetY()+3;
 		}
@@ -1178,7 +1178,7 @@ class pdf_crabe extends ModelePDFFactures
 							$tvakey=str_replace('*','',$tvakey);
 							$tvacompl = " (".$outputlangs->transnoentities("NonPercuRecuperable").")";
 						}
-						$totalvat =$outputlangs->transnoentities("TotalVAT").' ';
+						$totalvat =$outputlangs->transcountrynoentities("TotalVAT",$mysoc->country_code).' ';
 						$totalvat.=vatrate($tvakey,1).$tvacompl;
 						$pdf->MultiCell($col2x-$col1x, $tab2_hl, $totalvat, 0, 'L', 1);
 
@@ -1474,6 +1474,17 @@ class pdf_crabe extends ModelePDFFactures
 				$pdf->MultiCell($this->postotalht-$this->posxdiscount+1,2, $outputlangs->transnoentities("ReductionShort"),'','C');
 			}
 		}
+
+		if ($this->situationinvoice)
+		{
+			$pdf->line($this->postotalht+4, $tab_top, $this->postotalht+4, $tab_top + $tab_height);
+			if (empty($hidetop))
+			{
+				$pdf->SetXY($this->postotalht-19, $tab_top+1);
+				$pdf->MultiCell(30,2, $outputlangs->transnoentities("Situation"),'','C');
+			}
+		}
+
 		if ($this->atleastonediscount)
 		{
 			$pdf->line($this->postotalht, $tab_top, $this->postotalht, $tab_top + $tab_height);
@@ -1508,7 +1519,7 @@ class pdf_crabe extends ModelePDFFactures
 		pdf_pagehead($pdf,$outputlangs,$this->page_hauteur);
 
 		// Show Draft Watermark
-		if($object->statut==0 && (! empty($conf->global->FACTURE_DRAFT_WATERMARK)) )
+		if($object->statut==Facture::STATUS_DRAFT && (! empty($conf->global->FACTURE_DRAFT_WATERMARK)) )
         {
 		      pdf_watermark($pdf,$outputlangs,$this->page_hauteur,$this->page_largeur,'mm',$conf->global->FACTURE_DRAFT_WATERMARK);
         }
@@ -1554,6 +1565,7 @@ class pdf_crabe extends ModelePDFFactures
 		if ($object->type == 2) $title=$outputlangs->transnoentities("InvoiceAvoir");
 		if ($object->type == 3) $title=$outputlangs->transnoentities("InvoiceDeposit");
 		if ($object->type == 4) $title=$outputlangs->transnoentities("InvoiceProFormat");
+		if ($this->situationinvoice) $title=$outputlangs->transnoentities("InvoiceSituation");
 		$pdf->MultiCell($w, 3, $title, '', 'R');
 
 		$pdf->SetFont('','B',$default_font_size);
@@ -1561,7 +1573,13 @@ class pdf_crabe extends ModelePDFFactures
 		$posy+=5;
 		$pdf->SetXY($posx,$posy);
 		$pdf->SetTextColor(0,0,60);
-		$pdf->MultiCell($w, 4, $outputlangs->transnoentities("Ref")." : " . $outputlangs->convToOutputCharset($object->ref), '', 'R');
+		$textref=$outputlangs->transnoentities("Ref")." : " . $outputlangs->convToOutputCharset($object->ref);
+		if ($object->statut == Facture::STATUS_DRAFT)
+		{
+			$pdf->SetTextColor(128,0,0);
+			$textref.=' - '.$outputlangs->transnoentities("NotValidated");
+		}
+		$pdf->MultiCell($w, 4, $textref, '', 'R');
 
 		$posy+=1;
 		$pdf->SetFont('','', $default_font_size - 2);
@@ -1646,7 +1664,7 @@ class pdf_crabe extends ModelePDFFactures
                 $posy+=4;
                 $pdf->SetXY($posx,$posy);
 		        $pdf->SetTextColor(0,0,60);
-		        $pdf->MultiCell($w, 3, $langs->trans("SalesRepresentative")." : ".$usertmp->getFullName($langs), '', 'R');
+		        $pdf->MultiCell($w, 3, $langs->transnoentities("SalesRepresentative")." : ".$usertmp->getFullName($langs), '', 'R');
 		    }
 		}
 

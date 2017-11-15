@@ -76,7 +76,7 @@ if (! empty($canvas))
 if ($user->societe_id) $socid=$user->societe_id;
 $result = restrictedArea($user, 'contact', $id, 'socpeople&societe', '', '', 'rowid', $objcanvas); // If we create a contact with no company (shared contacts), no check on write permission
 
-// Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('contactcard','globalcard'));
 
 
@@ -625,7 +625,7 @@ else
             // EMail
             if (($objsoc->typent_code == 'TE_PRIVATE' || ! empty($conf->global->CONTACT_USE_COMPANY_ADDRESS)) && dol_strlen(trim($object->email)) == 0) $object->email = $objsoc->email;	// Predefined with third party
             print '<tr><td><label for="email">'.$langs->trans("Email").'</label></td>';
-	        print '<td><input name="email" id="email" type="text" class="maxwidth100onsmartphone" maxlength="80" value="'.(GETPOST("email",'alpha')?GETPOST("email",'alpha'):$object->email).'"></td>';
+	        print '<td><input name="email" id="email" type="text" class="maxwidth100onsmartphone" value="'.(GETPOST("email",'alpha')?GETPOST("email",'alpha'):$object->email).'"></td>';
             if (! empty($conf->mailing->enabled))
             {
             	print '<td><label for="no_email">'.$langs->trans("No_Email").'</label></td>';
@@ -664,8 +664,9 @@ else
 			}
 
             // Other attributes
-            $parameters=array('colspan' => ' colspan="3"');
+            $parameters=array('colspan' => ' colspan="3"','cols'=>3);
             $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+            print $hookmanager->resPrint;
             if (empty($reshook) && ! empty($extrafields->attribute_label))
             {
             	print $object->showOptionals($extrafields,'edit');
@@ -673,6 +674,7 @@ else
 
             print "</table><br>";
 
+			print '<hr style="margin-bottom: 20px">';
 
             // Add personnal information
             print load_fiche_titre('<div class="comboperso">'.$langs->trans("PersonalInformations").'</div>','','');
@@ -858,7 +860,7 @@ else
 
             // EMail
             print '<tr><td><label for="email">'.$langs->trans("EMail").'</label></td>';
-	        print '<td><input name="email" id="email" type="text" class="flat maxwidthonsmartphone" maxlength="80" value="'.(isset($_POST["email"])?GETPOST("email"):$object->email).'"></td>';
+	        print '<td><input name="email" id="email" type="text" class="flat maxwidthonsmartphone" value="'.(isset($_POST["email"])?GETPOST("email"):$object->email).'"></td>';
             if (! empty($conf->mailing->enabled))
             {
                 $langs->load("mails");
@@ -931,8 +933,9 @@ else
 			}
 
             // Other attributes
-            $parameters=array('colspan' => ' colspan="3"');
+            $parameters=array('colspan' => ' colspan="3"', 'cols'=>3);
             $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+            print $hookmanager->resPrint;
             if (empty($reshook) && ! empty($extrafields->attribute_label))
             {
             	print $object->showOptionals($extrafields,'edit');
@@ -1020,7 +1023,7 @@ else
 
         dol_htmloutput_errors($error,$errors);
 
-        dol_fiche_head($head, 'card', $title, 0, 'contact');
+        dol_fiche_head($head, 'card', $title, -1, 'contact');
 
         if ($action == 'create_user')
         {
@@ -1053,7 +1056,7 @@ else
         }
 
         $linkback = '<a href="'.DOL_URL_ROOT.'/contact/list.php">'.$langs->trans("BackToList").'</a>';
-        
+
         $morehtmlref='<div class="refidno">';
         if (empty($conf->global->SOCIETE_DISABLE_CONTACTS))
         {
@@ -1063,11 +1066,11 @@ else
             if ($objsoc->id > 0) $morehtmlref.=$objsoc->getNomUrl(1);
             else $morehtmlref.=$langs->trans("ContactNotLinkedToCompany");
         }
-        $morehtmlref.='</div>';        
-        
+        $morehtmlref.='</div>';
+
         dol_banner_tab($object, 'id', $linkback, 1, 'rowid', 'ref', $morehtmlref);
-        
-        
+
+
         print '<div class="fichecenter">';
         print '<div class="fichehalfleft">';
 
@@ -1101,18 +1104,6 @@ else
         print $object->LibPubPriv($object->priv);
         print '</td></tr>';
 
-        // Note Public
-        /*
-        print '<tr><td class="tdtop">'.$langs->trans("NotePublic").'</td><td>';
-        print nl2br($object->note_public);
-        print '</td></tr>';
-
-        // Note Private
-        print '<tr><td class="tdtop">'.$langs->trans("NotePrivate").'</td><td>';
-        print nl2br($object->note_private);
-        print '</td></tr>';
-        */
-
         print '</table>';
 
         print '</div>';
@@ -1129,15 +1120,14 @@ else
 			print '</td></tr>';
 		}
 
-        // Other attributes
-        $parameters=array('socid'=>$socid, 'colspan' => ' colspan="3"');
+    	// Other attributes
+	$parameters=array('socid'=>$socid, 'colspan' => ' colspan="3"');
         $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
         print $hookmanager->resPrint;
         if (empty($reshook) && ! empty($extrafields->attribute_label))
         {
-        	print $object->showOptionals($extrafields);
-        }
-
+    		include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
+	}
         $object->load_ref_elements();
 
         if (! empty($conf->propal->enabled))
