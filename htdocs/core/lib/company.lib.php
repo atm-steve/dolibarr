@@ -1084,8 +1084,46 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             if ($filterobj->id) $sql.= " AND a.fk_element = ".$filterobj->id;
         }
         if (is_object($objcon) && $objcon->id) $sql.= " AND a.fk_contact = ".$objcon->id;
+        
+        $agendaDefaultFilter = unserialize($conf->global->AGENDA_DEFAULT_FILTER_VIEW);
         // Condition on actioncode
-        if (! empty($actioncode))
+        if ($actioncode == '' && !empty($agendaDefaultFilter)){
+            
+            if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
+            {
+                if ((in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) && (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter))){
+                    // do nothing
+                }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) {
+                    $sql.= " AND c.type != 'systemauto'";
+                } elseif (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
+                    $sql.= " AND c.type = 'systemauto'";
+                }
+            }
+            else
+            {
+                if (in_array('AC_NON_AUTO', $agendaDefaultFilter) && in_array('AC_ALL_AUTO', $agendaDefaultFilter)){
+                    // do nothing
+                }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter)) {
+                    $sql.= " AND c.type != 'systemauto'";
+                } elseif (in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
+                    $sql.= " AND c.type = 'systemauto'";
+                }
+                
+                $arraydone = array('AC_NON_AUTO', 'AC_ALL_AUTO');
+                $i = 0;
+                foreach ($agendaDefaultFilter as $k => $ac) {
+                    if (!in_array($ac, $arraydone)) {
+                        if (empty($i)){
+                            $sql.= " AND (c.code = '".$db->escape($ac)."'";$i++;
+                        }
+                        else $sql.= " OR c.code = '".$db->escape($ac)."'";
+                        
+                    }
+                }
+                
+                if(!empty($i)) $sql.=")";
+            }
+        } elseif (! empty($actioncode))
         {
             if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
             {
@@ -1108,7 +1146,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         if ($donetodo == 'done') $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep <= '".$db->idate($now)."'))";
         if (is_array($filters) && $filters['search_agenda_label']) $sql.= natural_search('a.label', $filters['search_agenda_label']);
         $sql.= $db->order($sortfield, $sortorder);
-
+        
         dol_syslog("company.lib::show_actions_done", LOG_DEBUG);
         $resql=$db->query($sql);
         if ($resql)
