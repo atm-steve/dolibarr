@@ -1086,6 +1086,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         if (is_object($objcon) && $objcon->id) $sql.= " AND a.fk_contact = ".$objcon->id;
         
         $agendaDefaultFilter = unserialize($conf->global->AGENDA_DEFAULT_FILTER_VIEW);
+        $nbfilters = count($agendaDefaultFilter); 
         // Condition on actioncode
         if ($actioncode == '' && !empty($agendaDefaultFilter)){
             
@@ -1110,18 +1111,17 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
                 }
                 
                 $arraydone = array('AC_NON_AUTO', 'AC_ALL_AUTO');
-                $i = 0;
-                foreach ($agendaDefaultFilter as $k => $ac) {
-                    if (!in_array($ac, $arraydone)) {
-                        if (empty($i)){
-                            $sql.= " AND (c.code = '".$db->escape($ac)."'";$i++;
+                $opened = false;
+                for ($i = 0; $i < $nbfilters; $i++) {
+                    if (!in_array($agendaDefaultFilter[$i], $arraydone)) {
+                        if (!$opened){
+                            $sql.= " AND (c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
+                            $opened =true;
                         }
-                        else $sql.= " OR c.code = '".$db->escape($ac)."'";
-                        
+                        else $sql.= " OR c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
                     }
+                    if ($i == ($nbfilters -1) && $opened) $sql.=")";
                 }
-                
-                if(!empty($i)) $sql.=")";
             }
         } elseif (! empty($actioncode))
         {
@@ -1146,7 +1146,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         if ($donetodo == 'done') $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep <= '".$db->idate($now)."'))";
         if (is_array($filters) && $filters['search_agenda_label']) $sql.= natural_search('a.label', $filters['search_agenda_label']);
         $sql.= $db->order($sortfield, $sortorder);
-        
+        echo '<pre>'; print_r($sql);
         dol_syslog("company.lib::show_actions_done", LOG_DEBUG);
         $resql=$db->query($sql);
         if ($resql)
