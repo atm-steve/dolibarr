@@ -279,3 +279,5 @@ ALTER TABLE llx_events MODIFY COLUMN ip varchar(250);
 UPDATE llx_bank SET label= '(SupplierInvoicePayment)' WHERE label= 'Règlement fournisseur';
 UPDATE llx_bank SET label= '(CustomerInvoicePayment)' WHERE label= 'Règlement client';
 
+ALTER TABLE llx_c_email_templates ADD COLUMN nodoc tinyint DEFAULT 0  NOT NULL after position;
+

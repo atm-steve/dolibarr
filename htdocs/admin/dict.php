@@ -190,7 +190,7 @@ $tabsql[21]= "SELECT c.rowid as rowid, code, label, active FROM ".MAIN_DB_PREFIX
 $tabsql[22]= "SELECT rowid   as rowid, code, label, active FROM ".MAIN_DB_PREFIX."c_input_reason";
 $tabsql[23]= "SELECT t.rowid as rowid, t.taux, c.label as country, c.code as country_code, t.fk_pays as country_id, t.note, t.active, t.accountancy_code_sell, t.accountancy_code_buy FROM ".MAIN_DB_PREFIX."c_revenuestamp as t, ".MAIN_DB_PREFIX."c_country as c WHERE t.fk_pays=c.rowid";
 $tabsql[24]= "SELECT rowid   as rowid, code, label, active FROM ".MAIN_DB_PREFIX."c_type_resource";
-//$tabsql[25]= "SELECT rowid   as rowid, label, type_template, private, position, topic, content_lines, content, active FROM ".MAIN_DB_PREFIX."c_email_templates WHERE entity IN (".getEntity('email_template').")";
+//$tabsql[25]= "SELECT rowid   as rowid, label, type_template, private, position, nodoc, topic, content_lines, content, active FROM ".MAIN_DB_PREFIX."c_email_templates WHERE entity IN (".getEntity('email_template').")";
 $tabsql[26]= "SELECT rowid   as rowid, code, label, short_label, active FROM ".MAIN_DB_PREFIX."c_units";
 $tabsql[27]= "SELECT id      as rowid, code, libelle, active FROM ".MAIN_DB_PREFIX."c_stcomm";
 $tabsql[28]= "SELECT h.rowid as rowid, h.code, h.label, h.affect, h.delay, h.newbymonth, h.fk_country as country_id, c.code as country_code, c.label as country, h.active FROM ".MAIN_DB_PREFIX."c_holiday_types as h LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON h.fk_country=c.rowid";
@@ -264,7 +264,7 @@ $tabfield[21]= "code,label";
 $tabfield[22]= "code,label";
 $tabfield[23]= "country_id,country,taux,accountancy_code_sell,accountancy_code_buy,note";
 $tabfield[24]= "code,label";
-//$tabfield[25]= "label,type_template,private,position,topic,content_lines,content";
+//$tabfield[25]= "label,type_template,private,position,nodoc,topic,content_lines,content";
 $tabfield[26]= "code,label,short_label";
 $tabfield[27]= "code,libelle";
 $tabfield[28]= "code,label,affect,delay,newbymonth,country_id,country";
@@ -301,7 +301,7 @@ $tabfieldvalue[21]= "code,label";
 $tabfieldvalue[22]= "code,label";
 $tabfieldvalue[23]= "country,taux,accountancy_code_sell,accountancy_code_buy,note";
 $tabfieldvalue[24]= "code,label";
-//$tabfieldvalue[25]= "label,type_template,private,position,topic,content_lines,content";
+//$tabfieldvalue[25]= "label,type_template,private,position,nodoc,topic,content_lines,content";
 $tabfieldvalue[26]= "code,label,short_label";
 $tabfieldvalue[27]= "code,libelle";
 $tabfieldvalue[28]= "code,label,affect,delay,newbymonth,country";
@@ -338,7 +338,7 @@ $tabfieldinsert[21]= "code,label";
 $tabfieldinsert[22]= "code,label";
 $tabfieldinsert[23]= "fk_pays,taux,accountancy_code_sell,accountancy_code_buy,note";
 $tabfieldinsert[24]= "code,label";
-//$tabfieldinsert[25]= "label,type_template,private,position,topic,content_lines,content,entity";
+//$tabfieldinsert[25]= "label,type_template,private,position,nodoc,topic,content_lines,content,entity";
 $tabfieldinsert[26]= "code,label,short_label";
 $tabfieldinsert[27]= "code,libelle";
 $tabfieldinsert[28]= "code,label,affect,delay,newbymonth,fk_country";
@@ -377,7 +377,7 @@ $tabrowid[21]= "rowid";
 $tabrowid[22]= "rowid";
 $tabrowid[23]= "";
 $tabrowid[24]= "";
-//$tabrowid[25]= "";
+$tabrowid[25]= "";
 $tabrowid[26]= "";
 $tabrowid[27]= "id";
 $tabrowid[28]= "";
@@ -451,7 +451,14 @@ $tabhelp[21] = array('code'=>$langs->trans("EnterAnyCode"));
 $tabhelp[22] = array('code'=>$langs->trans("EnterAnyCode"));
 $tabhelp[23] = array();
 $tabhelp[24] = array('code'=>$langs->trans("EnterAnyCode"));
-//$tabhelp[25] = array('topic'=>$langs->trans('SeeSubstitutionVars'),'content'=>$langs->trans('SeeSubstitutionVars'),'content_lines'=>$langs->trans('SeeSubstitutionVars'),'type_template'=>$langs->trans("TemplateForElement"),'private'=>$langs->trans("TemplateIsVisibleByOwnerOnly"), 'position'=>$langs->trans("PositionIntoComboList"));
+$tabhelp[25] = array(
+		'topic' => $langs->trans('SeeSubstitutionVars'),
+		'content' => $langs->trans('SeeSubstitutionVars'),
+		'content_lines'=>$langs->trans('SeeSubstitutionVars'),
+		'type_template' => $langs->trans("TemplateForElement"),
+		'private' => $langs->trans("TemplateIsVisibleByOwnerOnly"),
+		'position' => $langs->trans("PositionIntoComboList"),
+		'nodoc' => $langs->trans("TemplateHasNoAttachedDoc"));
 $tabhelp[26] = array('code'=>$langs->trans("EnterAnyCode"));
 $tabhelp[27] = array('code'=>$langs->trans("EnterAnyCode"));
 $tabhelp[28] = array('affect'=>$langs->trans("FollowedByACounter"),'delay'=>$langs->trans("MinimumNoticePeriod"), 'newbymonth'=>$langs->trans("NbAddedAutomatically"));
@@ -488,7 +495,7 @@ $tabfieldcheck[21] = array();
 $tabfieldcheck[22] = array();
 $tabfieldcheck[23] = array();
 $tabfieldcheck[24] = array();
-//$tabfieldcheck[25] = array();
+$tabfieldcheck[25] = array();
 $tabfieldcheck[26] = array();
 $tabfieldcheck[27] = array();
 $tabfieldcheck[28] = array();
@@ -1128,7 +1135,7 @@ if ($id)
         }
 
         if ($id == 4) print '<td></td>';
-        print '<td colspan="3" align="center">';
+        print '<td colspan="4" align="center">';
         if ($action != 'edit')
         {
         	print '<input type="submit" class="button" name="actionadd" value="'.$langs->trans("Add").'">';
@@ -1806,6 +1813,24 @@ function fieldList($fieldlist, $obj='', $tabname='', $context='')
 		    }
 		    print '</td>';
 		}
+		elseif (in_array($fieldlist[$field], array('content')))
+		{
+			if ($tabname == MAIN_DB_PREFIX.'c_email_templates')
+			{
+				print '<td colspan="4"></td></tr><tr class="pair nohover"><td colspan="6">';		// To create an artificial CR for the current tr we are on
+			}
+			else print '<td>';
+			if ($context != 'hide')
+			{
+				//print '<textarea cols="3" rows="'.ROWS_2.'" class="flat" name="'.$fieldlist[$field].'">'.(! empty($obj->{$fieldlist[$field]})?$obj->{$fieldlist[$field]}:'').'</textarea>';
+				$okforextended=true;
+				if ($tabname == MAIN_DB_PREFIX.'c_email_templates' && empty($conf->global->FCKEDITOR_ENABLE_MAIL)) $okforextended=false;
+				$doleditor = new DolEditor($fieldlist[$field], (! empty($obj->{$fieldlist[$field]})?$obj->{$fieldlist[$field]}:''), '', 140, 'dolibarr_mailings', 'In', 0, false, $okforextended, ROWS_5, '90%');
+				print $doleditor->Create(1);
+			}
+			else print '&nbsp;';
+			print '</td>';
+		}
 		elseif ($fieldlist[$field] == 'price' || preg_match('/^amount/i',$fieldlist[$field])) {
 			print '<td><input type="text" class="flat minwidth75" value="'.price((! empty($obj->{$fieldlist[$field]})?$obj->{$fieldlist[$field]}:'')).'" name="'.$fieldlist[$field].'"></td>';
 		}
@@ -1855,6 +1880,7 @@ function fieldList($fieldlist, $obj='', $tabname='', $context='')
 			if ($fieldlist[$field]=='affect') $class='maxwidth50';
 			if ($fieldlist[$field]=='delay') $class='maxwidth50';
 			if ($fieldlist[$field]=='position') $class='maxwidth50';
+			if ($fieldlist[$field]=='nododc') $class='maxwidth50';
 			if ($fieldlist[$field]=='libelle' || $fieldlist[$field]=='label') $class='quatrevingtpercent';
 			if ($fieldlist[$field]=='tracking') $class='quatrevingtpercent';
 			if ($fieldlist[$field]=='sortorder' || $fieldlist[$field]=='sens' || $fieldlist[$field]=='category_type') $class='maxwidth50';

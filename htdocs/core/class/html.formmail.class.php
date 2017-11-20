@@ -659,6 +659,11 @@ class FormMail extends Form
         		$out.= '<td>';
         		if (is_numeric($this->withfile))
         		{
+        			// Email template has nodoc flag set, clear attached documents in session
+        			if (! empty($arraydefaultmessage['nodoc'])) {
+        				$this->clear_attached_files();
+        				$listofpaths=array();
+        			}
 	        		// TODO Trick to have param removedfile containing nb of image to delete. But this does not works without javascript
 	        		$out.= '<input type="hidden" class="removedfilehidden" name="removedfile" value="">'."\n";
 	        		$out.= '<script type="text/javascript" language="javascript">';
@@ -843,11 +848,11 @@ class FormMail extends Form
 	 *      @param  int         $active         1=Only active template, 0=Only disabled, -1=All
 	 *      @return array						array('topic'=>,'content'=>,..)
 	 */
-	private function getEMailTemplate($db, $type_template, $user, $outputlangs, $id=0, $active=1)
+	public function getEMailTemplate($db, $type_template, $user, $outputlangs, $id=0, $active=1)
 	{
 		$ret=array();
 
-		$sql = "SELECT label, topic, content, content_lines, lang";
+		$sql = "SELECT label, topic, content, content_lines, lang, nodoc";
 		$sql.= " FROM ".MAIN_DB_PREFIX.'c_email_templates';
 		$sql.= " WHERE type_template='".$db->escape($type_template)."'";
 		$sql.= " AND entity IN (".getEntity('c_email_templates', 0).")";
@@ -869,6 +874,7 @@ class FormMail extends Form
 				$ret['content']=$obj->content;
 				$ret['content_lines']=$obj->content_lines;
 				$ret['lang']=$obj->lang;
+				$ret['nodoc']=$obj->nodoc;
 			}
 			else
 			{
