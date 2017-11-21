@@ -927,6 +927,9 @@ if (empty($reshook))
 	    dol_remove_file_process($_POST['removedfile'],0);
 	    $action='presend';
 	}
+if (GETPOST('modelselected')) {
+        	$action = 'presend';
+       }
 
 	// Send mail
 	if ($action == 'send' && ! $_POST['addfile'] && ! $_POST['removedfile'] && ! $_POST['cancel'])
