@@ -653,7 +653,7 @@ class pdf_agrume extends ModelePDFFactures
 
 					// Collecte des totaux par valeur de tva dans $this->tva["taux"]=total_tva
 					$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
-					if ($prev_progress > 0) // Compute progress from previous situation
+					if ($prev_progress > 0 && $object->lines[$i]->situation_percent) // Compute progress from previous situation
 					{
 						$tvaligne = $object->lines[$i]->total_tva * ($object->lines[$i]->situation_percent - $prev_progress) / $object->lines[$i]->situation_percent;
 					} else {
