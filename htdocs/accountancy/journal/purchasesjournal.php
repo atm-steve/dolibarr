@@ -56,6 +56,11 @@ $now = dol_now();
 if ($user->societe_id > 0)
 	accessforbidden();
 
+$hookmanager->initHooks(array('purchasesjournal'));
+$parameters=array();
+$reshook=$hookmanager->executeHooks('doActions',$parameters,$user,$action);    // Note that $action and $object may have been modified by some hooks
+
+	
 /*
  * Actions
  */
