@@ -670,6 +670,8 @@ if ($action == 'confirm_clone' && $confirm == 'yes' && $user->rights->fournisseu
 		if ($object->id > 0)
 		{
 			$result=$object->createFromClone();
+//var_dump($object->id, $result, $object);exit;
+
 			if ($result > 0)
 			{
 				header("Location: ".$_SERVER['PHP_SELF'].'?id='.$result);
@@ -677,8 +679,12 @@ if ($action == 'confirm_clone' && $confirm == 'yes' && $user->rights->fournisseu
 			}
 			else
 			{
+//var_dump($object->error);exit;
 				setEventMessage($object->error, 'errors');
 				$action='';
+				header("Location: ".$_SERVER['PHP_SELF'].'?id='.GETPOST('id'));
+                                exit;
+
 			}
 		}
 	}
@@ -1347,7 +1353,6 @@ if (! empty($conf->global->MAIN_DISABLE_CONTACTS_TAB) && $user->rights->fourniss
 /*
  * View
  */
-
 llxHeader('',$langs->trans("OrderCard"),"CommandeFournisseur");
 
 $form =	new	Form($db);
