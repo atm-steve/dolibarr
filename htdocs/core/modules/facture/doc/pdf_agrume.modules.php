@@ -456,7 +456,7 @@ class pdf_agrume extends ModelePDFFactures
 						$vatrate=(string) $line->tva_tx;
 						
 						$prev_progress = $line->get_prev_progress($object->id);
-						if ($prev_progress > 0) $tvaligne = $line->total_tva * ($line->situation_percent - $prev_progress) / $line->situation_percent;
+						if ($prev_progress > 0 && $line->situation_percent > 0) $tvaligne = $line->total_tva * ($line->situation_percent - $prev_progress) / $line->situation_percent;
 						else $tvaligne = $line->total_tva;
 	
 						if ($object->remise_percent) $tvaligne-=($tvaligne*$object->remise_percent)/100;
