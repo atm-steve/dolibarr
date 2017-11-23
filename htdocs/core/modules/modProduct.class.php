@@ -147,7 +147,7 @@ class modProduct extends DolibarrModules
 		$this->export_code[$r]=$this->rights_class.'_'.$r;
 		$this->export_label[$r]="Products";	// Translation key (used only if key ExportDataset_xxx_z not found)
 		$this->export_permission[$r]=array(array("produit","export"));
-		$this->export_fields_array[$r]=array('p.rowid'=>"Id",'p.ref'=>"Ref",'p.label'=>"Label",'p.description'=>"Description",'p.url'=>"PublicUrl",'p.accountancy_code_sell'=>"ProductAccountancySellCode",'p.accountancy_code_buy'=>"ProductAccountancyBuyCode",'p.note'=>"Note",'p.length'=>"Length",'p.surface'=>"Surface",'p.volume'=>"Volume",'p.weight'=>"Weight",'p.customcode'=>'CustomCode','p.price_base_type'=>"PriceBase",'p.price'=>"UnitPriceHT",'p.price_ttc'=>"UnitPriceTTC",'p.tva_tx'=>'VATRate','p.tosell'=>"OnSell",'p.tobuy'=>"OnBuy",'p.datec'=>'DateCreation','p.tms'=>'DateModification');
+		$this->export_fields_array[$r]=array('p.rowid'=>"Id",'p.ref'=>"Ref",'p.label'=>"Label",'p.description'=>"Description",'p.url'=>"PublicUrl",'p.accountancy_code_sell'=>"ProductAccountancySellCode",'p.accountancy_code_buy'=>"ProductAccountancyBuyCode",'p.note'=>"Note",'p.length'=>"Length",'p.surface'=>"Surface",'p.volume'=>"Volume",'p.weight'=>"Weight",'p.customcode'=>'CustomCode','p.price_base_type'=>"PriceBase",'pr.price_min'=>"MinPriceLevelUnitPriceHT",'p.price'=>"UnitPriceHT",'p.price_ttc'=>"UnitPriceTTC",'p.tva_tx'=>'VATRate','p.tosell'=>"OnSell",'p.tobuy'=>"OnBuy",'p.datec'=>'DateCreation','p.tms'=>'DateModification');
 		if ($mysoc->useNPR()) $this->export_fields_array[$r]['p.recuperableonly']='NPR';
 		if (! empty($conf->stock->enabled)) $this->export_fields_array[$r]=array_merge($this->export_fields_array[$r],array('p.stock'=>'Stock','p.pmp'=>'PMPValue'));
 		if (! empty($conf->barcode->enabled)) $this->export_fields_array[$r]=array_merge($this->export_fields_array[$r],array('p.barcode'=>'BarCode'));
@@ -165,6 +165,7 @@ class modProduct extends DolibarrModules
 		$this->export_sql_start[$r]='SELECT DISTINCT ';
 		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'product as p';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields as extra ON p.rowid = extra.fk_object';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'product_price as pr ON p.rowid = pr.fk_product';
 		if (! empty($conf->fournisseur->enabled)) $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'product_fournisseur_price as pf ON pf.fk_product = p.rowid LEFT JOIN '.MAIN_DB_PREFIX.'societe s ON s.rowid = pf.fk_soc';
 		$this->export_sql_end[$r] .=' WHERE p.fk_product_type = 0 AND p.entity IN ('.getEntity("product", 1).')';
 
