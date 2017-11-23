@@ -1075,6 +1075,7 @@ if (empty($reshook))
 								$TTotalByTva = array();
 								foreach ($srcobject->lines as &$line)
 								{
+									if(! empty($line->special_code)) continue;
 									$TTotalByTva[$line->tva_tx] += $line->total_ttc ;
 								}
 
@@ -1378,7 +1379,7 @@ if (empty($reshook))
 
 				$object->situation_counter = $object->situation_counter + 1;
 				$id = $object->createFromCurrent($user);
-				if ($id <= 0) 
+				if ($id <= 0)
 				{
 					$mesg = $object->error;
 				}
@@ -1588,6 +1589,9 @@ if (empty($reshook))
 							$pu_ttc = price($prodcustprice->lines[0]->price_ttc);
 							$price_base_type = $prodcustprice->lines[0]->price_base_type;
 							$tva_tx = $prodcustprice->lines[0]->tva_tx;
+							if ($prodcustprice->lines[0]->default_vat_code && ! preg_match('/\(.*\)/', $tva_tx)) $tva_tx.= ' ('.$prodcustprice->lines[0]->default_vat_code.')';
+							$tva_npr = $prodcustprice->lines[0]->recuperableonly;
+							if (empty($tva_tx)) $tva_npr=0;
 						}
 					}
 				}
@@ -2843,12 +2847,12 @@ else if ($id > 0 || ! empty($ref))
 		$resteapayer = 0;
 	$resteapayeraffiche = $resteapayer;
 
-	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
+	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {	// Never use this
 		$filterabsolutediscount = "fk_facture_source IS NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
 		$filtercreditnote = "fk_facture_source IS NOT NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
 	} else {
-		$filterabsolutediscount = "fk_facture_source IS NULL OR (fk_facture_source IS NOT NULL AND (description LIKE '(DEPOSIT)%' OR description LIKE '(EXCESS RECEIVED)%'))";
-		$filtercreditnote = "fk_facture_source IS NOT NULL AND description NOT LIKE '(DEPOSIT)%' AND description NOT LIKE '(EXCESS RECEIVED)%'";
+		$filterabsolutediscount = "fk_facture_source IS NULL OR (fk_facture_source IS NOT NULL AND (description LIKE '(DEPOSIT)%' AND description NOT LIKE '(EXCESS RECEIVED)%'))";
+		$filtercreditnote = "fk_facture_source IS NOT NULL AND (description NOT LIKE '(DEPOSIT)%' OR description LIKE '(EXCESS RECEIVED)%')";
 	}
 
 	$absolute_discount = $soc->getAvailableDiscounts('', $filterabsolutediscount);
@@ -2871,9 +2875,9 @@ else if ($id > 0 || ! empty($ref))
 
 	// Confirmation de la conversion de l'avoir en reduc
 	if ($action == 'converttoreduc') {
-		if($object->type == 0) $type_fac = 'ExcessReceived';
-		elseif($object->type == 2) $type_fac = 'CreditNote';
-		elseif($object->type == 3) $type_fac = 'Deposit';
+		if($object->type == Facture::TYPE_STANDARD) $type_fac = 'ExcessReceived';
+		elseif($object->type == Facture::TYPE_CREDIT_NOTE) $type_fac = 'CreditNote';
+		elseif($object->type == Facture::TYPE_DEPOSIT) $type_fac = 'Deposit';
 		$text = $langs->trans('ConfirmConvertToReduc', strtolower($langs->transnoentities($type_fac)));
 		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('ConvertToReduc'), $text, 'confirm_converttoreduc', '', "yes", 2);
 	}
@@ -4010,7 +4014,7 @@ else if ($id > 0 || ! empty($ref))
 		}
 	}
 
-	print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
+	print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '#addline' : '#line_' . GETPOST('lineid')) . '" method="POST">
 	<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">
 	<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateligne') . '">
 	<input type="hidden" name="mode" value="">
@@ -4291,8 +4295,8 @@ else if ($id > 0 || ! empty($ref))
 		$filename = dol_sanitizeFileName($object->ref);
 		$filedir = $conf->facture->dir_output . '/' . dol_sanitizeFileName($object->ref);
 		$urlsource = $_SERVER['PHP_SELF'] . '?facid=' . $object->id;
-		$genallowed = $user->rights->facture->creer;
-		$delallowed = $user->rights->facture->supprimer;
+		$genallowed = $user->rights->facture->lire;
+		$delallowed = $user->rights->facture->creer;
 
 		print $formfile->showdocuments('facture', $filename, $filedir, $urlsource, $genallowed, $delallowed, $object->modelpdf, 1, 0, 0, 28, 0, '', '', '', $soc->default_lang);
 		$somethingshown = $formfile->numoffiles;
