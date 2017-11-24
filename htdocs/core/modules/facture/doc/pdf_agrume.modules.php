@@ -1795,7 +1795,7 @@ exit;
 		if (empty($hidetop))
 		{
 			$pdf->SetXY($this->postotalht-1, $tab_top+1);
-			$pdf->MultiCell($this->parge_largeur-$this->marge_droite-$this->postotalht-1,2, $outputlangs->transnoentities("TotalHT"),'','L');
+			$pdf->MultiCell($this->parge_largeur-$this->marge_droite-$this->postotalht-1,2, $outputlangs->transnoentities("TotalHT"),'','R');
 		}
 	}
 
