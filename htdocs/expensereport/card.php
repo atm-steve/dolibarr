@@ -184,10 +184,17 @@ if ($action == "confirm_validate" && GETPOST("confirm") == "yes" && $id > 0 && $
 {
 	$object = new ExpenseReport($db);
 	$object->fetch($id);
+	$lastRef = $object->ref;
 	$result = $object->setValidate($user);
-
+	$newRef = $object->ref;
+	
+	//echo $lastRef." ".$newRef;exit;
+	
 	if ($result > 0)
 	{
+		//Rename du répertoire PROV avec la ref définitive
+		rename(DOL_DATA_ROOT.'/expensereport/'.$lastRef,DOL_DATA_ROOT.'/expensereport/'.$newRef);
+		
 		// Define output language
 		if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
 		{
@@ -1720,7 +1727,7 @@ else
 
 									// Select type
 									print '<td style="text-align:center;">';
-									select_type_fees_id($objp->type_fees_code,'fk_c_type_fees');
+									select_type_fees_id($objp->type_fees_code,'fk_c_type_fees', 0);
 									print '</td>';
 
 									// Add comments
@@ -1805,7 +1812,7 @@ else
 
 						// Select type
 						print '<td>';
-						select_type_fees_id(GETPOST('fk_c_type_fees'),'fk_c_type_fees',1);
+						select_type_fees_id(GETPOST('fk_c_type_fees'),'fk_c_type_fees',0);
 						print '</td>';
 
 						// Add comments

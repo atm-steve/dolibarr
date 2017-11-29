@@ -40,6 +40,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/fourn.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
+
 if (! empty($conf->askpricesupplier->enabled))
 	require DOL_DOCUMENT_ROOT . '/comm/askpricesupplier/class/askpricesupplier.class.php';
 if (!empty($conf->produit->enabled))
@@ -73,6 +74,10 @@ $lineid         = GETPOST('lineid', 'int');
 $lineid = GETPOST('lineid', 'int');
 $origin = GETPOST('origin', 'alpha');
 $originid = (GETPOST('originid', 'int') ? GETPOST('originid', 'int') : GETPOST('origin_id', 'int')); // For backward compatibility
+
+//Askpricesupplier
+$origin = GETPOST('origin', 'alpha');
+$originid = GETPOST('originid', 'int');
 
 //PDF
 $hidedetails = (GETPOST('hidedetails','int') ? GETPOST('hidedetails','int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
@@ -847,9 +852,16 @@ if (empty($reshook))
 	if ($action == 'update_extras')
 	{
 		// Fill array 'array_options' with data from add form
+
 		$extralabels=$extrafields->fetch_name_optionals_label($object->table_element);
 		$ret = $extrafields->setOptionalsFromPost($extralabels,$object,GETPOST('attribute'));
 		if ($ret < 0) $error++;
+		
+       	if (! $error)
+       	{
+			$ret = $extrafields->setOptionalsFromPost($extralabels,$object);
+			if ($ret < 0) $error++;
+       	}
 
 		if (! $error)
 		{
@@ -1428,6 +1440,7 @@ if ($action=='create')
 		$societe->fetch($socid);
 	}
 
+
 	if (! empty($origin) && ! empty($originid))
 	{
 		// Parse element/subelement (ex: project_task)
@@ -1485,6 +1498,7 @@ if ($action=='create')
 	print '<form name="add" action="'.$_SERVER["PHP_SELF"].'" method="post">';
 	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 	print '<input type="hidden" name="action" value="add">';
+
 	print '<input type="hidden" name="socid" value="' . $soc->id . '">' . "\n";
 	print '<input type="hidden" name="remise_percent" value="' . $soc->remise_percent . '">';
 	print '<input type="hidden" name="origin" value="' . $origin . '">';

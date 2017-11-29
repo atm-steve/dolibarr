@@ -42,6 +42,8 @@ if (empty($inputalsopricewithtax)) $inputalsopricewithtax=0;
 
 // Define colspan for button Add
 $colspan = 3;	// Col total ht + col edit + col delete
+
+if (! empty($inputalsopricewithtax)) $colspan++;	// We add 1 if col total ttc
 if (in_array($object->element,array('propal', 'askpricesupplier','facture','invoice','commande','order','order_supplier','invoice_supplier'))) $colspan++;	// With this, there is a column move button
 //print $object->element;
 ?>
@@ -319,6 +321,7 @@ if ((! empty($conf->service->enabled) || ($object->element == 'contrat')) && $da
 	else $colspan = 9;
 	if($this->situation_cycle_ref) $colspan++;
 	if (! empty($inputalsopricewithtax)) $colspan++;	// We add 1 if col total ttc
+
 	if (in_array($object->element,array('propal','askpricesupplier','facture','invoice','commande','order','order_supplier','invoice_supplier'))) $colspan++;	// With this, there is a column move button
 	if ($conf->global->PRODUCT_USE_UNITS) {
 		$colspan++;
@@ -441,9 +444,9 @@ if (! empty($usemargins) && $user->rights->margins->creer)
 		print "var dec='".$dec."'; var thousand='".$thousand."';\n";	// Set var in javascript
 		?>
 
-		var main_max_dec_shown = <?php echo $conf->global->MAIN_MAX_DECIMALS_SHOWN; ?>;
-		var main_rounding_unit = <?php echo $conf->global->MAIN_MAX_DECIMALS_UNIT; ?>;
-		var main_rounding_tot = <?php echo $conf->global->MAIN_MAX_DECIMALS_TOT; ?>;
+		var main_max_dec_shown = <?php echo (int) str_replace('.', '', $conf->global->MAIN_MAX_DECIMALS_SHOWN); ?>;
+		var main_rounding_unit = <?php echo (int) $conf->global->MAIN_MAX_DECIMALS_UNIT; ?>;
+		var main_rounding_tot = <?php echo (int) $conf->global->MAIN_MAX_DECIMALS_TOT; ?>;
 
 		var amount = num.toString();
 
