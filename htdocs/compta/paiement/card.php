@@ -48,6 +48,8 @@ if ($user->societe_id) $socid=$user->societe_id;
 
 $object = new Paiement($db);
 
+$hookmanager = new HookManager($db);
+$hookmanager->initHooks(array('viewpaiementcard'));
 
 /*
  * Actions
@@ -278,6 +280,9 @@ if (! empty($conf->banque->enabled))
     }
 }
 
+$parameters=array();
+$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action); // Note that $action and $object may have been modified by hook
+
 print '</table>';
 
 dol_fiche_end();
@@ -325,7 +330,7 @@ if ($resql)
 		{
 			$objp = $db->fetch_object($resql);
 			$var=!$var;
-			print '<tr '.$bc[$var].'>';
+			print '<tr id="row-'.$objp->facid.'" '.$bc[$var].'>';
 
             $invoice=new Facture($db);
             $invoice->fetch($objp->facid);
@@ -367,6 +372,9 @@ if ($resql)
 			}
 			$total = $total + $objp->amount;
 			$i++;
+			
+			$parameters=array();
+			$reshook=$hookmanager->executeHooks('printObjectLine',$parameters,$objp,$action); // Note that $action and $object may have been modified by hook
 		}
 	}
 	$var=!$var;

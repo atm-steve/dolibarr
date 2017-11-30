@@ -226,7 +226,19 @@ if (($action == 'create' || $action == 'add') && !$error)
 							$result=$objectsrc->fetch($orders_id[$ii]);
 							if ($result > 0)
 							{
-								if ($closeOrders)
+								
+								if($conf->subtotal->enabled) {
+									
+									dol_include_once('/subtotal/class/actions_subtotal.class.php');
+									
+									$TSubTotal = new ActionsSubtotal();								
+									if(method_exists($TSubTotal, 'addSubTotalLine')) {
+										$TSubTotal->addSubTotalLine($object, 'Commande : "'.$objectsrc->ref.'", Réf. client : "'.$objectsrc->ref_client.'"', 1);
+									}
+
+								}
+								
+								if ($closeOrders) 
 								{
 									$objectsrc->classifyBilled($user);
 									$objectsrc->setStatut(3);
@@ -239,6 +251,7 @@ if (($action == 'create' || $action == 'add') && !$error)
 								}
 								$fk_parent_line=0;
 								$num=count($lines);
+								
 								for ($i=0;$i<$num;$i++)
 								{
 									$desc=($lines[$i]->desc?$lines[$i]->desc:$lines[$i]->libelle);

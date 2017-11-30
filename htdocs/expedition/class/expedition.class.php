@@ -633,7 +633,8 @@ class Expedition extends CommonObject
 
 		// Class of company linked to order
 		$result=$soc->set_as_client();
-
+		
+		
 		// Define new ref
 		if (! $error && (preg_match('/^[\(]?PROV/i', $this->ref) || empty($this->ref))) // empty should not happened, but when it occurs, the test save life
 		{
@@ -641,7 +642,7 @@ class Expedition extends CommonObject
 		}
 		else
 		{
-			$numref = "EXP".$this->id;
+			$numref = $this->ref;
 		}
         $this->newref = $numref;
 

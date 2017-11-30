@@ -38,6 +38,8 @@ $socid=GETPOST('socid','int');
 // Security check
 $expeditionid = GETPOST('id','int');
 if ($user->societe_id) $socid=$user->societe_id;
+if (GETPOST('socid')) $socid= GETPOST('socid');
+
 $result = restrictedArea($user, 'expedition',$expeditionid,'');
 
 $diroutputmassaction=$conf->expedition->dir_output . '/temp/massgeneration/'.$user->id;
