@@ -371,12 +371,12 @@ class Propal extends CommonObject
      *      by whose calling the method get_default_tva (societe_vendeuse, societe_acheteuse, '' product)
      *      and desc must already have the right value (it's up to the caller to manage multilanguage)
      *
-     * 		@param    	string		$desc				Description de la ligne
-     * 		@param    	float		$pu_ht				Prix unitaire
-     * 		@param    	float		$qty             	Quantite
-     * 		@param    	float		$txtva           	Taux de tva
-     * 		@param		float		$txlocaltax1		Local tax 1 rate
-     *  	@param		float		$txlocaltax2		Local tax 2 rate
+     * 		@param    	string		$desc				Description of line
+     * 		@param    	float		$pu_ht				Unit price
+     * 		@param    	float		$qty             	Quantity
+     * 		@param    	float		$txtva           	Force Vat rate, -1 for auto (Can contain the vat_src_code too with syntax '9.9 (CODE)')
+     * 		@param		float		$txlocaltax1		Local tax 1 rate (deprecated, use instead txtva with code inside)
+     *  	@param		float		$txlocaltax2		Local tax 2 rate (deprecated, use instead txtva with code inside)
      *		@param    	int			$fk_product      	Id du produit/service predefini
      * 		@param    	float		$remise_percent  	Pourcentage de remise de la ligne
      * 		@param    	string		$price_base_type	HT or TTC
@@ -836,8 +836,9 @@ class Propal extends CommonObject
         if (empty($this->availability_id)) $this->availability_id=0;
         if (empty($this->demand_reason_id)) $this->demand_reason_id=0;
 
-		// Multicurrency
-		if (!empty($this->multicurrency_code)) list($this->fk_multicurrency,$this->multicurrency_tx) = MultiCurrency::getIdAndTxFromCode($this->db, $this->multicurrency_code, $this->date);
+		// Multicurrency (test on $this->multicurrency_tx because we should take the default rate only if not using origin rate)
+		if (!empty($this->multicurrency_code) && empty($this->multicurrency_tx)) list($this->fk_multicurrency,$this->multicurrency_tx) = MultiCurrency::getIdAndTxFromCode($this->db, $this->multicurrency_code, $this->date);
+		else $this->fk_multicurrency = MultiCurrency::getIdFromCode($this->db, $this->multicurrency_code);
 		if (empty($this->fk_multicurrency))
 		{
 			$this->multicurrency_code = $conf->currency;
@@ -960,9 +961,51 @@ class Propal extends CommonObject
                 $resql=$this->db->query($sql);
                 if (! $resql) $error++;
 
+                if (! empty($this->linkedObjectsIds) && empty($this->linked_objects))	// To use new linkedObjectsIds instead of old linked_objects
+                {
+                	$this->linked_objects = $this->linkedObjectsIds;	// TODO Replace linked_objects with linkedObjectsIds
+                }
+
+                // Add object linked
+                if (! $error && $this->id && is_array($this->linked_objects) && ! empty($this->linked_objects))
+                {
+                	foreach($this->linked_objects as $origin => $tmp_origin_id)
+                	{
+                		if (is_array($tmp_origin_id))       // New behaviour, if linked_object can have several links per type, so is something like array('contract'=>array(id1, id2, ...))
+                		{
+                			foreach($tmp_origin_id as $origin_id)
+                			{
+                				$ret = $this->add_object_linked($origin, $origin_id);
+                				if (! $ret)
+                				{
+                					$this->error=$this->db->lasterror();
+                					$error++;
+                				}
+                			}
+                		}
+                		else                                // Old behaviour, if linked_object has only one link per type, so is something like array('contract'=>id1))
+                		{
+                			$origin_id = $tmp_origin_id;
+                			$ret = $this->add_object_linked($origin, $origin_id);
+                			if (! $ret)
+                			{
+                				$this->error=$this->db->lasterror();
+                				$error++;
+                			}
+                		}
+                	}
+                }
+
+                // Add linked object (deprecated, use ->linkedObjectsIds instead)
+                if (! $error && $this->origin && $this->origin_id)
+                {
+                	$ret = $this->add_object_linked();
+                	if (! $ret)	dol_print_error($this->db);
+                }
+
                 /*
                  *  Insertion du detail des produits dans la base
-                */
+                 */
                 if (! $error)
                 {
                     $fk_parent_line=0;
@@ -975,11 +1018,15 @@ class Propal extends CommonObject
                             $fk_parent_line = 0;
                         }
 
+                        // Complete vat rate with code
+						$vatrate = $this->lines[$i]->tva_tx;
+						if ($this->lines[$i]->vat_src_code && ! preg_match('/\(.*\)/', $vatrate)) $vatrate.=' ('.$this->lines[$i]->vat_src_code.')';
+
 						$result = $this->addline(
 							$this->lines[$i]->desc,
 							$this->lines[$i]->subprice,
 							$this->lines[$i]->qty,
-							$this->lines[$i]->tva_tx,
+							$vatrate,
 							$this->lines[$i]->localtax1_tx,
 							$this->lines[$i]->localtax2_tx,
 							$this->lines[$i]->fk_product,
@@ -1014,13 +1061,6 @@ class Propal extends CommonObject
                             $fk_parent_line = $result;
                         }
                     }
-                }
-
-                // Add linked object
-                if (! $error && $this->origin && $this->origin_id)
-                {
-                    $ret = $this->add_object_linked();
-                    if (! $ret)	dol_print_error($this->db);
                 }
 
                 // Set delivery address
@@ -1191,7 +1231,6 @@ class Propal extends CommonObject
         if (empty($conf->global->MAIN_KEEP_REF_CUSTOMER_ON_CLONING)) $clonedObj->ref_client	= '';
 
         // Create clone
-
         $result=$clonedObj->create($user);
         if ($result < 0) $error++;
         else
