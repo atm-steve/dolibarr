@@ -146,7 +146,9 @@ function restrictedArea($user, $features, $objectid=0, $tableandshare='', $featu
     $readok=1; $nbko=0;
     foreach ($featuresarray as $feature)	// first we check nb of test ko
     {
-    	if (! empty($user->societe_id) && ! empty($conf->global->MAIN_MODULES_FOR_EXTERNAL) && ! in_array($feature,$listofmodules))	// If limits on modules for external users, module must be into list of modules for external users
+        $featureforlistofmodule=$feature;
+        if ($featureforlistofmodule == 'produit') $featureforlistofmodule='product';
+        if (! empty($user->societe_id) && ! empty($conf->global->MAIN_MODULES_FOR_EXTERNAL) && ! in_array($featureforlistofmodule,$listofmodules))	// If limits on modules for external users, module must be into list of modules for external users
     	{
     		$readok=0; $nbko++;
     		continue;
@@ -373,7 +375,7 @@ function checkUserAccessToObject($user, $featuresarray, $objectid=0, $tableandsh
 
 		$check = array('adherent','banque','user','usergroup','produit','service','produit|service','categorie'); // Test on entity only (Objects with no link to company)
 		$checksoc = array('societe');	 // Test for societe object
-		$checkother = array('contact');	 // Test on entity and link to societe. Allowed if link is empty (Ex: contacts...).
+		$checkother = array('contact','agenda');	 // Test on entity and link to third party. Allowed if link is empty (Ex: contacts...).
 		$checkproject = array('projet','project'); // Test for project object
 		$checktask = array('projet_task');
 		$nocheck = array('barcode','stock','fournisseur');	// No test

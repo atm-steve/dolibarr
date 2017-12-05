@@ -84,7 +84,7 @@ dol_mkdir($dir);
 $stats = new FactureStats($db, $socid, $mode, ($userid>0?$userid:0));
 if ($mode == 'customer')
 {
-    if ($object_status != '' && $object_status >= -1) $stats->where .= ' AND f.fk_statut IN ('.$object_status.')';
+    if ($object_status != '' && $object_status >= 0) $stats->where .= ' AND f.fk_statut IN ('.$object_status.')';
 }
 if ($mode == 'supplier')
 {
@@ -232,7 +232,7 @@ $tmp_companies = $form->select_thirdparty_list($socid,'socid',$filter,1, 0, 0, a
 $companies = array();
 
 foreach ($tmp_companies as $value) {
-	$companies[$value['value']] = $value['label'];
+	$companies[$value['key']] = $value['label'];
 }
 
 print '<div class="fichecenter"><div class="fichethirdleft">';

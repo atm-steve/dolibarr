@@ -2207,10 +2207,6 @@ class Form
                 unset($producttmpselect);
             }
 
-        	if (!empty($conf->global->SUPPLIER_ORDER_WITH_NOPRICEDEFINED))
-			{
-				print '<input type="hidden" id="idprod" name="idprod" value="0" />';
-			}
 			// mode=2 means suppliers products
             $urloption=($socid > 0?'socid='.$socid.'&':'').'htmlname='.$htmlname.'&outjson=1&price_level='.$price_level.'&type='.$filtertype.'&mode=2&status='.$status.'&finished='.$finished.'&alsoproductwithnosupplierprice='.$alsoproductwithnosupplierprice;
             print ajax_autocompleter($selected, $htmlname, DOL_URL_ROOT.'/product/ajax/products.php', $urloption, $conf->global->PRODUIT_USE_SEARCH_TO_SELECT, 0, $ajaxoptions);
@@ -2218,11 +2214,6 @@ class Form
         }
         else
         {
-            if (!empty($conf->global->SUPPLIER_ORDER_WITH_NOPRICEDEFINED))
-			{
-				print '<input type="hidden" id="idprod" name="idprod" value="0" />';
-				print '<script type="text/javascript">$("#'.$htmlname.'").change(function() { $("#idprod").val($(this).val());});</script>';
-			}
         	print $this->select_produits_fournisseurs_list($socid,$selected,$htmlname,$filtertype,$filtre,'',-1,0,0,$alsoproductwithnosupplierprice);
         }
     }
@@ -4332,7 +4323,7 @@ class Form
 	 *                                            Si vendeur et acheteur dans Communauté européenne et acheteur= entreprise alors TVA par défaut=0. Fin de règle.
      *                  					      Sinon la TVA proposee par defaut=0. Fin de regle.
      *  @param	bool	     $options_only		  Return HTML options lines only (for ajax treatment)
-     *  @param  int          $mode                1=Add code into key in select list
+     *  @param  int          $mode                0=Use vat rate as key in combo list, 1=Add VAT code after vat rate into key, -1=Use id of vat line as key
      *  @return	string
      */
     function load_tva($htmlname='tauxtva', $selectedrate='', $societe_vendeuse='', $societe_acheteuse='', $idprod=0, $info_bits=0, $type='', $options_only=false, $mode=0)
@@ -5458,6 +5449,14 @@ class Form
 		{
     		$listofidcompanytoscan=$object->thirdparty->id;
     		if (($object->thirdparty->parent > 0) && ! empty($conf->global->THIRDPARTY_INCLUDE_PARENT_IN_LINKTO)) $listofidcompanytoscan.=','.$object->thirdparty->parent;
+			if (($object->fk_project > 0) && ! empty($conf->global->THIRDPARTY_INCLUDE_PROJECT_THIRDPARY_IN_LINKTO))
+			{
+				include_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+				$tmpproject=new Project($this->db);
+				$tmpproject->fetch($object->fk_project);
+				if ($tmpproject->socid > 0 && ($tmpproject->socid != $object->thirdparty->id)) $listofidcompanytoscan.=','.$tmpproject->socid;
+				unset($tmpproject);
+			}
 
     		$possiblelinks=array(
     		    'propal'=>array('enabled'=>$conf->propal->enabled, 'perms'=>1, 'label'=>'LinkToProposal', 'sql'=>"SELECT s.rowid as socid, s.nom as name, s.client, t.rowid, t.ref, t.ref_client, t.total_ht FROM ".MAIN_DB_PREFIX."societe as s, ".MAIN_DB_PREFIX."propal as t WHERE t.fk_soc = s.rowid AND t.fk_soc IN (".$listofidcompanytoscan.') AND t.entity IN ('.getEntity('propal',1).')'),
@@ -5683,7 +5682,7 @@ class Form
 
     /**
      *    Return a HTML area with the reference of object and a navigation bar for a business object
-     *    To add a particular filter on select, you must set $object->next_prev_filter to SQL criteria.
+     *    Note: To add a particular filter on select, you can have $object->next_prev_filter set to add SQL criterias.
      *
      *    @param	object	$object			Object to show.
      *    @param	string	$paramid   		Name of parameter to use to name the id into the URL next/previous link.
@@ -5701,11 +5700,19 @@ class Form
      */
     function showrefnav($object,$paramid,$morehtml='',$shownav=1,$fieldid='rowid',$fieldref='ref',$morehtmlref='',$moreparam='',$nodbprefix=0,$morehtmlleft='',$morehtmlstatus='',$morehtmlright='')
     {
-    	global $langs,$conf;
+    	global $langs,$conf,$hookmanager;
 
     	$ret='';
         if (empty($fieldid))  $fieldid='rowid';
         if (empty($fieldref)) $fieldref='ref';
+
+        // Add where from hooks
+        if (is_object($hookmanager))
+        {
+            $parameters=array();
+            $reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters, $object);    // Note that $action and $object may have been modified by hook
+            $object->next_prev_filter.=$hookmanager->resPrint;
+        }
 
         //print "paramid=$paramid,morehtml=$morehtml,shownav=$shownav,$fieldid,$fieldref,$morehtmlref,$moreparam";
         $object->load_previous_next_ref((isset($object->next_prev_filter)?$object->next_prev_filter:''),$fieldid,$nodbprefix);

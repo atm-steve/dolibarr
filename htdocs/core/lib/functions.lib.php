@@ -611,7 +611,7 @@ function dol_string_unaccent($str)
  */
 function dol_string_nospecial($str,$newstr='_',$badcharstoreplace='')
 {
-	$forbidden_chars_to_replace=array(" ","'","/","\\",":","*","?","\"","<",">","|","[","]",",",";","=");
+	$forbidden_chars_to_replace=array(" ", "'", "/", "\\", ":", "*", "?", "\"", "<", ">", "|", "[", "]", ",", ";", "=");
 	$forbidden_chars_to_remove=array();
 	if (is_array($badcharstoreplace)) $forbidden_chars_to_replace=$badcharstoreplace;
 	//$forbidden_chars_to_remove=array("(",")");
@@ -972,7 +972,8 @@ function dol_get_fiche_end($notab=0)
 }
 
 /**
- *  Show tab footer of a card
+ *  Show tab footer of a card.
+ *  Note: $object->next_prev_filter can be set to restrict select to find next or previous record by $form->showrefnav.
  *
  *  @param	object	$object			Object to show
  *  @param	string	$paramid   		Name of parameter to use to name the id into the URL next/previous link
@@ -1068,14 +1069,14 @@ function dol_banner_tab($object, $paramid, $morehtml='', $shownav=1, $fieldid='r
         if (! empty($conf->use_javascript_ajax) && $user->rights->produit->creer && ! empty($conf->global->MAIN_DIRECT_STATUS_UPDATE)) {
             $morehtmlstatus.=ajax_object_onoff($object, 'status', 'tosell', 'ProductStatusOnSell', 'ProductStatusNotOnSell');
         } else {
-            $morehtmlstatus.=$object->getLibStatut(5,0);
+            $morehtmlstatus.='<span class="statusrefsell">'.$object->getLibStatut(5,0).'</span>';
         }
         $morehtmlstatus.=' &nbsp; ';
         //$morehtmlstatus.=$langs->trans("Status").' ('.$langs->trans("Buy").') ';
 	    if (! empty($conf->use_javascript_ajax) && $user->rights->produit->creer && ! empty($conf->global->MAIN_DIRECT_STATUS_UPDATE)) {
             $morehtmlstatus.=ajax_object_onoff($object, 'status_buy', 'tobuy', 'ProductStatusOnBuy', 'ProductStatusNotOnBuy');
         } else {
-            $morehtmlstatus.=$object->getLibStatut(5,1);
+            $morehtmlstatus.='<span class="statusrefbuy">'.$object->getLibStatut(5,1).'</span>';
         }
 	}
 	elseif ($object->element == 'facture' || $object->element == 'invoice' || $object->element == 'invoice_supplier')
@@ -2242,12 +2243,12 @@ function dol_print_graph($htmlid,$width,$height,$data,$showlegend=0,$type='pie',
  *  MAIN_DISABLE_TRUNC=1 can disable all truncings
  *
  *	@param	string	$string				String to truncate
- *	@param  int		$size				Max string size visible. 0 for no limit. Final string size can be 1 more (if size was max+1) or 3 more (if we added ...)
+ *	@param  int		$size				Max string size visible (excluding ...). 0 for no limit. WARNING: Final string size can have 3 more chars (if we added ..., or if size was max+1 or max+2 or max+3 so it does not worse to replace with ...)
  *	@param	string	$trunc				Where to trunc: right, left, middle (size must be a 2 power), wrap
  * 	@param	string	$stringencoding		Tell what is source string encoding
  *  @param	int		$nodot				Truncation do not add ... after truncation. So it's an exact truncation.
  *  @param  int     $display            Trunc is use to display and can be changed for small screen. TODO Remove this param (must be dealt with CSS)
- *	@return string						Truncated string
+ *	@return string						Truncated string. WARNING: length is never higher than $size if $nodot is set, but can be 3 chars higher otherwise.
  */
 function dol_trunc($string,$size=40,$trunc='right',$stringencoding='UTF-8',$nodot=0, $display=0)
 {
@@ -2263,9 +2264,10 @@ function dol_trunc($string,$size=40,$trunc='right',$stringencoding='UTF-8',$nodo
 	if ($trunc == 'right')
 	{
 		$newstring=dol_textishtml($string)?dol_string_nohtmltag($string,1):$string;
-		if (dol_strlen($newstring,$stringencoding) > ($size+($nodot?0:1)))
+		if (dol_strlen($newstring,$stringencoding) > ($size+($nodot?0:3)))    // If nodot is 0 and size is 1,2 or 3 chars more, we don't trunc and don't add ...
 		return dol_substr($newstring,0,$size,$stringencoding).($nodot?'':'...');
 		else
+		//return 'u'.$size.'-'.$newstring.'-'.dol_strlen($newstring,$stringencoding).'-'.$string;
 		return $string;
 	}
 	elseif ($trunc == 'middle')
@@ -2283,7 +2285,7 @@ function dol_trunc($string,$size=40,$trunc='right',$stringencoding='UTF-8',$nodo
 	elseif ($trunc == 'left')
 	{
 		$newstring=dol_textishtml($string)?dol_string_nohtmltag($string,1):$string;
-		if (dol_strlen($newstring,$stringencoding) > ($size+1))
+		if (dol_strlen($newstring,$stringencoding) > ($size+($nodot?0:3)))    // If nodot is 0 and size is 1,2 or 3 chars more, we don't trunc and don't add ...
 		return '...'.dol_substr($newstring,dol_strlen($newstring,$stringencoding) - $size,$size,$stringencoding);
 		else
 		return $string;
@@ -2323,7 +2325,7 @@ function img_picto($titlealt, $picto, $morealt = '', $pictoisfullpath = false, $
 	if ($pictoisfullpath)
 	{
 		// Clean parameters
-		if (! preg_match('/(\.png|\.gif)$/i',$picto)) $picto .= '.png';
+		if (! preg_match('/(\.png|\.gif|\.svg)$/i',$picto)) $picto .= '.png';
 		$fullpathpicto = $picto;
 	}
 	else
@@ -2344,7 +2346,7 @@ function img_picto($titlealt, $picto, $morealt = '', $pictoisfullpath = false, $
 			$path = $regs[2];	// $path is $mymodule
 		}
 		// Clean parameters
-		if (! preg_match('/(\.png|\.gif)$/i',$picto)) $picto .= '.png';
+		if (! preg_match('/(\.png|\.gif|\.svg)$/i',$picto)) $picto .= '.png';
 		// If alt path are defined, define url where img file is, according to physical path
 		foreach ($conf->file->dol_document_root as $type => $dirroot)	// ex: array(["main"]=>"/home/maindir/htdocs", ["alt0"]=>"/home/moddir0/htdocs", ...)
 		{
@@ -2927,8 +2929,8 @@ function dol_print_error($db='',$error='',$errors=null)
 		$out.="<b>".$langs->trans("Referer").":</b> ".(isset($_SERVER["HTTP_REFERER"])?dol_htmlentities($_SERVER["HTTP_REFERER"],ENT_COMPAT,'UTF-8'):'')."<br>\n";
 		$out.="<b>".$langs->trans("MenuManager").":</b> ".(isset($conf->standard_menu)?$conf->standard_menu:'')."<br>\n";
 		$out.="<br>\n";
-		$syslog.="url=".$_SERVER["REQUEST_URI"];
-		$syslog.=", query_string=".$_SERVER["QUERY_STRING"];
+		$syslog.="url=".dol_escape_htmltag($_SERVER["REQUEST_URI"]);
+		$syslog.=", query_string=".dol_escape_htmltag($_SERVER["QUERY_STRING"]);
 	}
 	else                              // Mode CLI
 	{
@@ -3890,7 +3892,7 @@ function getTaxesFromId($vatrowid)
  *  @param	Societe	$buyer         		Company object
  *  @param	Societe	$seller        		Company object
  *  @param  int     $firstparamisid     1 if first param is id into table (use this if you can)
- *  @return	array    	  				array(localtax_type1(1-6 / 0 if not found), rate of localtax1, ...)
+ *  @return	array    	  				array(localtax_type1(1-6/0 if not found), rate localtax1, localtax_type2, rate localtax2, accountancycodecust, accountancycodesupp)
  */
 function getLocalTaxesFromRate($vatrate, $local, $buyer, $seller, $firstparamisid=0)
 {
@@ -3926,22 +3928,22 @@ function getLocalTaxesFromRate($vatrate, $local, $buyer, $seller, $firstparamisi
 		{
 			if (! isOnlyOneLocalTax(1))
 			{
-				return array($obj->localtax1_type, get_localtax($vatrate, $local, $buyer, $seller), $obj->accountancy_code_sell,$obj->accountancy_code_buy);
+				return array($obj->localtax1_type, get_localtax($vatrate, $local, $buyer, $seller), $obj->accountancy_code_sell, $obj->accountancy_code_buy);
 			}
 			else
 			{
-				return array($obj->localtax1_type, $obj->localtax1,$obj->accountancy_code_sell,$obj->accountancy_code_buy);
+				return array($obj->localtax1_type, $obj->localtax1,$obj->accountancy_code_sell, $obj->accountancy_code_buy);
 			}
 		}
 		elseif ($local == 2)
 		{
 			if (! isOnlyOneLocalTax(2))
 			{
-				return array($obj->localtax2_type, get_localtax($vatrate, $local, $buyer, $seller),$obj->accountancy_code_sell,$obj->accountancy_code_buy);
+				return array($obj->localtax2_type, get_localtax($vatrate, $local, $buyer, $seller),$obj->accountancy_code_sell, $obj->accountancy_code_buy);
 			}
 			else
 			{
-				return array($obj->localtax2_type, $obj->localtax2,$obj->accountancy_code_sell,$obj->accountancy_code_buy);
+				return array($obj->localtax2_type, $obj->localtax2,$obj->accountancy_code_sell, $obj->accountancy_code_buy);
 			}
 		}
 		else
@@ -3950,22 +3952,22 @@ function getLocalTaxesFromRate($vatrate, $local, $buyer, $seller, $firstparamisi
 			{
 				if(! isOnlyOneLocalTax(2))
 				{
-					return array($obj->localtax1_type, get_localtax($vatrate, 1, $buyer, $seller), $obj->localtax2_type, get_localtax($vatrate, 2, $buyer, $seller),$obj->accountancy_code_sell,$obj->accountancy_code_buy);
+					return array($obj->localtax1_type, get_localtax($vatrate, 1, $buyer, $seller), $obj->localtax2_type, get_localtax($vatrate, 2, $buyer, $seller), $obj->accountancy_code_sell,$obj->accountancy_code_buy);
 				}
 				else
 				{
-					return array($obj->localtax1_type, get_localtax($vatrate, 1, $buyer, $seller), $obj->localtax2_type, $obj->localtax2,$obj->accountancy_code_sell,$obj->accountancy_code_buy);
+					return array($obj->localtax1_type, get_localtax($vatrate, 1, $buyer, $seller), $obj->localtax2_type, $obj->localtax2, $obj->accountancy_code_sell, $obj->accountancy_code_buy);
 				}
 			}
 			else
 			{
 				if(! isOnlyOneLocalTax(2))
 				{
-					return array($obj->localtax1_type, $obj->localtax1, $obj->localtax2_type,get_localtax($vatrate, 2, $buyer, $seller) ,$obj->accountancy_code_sell,$obj->accountancy_code_buy);
+					return array($obj->localtax1_type, $obj->localtax1, $obj->localtax2_type, get_localtax($vatrate, 2, $buyer, $seller), $obj->accountancy_code_sell, $obj->accountancy_code_buy);
 				}
 				else
 				{
-					return array($obj->localtax1_type, $obj->localtax1, $obj->localtax2_type, $obj->localtax2,$obj->accountancy_code_sell,$obj->accountancy_code_buy);
+					return array($obj->localtax1_type, $obj->localtax1, $obj->localtax2_type, $obj->localtax2, $obj->accountancy_code_sell, $obj->accountancy_code_buy);
 				}
 			}
 		}
@@ -4486,22 +4488,57 @@ function dol_string_nohtmltag($StringHtml,$removelinefeed=1,$pagecodeto='UTF-8')
  * Return first line of text. Cut will depends if content is HTML or not.
  *
  * @param 	string	$text		Input text
+ * @param	int		$nboflines  Nb of lines to get (default is 1 = first line only)
  * @return	string				Output text
  * @see dol_nboflines_bis, dol_string_nohtmltag, dol_escape_htmltag
  */
-function dolGetFirstLineOfText($text)
+function dolGetFirstLineOfText($text, $nboflines=1)
 {
-	if (dol_textishtml($text))
+	if ($nboflines == 1)
 	{
-		$firstline=preg_replace('/<br[^>]*>.*$/s','',$text);		// The s pattern modifier means the . can match newline characters
-		$firstline=preg_replace('/<div[^>]*>.*$/s','',$firstline);	// The s pattern modifier means the . can match newline characters
+		if (dol_textishtml($text))
+		{
+			$firstline=preg_replace('/<br[^>]*>.*$/s','',$text);		// The s pattern modifier means the . can match newline characters
+			$firstline=preg_replace('/<div[^>]*>.*$/s','',$firstline);	// The s pattern modifier means the . can match newline characters
 
+		}
+		else
+		{
+	    	$firstline=preg_replace('/[\n\r].*/','',$text);
+		}
+    	return $firstline.((strlen($firstline) != strlen($text))?'...':'');
 	}
 	else
 	{
-    	$firstline=preg_replace('/[\n\r].*/','',$text);
+		$ishtml=0;
+		if (dol_textishtml($text))
+		{
+			$text=preg_replace('/\n/','',$text);
+			$ishtml=1;
+			$repTable = array("\t" => " ", "\n" => " ", "\r" => " ", "\0" => " ", "\x0B" => " ");
+		}
+		else
+		{
+			$repTable = array("\t" => " ", "\n" => "<br>", "\r" => " ", "\0" => " ", "\x0B" => " ");
+		}
+
+		$text = strtr($text, $repTable);
+		if ($charset == 'UTF-8') { $pattern = '/(<br[^>]*>)/Uu'; }	// /U is to have UNGREEDY regex to limit to one html tag. /u is for UTF8 support
+		else $pattern = '/(<br[^>]*>)/U';							// /U is to have UNGREEDY regex to limit to one html tag.
+		$a = preg_split($pattern, $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+
+		$firstline='';
+		$i=0;
+		$nba = count($a);	// 2x nb of lines in $a because $a contains also a line for each new line separator
+		while (($i < $nba) && ($i < ($nboflines * 2)))
+		{
+			if ($i % 2 == 0) $firstline .= $a[$i];
+			elseif (($i < (($nboflines * 2) - 1)) && ($i < ($nba - 1))) $firstline .= ($ishtml?"<br>\n":"\n");
+			$i++;
+		}
+		unset($a);
+    	return $firstline.(($i < $nba)?'...':'');
 	}
-    return $firstline.((strlen($firstline) != strlen($text))?'...':'');
 }
 
 
@@ -4663,7 +4700,7 @@ function dol_nboflines($s,$maxchar=0)
 
 
 /**
- *	Return nb of lines of a formated text with \n and <br> (we can't have both \n and br)
+ *	Return nb of lines of a formated text with \n and <br> (WARNING: string must not have mixed \n and br separators)
  *
  *	@param	string	$text      		Text
  *	@param	int		$maxlinesize  	Largeur de ligne en caracteres (ou 0 si pas de limite - defaut)
@@ -4699,6 +4736,8 @@ function dol_nboflines_bis($text,$maxlinesize=0,$charset='UTF-8')
 			}
 		}
 	}
+
+	unset($a);
 	return $nblines;
 }
 
@@ -5770,29 +5809,39 @@ function natural_search($fields, $value, $mode=0, $nofirstand=0)
 				$i3 = 0;
 				foreach($tmpcrits as $tmpcrit)
 				{
-	            	$newres .= (($i2 > 0 || $i3 > 0) ? ' OR ' : '') . $field . " LIKE '";
+					$newres .= (($i2 > 0 || $i3 > 0) ? ' OR ' : '');
 
-	            	$tmpcrit=trim($tmpcrit);
-	            	$tmpcrit2=$tmpcrit;
-	            	$tmpbefore='%'; $tmpafter='%';
-	            	if (preg_match('/^[\^\$]/', $tmpcrit))
-	            	{
-	            	    $tmpbefore='';
-	            	    $tmpcrit2 = preg_replace('/^[\^\$]/', '', $tmpcrit2);
-	            	}
-					if (preg_match('/[\^\$]$/', $tmpcrit))
-	            	{
-	            	    $tmpafter='';
-	            	    $tmpcrit2 = preg_replace('/[\^\$]$/', '', $tmpcrit2);
-	            	}
-	            	$newres .= $tmpbefore;
-	            	$newres .= $db->escape($tmpcrit2);
-	            	$newres .= $tmpafter;
-	            	$newres .= "'";
-	            	if (empty($tmpcrit2))
-	            	{
-	            	    $newres .= ' OR ' . $field . " IS NULL";
-	            	}
+					if (preg_match('/\.(id|rowid)$/', $field))	// Special cas for rowid that is sometimes a ref so used as a search field
+					{
+						$newres .= $field . " = " . (is_numeric(trim($tmpcrit))?trim($tmpcrit):'0');
+					}
+					else
+					{
+						$newres .= $field . " LIKE '";
+
+		            	$tmpcrit=trim($tmpcrit);
+		            	$tmpcrit2=$tmpcrit;
+		            	$tmpbefore='%'; $tmpafter='%';
+		            	if (preg_match('/^[\^\$]/', $tmpcrit))
+		            	{
+		            	    $tmpbefore='';
+		            	    $tmpcrit2 = preg_replace('/^[\^\$]/', '', $tmpcrit2);
+		            	}
+						if (preg_match('/[\^\$]$/', $tmpcrit))
+		            	{
+		            	    $tmpafter='';
+		            	    $tmpcrit2 = preg_replace('/[\^\$]$/', '', $tmpcrit2);
+		            	}
+		            	$newres .= $tmpbefore;
+		            	$newres .= $db->escape($tmpcrit2);
+		            	$newres .= $tmpafter;
+		            	$newres .= "'";
+		            	if (empty($tmpcrit2))
+		            	{
+		            	    $newres .= ' OR ' . $field . " IS NULL";
+		            	}
+					}
+
 	            	$i3++;
 				}
 				$i2++;	// a criteria was added to string
