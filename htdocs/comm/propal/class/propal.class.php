@@ -1193,7 +1193,7 @@ class Propal extends CommonObject
 
                 if (!empty($conf->projet->enabled))
                 {
-                    $project = new Project($db);
+                    $project = new Project($this->db);
     				if ($this->fk_project > 0 && $project->fetch($this->fk_project)) {
     					if ($project->socid <= 0) $clonedObj->fk_project = $this->fk_project;
     					else $clonedObj->fk_project = '';
