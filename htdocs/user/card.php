@@ -9,7 +9,7 @@
  * Copyright (C) 2012      Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2013      Florian Henry        <florian.henry@open-concept.pro>
  * Copyright (C) 2013-2016 Alexandre Spangaro   <aspangaro.dolibarr@gmail.com>
- * Copyright (C) 2015      Jean-François Ferry  <jfefe@aternatik.fr>
+ * Copyright (C) 2015-2017 Jean-François Ferry  <jfefe@aternatik.fr>
  * Copyright (C) 2015      Ari Elbaz (elarifr)  <github@accedinfo.com>
  * Copyright (C) 2015      Charlie Benke        <charlie@patas-monkey.com>
  * Copyright (C) 2016      Raphaël Doursenaud   <rdoursenaud@gpcsolutions.fr>
@@ -415,8 +415,8 @@ if (empty($reshook)) {
 					}
 				}
 
-				if (!$error && GETPOST('contactid', 'int')) {
-					$contactid = GETPOST('contactid', 'int');
+				if (!$error && GETPOSTISSET('contactid')) {
+					$contactid = GETPOST('contactid', 'int');				
 
 					if ($contactid > 0) {
 						$contact = new Contact($db);
@@ -2482,8 +2482,8 @@ else
             $filename = dol_sanitizeFileName($object->ref);
             $filedir = $conf->user->dir_output . "/" . dol_sanitizeFileName($object->ref);
             $urlsource = $_SERVER["PHP_SELF"] . "?id=" . $object->id;
-            $genallowed = $user->rights->user->user->creer;
-            $delallowed = $user->rights->user->user->supprimer;
+            $genallowed = $user->rights->user->user->lire;
+            $delallowed = $user->rights->user->user->creer;
 
             print $formfile->showdocuments('user', $filename, $filedir, $urlsource, $genallowed, $delallowed, $object->modelpdf, 1, 0, 0, 28, 0, '', 0, '', $soc->default_lang);
             $somethingshown = $formfile->numoffiles;
