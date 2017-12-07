@@ -42,6 +42,8 @@ $mine   = GETPOST('mode')=='mine' ? 1 : 0;
 
 $object = new Project($db);
 
+$hookmanager->initHooks(array('contactprojectcard','globalcard'));
+
 include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php';  // Must be include, not include_once
 
 // Security check
@@ -53,6 +55,11 @@ $result = restrictedArea($user, 'projet', $id,'projet&project');
 /*
  * Actions
  */
+
+$parameters=array('id'=>$socid, 'objcanvas'=>$objcanvas);
+$reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $actio$
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+
 
 // Add new contact
 if ($action == 'addcontact' && $user->rights->projet->creer)
@@ -222,7 +229,7 @@ if ($id > 0 || ! empty($ref))
 	// Other attributes
 	$cols = 2;
 	include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
-		
+
 	print "</table>";
 
     print '</div>';
