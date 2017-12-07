@@ -67,6 +67,7 @@ $entity=GETPOST('entity','int')?GETPOST('entity','int'):$conf->entity;
 // Security check
 if (empty($modulepart)) accessforbidden('Bad value for parameter modulepart');
 if ($modulepart == 'fckeditor') $modulepart='medias';   // For backward compatibility
+if ($modulepart == 'agenda') $modulepart='actions';
 
 $socid=0;
 if ($user->societe_id > 0) $socid = $user->societe_id;
