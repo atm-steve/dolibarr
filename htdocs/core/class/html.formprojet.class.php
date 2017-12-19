@@ -208,14 +208,14 @@ class FormProjets
 						}
 
 						$labeltoshow=dol_trunc($obj->ref,18);
-						$labeltoshow=$obj->nom . ' - ' . $obj->title;
+						$labeltoshow=$obj->name . ' - ' . $obj->title;
 						//if ($obj->public) $labeltoshow.=' ('.$langs->trans("SharedProject").')';
 						//else $labeltoshow.=' ('.$langs->trans("Private").')';
-						$labeltoshow.=', '.dol_trunc($obj->title, $maxlength);
+						//$labeltoshow.=', '.dol_trunc($obj->title, $maxlength);
 						if ($obj->name)
 						{
-						    $labeltoshow.=' - '.$obj->name;
-						    if ($obj->name_alias) $labeltoshow.=' ('.$obj->name_alias.')';
+						   // $labeltoshow.=' - '.$obj->name;
+						    //if ($obj->name_alias) $labeltoshow.=' ('.$obj->name_alias.')';
 						}
 
 						$disabled=0;
