@@ -2,8 +2,88 @@
 English Dolibarr ChangeLog
 --------------------------------------------------------------
 
-***** ChangeLog for 6.0.1 compared to 6.0.* *****
+***** ChangeLog for 6.0.4 compared to 6.0.3 *****
+FIX: #7737
+FIX: #7751
+FIX: #7756 Add better error message
+FIX: #7786
+FIX: #7806
+FIX: #7824
+FIX: add line bad price and ref
+FIX: A lot of several fix on local taxes and NPR tax
+FIX: createfromorder
+FIX: CSS for IE10
+FIX: external user cannot be set as internal
+FIX: Filter type on actioncomm with multiselect doesn't work
+FIX: list of donation not filtered on multicompany
+FIX: list of module not complete when module mb_strlen not available
+FIX: Locatax were not propagated when cloning order or proposal
+FIX: Searching translation should not be case sensitive
+FIX: Search into language is ok for file into external modules two.
+FIX: test for filter fk_status
+FIX: too much users on holiday list
+FIX: Wrong alias sql
 
+***** ChangeLog for 6.0.3 compared to 6.0.2 *****
+FIX: #7211 Update qty dispatched on qty change
+FIX: #7458
+FIX: #7593
+FIX: #7616
+FIX: #7619
+FIX: #7626
+FIX: #7648
+FIX: #7675
+FIX: Agenda events are not exported in the ICAL, VCAL if begin exactly with the same $datestart
+FIX: API to get object does not return data of linked objects
+FIX: Bad localtax apply
+FIX: Bad ressource list in popup in gantt view
+FIX: bankentries search conciliated if val 0
+FIX: hook formObjectOptions() must use $expe and not $object
+FIX: make of link to other object during creation
+FIX: Missing function getLinesArray
+FIX: old batch not shown in multi shipping
+FIX: paid supplier invoices are shown as abandoned
+FIX: selection of thirdparty was lost on stats page of invoices
+FIX: sql syntax error because of old field accountancy_journal
+FIX: Stats on invoices show nothing
+FIX: substitution in ODT of thirdparties documents
+FIX: wrong key in selectarray
+FIX: wrong personnal project time spent
+
+***** ChangeLog for 6.0.2 compared to 6.0.1 *****
+FIX: #7148
+FIX: #7288
+FIX: #7366 renaming table with pgsql
+FIX: #7435 Can't add payment term
+FIX: #7461
+FIX: #7464
+FIX: #7471
+FIX: #7473 Mass update of vat rates and other bugs on localtax
+FIX: #7475
+FIX: #7486 Empty value for multicurrency rate must be forbidden
+FIX: #7490
+FIX: #7505
+FIX: #7510 Bug: extrafield content disappear when generate pdf within intervention
+FIX: #7514
+FIX: #7531 #7537
+FIX: #7541
+FIX: #7546
+FIX: #7550
+FIX: #7554
+FIX: #7567
+FIX: Accountancy export model for Agiris Isacompta
+FIX: Allow create shipping if STOCK_SUPPORTS_SERVICES option is enabled
+FIX: Bad preview on scroping when special file names
+FIX: Generation of invoice from bulk action "Bill Orders"
+FIX: Implementation of a Luracast recommandation for the REST api server (#7370)
+FIX: Missing space in request
+FIX: Only modified values must be modified
+FIX: replenish if line test GETPOST on line 0
+FIX: Stripe not working on live mode
+FIX: wrong basePath in the swagger view
+FIX: Implementation of a Luracast recommandation for the REST api server
+
+***** ChangeLog for 6.0.1 compared to 6.0.* *****
 FIX: #7000 Dashboard link for late pending payment supplier invoices do not work
 FIX: #7325 Default VAT rate when editing template invoices is 0%
 FIX: #7330
@@ -45,7 +125,6 @@ FIX: CVE-2017-9840, CVE-2017-14238, CVE-2017-14239, CVE-2017-14240, CVE-2017-142
      CVE-2017-14242 
 
 ***** ChangeLog for 6.0.0 compared to 5.0.* *****
-
 NEW: Add experimental BlockeLog module (to log business events in a non reversible log file).
 NEW: Add a payment module for Stripe. 
 NEW: Add module "Product variant" (like red, blue for the product shoes)
@@ -193,6 +272,23 @@ Following changes may create regression for some external modules, but were nece
 * The hook formObjectOptions was not implemented correctly in previous version. Sometimes, you had to return output 
 content by doing a print into function, sometimes by returning content into "resprint". This has been fixed to follow
 hook specifications so you must return output into "resprint".
+
+
+***** ChangeLog for 5.0.7 compared to 5.0.6 *****
+FIX: #7000 Dashboard link for late pending payment supplier invoices do not work
+FIX: #7148
+FIX: #7325 Default VAT rate when editing template invoices is 0%
+FIX: #7366 renaming table with pgsql
+FIX: #7391
+FIX: #7510 Bug: extrafield content disappear when generate pdf within intervention
+FIX: Agenda events are not exported in the ICAL, VCAL if begin exactly with the same $datestart
+FIX: Bad link to unpayed suppliers invoices
+FIX: bankentries search conciliated if val 0
+FIX: multicompany better accuracy in rounding and with revenue stamp.
+FIX: PDF output was sharing 2 different currencies in same total
+FIX: Upgrade missing on field
+FIX: wrong key in selectarray
+FIX: wrong personnal project time spent
 
 ***** ChangeLog for 5.0.6 compared to 5.0.5 *****
 FIX: Removed a bad symbolic link into custom directory.
