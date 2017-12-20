@@ -966,7 +966,7 @@ class Task extends CommonObject
         $sql.= ", ".$this->timespent_duration;
         $sql.= ", ".$this->timespent_fk_user;
         $sql.= ", ".(isset($this->timespent_note)?"'".$this->db->escape($this->timespent_note)."'":"null");
-        $sql.= ", ".(empty($this->thm)) ? 0 : (float)$this->thm;
+        $sql.= ", ".((empty($this->thm)) ? 0 : (float)$this->thm);
         $sql.= ")";
 
         $resql=$this->db->query($sql);
