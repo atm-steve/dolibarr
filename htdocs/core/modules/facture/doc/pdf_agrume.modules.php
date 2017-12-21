@@ -170,7 +170,7 @@ class pdf_agrume extends ModelePDFFactures
 	function write_file($object,$outputlangs,$srctemplatepath='',$hidedetails=0,$hidedesc=0,$hideref=0)
 	{
 		global $user,$langs,$conf,$mysoc,$db,$hookmanager;
-
+		
 		if (! is_object($outputlangs)) $outputlangs=$langs;
 		// For backward compatibility with FPDF, force output charset to ISO, because FPDF expect text to be encoded in ISO
 		if (! empty($conf->global->MAIN_USE_FPDF)) $outputlangs->charset_output='ISO-8859-1';
@@ -413,48 +413,103 @@ class pdf_agrume extends ModelePDFFactures
 						}
 					}
 			
-					$top = $tab_top;
-					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $tab_top, $langs->trans('PDFCrevetteSituationInvoiceTitle'), 0, 1);
+					$curY = $tab_top;
+//					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $tab_top, $langs->trans('PDFCrevetteSituationInvoiceTitle'), 0, 1);
 					
 					$pdf->SetFont('','', $default_font_size - 2);
 					$titre = $outputlangs->transnoentities("AmountInCurrency",$outputlangs->transnoentitiesnoconv("Currency".$conf->currency));
-					$pdf->writeHTMLCell(90, 3, $this->posxdesc+100, $tab_top, $titre, 0, 1, false, true, 'R');
+					$pdf->writeHTMLCell(90, 3, $this->posxdesc+100, $curY, $titre, 0, 1, false, true, 'R');
 					$pdf->SetFont('','', $default_font_size);
 					
 					$pdf->Line($this->posxdesc-1, $pdf->GetY(), $this->page_largeur-$this->marge_droite, $pdf->GetY());
 					
-					$nexY = $pdf->GetY();
-					$tab_top = $nexY+1;
-					$pdf->writeHTMLCell(90, 3, $this->posxdesc-1, $tab_top, $langs->trans('PDFCrevetteSituationInvoiceLineDecompte'), 0, 1);
+					$curY = $pdf->GetY();
+					
+					$pdf->writeHTMLCell(90, 3, $this->posxdesc-1, $curY, $langs->trans('PDFCrevetteSituationInvoiceLineDecompte'), 0, 1);
 					$price_display = price(abs($total_decompte));
-					$pdf->writeHTMLCell(90, 3, $this->posxdesc+100, $tab_top, $price_display, 0, 1, false, true, 'R');
+					$pdf->writeHTMLCell(90, 3, $this->posxdesc+100, $curY, $price_display, 0, 1, false, true, 'R');
+					
+					$curY = $pdf->GetY()+1;
+					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $curY, $langs->trans('Déduction des situation(s) précédente(s)'), 0, 1);
+
+					$iniY = $tab_top + 14;
+					$curY = $tab_top + 14;
+					$nexY = $tab_top + 14;
 					
 					if (count($object->tab_previous_situation_invoice) > 0)
 					{
 						$object->totalTCCPreviousSitutationInvoice = 0;
 						
+						$i=0;
 						foreach ($object->tab_previous_situation_invoice as $prev_invoice)
 						{
+							$curY = $nexY;
+							$pageposbefore=$pdf->getPage();
+							
+							$pdf->startTransaction();
+							$pdf->writeHTMLCell(90, 3, $this->posxdesc-1, $nexY, $langs->trans('PDFCrevetteSituationInvoiceLine', $prev_invoice->situation_counter, $prev_invoice->ref, dol_print_date($prev_invoice->date)), 0, 1);
+							$pageposafter=$pdf->getPage();
+							if ($pageposafter > $pageposbefore)	// There is a pagebreak
+							{
+								$pdf->rollbackTransaction(true);
+								$pageposafter=$pageposbefore;
+								//print $pageposafter.'-'.$pageposbefore;exit;
+								$pdf->setPageOrientation('', 1, $heightforfooter);	// The only function to edit the bottom margin of current page to set it.
+								$pdf->writeHTMLCell(90, 3, $this->posxdesc-1, $nexY, $langs->trans('PDFCrevetteSituationInvoiceLine', $prev_invoice->situation_counter, $prev_invoice->ref, dol_print_date($prev_invoice->date)), 0, 1);
+								$pageposafter=$pdf->getPage();
+								$posyafter=$pdf->GetY();
+								if ($posyafter > ($this->page_hauteur - ($heightforfooter+$heightforfreetext+$heightforinfotot)))	// There is no space left for total+free text
+								{
+									if ($i == (count($object->tab_previous_situation_invoice)-1))	// No more lines, and no space left to show total, so we create a new page
+									{
+										$pdf->AddPage('','',true);
+										if (! empty($tplidx)) $pdf->useTemplate($tplidx);
+										if (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)) $this->_pagehead($pdf, $object, 0, $outputlangs);
+										$pdf->setPage($pageposafter+1);
+									}
+								}
+								else
+								{
+									// We found a page break
+									$showpricebeforepagebreak=1;
+								}
+							}
+							else	// No pagebreak
+							{
+								$pdf->commitTransaction();
+							}
+							
 							$nexY = $pdf->GetY();
-							$tab_top = $nexY+1;
-							$pdf->writeHTMLCell(90, 3, $this->posxdesc-1, $tab_top, $langs->trans('PDFCrevetteSituationInvoiceLine', $prev_invoice->situation_counter, $prev_invoice->ref, dol_print_date($prev_invoice->date)), 0, 1);
+							$pageposafter=$pdf->getPage();
+
+							$pdf->setPage($pageposbefore);
+							$pdf->setTopMargin($this->marge_haute);
+							$pdf->setPageOrientation('', 1, 0);	// The only function to edit the bottom margin of current page to set it.
+
+							// We suppose that a too long description or photo were moved completely on next page
+							if ($pageposafter > $pageposbefore && empty($showpricebeforepagebreak)) {
+								$pdf->setPage($pageposafter); $curY = $tab_top_newpage;
+							}
 							
 							$price_display = -1 * abs($prev_invoice->total_ht);
 							$price_display = price($price_display);
-							$pdf->writeHTMLCell(90, 3, $this->posxdesc+100, $tab_top, $price_display, 0, 1, false, true, 'R');
+							$pdf->writeHTMLCell(90, 3, $this->posxdesc+100, $curY, $price_display, 0, 1, false, true, 'R');
 							
 							$object->totalTCCPreviousSitutationInvoice += $prev_invoice->total_ttc;
+							
+							$nexY+=2;
+							$i++;
 						}
-						
-						$nexY = $pdf->GetY();
-						$height_situation=$nexY-$top;
-						
-						$tab_height = $tab_height - $height_situation;
-						$tab_top = $nexY+7;
 					}
 					
 					$this->page =1;
-					$bottomlasttab=$this->page_hauteur - $heightforinfotot  + 1;
+
+					$bottomlasttab=$this->page_hauteur - $heightforinfotot - $heightforfreetext - $heightforfooter;
+					
+					if ($nexY > $bottomlasttab)
+					{
+						$pdf->AddPage('','',true);
+					}
 					
 					// Affiche zone infos
 					$posy=$this->_tableau_info($pdf, $object, $bottomlasttab, $outputlangs);
@@ -493,9 +548,13 @@ class pdf_agrume extends ModelePDFFactures
 					$iniY = $tab_top_newpage+10;
 					$curY = $tab_top_newpage+10;
 					$nexY = $tab_top_newpage+10;
+					
+					$nb_situation_page = $pdf->getPage();
 				}
 				else 
 				{
+					$nb_situation_page = 0;
+					
 					$iniY = $tab_top + 7;
 					$curY = $tab_top + 7;
 					$nexY = $tab_top + 7;
@@ -667,6 +726,8 @@ class pdf_agrume extends ModelePDFFactures
 					} else {
 						$tvaligne = $object->lines[$i]->total_tva;
 					}
+					
+					
 					$localtax1ligne=$object->lines[$i]->total_localtax1;
 					$localtax2ligne=$object->lines[$i]->total_localtax2;
 					$localtax1_rate=$object->lines[$i]->localtax1_tx;
@@ -717,7 +778,7 @@ class pdf_agrume extends ModelePDFFactures
 					while ($pagenb < $pageposafter)
 					{
 						$pdf->setPage($pagenb);
-						if ($pagenb == 2)
+						if ($pagenb == $nb_situation_page)
 						{
 //							$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1);
 							$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 0, 1);
@@ -732,9 +793,10 @@ class pdf_agrume extends ModelePDFFactures
 						$pdf->setPageOrientation('', 1, 0);	// The only function to edit the bottom margin of current page to set it.
 						if (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)) $this->_pagehead($pdf, $object, 0, $outputlangs);
 					}
+					
 					if (isset($object->lines[$i+1]->pagebreak) && $object->lines[$i+1]->pagebreak)
 					{
-						if ($pagenb == 2)
+						if ($pagenb == $nb_situation_page)
 						{
 //							$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1);
 							$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 0, 1);
@@ -753,14 +815,9 @@ class pdf_agrume extends ModelePDFFactures
 				}
 
 				// Show square
-				if ($pagenb == 1)
+				if ($pagenb == $nb_situation_page)
 				{
-					$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforinfotot - $heightforfreetext - $heightforfooter, 0, $outputlangs, 0, 0);
-					$bottomlasttab=$this->page_hauteur - $heightforinfotot - $heightforfreetext - $heightforfooter + 1;
-				}
-				elseif ($this->situationinvoice && $pagenb == 2)
-				{
-					$this->_tableau($pdf, $tab_top_newpage+4, $this->page_hauteur - $tab_top_newpage - $heightforinfotot - $heightforfreetext - $heightforfooter - 4, 0, $outputlangs, 0, 0);
+					$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top - $heightforinfotot - $heightforfreetext - $heightforfooter, 0, $outputlangs, 0, 0);
 					$bottomlasttab=$this->page_hauteur - $heightforinfotot - $heightforfreetext - $heightforfooter + 1;
 				}
 				else
@@ -1231,6 +1288,21 @@ class pdf_agrume extends ModelePDFFactures
 					}
 				//}
 				// VAT
+				// backward compatibility from 6.0 into 5.0 (thx to AA : )
+				// Situations totals migth be wrong on huge amounts
+				if ($object->situation_cycle_ref && $object->situation_counter > 1) {
+					$sum_pdf_tva = 0;
+					foreach($this->tva as $tvakey => $tvaval){
+						$sum_pdf_tva+=$tvaval; // sum VAT amounts to compare to object
+					}
+					if($sum_pdf_tva!=$object->total_tva) { // apply coef to recover the VAT object amount (the good one)
+						$coef_fix_tva = $object->total_tva / $sum_pdf_tva;
+						foreach($this->tva as $tvakey => $tvaval) {
+							$this->tva[$tvakey]=$tvaval * $coef_fix_tva;
+						}
+					}
+				}
+				
 				foreach($this->tva as $tvakey => $tvaval)
 				{
 					if ($tvakey > 0)    // On affiche pas taux 0
@@ -1527,6 +1599,19 @@ class pdf_agrume extends ModelePDFFactures
 					}
 				//}
 				// VAT
+				// Situations totals migth be wrong on huge amounts
+				if ($object->situation_cycle_ref && $object->situation_counter > 1) {
+					$sum_pdf_tva = 0;
+					foreach($this->tva as $tvakey => $tvaval){
+						$sum_pdf_tva+=$tvaval; // sum VAT amounts to compare to object
+					}
+					if($sum_pdf_tva!=$object->total_tva) { // apply coef to recover the VAT object amount (the good one)
+						$coef_fix_tva = $object->total_tva / $sum_pdf_tva;
+						foreach($this->tva as $tvakey => $tvaval) {
+							$this->tva[$tvakey]=$tvaval * $coef_fix_tva;
+						}
+					}
+				}
 				foreach($this->tva as $tvakey => $tvaval)
 				{
 					if ($tvakey > 0)    // On affiche pas taux 0
@@ -1939,7 +2024,7 @@ exit;
 			$posy+=3;
 			$pdf->SetXY($posx,$posy);
 			$pdf->SetTextColor(0,0,60);
-			$pdf->MultiCell($w, 3, $outputlangs->transnoentities("DateEcheance")." : " . dol_print_date($object->date_lim_reglement,"day",false,$outputlangs,true), '', 'R');
+			$pdf->MultiCell($w, 3, $outputlangs->transnoentities("DateDue")." : " . dol_print_date($object->date_lim_reglement,"day",false,$outputlangs,true), '', 'R');
 		}
 
 		if ($object->thirdparty->code_client)
