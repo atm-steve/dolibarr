@@ -1991,7 +1991,7 @@ if ($action == 'create' && $user->rights->commande->creer) {
 		}
 		print '</td>';
 		print '</tr>';
-
+/*
 		// Delivery date planed
 		print '<tr><td height="10">';
 		print '<table class="nobordernopadding" width="100%"><tr><td>';
@@ -2013,7 +2013,7 @@ if ($action == 'create' && $user->rights->commande->creer) {
 		}
 		print '</td>';
 		print '</tr>';
-
+*/
 		// Terms of payment
 		print '<tr><td height="10">';
 		print '<table class="nobordernopadding" width="100%"><tr><td>';
