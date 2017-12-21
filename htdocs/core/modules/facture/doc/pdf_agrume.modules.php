@@ -79,6 +79,8 @@ class pdf_agrume extends ModelePDFFactures
 	{
 		global $conf,$langs,$mysoc;
 
+		$conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT = 1;
+			
 		$langs->load("main");
 		$langs->load("bills");
 
@@ -119,9 +121,9 @@ class pdf_agrume extends ModelePDFFactures
 		if($conf->global->PRODUCT_USE_UNITS)
 		{
 			$this->posxtva=99;
-			$this->posxup=112;
-			$this->posxqty=134;
-			$this->posxunit=147;
+			$this->posxup=104;
+			$this->posxqty=116;
+			$this->posxunit=131;
 		}
 		else
 		{
@@ -129,9 +131,9 @@ class pdf_agrume extends ModelePDFFactures
 			$this->posxup=126;
 			$this->posxqty=145;
 		}
-		$this->posxdiscount=160;
-		$this->posxprogress=160; // Only displayed for situation invoices
-		$this->postotalht=166;
+		$this->posxdiscount=162;
+		$this->posxprogress=153; // Only displayed for situation invoices
+		$this->postotalht=179;
 		if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_UNITPRICE)) $this->posxup = $this->posxqty;
 		if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT)) $this->posxtva=$this->posxup;
 		$this->posxpicture=$this->posxtva - (empty($conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH)?20:$conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH);	// width of images
@@ -660,42 +662,37 @@ class pdf_agrume extends ModelePDFFactures
 					}
 
 					// Unit price before discount
-					if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_UNITPRICE))
-					{
-						$up_excl_tax = pdf_getlineupexcltax($object, $i, $outputlangs, $hidedetails);
-						$pdf->SetXY($this->posxup, $curY);
-						$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, $up_excl_tax, 0, 'R', 0);
-					}
-					
+					$up_excl_tax = pdf_getlineupexcltax($object, $i, $outputlangs, $hidedetails);
 					// Quantity
 					$qty = pdf_getlineqty($object, $i, $outputlangs, $hidedetails);
+					// Unit
+					$unit = pdf_getlineunit($object, $i, $outputlangs, $hidedetails, $hookmanager);
+					
+					// SPECIFIQUE colonne qty en premiere
+					$pdf->SetXY($this->posxup, $curY);
+					$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, $qty, 0, 'R', 0);
+
+					
 					$pdf->SetXY($this->posxqty, $curY);
 					// Enough for 6 chars
+					
 					if($conf->global->PRODUCT_USE_UNITS)
 					{
-						$pdf->MultiCell($this->posxunit-$this->posxqty-0.8, 4, $qty, 0, 'R');
+						$pdf->MultiCell($this->posxunit-$this->posxqty-0.8, 4, $unit, 0, 'L');
 					}
 					else
 					{
-						$pdf->MultiCell($this->posxdiscount-$this->posxqty-0.8, 4, $qty, 0, 'R');
+						$pdf->MultiCell($this->posxdiscount-$this->posxqty-0.8, 4, $unit, 0, 'L');
 					}
 
 					// Unit
 					if($conf->global->PRODUCT_USE_UNITS)
 					{
-						if ($this->situationinvoice) 
-						{
-							$unit = pdf_getlineunit($object, $i, $outputlangs, $hidedetails, $hookmanager);
-							$pdf->SetXY($this->posxunit, $curY);
-							$pdf->MultiCell($this->posxprogress-$this->posxunit-0.8, 4, $unit, 0, 'L');
-						}
-						else
-						{
-							$unit = pdf_getlineunit($object, $i, $outputlangs, $hidedetails, $hookmanager);
-							$pdf->SetXY($this->posxunit, $curY);
-							$pdf->MultiCell($this->posxdiscount-$this->posxunit-0.8, 4, $unit, 0, 'L');	
-						}
+						
+						$pdf->SetXY($this->posxunit+10, $curY);
+						$pdf->MultiCell($this->posxdiscount-$this->posxunit-0.8-10, 4, $up_excl_tax, 0, 'R'); // SPECIFIQUE et enfin la colonne pu
 					}
+
 
 					// Discount on line
 					if ($object->lines[$i]->remise_percent)
@@ -1210,10 +1207,10 @@ class pdf_agrume extends ModelePDFFactures
 		$pdf->SetFillColor(248,248,248);
 
 		$this->atleastoneratenotnull=0;
-		if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT))
+		if (true || empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT))
 		{
 			$tvaisnull=((! empty($this->tva) && count($this->tva) == 1 && isset($this->tva['0.000']) && is_float($this->tva['0.000'])) ? true : false);
-			if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_ISNULL) && $tvaisnull)
+			if (false && ! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_ISNULL) && $tvaisnull)
 			{
 				// Nothing to do
 			}
@@ -1521,10 +1518,10 @@ class pdf_agrume extends ModelePDFFactures
 		$pdf->SetFillColor(248,248,248);
 
 		$this->atleastoneratenotnull=0;
-		if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT))
+		if (true || empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT))
 		{
 			$tvaisnull=((! empty($this->tva) && count($this->tva) == 1 && isset($this->tva['0.000']) && is_float($this->tva['0.000'])) ? true : false);
-			if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_ISNULL) && $tvaisnull)
+			if (false && ! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_ISNULL) && $tvaisnull)
 			{
 				// Nothing to do
 			}
@@ -1807,7 +1804,7 @@ class pdf_agrume extends ModelePDFFactures
 			if (empty($hidetop))
 			{
 				$pdf->SetXY($this->posxup-1, $tab_top+1);
-				$pdf->MultiCell($this->posxqty-$this->posxup-1,2, $outputlangs->transnoentities("PriceUHT"),'','C');
+				$pdf->MultiCell($this->posxqty-$this->posxup-1,2, $outputlangs->transnoentities("Qty"),'','C');
 			}
 		}
 		
@@ -1818,19 +1815,19 @@ class pdf_agrume extends ModelePDFFactures
 			$pdf->SetXY($this->posxqty-1, $tab_top+1);
 			if($conf->global->PRODUCT_USE_UNITS)
 			{
-				$pdf->MultiCell($this->posxunit-$this->posxqty-1,2, $outputlangs->transnoentities("Qty"),'','C');
+				$pdf->MultiCell($this->posxunit-$this->posxqty-1,2, $outputlangs->transnoentities("Unit"),'','C');
 			}
 			else
 			{
-				$pdf->MultiCell($this->posxdiscount-$this->posxqty-1,2, $outputlangs->transnoentities("Qty"),'','C');
+				$pdf->MultiCell($this->posxdiscount-$this->posxqty-1,2, $outputlangs->transnoentities("Unit"),'','C');
 			}
 		}
 
 		if($conf->global->PRODUCT_USE_UNITS) {
 			$pdf->line($this->posxunit - 1, $tab_top, $this->posxunit - 1, $tab_top + $tab_height);
 			if (empty($hidetop)) {
-				$pdf->SetXY($this->posxunit - 1, $tab_top + 1);
-				$pdf->MultiCell($this->posxdiscount - $this->posxunit - 1, 2, $outputlangs->transnoentities("Unit"), '',
+				$pdf->SetXY($this->posxunit +10, $tab_top + 1);
+				$pdf->MultiCell($this->posxdiscount - $this->posxunit - 10 , 2, $outputlangs->transnoentities("PriceUHT"), '',
 					'C');
 			}
 		}
