@@ -69,6 +69,7 @@ class Task extends CommonObject
     var $timespent_withhour;		// 1 = we entered also start hours for timesheet line
     var $timespent_fk_user;
     var $timespent_note;
+    var $thm;
 
     public $oldcopy;
 
@@ -1159,7 +1160,8 @@ class Task extends CommonObject
         $sql.= " t.task_date_withhour,";
         $sql.= " t.task_duration,";
         $sql.= " t.fk_user,";
-        $sql.= " t.note";
+        $sql.= " t.note,";
+        $sql.= " t.thm";
         $sql.= " FROM ".MAIN_DB_PREFIX."projet_task_time as t";
         $sql.= " WHERE t.rowid = ".$id;
 
@@ -1179,6 +1181,7 @@ class Task extends CommonObject
                 $this->timespent_duration	= $obj->task_duration;
                 $this->timespent_fk_user	= $obj->fk_user;
                 $this->timespent_note		= $obj->note;
+                $this->thm		            = $obj->thm;
             }
 
             $this->db->free($resql);
@@ -1218,7 +1221,7 @@ class Task extends CommonObject
         $sql.= " task_duration = ".$this->timespent_duration.",";
         $sql.= " fk_user = ".$this->timespent_fk_user.",";
         $sql.= " note = ".(isset($this->timespent_note)?"'".$this->db->escape($this->timespent_note)."'":"null");
-        $sql.= " thm=IF(thm>".$this->thm.", thm, ".$this->thm.") ";
+        if (isset($this->thm)) $sql.= " thm=IF(thm>".$this->thm.", thm, ".$this->thm.") ";
         $sql.= " WHERE rowid = ".$this->timespent_id;
 
         dol_syslog(get_class($this)."::updateTimeSpent", LOG_DEBUG);
