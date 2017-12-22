@@ -2294,7 +2294,8 @@ function dol_check_secure_access_document($modulepart,$original_file,$entity,$fu
 			else
 			{
 				if ($fuser->rights->$modulepart->lire || $fuser->rights->$modulepart->read) $accessallowed=1;
-				$original_file=$conf->$modulepart->dir_output.'/'.$original_file;
+				//$original_file=$conf->$modulepart->dir_output.'/'.$original_file;
+				$original_file=$conf->$modulepart->multidir_output[$conf->entity].'/'.$original_file;
 			}
 		}
 		if (preg_match('/^specimen/i',$original_file))	$accessallowed=1;    // If link to a specimen
