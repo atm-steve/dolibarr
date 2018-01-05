@@ -87,7 +87,7 @@ $(document).ready(function(){
 				{
 					var id = $(next_element).attr('id');
 					if (typeof id != 'undefined' && id.indexOf('row-') !== -1) break;
-					else if ($(next_element).hasClass('liste_titre')) break;
+					else if ($(next_element).hasClass('liste_titre') || $(next_element).hasClass('liste_titre_add')) break;
 					else TExtrafields.push(next_element);
 				}
 				
