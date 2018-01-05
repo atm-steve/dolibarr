@@ -208,6 +208,7 @@ if (GETPOST('actionadd') || GETPOST('actionmodify'))
         if ($tabrowid[$id] && ! in_array($tabrowid[$id],$listfieldinsert))
         	$sql.= $tabrowid[$id].",";
         $sql.= $tabfieldinsert[$id];
+        $sql.=",entity";
         $sql.=",active)";
         $sql.= " VALUES(";
 
@@ -225,6 +226,7 @@ if (GETPOST('actionadd') || GETPOST('actionmodify'))
             else $sql.="'".$db->escape($_POST[$listfieldvalue[$i]])."'";
             $i++;
         }
+        $sql.=','.$conf->entity;
         $sql.=",1)";
 
         dol_syslog("actionadd", LOG_DEBUG);
@@ -388,7 +390,7 @@ if ($id)
 {
     // Complete requete recherche valeurs avec critere de tri
     $sql=$tabsql[$id];
-
+    $sql.=' WHERE entity='.$conf->entity;
     if ($search_country_id > 0)
     {
         if (preg_match('/ WHERE /',$sql)) $sql.= " AND ";
