@@ -566,7 +566,7 @@ if ($search_user > 0)
 }
 $sql.= " WHERE f.fk_soc = s.rowid";
 $sql.= " AND f.entity = ".$conf->entity;
-$sql.= " AND f.type IN (0,1,3,5)";
+$sql.= " AND f.type IN (0,1,2,3,5)";
 if ($filter == 'paye:0') $sql.= " AND f.fk_statut = 1";
 //$sql.= " AND f.paye = 0";
 if ($option == 'late') $sql.=" AND f.date_lim_reglement < '".$db->idate(dol_now() - $conf->facture->client->warning_delay)."'";
