@@ -793,7 +793,8 @@ class pdf_typhon_ster extends ModelePDFDeliveryOrder
 			// If SHIPPING contact defined on order, we use it
 			$usecontact=false;
 			// Ticket #642 : le contact livraison n'était pas bien utilisé dans le BL
-			$object->commande->fetch($object->linkedObjects['shipping'][0]->origin_id);
+			$key = key($object->linkedObjects['shipping']);
+			$object->commande->fetch($object->linkedObjects['shipping'][$key]->origin_id);
 			$arrayidcontact=$object->commande->getIdContact('external','SHIPPING');
 			if (count($arrayidcontact) > 0)
 			{
