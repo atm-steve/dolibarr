@@ -132,7 +132,7 @@ if ($mode == 'search')
 		{
 			$obj = $db->fetch_object($result);
 			$socid = $obj->rowid;
-			header("Location: ".DOL_URL_ROOT."/societe/soc.php?socid=".$socid);
+			header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid);
 			exit;
 		}
 		$db->free($result);
@@ -264,6 +264,15 @@ if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 {
 	$result = $db->query($sql);
 	$nbtotalofrecords = $db->num_rows($result);
+	
+	if ($nbtotalofrecords == 1)
+	{
+	    $obj = $db->fetch_object($result);
+	    $socid = $obj->rowid;
+	    //solution sale mais ça marche
+	    echo 'Redirection en cours...<script>document.location.href="'.dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid.'";</script>';
+	    exit;
+	}
 }
 
 $sql.= $db->order($sortfield,$sortorder);
@@ -274,7 +283,7 @@ if ($resql)
 {
 	$num = $db->num_rows($resql);
 	$i = 0;
-
+	
 	$params = "&amp;socname=".htmlspecialchars($socname)."&amp;search_nom=".htmlspecialchars($search_nom)."&amp;search_town=".htmlspecialchars($search_town);
 	$params.= ($sbarcode?"&amp;sbarcode=".htmlspecialchars($sbarcode):"");
 	$params.= '&amp;search_idprof1='.htmlspecialchars($search_idprof1);
@@ -342,7 +351,7 @@ if ($resql)
 	print_liste_field_titre($form->textwithpicto($langs->trans("ProfId3Short"),$textprofid[3],1,0),$_SERVER["PHP_SELF"],"s.ape","",$params,'class="nowrap"',$sortfield,$sortorder);
 	print_liste_field_titre($form->textwithpicto($langs->trans("ProfId4Short"),$textprofid[4],1,0),$_SERVER["PHP_SELF"],"s.idprof4","",$params,'class="nowrap"',$sortfield,$sortorder);
 	print '<td></td>';
-	print_liste_field_titre($langs->trans("Simulation"),'','',"",$params,'class="nowrap"',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("Financement"),'','',"",$params,'class="nowrap"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("Status"),$_SERVER["PHP_SELF"],"s.status","",$params,'align="right"',$sortfield,$sortorder);
 	print "</tr>\n";
 
@@ -416,7 +425,7 @@ if ($resql)
         $companystatic->fournisseur=$obj->fournisseur;
         $companystatic->code_client=$obj->code_client;
         $companystatic->code_fournisseur=$obj->code_fournisseur;
-		print $companystatic->getNomUrl(1,'',100);
+        print '<a href="'.dol_buildpath('/financement/simulation.php',2).'?socid='.$companystatic->id.'">'.img_object($langs->trans("ShowCompany").': '.$companystatic->name,'company').''.$companystatic->name.'<a>';//.$companystatic->getNomUrl(1,'',100);
 		print "</td>\n";
 		// Barcode
 		if (! empty($conf->barcode->enabled))
@@ -450,8 +459,8 @@ if ($resql)
 		print $s;
 		print '</td>';
 		
-		print '<td>';
-		print '<a href="'.dol_buildpath('/financement/simulation.php',2).'?action=new&fk_soc='.$obj->rowid.'">Simu</a>';
+		print '<td align="center">';
+		print '<a href="'.dol_buildpath('/financement/affaire.php',2).'?socid='.$obj->rowid.'">Fin</a>';
 		print '</td>';
 		
         print '<td align="right">'.$companystatic->getLibStatut(3).'</td>';
