@@ -1059,7 +1059,7 @@ if ($resql)
 	}
 	// Action column
 	print '<td class="liste_titre" align="middle">';
-	$searchpitco=$form->showFilterAndCheckAddButtons(1, 'checkforselect');
+	$searchpitco=$form->showFilterAndCheckAddButtons(empty($arrayofmassactions) ? 0 : 1, 'checkforselect', 1);
 	print $searchpitco;
 	print '</td>';
 
