@@ -70,7 +70,7 @@ $socid			= GETPOST('socid','int');
 $projectid		= GETPOST('projectid','int');
 $cancel         = GETPOST('cancel','alpha');
 $lineid         = GETPOST('lineid', 'int');
-
+//echo $action.' = '.$confirm;
 $lineid = GETPOST('lineid', 'int');
 $origin = GETPOST('origin', 'alpha');
 $originid = (GETPOST('originid', 'int') ? GETPOST('originid', 'int') : GETPOST('origin_id', 'int')); // For backward compatibility
@@ -657,7 +657,7 @@ if (empty($reshook))
 		}
 
 		$free_lines = false;
-		foreach ($object->lines as $line) {
+		/*foreach ($object->lines as $line) {
 			if (empty($line->fk_product)) {
 				$error++;
 				
@@ -665,7 +665,7 @@ if (empty($reshook))
 			    $action='';
 				break;
 			}
-		}
+		}*/
 		
 		if ($error == 0) {
 			 // Check parameters
