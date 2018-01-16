@@ -572,7 +572,8 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 				$remaindertopay=$langs->trans('RemainderToTake');
 				$multicurrencyremaindertopay=$langs->trans('MulticurrencyRemainderToTake');
 				if ($facture->type == 2) { $remaindertopay=$langs->trans("RemainderToPayBack"); $multicurrencyremaindertopay=$langs->trans("MulticurrencyRemainderToPayBack"); }
-
+				$parameters=array();
+				$reshook=$hookmanager->executeHooks('formAddObjectLine',$parameters,$facture,$action);    // Note that $action and $object may have been modified by hook
                 $i = 0;
                 //print '<tr><td colspan="3">';
                 print '<br>';

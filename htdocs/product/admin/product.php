@@ -628,6 +628,14 @@ print $form->selectyesno("activate_viewProdDescInForm",$conf->global->PRODUIT_DE
 print '</td>';
 print '</tr>';
 
+$var=!$var;
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("BlockProductIfNotForSell").'</td>';
+print '<td width="60" align="right">';
+print $form->selectyesno("activate_BlockProductIfNotForSell",$conf->global->PRODUIT_BLOCK_NOT_FOR_SELL_PRODUCT,1);
+print '</td>';
+print '</tr>';
+
 // Activate propal merge produt card
 /* Kept as hidden feature only. PRODUIT_PDF_MERGE_PROPAL can be added manually. Still did not understand how this feature works.
 

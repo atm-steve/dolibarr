@@ -84,6 +84,7 @@ $hidedetails = (GETPOST('hidedetails', 'int') ? GETPOST('hidedetails', 'int') : 
 $hidedesc = (GETPOST('hidedesc', 'int') ? GETPOST('hidedesc', 'int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DESC) ? 1 : 0));
 $hideref = (GETPOST('hideref', 'int') ? GETPOST('hideref', 'int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_REF) ? 1 : 0));
 
+if (!empty($user->societe_id) && !empty($user->rights->commande->allow_external_user_to_create_order)) $user->societe_id = null;
 // Security check
 if (! empty($user->societe_id))
 	$socid = $user->societe_id;
@@ -151,7 +152,10 @@ if (empty($reshook))
 				// Because createFromClone modifies the object, we must clone it so that we can restore it later
 				$orig = clone $object;
 
-				$result=$object->createFromClone($socid);
+				if($conf->global->PRODUIT_BLOCK_NOT_FOR_SELL_PRODUCT && $object->hasProductNotForSell())
+					setEventMessage ($langs->trans("OrderHasProductNotForSell"),'errors');
+				else
+					$result=$object->createFromClone($socid);
 				if ($result > 0)
 				{
 					header("Location: ".$_SERVER['PHP_SELF'].'?id='.$result);
@@ -1117,6 +1121,11 @@ if (empty($reshook))
 				$action='';
 			}
 		}
+		if($conf->global->PRODUIT_BLOCK_NOT_FOR_SELL_PRODUCT && $object->hasProductNotForSell()){
+			$error++;
+			setEventMessage ($langs->trans("OrderHasProductNotForSell"),'errors');
+		
+		}
 
 		if (! $error) {
 			$result = $object->valid($user, $idwarehouse);
@@ -1922,7 +1931,7 @@ if ($action == 'create' && $user->rights->commande->creer)
 								// 1),
 								// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value'
 								// => 1),
-								array('type' => 'other','name' => 'socid','label' => $langs->trans("SelectThirdParty"),'value' => $form->select_company(GETPOST('socid', 'int'), 'socid', '(s.client=1 OR s.client=3)')));
+								array('type' => 'other','name' => 'socid','label' => $langs->trans("SelectThirdParty"),'value' => $form->select_company(GETPOST('socid', 'int'), 'socid', '(s.client=1 OR s.client=3)', '', 0, 0, array(), 0, 'minwidth300')));
 			// Paiement incomplet. On demande si motif = escompte ou autre
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('CloneOrder'), $langs->trans('ConfirmCloneOrder', $object->ref), 'confirm_clone', $formquestion, 'yes', 1);
 		}

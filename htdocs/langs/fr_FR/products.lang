@@ -324,3 +324,4 @@ CloneDestinationReference=Destination du produit référence
 ErrorCopyProductCombinations=Une erreur s'est produite lors de la copie des variantes de produit
 ErrorDestinationProductNotFound=Produit destination non trouvé
 ErrorProductCombinationNotFound=Variante du produit non trouvé
+BlockProductIfNotForSell = Bloquer la validation et clonage des commandes si un produit est "Hors vente"

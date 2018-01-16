@@ -224,7 +224,7 @@ class Export
             if (preg_match('/^none\./', $key)) continue;                    // A field that must not appears into SQL
 			if ($i > 0) $sql.=', ';
 			else $i++;
-
+			$key = str_replace('\\', '', $key);
 			if (strpos($key, ' as ')===false) {
 				$newfield=$key.' as '.str_replace(array('.', '-','(',')'),'_',$key);
 			} else {
