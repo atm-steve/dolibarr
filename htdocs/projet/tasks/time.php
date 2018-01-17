@@ -561,6 +561,7 @@ if (($id > 0 || ! empty($ref)) || $projectidforalltimes > 0)
 			if (count($contactsoftask)>0)
 			{
 				$userid=$contactsoftask[0];
+				$userid = $user->id;
 				print $form->select_dolusers((GETPOST('userid')?GETPOST('userid'):$userid), 'userid', 0, '', 0, '', $contactsoftask, 0, 0, 0, '', 0, $langs->trans("ResourceNotAssignedToTheTask"), 'maxwidth200');
 			}
 			else
