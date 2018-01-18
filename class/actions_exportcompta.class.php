@@ -107,4 +107,30 @@ class ActionsExportCompta
 			}
 		}
 	}
+	
+	function formObjectOptions($parameters, &$object, &$action, $hookmanager) {
+		
+		global $conf;
+		
+		if (in_array('invoicesuppliercard', explode(':', $parameters['context'])) && !empty($conf->global->EXPORTCOMPTA_DISABLE_UPDATE_DATE_FACFOURN_IF_COMPTABILISE) && !empty($object->array_options['options_date_compta'])) {
+		
+			?>
+			
+			<script language="javascript">
+				$(document).ready(function() {
+					var btn_edit_datef = $('[href*="action=editdatef"]');
+					var link_edit_datef = btn_edit_datef.attr('href');
+					
+					if(typeof link_edit_datef != 'undefined') {
+						$(btn_edit_datef).hide();
+					}
+				})
+			</script>
+			
+			<?php
+			
+		}
+			
+	}
+	
 }
