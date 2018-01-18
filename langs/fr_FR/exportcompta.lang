@@ -46,6 +46,7 @@ DataSeparator=Séparateur de données (mettre "none" pour un fichier à largeur 
 AllowModifyInvoiceWhenTransfered=Autoriser la modification (repassage en brouillon) des factures lorsqu'elle ont été comptabilisées
 ReopenInvoice=Empêcher la réouverture des factures lorsqu'elle ont été comptabilisées
 RegenerateInvoice=Empêcher la regénération des factures lorsqu'elle ont été comptabilisées
+DisabledUpdateDateFacFoun=Empêcher la modification de la date d'une facture fournisseur si cette dernière est comptabilisée
 AccountForBankTransfer=Compte comptable intermédiaire pour les transfert entre banques
 AccountForDiscountExcept=Compte comptable pour les remises
 AccountForEcoTax=Compte comptable pour les ecotax
