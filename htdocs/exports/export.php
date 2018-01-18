@@ -548,7 +548,8 @@ if ($step == 2 && $datatoexport)
     print '<input type="hidden" name="datatoexport" value="'.$datatoexport.'">';
     print '<table><tr><td colspan="2">';
     print $langs->trans("SelectExportFields").' ';
-    $htmlother->select_export_model($exportmodelid,'exportmodelid',$datatoexport,1);
+	if(empty($conf->global->EXPORTS_SHARE_MODELS))$htmlother->select_export_model($exportmodelid,'exportmodelid',$datatoexport,1,$user->id);
+	else $htmlother->select_export_model($exportmodelid,'exportmodelid',$datatoexport,1);
     print ' ';
     print '<input type="submit" class="button" value="'.$langs->trans("Select").'">';
     print '</td></tr></table>';
@@ -1079,7 +1080,9 @@ if ($step == 4 && $datatoexport)
     	$sql = "SELECT rowid, label";
 		$sql.= " FROM ".MAIN_DB_PREFIX."export_model";
 		$sql.= " WHERE type = '".$datatoexport."'";
-		$sql.= " ORDER BY rowid";
+		if(empty($conf->global->EXPORTS_SHARE_MODELS))$sql.=" AND fk_user=".$user->id;
+		
+		
 		$resql = $db->query($sql);
 		if ($resql)
 		{
