@@ -624,9 +624,9 @@ IMG;
 			}
 
 			if (!empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
-				header('Content-type: application/pdf');
-				header('Content-Disposition: attachment; filename="'.$name.'.pdf"');
-				readfile("$name.pdf");
+				// header('Content-type: application/pdf');
+				// header('Content-Disposition: attachment; filename="'.$name.'.pdf"');
+				// readfile("$name.pdf");
 			}
 			if (!empty($conf->global->MAIN_ODT_AS_PDF_DEL_SOURCE))
 				unlink("$name.odt");
