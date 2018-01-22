@@ -700,7 +700,8 @@ if ($action == 'create')
 	// Status
 	print '<tr><td>'.$langs->trans("Status").' / '.$langs->trans("Percentage").'</td>';
 	print '<td>';
-	$percent=-1;
+	//spécifique client
+	$percent=0;
 	if (isset($_GET['status']) || isset($_POST['status'])) $percent=GETPOST('status');
 	else if (isset($_GET['percentage']) || isset($_POST['percentage'])) $percent=GETPOST('percentage');
 	else
