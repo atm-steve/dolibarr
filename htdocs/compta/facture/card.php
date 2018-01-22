@@ -3489,7 +3489,7 @@ else if ($id > 0 || ! empty($ref))
 		if ($object->type == 5 && ($object->situation_counter > 1))
 		{
 			$prevsits = $object->get_prev_sits();
-			print '<tr><td>';
+			print '<tr id="col-situation-summary" ><td>';
 			print $langs->trans('SituationAmount');
 			print ' ';
 
