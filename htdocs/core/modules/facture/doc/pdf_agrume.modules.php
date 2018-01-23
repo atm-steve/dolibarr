@@ -290,9 +290,11 @@ class pdf_agrume extends ModelePDFFactures
 
 				$pdf->SetMargins($this->marge_gauche, $this->marge_haute, $this->marge_droite);   // Left, Top, Right
 
+				$all_progress_are_finished = true;
 				// Positionne $this->atleastonediscount si on a au moins une remise
 				for ($i = 0 ; $i < $nblignes ; $i++)
 				{
+					if ($all_progress_are_finished && $object->lines[$i]->product_type != 9 && $object->lines[$i]->situation_percent < 100) $all_progress_are_finished = false;
 					if ($object->lines[$i]->remise_percent)
 					{
 						$this->atleastonediscount++;
@@ -427,19 +429,22 @@ class pdf_agrume extends ModelePDFFactures
 					
 					$curY = $pdf->GetY();
 					
-					$pdf->writeHTMLCell(90, 3, $this->posxdesc-1, $curY, $langs->trans('PDFCrevetteSituationInvoiceLineDecompte'), 0, 1);
+					$key = 'PDFCrevetteSituationInvoiceLineWithoutDecompte';
+					if ($all_progress_are_finished) $key = 'PDFCrevetteSituationInvoiceLineWithDecompte';
+					
+					$pdf->writeHTMLCell(90, 3, $this->posxdesc-1, $curY, $langs->trans($key), 0, 1);
 					$price_display = price(abs($total_decompte));
 					$pdf->writeHTMLCell(90, 3, $this->posxdesc+100, $curY, $price_display, 0, 1, false, true, 'R');
 					
-					$curY = $pdf->GetY()+1;
-					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $curY, $langs->trans('Déduction des situation(s) précédente(s)'), 0, 1);
-
-					$iniY = $tab_top + 14;
-					$curY = $tab_top + 14;
-					$nexY = $tab_top + 14;
-					
 					if (count($object->tab_previous_situation_invoice) > 0)
 					{
+						$curY = $pdf->GetY()+1;
+						$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $curY, $langs->trans('Déduction des situation(s) précédente(s)'), 0, 1);
+
+						$iniY = $tab_top + 14;
+						$curY = $tab_top + 14;
+						$nexY = $tab_top + 14;
+					
 						$object->totalTCCPreviousSitutationInvoice = 0;
 						
 						$i=0;
