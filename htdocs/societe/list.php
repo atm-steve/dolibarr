@@ -261,7 +261,9 @@ if (empty($reshook))
 		$object = new Client($db);
 		$result=$object->fetch(GETPOST('stcommsocid'));
 		$object->stcomm_id=dol_getIdFromCode($db, GETPOST('stcomm','alpha'), 'c_stcomm');
+		
 		$result=$object->update($object->id, $user);
+		
 		if ($result < 0) setEventMessages($object->error,$object->errors,'errors');
 
 		$action='';
@@ -1144,6 +1146,7 @@ while ($i < min($num, $limit))
 
     if (! empty($arrayfields['s.fk_stcomm']['checked']))
     {
+		
         // Prospect status
 		print '<td align="center" class="nowrap"><div class="nowrap">';
 		print '<div class="inline-block">'.$companystatic->LibProspCommStatut($obj->stcomm_id,2,$prospectstatic->cacheprospectstatus[$obj->stcomm_id]['label']);
