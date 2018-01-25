@@ -369,6 +369,7 @@ if (empty($reshook))
 	    					}
 	    				}
 	    			}
+					$cmd->classifyBilled($user);
     			}
     		}
 
