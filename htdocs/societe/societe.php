@@ -134,7 +134,7 @@ if ($mode == 'search')
 			$socid = $obj->rowid;
 			header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid);
 			exit;
-		}
+		} 
 		$db->free($result);
 	}
 }
@@ -148,10 +148,6 @@ if ($mode == 'search')
 $form=new Form($db);
 $htmlother=new FormOther($db);
 $companystatic=new Societe($db);
-
-$help_url='EN:Module_Third_Parties|FR:Module_Tiers|ES:Empresas';
-llxHeader('',$langs->trans("ThirdParty"),$help_url);
-
 
 // Do we click on purge search criteria ?
 if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both test are required to be compatible with all browsers
@@ -265,6 +261,7 @@ if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 	$result = $db->query($sql);
 	$nbtotalofrecords = $db->num_rows($result);
 	
+	/*
 	if ($nbtotalofrecords == 1)
 	{
 	    $obj = $db->fetch_object($result);
@@ -272,7 +269,7 @@ if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 	    //solution sale mais ça marche
 	    echo 'Redirection en cours...<script>document.location.href="'.dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid.'";</script>';
 	    exit;
-	}
+	}*/
 }
 
 $sql.= $db->order($sortfield,$sortorder);
@@ -282,6 +279,17 @@ $resql = $db->query($sql);
 if ($resql)
 {
 	$num = $db->num_rows($resql);
+	
+	if ($num == 1)
+	{
+	    $obj = $db->fetch_object($resql);
+	    $socid = $obj->rowid;
+	    header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid);
+	    exit;
+	}
+	
+	$help_url='EN:Module_Third_Parties|FR:Module_Tiers|ES:Empresas';
+	llxHeader('',$langs->trans("ThirdParty"),$help_url);
 	$i = 0;
 	
 	$params = "&amp;socname=".htmlspecialchars($socname)."&amp;search_nom=".htmlspecialchars($search_nom)."&amp;search_town=".htmlspecialchars($search_town);
