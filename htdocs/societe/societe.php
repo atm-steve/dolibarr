@@ -132,7 +132,7 @@ if ($mode == 'search')
 		{
 			$obj = $db->fetch_object($result);
 			$socid = $obj->rowid;
-			header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid);
+			header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid.'&from=search');
 			exit;
 		} 
 		$db->free($result);
@@ -284,7 +284,7 @@ if ($resql)
 	{
 	    $obj = $db->fetch_object($resql);
 	    $socid = $obj->rowid;
-	    header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid);
+	    header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid.'&from=search');
 	    exit;
 	}
 	
