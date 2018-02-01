@@ -1087,60 +1087,104 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         
         $agendaDefaultFilter = unserialize($conf->global->AGENDA_DEFAULT_FILTER_VIEW);
         $nbfilters = count($agendaDefaultFilter); 
+        
         // Condition on actioncode
-        if ($actioncode == '' && !empty($agendaDefaultFilter)){
-            
-            if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
-            {
-                if ((in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) && (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter))){
-                    // do nothing
-                }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) {
-                    $sql.= " AND c.type != 'systemauto'";
-                } elseif (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
-                    $sql.= " AND c.type = 'systemauto'";
-                }
-            }
-            else
-            {
-                if (in_array('AC_NON_AUTO', $agendaDefaultFilter) && in_array('AC_ALL_AUTO', $agendaDefaultFilter)){
-                    // do nothing
-                }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter)) {
-                    $sql.= " AND c.type != 'systemauto'";
-                } elseif (in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
-                    $sql.= " AND c.type = 'systemauto'";
-                }
-                
-                $arraydone = array('AC_NON_AUTO', 'AC_ALL_AUTO');
-                $opened = false;
-                for ($i = 0; $i < $nbfilters; $i++) {
-                    if (!in_array($agendaDefaultFilter[$i], $arraydone)) {
-                        if (!$opened){
-                            $sql.= " AND (c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
-                            $opened =true;
-                        }
-                        else $sql.= " OR c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
+        if (empty($actioncode)){
+            $button_search = GETPOST('button_search');
+            $button_removefilter = GETPOST('button_removefilter');
+            if (!empty($agendaDefaultFilter) && empty($button_search) && empty($button_removefilter)) {
+                $actioncode = $agendaDefaultFilter;
+                if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
+                {
+                    if ((in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) && (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter))){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type = 'systemauto'";
                     }
-                    if ($i == ($nbfilters -1) && $opened) $sql.=")";
                 }
-            }
-        } elseif (! empty($actioncode))
-        {
-            if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
-            {
-                if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
-                elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
                 else
                 {
-                    if ($actioncode == 'AC_OTH') $sql.= " AND c.type != 'systemauto'";
-                    if ($actioncode == 'AC_OTH_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    if (in_array('AC_NON_AUTO', $agendaDefaultFilter) && in_array('AC_ALL_AUTO', $agendaDefaultFilter)){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type = 'systemauto'";
+                    }
+                    
+                    $arraydone = array('AC_NON_AUTO', 'AC_ALL_AUTO');
+                    $opened = false;
+                    for ($i = 0; $i < $nbfilters; $i++) {
+                        if (!in_array($agendaDefaultFilter[$i], $arraydone)) {
+                            if (!$opened){
+                                $sql.= " AND (c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
+                                $opened =true;
+                            }
+                            else $sql.= " OR c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
+                        }
+                        if ($i == ($nbfilters -1) && $opened) $sql.=")";
+                    }
                 }
             }
-            else
-            {
-                if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
-                elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
-                else $sql.= " AND c.code = '".$db->escape($actioncode)."'";
+            
+        } elseif (! empty($actioncode))
+        {
+            if(count($actioncode) == 1){
+                $actioncode = $actioncode[0];
+                if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
+                {
+                    if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
+                    elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    else
+                    {
+                        if ($actioncode == 'AC_OTH') $sql.= " AND c.type != 'systemauto'";
+                        if ($actioncode == 'AC_OTH_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    }
+                }
+                else
+                {
+                    if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
+                    elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    else $sql.= " AND c.code = '".$db->escape($actioncode)."'";
+                }
+            } else {
+                if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
+                {
+                    if ((in_array('AC_NON_AUTO', $actioncode) || in_array('AC_OTH', $actioncode)) && (in_array('AC_OTH_AUTO', $actioncode) || in_array('AC_ALL_AUTO', $actioncode))){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $actioncode) || in_array('AC_OTH', $actioncode)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_OTH_AUTO', $actioncode) || in_array('AC_ALL_AUTO', $actioncode)) {
+                        $sql.= " AND c.type = 'systemauto'";
+                    }
+                }
+                else
+                {
+                    if (in_array('AC_NON_AUTO', $actioncode) && in_array('AC_ALL_AUTO', $actioncode)){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $actioncode)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_ALL_AUTO', $actioncode)) {
+                        $sql.= " AND c.type = 'systemauto'";
+                    }
+                    $nbfilters = count($actioncode); 
+                    $arraydone = array('AC_NON_AUTO', 'AC_ALL_AUTO');
+                    $opened = false;
+                    for ($i = 0; $i < $nbfilters; $i++) {
+                        if (!in_array($actioncode[$i], $arraydone)) {
+                            if (!$opened){
+                                $sql.= " AND (c.code = '".$db->escape($actioncode[$i])."'";
+                                $opened =true;
+                            }
+                            else $sql.= " OR c.code = '".$db->escape($actioncode[$i])."'";
+                        }
+                        if ($i == ($nbfilters -1) && $opened) $sql.=")";
+                    }
+                }
             }
+            
         }
         if ($donetodo == 'todo') $sql.= " AND ((a.percent >= 0 AND a.percent < 100) OR (a.percent = -1 AND a.datep > '".$db->idate($now)."'))";
         if ($donetodo == 'done') $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep <= '".$db->idate($now)."'))";
@@ -1302,7 +1346,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         $out.='<td class="liste_titre maxwidth100onsmartphone"><input type="text" class="maxwidth100onsmartphone" name="search_agenda_label" value="'.$filters['search_agenda_label'].'"></td>';
         $out.='<td class="liste_titre"></td>';
         $out.='<td class="liste_titre">';
-        $out.=$formactions->select_type_actions($actioncode, "actioncode", '', empty($conf->global->AGENDA_USE_EVENT_TYPE)?1:-1, 0, 0, 1);
+        $out.=$formactions->select_type_actions($actioncode, "actioncode", '', empty($conf->global->AGENDA_USE_EVENT_TYPE)?1:-1, 1, 1, 1);
         $out.='</td>';
         $out.='<td class="liste_titre"></td>';
         $out.='<td class="liste_titre"></td>';
