@@ -1906,7 +1906,7 @@ class Societe extends CommonObject
         if (empty($linkstart))
         {
             $label.= '<u>' . $langs->trans("ShowCompany") . '</u>';
-            $linkstart = '<a target="_blank"  href="'.DOL_URL_ROOT.'/societe/card.php?socid='.$this->id;
+            $linkstart = '<a href="'.DOL_URL_ROOT.'/societe/card.php?socid='.$this->id;
         }
 
         if (! empty($this->name))
