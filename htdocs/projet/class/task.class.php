@@ -957,6 +957,7 @@ class Task extends CommonObject
         $sql.= ", task_duration";
         $sql.= ", fk_user";
         $sql.= ", note";
+        $sql.= ", thm";
         $sql.= ") VALUES (";
         $sql.= $this->id;
         $sql.= ", '".$this->db->idate($this->timespent_date)."'";
@@ -965,6 +966,7 @@ class Task extends CommonObject
         $sql.= ", ".$this->timespent_duration;
         $sql.= ", ".$this->timespent_fk_user;
         $sql.= ", ".(isset($this->timespent_note)?"'".$this->db->escape($this->timespent_note)."'":"null");
+        $sql.= ", ".(empty($this->thm)) ? 0 : (float)$this->thm;
         $sql.= ")";
 
         $resql=$this->db->query($sql);
@@ -1216,6 +1218,7 @@ class Task extends CommonObject
         $sql.= " task_duration = ".$this->timespent_duration.",";
         $sql.= " fk_user = ".$this->timespent_fk_user.",";
         $sql.= " note = ".(isset($this->timespent_note)?"'".$this->db->escape($this->timespent_note)."'":"null");
+        $sql.= " thm=IF(thm>".$this->thm.", thm, ".$this->thm.") ";
         $sql.= " WHERE rowid = ".$this->timespent_id;
 
         dol_syslog(get_class($this)."::updateTimeSpent", LOG_DEBUG);
