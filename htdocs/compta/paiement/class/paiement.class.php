@@ -350,7 +350,7 @@ class Paiement extends CommonObject
 				    {
 					require_once DOL_DOCUMENT_ROOT . '/core/modules/facture/modules_facture.php';
 					$ret=$invoice->fetch($invoice->id);    // Reload to get new records
-					facture_pdf_create($this->db, $invoice, $invoice->modelpdf, $outputlangs);
+					$invoice->generateDocument($invoice->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 				    }
 
                                 }
