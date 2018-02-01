@@ -2497,7 +2497,7 @@ if ($action == 'create')
 		if(is_array($task_array) && count($task_array)>0) {
 			$date_task.='<ul>';
 			foreach ($task_array as $tsk) {
-				$date_task.= '<li>'.$tsk->label.' '.$langs->trans('FromTo',dol_print_date($tsk->date_start,'dayhourtext','tzserver',$outputlangs),dol_print_date($tsk->date_end,'dayhourtext'),'tzserver',$outputlangs).'<BR>';
+				$date_task.= '<li>'.$tsk->label.' '.$langs->trans('DateFromTo',dol_print_date($tsk->date_start,'dayhourtext','tzserver',$outputlangs),dol_print_date($tsk->date_end,'dayhourtext'),'tzserver',$outputlangs).'<BR>';
 			}
 			$date_task.='</ul>';
 		}
