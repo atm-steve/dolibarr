@@ -1126,21 +1126,21 @@ if (empty($reshook))
 
 										// Date start
 										$date_start = false;
-										if ($lines[$i]->date_debut_prevue)
+										/*if ($lines[$i]->date_debut_prevue)
 											$date_start = $lines[$i]->date_debut_prevue;
 										if ($lines[$i]->date_debut_reel)
 											$date_start = $lines[$i]->date_debut_reel;
 										if ($lines[$i]->date_start)
-											$date_start = $lines[$i]->date_start;
+											$date_start = $lines[$i]->date_start;*/
 
 											// Date end
 										$date_end = false;
-										if ($lines[$i]->date_fin_prevue)
+										/*if ($lines[$i]->date_fin_prevue)
 											$date_end = $lines[$i]->date_fin_prevue;
 										if ($lines[$i]->date_fin_reel)
 											$date_end = $lines[$i]->date_fin_reel;
 										if ($lines[$i]->date_end)
-											$date_end = $lines[$i]->date_end;
+											$date_end = $lines[$i]->date_end;*/
 
 											// Reset fk_parent_line for no child products and special product
 										if (($lines[$i]->product_type != 9 && empty($lines[$i]->fk_parent_line)) || $lines[$i]->product_type == 9) {
