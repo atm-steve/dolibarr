@@ -55,6 +55,7 @@ if (! $error && $massaction == 'confirm_reprogram')
 		$result=$objecttmp->fetch($toselectid);
 		if ($result > 0)
 		{
+			$objecttmp->fetch_userassigned();
 			if($reprogramup > 0) {
 				$objecttmp->datep = dol_time_plus_duree($objecttmp->datep, $reprogramup, 'd');				
 			} else {
