@@ -634,8 +634,8 @@ if (empty($reshook))
                 {
                     $error = $object->error; $errors = $object->errors;
                 }
-				
-				if(!empty($user->rights->categorie->creer)){
+				//Prevent thirdparty's emptying if a user hasn't rights $user->rights->categorie->lire
+				if(!empty($user->rights->categorie->lire)){
 					// Customer categories association
 					$categories = GETPOST( 'custcats', 'array' );
 					$object->setCategories($categories, 'customer');
