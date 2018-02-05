@@ -1084,31 +1084,113 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             if ($filterobj->id) $sql.= " AND a.fk_element = ".$filterobj->id;
         }
         if (is_object($objcon) && $objcon->id) $sql.= " AND a.fk_contact = ".$objcon->id;
+        
+        $agendaDefaultFilter = unserialize($conf->global->AGENDA_DEFAULT_FILTER_VIEW);
+        $nbfilters = count($agendaDefaultFilter); 
+        
         // Condition on actioncode
-        if (! empty($actioncode))
-        {
-            if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
-            {
-                if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
-                elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
+        if (empty($actioncode)){
+            $button_search = GETPOST('button_search');
+            $button_removefilter = GETPOST('button_removefilter');
+            if (!empty($agendaDefaultFilter) && empty($button_search) && empty($button_removefilter)) {
+                $actioncode = $agendaDefaultFilter;
+                if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
+                {
+                    if ((in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) && (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter))){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter) || in_array('AC_OTH', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_OTH_AUTO', $agendaDefaultFilter) || in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type = 'systemauto'";
+                    }
+                }
                 else
                 {
-                    if ($actioncode == 'AC_OTH') $sql.= " AND c.type != 'systemauto'";
-                    if ($actioncode == 'AC_OTH_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    if (in_array('AC_NON_AUTO', $agendaDefaultFilter) && in_array('AC_ALL_AUTO', $agendaDefaultFilter)){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_ALL_AUTO', $agendaDefaultFilter)) {
+                        $sql.= " AND c.type = 'systemauto'";
+                    }
+                    
+                    $arraydone = array('AC_NON_AUTO', 'AC_ALL_AUTO');
+                    $opened = false;
+                    for ($i = 0; $i < $nbfilters; $i++) {
+                        if (!in_array($agendaDefaultFilter[$i], $arraydone)) {
+                            if (!$opened){
+                                $sql.= " AND (c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
+                                $opened =true;
+                            }
+                            else $sql.= " OR c.code = '".$db->escape($agendaDefaultFilter[$i])."'";
+                        }
+                        if ($i == ($nbfilters -1) && $opened) $sql.=")";
+                    }
                 }
             }
-            else
-            {
-                if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
-                elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
-                else $sql.= " AND c.code = '".$db->escape($actioncode)."'";
+            
+        } elseif (! empty($actioncode))
+        {
+            if(count($actioncode) == 1){
+                $actioncode = $actioncode[0];
+                if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
+                {
+                    if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
+                    elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    else
+                    {
+                        if ($actioncode == 'AC_OTH') $sql.= " AND c.type != 'systemauto'";
+                        if ($actioncode == 'AC_OTH_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    }
+                }
+                else
+                {
+                    if ($actioncode == 'AC_NON_AUTO') $sql.= " AND c.type != 'systemauto'";
+                    elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
+                    else $sql.= " AND c.code = '".$db->escape($actioncode)."'";
+                }
+            } else {
+                if (empty($conf->global->AGENDA_USE_EVENT_TYPE))
+                {
+                    if ((in_array('AC_NON_AUTO', $actioncode) || in_array('AC_OTH', $actioncode)) && (in_array('AC_OTH_AUTO', $actioncode) || in_array('AC_ALL_AUTO', $actioncode))){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $actioncode) || in_array('AC_OTH', $actioncode)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_OTH_AUTO', $actioncode) || in_array('AC_ALL_AUTO', $actioncode)) {
+                        $sql.= " AND c.type = 'systemauto'";
+                    }
+                }
+                else
+                {
+                    if (in_array('AC_NON_AUTO', $actioncode) && in_array('AC_ALL_AUTO', $actioncode)){
+                        // do nothing
+                    }  elseif (in_array('AC_NON_AUTO', $actioncode)) {
+                        $sql.= " AND c.type != 'systemauto'";
+                    } elseif (in_array('AC_ALL_AUTO', $actioncode)) {
+                        $sql.= " AND c.type = 'systemauto'";
+                    }
+                    $nbfilters = count($actioncode); 
+                    $arraydone = array('AC_NON_AUTO', 'AC_ALL_AUTO');
+                    $opened = false;
+                    for ($i = 0; $i < $nbfilters; $i++) {
+                        if (!in_array($actioncode[$i], $arraydone)) {
+                            if (!$opened){
+                                $sql.= " AND (c.code = '".$db->escape($actioncode[$i])."'";
+                                $opened =true;
+                            }
+                            else $sql.= " OR c.code = '".$db->escape($actioncode[$i])."'";
+                        }
+                        if ($i == ($nbfilters -1) && $opened) $sql.=")";
+                    }
+                }
             }
+            
         }
         if ($donetodo == 'todo') $sql.= " AND ((a.percent >= 0 AND a.percent < 100) OR (a.percent = -1 AND a.datep > '".$db->idate($now)."'))";
         if ($donetodo == 'done') $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep <= '".$db->idate($now)."'))";
         if (is_array($filters) && $filters['search_agenda_label']) $sql.= natural_search('a.label', $filters['search_agenda_label']);
         $sql.= $db->order($sortfield, $sortorder);
-
+        
         dol_syslog("company.lib::show_actions_done", LOG_DEBUG);
         $resql=$db->query($sql);
         if ($resql)
@@ -1264,7 +1346,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         $out.='<td class="liste_titre maxwidth100onsmartphone"><input type="text" class="maxwidth100onsmartphone" name="search_agenda_label" value="'.$filters['search_agenda_label'].'"></td>';
         $out.='<td class="liste_titre"></td>';
         $out.='<td class="liste_titre">';
-        $out.=$formactions->select_type_actions($actioncode, "actioncode", '', empty($conf->global->AGENDA_USE_EVENT_TYPE)?1:-1, 0, 0, 1);
+        $out.=$formactions->select_type_actions($actioncode, "actioncode", '', empty($conf->global->AGENDA_USE_EVENT_TYPE)?1:-1, 1, 1, 1);
         $out.='</td>';
         $out.='<td class="liste_titre"></td>';
         $out.='<td class="liste_titre"></td>';
@@ -1294,7 +1376,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         $out.=getTitleFieldOfList($langs->trans("Date"), 0, $_SERVER["PHP_SELF"], 'a.datep,a.id', '', $param, 'align="center"', $sortfield, $sortorder);
         $out.=getTitleFieldOfList($langs->trans("Type"));
 		$out.=getTitleFieldOfList('');
-		$out.=getTitleFieldOfList('');
+		$out.=getTitleFieldOfList($langs->trans("ActionOnContact"), 0, $_SERVER["PHP_SELF"], 'a.fk_contact', '', $param, '', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList($langs->trans("Status"), 0, $_SERVER["PHP_SELF"], 'a.percent', '', $param, 'align="center"', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList('', 0, $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder, 'maxwidthsearch ');
 		$out.='</tr>';
@@ -1328,7 +1410,8 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.='</td>';
 
             // Title
-            $out.='<td>';
+            $title = htmlentities(nl2br($actionstatic->note));
+            $out.='<td class="classfortooltip" title="'.$title.'">';
             if (isset($histo[$key]['type']) && $histo[$key]['type']=='action')
             {
                 $actionstatic->type_code=$histo[$key]['acode'];
@@ -1349,7 +1432,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.='</td>';
 
             // Date
-            $out.='<td class="center nowrap">';
+            $out.='<td class="center nowrap classfortooltip" title="'.$title.'">';
             $out.=dol_print_date($histo[$key]['datestart'],'dayhour');
             if ($histo[$key]['dateend'] && $histo[$key]['dateend'] != $histo[$key]['datestart'])
             {
@@ -1367,7 +1450,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.="</td>\n";
 
             // Type
-			$out.='<td>';
+			$out.='<td class="classfortooltip" title="'.$title.'">';
 			if (! empty($conf->global->AGENDA_USE_EVENT_TYPE))
 			{
     			if ($histo[$key]['apicto']) $out.=img_picto('', $histo[$key]['apicto']);
@@ -1433,7 +1516,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.='</td>';
 
             // Contact pour cette action
-            if (! empty($objcon->id) && isset($histo[$key]['contact_id']) && $histo[$key]['contact_id'] > 0)
+            if (isset($histo[$key]['contact_id']) && $histo[$key]['contact_id'] > 0)
             {
                 $contactstatic->lastname=$histo[$key]['lastname'];
                 $contactstatic->firstname=$histo[$key]['firstname'];

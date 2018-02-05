@@ -1512,6 +1512,7 @@ AgendaSetup=Configuration du module actions et agenda
 PasswordTogetVCalExport=Clé pour autoriser le lien d'exportation
 PastDelayVCalExport=Ne pas exporter les événements de plus de
 AGENDA_USE_EVENT_TYPE=Utilisez les types des événements (administrable dans Configuration -> Dictionnaires -> Liste des types d’événements de l'agenda)
+AGENDA_DEFAULT_FILTER_VIEW=Sélectionner les types d'événement pour préfiltrer la liste des évènements agenda sur les fiches tiers (laisser vide pour ne pas préfiltrer)
 AGENDA_USE_EVENT_TYPE_DEFAULT=Configurez automatiquement cette valeur par défaut pour un type d'événement dans un formulaire de création d'événement.
 AGENDA_DEFAULT_FILTER_TYPE=Régler automatiquement ce type d'événement dans le filtre de recherche de la vue agenda
 AGENDA_DEFAULT_FILTER_STATUS=Régler automatiquement le statut d'événement dans le filtre de recherche de la vue agenda
