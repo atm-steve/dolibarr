@@ -634,15 +634,16 @@ if (empty($reshook))
                 {
                     $error = $object->error; $errors = $object->errors;
                 }
+				
+				if(!empty($user->rights->categorie->creer)){
+					// Customer categories association
+					$categories = GETPOST( 'custcats', 'array' );
+					$object->setCategories($categories, 'customer');
 
-				// Customer categories association
-				$categories = GETPOST( 'custcats', 'array' );
-				$object->setCategories($categories, 'customer');
-
-				// Supplier categories association
-				$categories = GETPOST('suppcats', 'array');
-				$object->setCategories($categories, 'supplier');
-
+					// Supplier categories association
+					$categories = GETPOST('suppcats', 'array');
+					$object->setCategories($categories, 'supplier');
+				}
                 // Logo/Photo save
                 $dir     = $conf->societe->multidir_output[$object->entity]."/".$object->id."/logos";
                 $file_OK = is_uploaded_file($_FILES['photo']['tmp_name']);
