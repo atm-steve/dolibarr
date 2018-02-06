@@ -100,7 +100,7 @@ class pdf_crabe extends ModelePDFFactures
 		$this->option_logo = 1;                    // Affiche logo
 		$this->option_tva = 1;                     // Gere option tva FACTURE_TVAOPTION
 		$this->option_modereg = 1;                 // Affiche mode reglement
-			$this->option_condreg = 1;                 // Affiche conditions reglement
+		$this->option_condreg = 1;                 // Affiche conditions reglement
 		$this->option_codeproduitservice = 1;      // Affiche code produit-service
 		$this->option_multilang = 1;               // Dispo en plusieurs langues
 		$this->option_escompte = 1;                // Affiche si il y a eu escompte
@@ -118,19 +118,19 @@ class pdf_crabe extends ModelePDFFactures
 		$this->posxdesc=$this->marge_gauche+1;
 		if($conf->global->PRODUCT_USE_UNITS)
 		{
-			$this->posxtva=99;
-			$this->posxup=114;
-			$this->posxqty=133;
-			$this->posxunit=150;
+			$this->posxtva=101;
+			$this->posxup=118;
+			$this->posxqty=135;
+			$this->posxunit=151;
 		}
 		else
 		{
-			$this->posxtva=112;
-			$this->posxup=124;
-			$this->posxqty=148;
+			$this->posxtva=110;
+			$this->posxup=126;
+			$this->posxqty=145;
 		}
 		$this->posxdiscount=162;
-		$this->posxprogress=174; // Only displayed for situation invoices
+		$this->posxprogress=126; // Only displayed for situation invoices
 		$this->postotalht=174;
 		if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) || ! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN)) $this->posxtva=$this->posxup;
 		$this->posxpicture=$this->posxtva - (empty($conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH)?20:$conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH);	// width of images
@@ -759,8 +759,8 @@ class pdf_crabe extends ModelePDFFactures
 		$pdf->SetXY($tab3_posx+21, $tab3_top);
 		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Amount"), 0, 'L', 0);
 		$pdf->SetXY($tab3_posx+40, $tab3_top);
-		$pdf->MultiCell(40, 3, $outputlangs->transnoentities("PaymentMode"), 0, 'L', 0);
-		$pdf->SetXY($tab3_posx+60, $tab3_top);
+		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Type"), 0, 'L', 0);
+		$pdf->SetXY($tab3_posx+58, $tab3_top);
 		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Num"), 0, 'L', 0);
 
 		$pdf->line($tab3_posx, $tab3_top-1+$tab3_height, $tab3_posx+$tab3_width, $tab3_top-1+$tab3_height);
@@ -1593,7 +1593,7 @@ class pdf_crabe extends ModelePDFFactures
 		}
 
 		$objectidnext=$object->getIdReplacingInvoice('validated');
-		/*if ($object->type == 0 && $objectidnext)
+		if ($object->type == 0 && $objectidnext)
 		{
 			$objectreplacing=new Facture($this->db);
 			$objectreplacing->fetch($objectidnext);
@@ -1622,7 +1622,7 @@ class pdf_crabe extends ModelePDFFactures
 			$pdf->SetXY($posx,$posy);
 			$pdf->SetTextColor(0,0,60);
 			$pdf->MultiCell($w, 3, $outputlangs->transnoentities("CorrectionInvoice").' : '.$outputlangs->convToOutputCharset($objectreplaced->ref), '', 'R');
-		}*/
+		}
 
 		$posy+=4;
 		$pdf->SetXY($posx,$posy);
