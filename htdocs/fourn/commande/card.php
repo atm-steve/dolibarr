@@ -381,10 +381,14 @@ if (empty($reshook))
 				if (empty($tva_tx)) $tva_npr=0;
 	    		$localtax1_tx= get_localtax($tva_tx, 1, $mysoc, $object->thirdparty, $tva_npr);
 	    		$localtax2_tx= get_localtax($tva_tx, 2, $mysoc, $object->thirdparty, $tva_npr);
+				
+				$price_ht = GETPOST('price_ht');
+				$pu_ht = price2num($price_ht, 'MU');
+				if(empty($pu_ht)) $pu_ht = $productsupplier->fourn_pu;
 
 	    		$result=$object->addline(
 	    			$desc,
-	    			$productsupplier->fourn_pu,
+	    			$pu_ht,
 	    			$qty,
 	    			$tva_tx,
 	    			$localtax1_tx,
