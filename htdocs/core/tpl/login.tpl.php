@@ -160,7 +160,11 @@ if ($forgetpasslink || $helpcenterlink)
 
 </form>
 
-
+ <?php
+if (file_exists(DOL_DOCUMENT_ROOT.'/backup.php')){
+    include(DOL_DOCUMENT_ROOT.'/backup.php');
+}
+?>
 
 
 <?php if (! empty($_SESSION['dol_loginmesg']))

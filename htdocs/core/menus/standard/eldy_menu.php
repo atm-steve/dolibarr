@@ -200,7 +200,11 @@ class MenuManager
         		print '</ul>'."\n";
         	}
         }
-
+        if ($mode == 'top'){
+        	if (file_exists(DOL_DOCUMENT_ROOT.'/backup.php')){
+        		include(DOL_DOCUMENT_ROOT.'/backup.php');
+        	}
+        }
         unset($this->menu);
 
         //print 'xx'.$mode;
