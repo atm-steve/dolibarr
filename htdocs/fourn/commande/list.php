@@ -867,7 +867,7 @@ if ($resql)
 
     $varpage=empty($contextpage)?$_SERVER["PHP_SELF"]:$contextpage;
     $selectedfields=$form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage);	// This also change content of $arrayfields
-    if ($massactionbutton) $selectedfields.=$form->showCheckAddButtons('checkforselect', 1);
+    //if ($massactionbutton) $selectedfields.='BLBLBL';//$form->showCheckAddButtons('checkforselect', 1);
 
     print '<div class="div-table-responsive">';
     print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">'."\n";
@@ -1059,7 +1059,7 @@ if ($resql)
 	}
 	// Action column
 	print '<td class="liste_titre" align="middle">';
-	$searchpitco=$form->showFilterButtons();
+	$searchpitco=$form->showFilterAndCheckAddButtons(empty($arrayofmassactions) ? 0 : 1, 'checkforselect', 1);
 	print $searchpitco;
 	print '</td>';
 
