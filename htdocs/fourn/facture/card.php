@@ -982,11 +982,15 @@ if (empty($reshook))
 
 	            $type = $productsupplier->type;
 	            $price_base_type = 'HT';
+				
+				$price_ht = GETPOST('price_ht');
+				$pu_ht = price2num($price_ht, 'MU');
+				if(empty($pu_ht)) $pu_ht = $productsupplier->fourn_pu;
 
 	            // TODO Save the product supplier ref into database (like done for supplier propal and order) into field ref_supplier (must rename field ref into ref_supplier first)
 	            $result=$object->addline(
 	            	$desc,
-	            	$productsupplier->fourn_pu,
+	            	$pu_ht,
 	            	$tva_tx,
 	            	$localtax1_tx,
 	            	$localtax2_tx,
