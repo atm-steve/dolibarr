@@ -5538,7 +5538,7 @@ function get_htmloutput_mesg($mesgstring='',$mesgarray='', $style='ok', $keepemb
 						} else {
 							/* jnotify(message, preset of message type, keepmessage) */
 							$.jnotify("'.dol_escape_js($out).'",
-							"'.($style=="ok" ? 6000 : $style).'",
+							"'.($style=="ok" ? 10000 : $style).'",
 							'.($style=="ok" ? "false" : "true").',
 							{ remove: function (){} } );
 						}
