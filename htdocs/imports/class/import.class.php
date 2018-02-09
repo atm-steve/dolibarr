@@ -99,6 +99,8 @@ class Import
 
 				// Init load class
 				$file = $dir."/".$modulename.".class.php";
+				if(strpos($dir.$file, '/htdocs/core/modules/modResource.class.php') !== false
+						|| strpos($dir.$file, '/htdocs/core/modules//modResource.class.php') !== false) continue; // Module std avec même nom que le module /htdocs/custom/resource/core/modules/modResource.class.php, on zappe car impossible d'inclure 2 fois la même classe
 				$classname = $modulename;
 				require_once $file;
 				$module = new $classname($this->db);
