@@ -615,6 +615,6 @@ insert into llx_c_tva(rowid,fk_pays,code,taux,localtax1,localtax1_type,localtax2
 insert into llx_c_tva(rowid,fk_pays,code,taux,localtax1,localtax1_type,localtax2,localtax2_type,recuperableonly,note,active) values (1182, 117, 'C+S-28',  0,  14, '1',  14, '1', 0, 'CGST+SGST - Same state sales', 1);
 insert into llx_c_tva(rowid,fk_pays,code,taux,localtax1,localtax1_type,localtax2,localtax2_type,recuperableonly,note,active) values (1183, 117, 'I-28'     , 28,   0, '0',   0, '0', 0, 'IGST',      1);
 
--- VMYSQL4.0 DROP INDEX uk_accounting_journal_code on llx_accounting_journal
--- VPGSQL8.0 DROP INDEX uk_accounting_journal_code
+-- VMYSQL4.0 DROP INDEX uk_accounting_journal_code on llx_accounting_journal;
+-- VPGSQL8.0 DROP INDEX uk_accounting_journal_code;
 ALTER TABLE llx_accounting_journal ADD UNIQUE INDEX uk_accounting_journal_code (entity,code);
