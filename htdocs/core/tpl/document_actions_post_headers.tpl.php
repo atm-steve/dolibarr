@@ -82,6 +82,12 @@ $disablemove=1;
 if ($modulepart == 'produit') $disablemove=0;
 
 // List of document
+
+if($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO){
+	$upload_dir=$upload_dirold;
+	
+}
+
 $formfile->list_of_documents(
     $filearray,
     $object,
@@ -97,7 +103,7 @@ $formfile->list_of_documents(
     '',
     0,
     $permtoedit,
-    $upload_dir,
+	$upload_dir,
     $sortfield,
     $sortorder,
     $disablemove

@@ -936,12 +936,9 @@ class FormFile
 		    $relativepath=(! empty($object->ref)?dol_sanitizeFileName($object->ref):'').'/';
 		    if ($object->element == 'invoice_supplier') $relativepath=get_exdir($object->id,2,0,0,$object,'invoice_supplier').$relativepath;	// TODO Call using a defined value for $relativepath
 		    if ($object->element == 'project_task') $relativepath='Call_not_supported_._Call_function_using_a_defined_relative_path_.';
+			
 		}
-		// For backward compatiblity, we detect file is stored into an old path
-		if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO) && $file['level1name'] == 'photos')
-		{
-		    $relativepath=preg_replace('/^.*\/produit\//','',$file['path']).'/';
-		}
+		
 		// Defined relative dir to DOL_DATA_ROOT
 		$relativedir = '';
 		if ($upload_dir)
@@ -949,7 +946,6 @@ class FormFile
     		$relativedir = preg_replace('/^'.preg_quote(DOL_DATA_ROOT,'/').'/', '', $upload_dir);
     		$relativedir = preg_replace('/^[\\/]/','',$relativedir);
 		}
-
 		$hookmanager->initHooks(array('formfile'));
 		$parameters=array(
 				'filearray' => $filearray,
@@ -973,6 +969,7 @@ class FormFile
 		}
 		else
 		{
+			
 			$param = (isset($object->id)?'&id='.$object->id:'').$param;
 
 			if ($permtoeditline < 0)  // Old behaviour for backward compatibility. New feature should call method with value 0 or 1
@@ -1019,7 +1016,7 @@ class FormFile
 			if ($relativedir)
 			{
                 $filearrayindatabase = dol_dir_list_in_database($relativedir, '', null, 'name', SORT_ASC);
-
+				
                 //var_dump($filearray);
                 //var_dump($filearrayindatabase);
 
@@ -1103,6 +1100,12 @@ class FormFile
 			$var=true; $i=0; $nboflines = 0; $lastrowid=0;
 			foreach($filearray as $key => $file)      // filearray must be only files here
 			{
+				// For backward compatiblity, we detect file is stored into an old path
+				
+				if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO) && $file['level1name'] == 'photos')
+				{
+					$relativepath=preg_replace('/^.*\/produit\//','',$file['path']).'/';
+				}
 				if ($file['name'] != '.'
 						&& $file['name'] != '..'
 						&& ! preg_match('/\.meta$/i',$file['name']))
@@ -1399,7 +1402,7 @@ class FormFile
             {
                 // Define relative path used to store the file
                 $relativefile=preg_replace('/'.preg_quote($upload_dir.'/','/').'/','',$file['fullname']);
-
+				
                 //var_dump($file);
                 $id=0; $ref=''; $label='';
 
