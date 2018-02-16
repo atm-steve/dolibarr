@@ -319,6 +319,9 @@ jQuery(document).ready(function()
 			jQuery("input[name='np_marginRate']:first").val('');
 			jQuery("input[name='np_markRate']:first").val('');
 		});
+		jQuery("input[name='np_marginRate']:first").keyup(function() {
+			jQuery("#price_ht").val( price2numjs(jQuery("#buying_price").val()) * (1 + price2numjs( $(this).val() ) / 100 ) );
+		});
 
 		/* Init field buying_price and fournprice */
 		$.post('<?php echo DOL_URL_ROOT; ?>/fourn/ajax/getSupplierPrices.php', {'idprod': <?php echo $line->fk_product?$line->fk_product:0; ?>}, function(data) {
