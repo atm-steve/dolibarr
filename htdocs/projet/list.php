@@ -599,7 +599,9 @@ if (is_array($extrafields->attribute_label) && count($extrafields->attribute_lab
 				$searchclass='';
 				if (in_array($typeofextrafield, array('varchar', 'select'))) $searchclass='searchstring';
 				if (in_array($typeofextrafield, array('int', 'double'))) $searchclass='searchnum';
-				print '<input class="flat'.($searchclass?' '.$searchclass:'').'" size="4" type="text" name="search_options_'.$tmpkey.'" value="'.dol_escape_htmltag($search_array_options['search_options_'.$tmpkey]).'">';
+				
+				if($typeofextrafield == 'select')echo  $extrafields->showInputField($key,$search_array_options['search_options_'.$tmpkey],'','','search_');
+				else print '<input class="flat'.($searchclass?' '.$searchclass:'').'" size="4" type="text" name="search_options_'.$tmpkey.'" value="'.dol_escape_htmltag($search_array_options['search_options_'.$tmpkey]).'">';
 			}
             print '</td>';
         }
