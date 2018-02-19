@@ -136,7 +136,7 @@ class TExportComptaInextenso extends TExportCompta {
 			$facture = &$infosFacture['facture'];
 			
 			$label = $tiers['nom'];
-			if(!empty($conf->EXPORT_COMPTA_FOURN_INVOICE_LABEL) && !empty($facture['label'])) $label.= ' - ' . $facture['label'];
+			if(!empty($conf->global->EXPORT_COMPTA_FOURN_INVOICE_LABEL) && !empty($facture['label'])) $label.= ' - ' . $facture['label'];
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
