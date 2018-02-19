@@ -265,6 +265,7 @@ MAIN_DISABLE_ALL_SMS=Désactiver globalement tout envoi de SMS (pour mode test o
 MAIN_SMS_SENDMODE=Méthode d'envoi des SMS
 MAIN_MAIL_SMS_FROM=Numéro de téléphone par défaut pour l'envoi des SMS
 MAIN_MAIL_DEFAULT_FROMTYPE=E-mail par défaut pour les envois manuels (email de l'utilisateur ou de l'entreprise)
+MAIN_MAIL_ADD_INTERNAL_USER_WITHTO=Ajouter les utilisateurs internes à la liste des destinaires possible
 UserEmail=Email utilisateur
 CompanyEmail=Email institution
 FeatureNotAvailableOnLinux=Fonctionnalité non disponible sous systèmes Unix. Tester votre sendmail localement.

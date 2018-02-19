@@ -441,6 +441,35 @@ class FormMail extends Form
         		}
         	}
 
+            $internal_user_emails=array();
+            if(!empty($conf->global->MAIN_MAIL_ADD_INTERNAL_USER_WITHTO)) {
+
+        	    $sql = "SELECT DISTINCT u.rowid, u.lastname, u.firstname, u.statut, u.email";
+        	    $sql.= " FROM ".MAIN_DB_PREFIX ."user as u";
+        	    $sql.= " WHERE u.entity IN (0,".$conf->entity.")";
+        	    $sql.= " AND u.statut!=0 AND u.email !='' ";
+
+        	    if(empty($conf->global->MAIN_FIRSTNAME_NAME_POSITION)){
+        	        $sql.= " ORDER BY u.firstname ASC";
+        	    }else{
+        	        $sql.= " ORDER BY u.lastname ASC";
+        	    }
+        	    $res = $this->db->query($sql);
+
+        	    if($res!==false) {
+
+        	        while($obj = $this->db->fetch_object($res)) {
+        	            $u=new User($this->db);
+        	            $u->lastname = $obj->lastname;
+        	            $u->firstname = $obj->firstname;
+        	            $u->id = $obj->rowid;
+
+        	            $internal_user_emails['user_'.$obj->rowid]=$langs->trans("User").': '.$u->getFullName($langs)." &lt;".$obj->email."&gt;";
+        	        }
+
+        	    }
+        	}
+
         	// To
         	if (! empty($this->withto) || is_array($this->withto))
         	{
@@ -491,11 +520,12 @@ class FormMail extends Form
         			{
         				if (! empty($this->withtofree)) $out.= " ".$langs->trans("and")."/".$langs->trans("or")." ";
         			    // multiselect array convert html entities into options tags, even if we dont want this, so we encode them a second time
-        				$tmparray = $this->withto;
+        				$tmparray = $this->withto + $internal_user_emails;
         				foreach($tmparray as $key => $val)
         				{
         				    $tmparray[$key]=dol_htmlentities($tmparray[$key], null, 'UTF-8', true);
         				}
+
         				$withtoselected=GETPOST("receiver");     // Array of selected value
         				if (empty($withtoselected) && count($tmparray) == 1 && GETPOST('action','aZ09') == 'presend')
         				{
@@ -524,7 +554,7 @@ class FormMail extends Form
         			{
         				$out.= " ".$langs->trans("and")."/".$langs->trans("or")." ";
         				// multiselect array convert html entities into options tags, even if we dont want this, so we encode them a second time
-        				$tmparray = $this->withtocc;
+        				$tmparray = $this->withtocc + $internal_user_emails;
         				foreach($tmparray as $key => $val)
         				{
         				    $tmparray[$key]=dol_htmlentities($tmparray[$key], null, 'UTF-8', true);
@@ -553,7 +583,7 @@ class FormMail extends Form
         			{
         				$out.= " ".$langs->trans("and")."/".$langs->trans("or")." ";
         				// multiselect array convert html entities into options tags, even if we dont want this, so we encode them a second time
-        				$tmparray = $this->withtoccc;
+        				$tmparray = $this->withtoccc + $internal_user_emails;
         				foreach($tmparray as $key => $val)
         				{
         				    $tmparray[$key]=dol_htmlentities($tmparray[$key], null, 'UTF-8', true);
