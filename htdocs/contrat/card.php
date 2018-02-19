@@ -722,6 +722,8 @@ if (empty($reshook))
 	        if ($result > 0)
 	        {
 	            $db->commit();
+				header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $object->id);
+				exit;
 	        }
 	        else
 	        {
@@ -1659,7 +1661,7 @@ else
                     	print '<tr '.$bcnd[$var].'>';
                     	$line = new ContratLigne($db);
                     	$line->fetch_optionals($objp->rowid,$extralabelslines);
-                    	print $line->showOptionals($extrafieldsline, 'view', array('style'=>$bcnd[$var], 'colspan'=>$colspan), '_'.$line->id);
+                    	print $line->showOptionals($extrafieldsline, 'view', array('style'=>$bcnd[$var], 'colspan'=>$colspan));
                     	print '</tr>';
                     }
                 }
