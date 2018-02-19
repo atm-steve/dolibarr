@@ -134,6 +134,9 @@ class TExportComptaInextenso extends TExportCompta {
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
+			
+			$label = $tiers['nom'];
+			if(!empty($conf->EXPORT_COMPTA_FOURN_INVOICE_LABEL) && !empty($facture['label'])) $label.= ' - ' . $facture['label'];
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
@@ -141,7 +144,7 @@ class TExportComptaInextenso extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> $label,
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
 				);
@@ -157,7 +160,7 @@ class TExportComptaInextenso extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
-					'libelle'						=> $tiers['nom'],
+					'libelle'						=> $label,
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
 				);
@@ -176,7 +179,7 @@ class TExportComptaInextenso extends TExportCompta {
 							'date_ecriture'					=> $facture['date'],
 							'numero_piece'					=> $facture['ref'],
 							'numero_compte'					=> $code_compta,
-							'libelle'						=> $tiers['nom'],
+							'libelle'						=> $label,
 							'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
 							'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
 						);
@@ -198,7 +201,7 @@ class TExportComptaInextenso extends TExportCompta {
 						'date_ecriture'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> 445662,
-						'libelle'						=> $tiers['nom'],
+						'libelle'						=> $label,
 						'montant_debit'					=> number_format(abs($montant),2,',',''),
 						'montant_credit'				=> 0,
 					);
@@ -211,7 +214,7 @@ class TExportComptaInextenso extends TExportCompta {
 						'date_ecriture'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> 445200,
-						'libelle'						=> $tiers['nom'],
+						'libelle'						=> $label,
 						'montant_debit'					=> 0,
 						'montant_credit'				=> number_format(abs($montant),2,',',''),
 					);
