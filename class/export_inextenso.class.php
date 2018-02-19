@@ -251,7 +251,7 @@ class TExportComptaInextenso extends TExportCompta {
 			//pre($object, true);exit;
 			if(!empty($object)) {
 				if($object->element == 'societe')			$label = $object->name;
-				if($object->element == 'chargesociales')	$label = $object->type_libelle;
+				if($object->element == 'chargesociales')	$label = $object->type_libelle . ' - ' . $object->lib;
 				if($object->element == 'user')				$label = $object->firstname.' '.$object->lastname;
 				if(get_class($object) == 'BonPrelevement')	$label = $object->ref;
 			}
