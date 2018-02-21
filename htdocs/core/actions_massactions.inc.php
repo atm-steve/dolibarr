@@ -301,7 +301,14 @@ if (! $error && $massaction == 'confirm_presend')
                     '__PROPREF__' => join(', ',$listofqualifiedref),           // For backward compatibility
                     '__REF__' => join(', ',$listofqualifiedref),
                     '__REFCLIENT__' => $thirdparty->name,
-					'__SIGNATURE__' =>  (($user->signature && empty($conf->global->MAIN_MAIL_DO_NOT_USE_SIGN))?dol_string_nohtmltag($user->signature):'')
+                	'__SIGNATURE__' =>  (($user->signature && empty($conf->global->MAIN_MAIL_DO_NOT_USE_SIGN))?dol_string_nohtmltag($user->signature):''),
+                	
+                	// CUSTOM ATM
+                	'__DATE_YMD__' => isset($object->date) ? dol_print_date($object->date, 'day', 0, $outputlangs) : '',
+                	'__DATE_DUE_YMD__' => isset($object->date_lim_reglement)? dol_print_date($object->date_lim_reglement, 'day', 0, $outputlangs) : '',
+                	'__AMOUNT__' => price($object->total_ttc),
+                	'__AMOUNT_WO_TAX__' => price($object->total_ht),
+                	'__AMOUNT_VAT__' => price($object->total_tva)
                 	/* not available on all object
 					/'__FIRSTNAME__'=>(is_object($object)?$object->firstname:''),
 					'__LASTNAME__'=>(is_object($object)?$object->lastname:''),
