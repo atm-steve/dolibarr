@@ -233,7 +233,9 @@ class FormProjets
 						$disabled=0;
 						if ($obj->fk_statut == 0)
 						{
-							$disabled=1;
+							//$disabled=1;
+							// Custom ATM
+							$disabled=0;
 							$labeltoshow.=' - '.$langs->trans("Draft");
 						}
 						else if ($obj->fk_statut == 2)
