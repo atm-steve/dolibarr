@@ -1155,7 +1155,7 @@ class TExportCompta extends TObjetStd {
 		$TExcludedBankAcount = !empty($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT) ? strtr($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT, array(';'=>'","', ','=>'","')) : '';
 
 		// Requête de récupération des écritures bancaires
-		$sql = "SELECT b.rowid, ba.entity";
+		$sql = "SELECT DISTINCT b.rowid, ba.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
 		if(!$this->exportAllreadyExported) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank_class bc ON(b.rowid = bc.lineid)';
@@ -1232,11 +1232,17 @@ class TExportCompta extends TObjetStd {
 					$sql.= " WHERE c.id = ".$charge->type;
 
 					$resql=$this->db->query($sql);
-					$obj = $this->db->fetch_object($resql);
+					if($resql) {
+						$obj = $this->db->fetch_object($resql);
 
-					$codeCompta = $obj->accountancy_code;
-					$TCodeCompta[$codeCompta] = $bankline->amount;
-					$object = $charge;
+						$codeCompta = $obj->accountancy_code;
+						$TCodeCompta[$codeCompta] = $bankline->amount;
+						$object = $charge;
+					} else {
+						$codeCompta = 'XXXX';
+                                        	$TCodeCompta[$codeCompta] = $bankline->amount;
+                                        	$object = $charge;
+					}
 				}
 				// Cas du prélèvement
 				if($lineType == 'withdraw') {
