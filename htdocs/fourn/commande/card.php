@@ -1090,7 +1090,7 @@ if (empty($reshook))
 										$lines[$i]->localtax1_tx,
 										$lines[$i]->localtax2_tx,
 										$lines[$i]->fk_product > 0 ? $lines[$i]->fk_product : 0,
-										$productsupplier->product_fourn_price_id,
+										0,
 										$productsupplier->ref_supplier,
 										$lines[$i]->remise_percent,
 										'HT',
