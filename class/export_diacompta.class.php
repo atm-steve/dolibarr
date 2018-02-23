@@ -389,6 +389,9 @@ class TExportComptaDiacompta extends TExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 			
+			$label = $tiers['nom'];
+			if(!empty($conf->global->EXPORT_COMPTA_FOURN_INVOICE_REF_AND_REFSUPPLIER_ON_LABEL) && !empty($facture['ref_supplier'])) $label = $facture['ref'].' - '.$facture['ref_supplier'].' - '.$label;
+			
 			// Configuration permettant d'afficher la ligne tiers au crédit et les lignes complémentaires au débit. si non renseigné : tout au crédit 
 			$sens = array();
 			$sens[] = 'D';
@@ -405,7 +408,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'D' : 'C'
 					,'montant'						=> abs($montant*100)
 					,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
-					,'libelle_ecriture'				=> $tiers['nom']
+					,'libelle_ecriture'				=> $label
 					,'date_ecriture'				=> $facture['date']
 					,'code_lettrage'				=> ''
 					,'date_echeance'				=> $facture['date_lim_reglement']
@@ -435,7 +438,7 @@ class TExportComptaDiacompta extends TExportCompta {
 					,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'C' : 'D'
 					,'montant'						=> abs($montant*100)
 					,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
-					,'libelle_ecriture'				=> $tiers['nom']
+					,'libelle_ecriture'				=> $label
 					,'date_ecriture'				=> $facture['date']
 					,'code_lettrage'				=> ''
 					,'date_echeance'				=> $facture['date_lim_reglement']
@@ -470,7 +473,7 @@ class TExportComptaDiacompta extends TExportCompta {
 						,'sens'							=> ($facture['type'] == 2 || $montant < 0) ? 'C' : 'D'
 						,'montant'						=> abs($montant*100)
 						,'code_libelle'					=> $facture['type'] == 2 ? 'A' : 'F' 
-						,'libelle_ecriture'				=> $tiers['nom']
+						,'libelle_ecriture'				=> $label
 						,'date_ecriture'				=> $facture['date']
 						,'code_lettrage'				=> ''
 						,'date_echeance'				=> $facture['date_lim_reglement']
