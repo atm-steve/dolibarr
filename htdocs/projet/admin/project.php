@@ -43,13 +43,15 @@ if (!$user->admin) accessforbidden();
 $value = GETPOST('value','alpha');
 $action = GETPOST('action','alpha');
 $label = GETPOST('label','alpha');
-$scandir = GETPOST('scandir','alpha');
+$scandir = GETPOST('scan_dir','alpha');
 $type='project';
 
 
 /*
  * Actions
  */
+
+include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
 
 if ($action == 'setmainoptions')
 {
@@ -104,7 +106,7 @@ else if ($action == 'specimen')
 
 	$project = new Project($db);
 	$project->initAsSpecimen();
-    
+
 	// Search template files
 	$file=''; $classname=''; $filefound=0;
 	$dirmodels=array_merge(array('/'),(array) $conf->modules_parts['models']);
@@ -185,35 +187,6 @@ else if ($action == 'specimentask')
 	{
 		setEventMessages($langs->trans("ErrorModuleNotFound"), null, 'errors');
 		dol_syslog($langs->trans("ErrorModuleNotFound"), LOG_ERR);
-	}
-}
-
-// Define constants for submodules that contains parameters (forms with param1, param2, ... and value1, value2, ...)
-if ($action == 'setModuleOptions')
-{
-	$post_size=count($_POST);
-
-	$db->begin();
-
-	for($i=0;$i < $post_size;$i++)
-	{
-		if (array_key_exists('param'.$i,$_POST))
-		{
-			$param=GETPOST("param".$i,'alpha');
-			$value=GETPOST("value".$i,'alpha');
-			if ($param) $res = dolibarr_set_const($db,$param,$value,'chaine',0,'',$conf->entity);
-			if (! $res > 0) $error++;
-		}
-	}
-	if (! $error)
-	{
-		$db->commit();
-		setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
-	}
-	else
-	{
-		$db->rollback();
-        setEventMessages($langs->trans("Error"), null, 'errors');
 	}
 }
 
@@ -414,7 +387,7 @@ foreach ($dirmodels as $reldir)
 
 					if ($module->isEnabled())
 					{
-						
+
 						print '<tr class="oddeven"><td>'.$module->name."</td><td>\n";
 						print $module->info();
 						print '</td>';
@@ -518,7 +491,7 @@ if (empty($conf->global->PROJECT_HIDE_TASKS))
 
 						if ($module->isEnabled())
 						{
-							
+
 							print '<tr class="oddeven"><td>'.$module->name."</td><td>\n";
 							print $module->info();
 							print '</td>';
@@ -660,7 +633,7 @@ foreach ($dirmodels as $reldir)
 
 							if ($modulequalified)
 							{
-								
+
 								print '<tr class="oddeven"><td width="100">';
 								print (empty($module->name)?$name:$module->name);
 								print "</td><td>\n";
@@ -672,7 +645,7 @@ foreach ($dirmodels as $reldir)
 								if (in_array($name, $def))
 								{
 									print "<td align=\"center\">\n";
-									print '<a href="'.$_SERVER["PHP_SELF"].'?action=del&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">';
+									print '<a href="'.$_SERVER["PHP_SELF"].'?action=del&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">';
 									print img_picto($langs->trans("Enabled"),'switch_on');
 									print '</a>';
 									print "</td>";
@@ -680,7 +653,7 @@ foreach ($dirmodels as $reldir)
 								else
 								{
 									print "<td align=\"center\">\n";
-									print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
+									print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
 									print "</td>";
 								}
 
@@ -692,7 +665,7 @@ foreach ($dirmodels as $reldir)
 								}
 								else
 								{
-									print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
+									print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
 								}
 								print '</td>';
 
@@ -831,7 +804,7 @@ if (empty($conf->global->PROJECT_HIDE_TASKS))
 									if (in_array($name, $def))
 									{
 										print "<td align=\"center\">\n";
-										print '<a href="'.$_SERVER["PHP_SELF"].'?action=deltask&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">';
+										print '<a href="'.$_SERVER["PHP_SELF"].'?action=deltask&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">';
 										print img_picto($langs->trans("Enabled"),'switch_on');
 										print '</a>';
 										print "</td>";
@@ -839,7 +812,7 @@ if (empty($conf->global->PROJECT_HIDE_TASKS))
 									else
 									{
 										print "<td align=\"center\">\n";
-										print '<a href="'.$_SERVER["PHP_SELF"].'?action=settask&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
+										print '<a href="'.$_SERVER["PHP_SELF"].'?action=settask&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
 										print "</td>";
 									}
 
@@ -851,7 +824,7 @@ if (empty($conf->global->PROJECT_HIDE_TASKS))
 									}
 									else
 									{
-										print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoctask&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
+										print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoctask&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
 									}
 									print '</td>';
 

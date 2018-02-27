@@ -531,9 +531,10 @@ class PaiementFourn extends Paiement
 	 *
 	 *	@param		int		$withpicto		0=No picto, 1=Include picto into link, 2=Only picto
 	 *	@param		string	$option			Sur quoi pointe le lien
+	 *  @param		string  $mode           'withlistofinvoices'=Include list of invoices into tooltip
 	 *	@return		string					Chaine avec URL
 	 */
-	function getNomUrl($withpicto=0,$option='')
+	function getNomUrl($withpicto=0,$option='',$mode='withlistofinvoices')
 	{
 		global $langs;
 
@@ -701,7 +702,7 @@ class PaiementFourn extends Paiement
 		}
 		else
 		{
-            $modelpath = "core/modules/supplier_payment/pdf/";
+            $modelpath = "core/modules/supplier_payment/doc/";
 
             return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref);
 		}
@@ -733,4 +734,30 @@ class PaiementFourn extends Paiement
 		
 		return $way;
 	}
+	
+	/**
+     *    	Load the third party of object, from id into this->thirdparty
+     *
+     *		@param		int		$force_thirdparty_id	Force thirdparty id
+     *		@return		int								<0 if KO, >0 if OK
+     */
+    function fetch_thirdparty($force_thirdparty_id=0)
+    {
+		require_once DOL_DOCUMENT_ROOT . '/fourn/class/fournisseur.facture.class.php';
+		
+		if (empty($force_thirdparty_id))
+		{
+			$billsarray = $this->getBillsArray(); // From payment, the fk_soc isn't available, we should load the first supplier invoice to get him
+			if (!empty($billsarray))
+			{
+				$supplier_invoice = new FactureFournisseur($this->db);
+				if ($supplier_invoice->fetch($billsarray[0]) > 0)
+				{
+					$force_thirdparty_id = $supplier_invoice->fk_soc;
+				}
+			}
+		}
+		
+		return parent::fetch_thirdparty($force_thirdparty_id);
+    }
 }

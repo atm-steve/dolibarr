@@ -42,18 +42,18 @@ $optioncss = GETPOST('optioncss','alpha');
 
 $date_select=isset($_GET["date_select"])?$_GET["date_select"]:$_POST["date_select"];
 
-$limit = GETPOST("limit")?GETPOST("limit","int"):$conf->liste_limit;
+$limit = GETPOST('limit','int')?GETPOST('limit','int'):$conf->liste_limit;
 $sortfield = GETPOST("sortfield",'alpha');
 $sortorder = GETPOST("sortorder",'alpha');
 $page = GETPOST("page",'int');
-if ($page == -1) { $page = 0 ; }
+if ($page == -1 || $page == null) { $page = 0 ; }
 $offset = $limit * $page ;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
 if (! $sortorder) {  $sortorder="DESC"; }
 if (! $sortfield) {  $sortfield="c.dateadh"; }
 
-// Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('subscriptionlist'));
 $extrafields = new ExtraFields($db);
 
@@ -88,7 +88,7 @@ if (empty($reshook))
     include DOL_DOCUMENT_ROOT.'/core/actions_changeselectedfields.inc.php';
 
     // Purge search criteria
-    if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter.x") || GETPOST("button_removefilter")) // All tests are required to be compatible with all browsers
+    if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x','alpha') || GETPOST('button_removefilter','alpha')) // All tests are required to be compatible with all browsers
     {
         $search="";
     	$search_ref="";
@@ -123,7 +123,7 @@ $sql.= " b.fk_account";
 $sql.= " FROM ".MAIN_DB_PREFIX."adherent as d, ".MAIN_DB_PREFIX."subscription as c";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank as b ON c.fk_bank=b.rowid";
 $sql.= " WHERE d.rowid = c.fk_adherent";
-$sql.= " AND d.entity IN (".getEntity('adherent', 1).")";
+$sql.= " AND d.entity IN (".getEntity('adherent').")";
 if (isset($date_select) && $date_select != '')
 {
     $sql.= " AND c.dateadh LIKE '".$date_select."%'";
@@ -155,7 +155,7 @@ if ($result)
     $num = $db->num_rows($result);
 
 	$arrayofselected=is_array($toselect)?$toselect:array();
-    
+
 	$i = 0;
 
     $title=$langs->trans("ListOfSubscriptions");
@@ -171,7 +171,7 @@ if ($result)
 	if ($search_acount)   $param.="&search_account=".$search_account;
 	if ($search_amount)   $param.="&search_amount=".$search_amount;
 	if ($optioncss != '') $param.='&optioncss='.$optioncss;
-    
+
 	// List of mass actions available
 	$arrayofmassactions =  array(
 	    //'presend'=>$langs->trans("SendByMail"),
@@ -181,7 +181,7 @@ if ($result)
 	if ($user->rights->adherent->supprimer) $arrayofmassactions['delete']=$langs->trans("Delete");
 	//if ($massaction == 'presend' || $massaction == 'createbills') $arrayofmassactions=array();
 	$massactionbutton=$form->selectMassAction('', $arrayofmassactions);
-	
+
     print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
     if ($optioncss != '') print '<input type="hidden" name="optioncss" value="'.$optioncss.'">';
     print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
@@ -191,7 +191,7 @@ if ($result)
     print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
     print '<input type="hidden" name="page" value="'.$page.'">';
     print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
-    
+
 	print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'title_generic.png', 0, '', '', $limit);
 
 	if ($sall)
@@ -200,11 +200,11 @@ if ($result)
 	}
 
     $moreforfilter = '';
-    
+
     $varpage=empty($contextpage)?$_SERVER["PHP_SELF"]:$contextpage;
     $selectedfields=$form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage);	// This also change content of $arrayfields
     if ($massactionbutton) $selectedfields.=$form->showCheckAddButtons('checkforselect', 1);
-    
+
     print '<div class="div-table-responsive">';
     print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">'."\n";
 
@@ -237,33 +237,33 @@ if ($result)
 	print '<td align="right" class="liste_titre">';
 	print '<input class="flat" type="text" name="search_amount" value="'.dol_escape_htmltag($search_amount).'" size="4">';
 	print '</td>';
-	
+
     // Action column
     print '<td class="liste_titre" align="right">';
     $searchpicto=$form->showFilterButtons();
     print $searchpicto;
-    print '</td>';  
+    print '</td>';
 
 	print "</tr>\n";
 
 
 	print '<tr class="liste_titre">';
-	print_liste_field_titre($langs->trans("Ref"),$_SERVER["PHP_SELF"],"c.rowid",$param,"","",$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("Name"),$_SERVER["PHP_SELF"],"d.lastname",$param,"","",$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("Login"),$_SERVER["PHP_SELF"],"d.login",$param,"","",$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("Label"),$_SERVER["PHP_SELF"],"c.note",$param,"",'align="left"',$sortfield,$sortorder);
+	print_liste_field_titre("Ref",$_SERVER["PHP_SELF"],"c.rowid",$param,"","",$sortfield,$sortorder);
+	print_liste_field_titre("Name",$_SERVER["PHP_SELF"],"d.lastname",$param,"","",$sortfield,$sortorder);
+	print_liste_field_titre("Login",$_SERVER["PHP_SELF"],"d.login",$param,"","",$sortfield,$sortorder);
+	print_liste_field_titre("Label",$_SERVER["PHP_SELF"],"c.note",$param,"",'align="left"',$sortfield,$sortorder);
 	if (! empty($conf->banque->enabled))
 	{
-	    print_liste_field_titre($langs->trans("Account"),$_SERVER["PHP_SELF"],"b.fk_account",$pram,"","",$sortfield,$sortorder);
+	    print_liste_field_titre("Account",$_SERVER["PHP_SELF"],"b.fk_account",$pram,"","",$sortfield,$sortorder);
 	}
-	print_liste_field_titre($langs->trans("Date"),$_SERVER["PHP_SELF"],"c.dateadh",$param,"",'align="center"',$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("DateEnd"),$_SERVER["PHP_SELF"],"c.datef",$param,"",'align="center"',$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("Amount"),$_SERVER["PHP_SELF"],"c.subscription",$param,"",'align="right"',$sortfield,$sortorder);
+	print_liste_field_titre("Date",$_SERVER["PHP_SELF"],"c.dateadh",$param,"",'align="center"',$sortfield,$sortorder);
+	print_liste_field_titre("DateEnd",$_SERVER["PHP_SELF"],"c.datef",$param,"",'align="center"',$sortfield,$sortorder);
+	print_liste_field_titre("Amount",$_SERVER["PHP_SELF"],"c.subscription",$param,"",'align="right"',$sortfield,$sortorder);
 	//print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"],"",'','','align="center"',$sortfield,$sortorder,'maxwidthsearch ');
 	print_liste_field_titre('', $_SERVER["PHP_SELF"],"",'','','align="center"',$sortfield,$sortorder,'maxwidthsearch ');
 	print "</tr>\n";
-	
-	
+
+
     // Static objects
     $subscription=new Subscription($db);
     $adherent=new Adherent($db);
@@ -286,7 +286,7 @@ if ($result)
         $adherent->login=$obj->login;
         $adherent->photo=$obj->photo;
 
-        
+
 
         print '<tr class="oddeven">';
 
@@ -304,22 +304,22 @@ if ($result)
         print dol_trunc($obj->note,32);
         print '</td>';
 
-        // Banque
-        if (! empty($conf->banque->enabled))
-        {
-            if ($obj->fk_account)
-            {
-                $accountstatic->id=$obj->fk_account;
-                $accountstatic->fetch($obj->fk_account);
-                //$accountstatic->label=$obj->label;
-                print '<td>'.$accountstatic->getNomUrl(1).'</td>';
-            }
-            else
-            {
-                print "<td>";
-                print "</td>\n";
-            }
-        }
+		// Banque
+		if (! empty($conf->banque->enabled))
+		{
+			if ($obj->fk_account > 0)
+			{
+				$accountstatic->id=$obj->fk_account;
+				$accountstatic->fetch($obj->fk_account);
+				//$accountstatic->label=$obj->label;
+				print '<td>'.$accountstatic->getNomUrl(1).'</td>';
+			}
+			else
+			{
+				print "<td>";
+				print "</td>\n";
+			}
+		}
 
         // Date start
         print '<td align="center">'.dol_print_date($db->jdate($obj->dateadh),'day')."</td>\n";
@@ -329,7 +329,7 @@ if ($result)
 
         // Price
         print '<td align="right">'.price($obj->subscription).'</td>';
-        
+
         print '<td></td>';
 
         print "</tr>";
@@ -338,7 +338,7 @@ if ($result)
     }
 
     // Total
-    
+
     print '<tr class="liste_total">';
     print "<td>".$langs->trans("Total")."</td>\n";
     print "<td align=\"right\">&nbsp;</td>\n";

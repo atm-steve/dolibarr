@@ -42,6 +42,8 @@ $typeconst=array('yesno','texte','chaine');
 
 $action = GETPOST('action','alpha');
 $value = GETPOST('value');
+$label = GETPOST('label','alpha');
+$scandir = GETPOST('scan_dir','alpha');
 
 $type='donation';
 
@@ -121,7 +123,7 @@ else if ($action == 'del')
 // Options
 if ($action == 'set_DONATION_ACCOUNTINGACCOUNT')
 {
-	$account = GETPOST('DONATION_ACCOUNTINGACCOUNT');	// No alpha here, we want exact string
+	$account = GETPOST('DONATION_ACCOUNTINGACCOUNT','alpha');
 
     $res = dolibarr_set_const($db, "DONATION_ACCOUNTINGACCOUNT",$account,'chaine',0,'',$conf->entity);
 
@@ -139,7 +141,7 @@ if ($action == 'set_DONATION_ACCOUNTINGACCOUNT')
 
 if ($action == 'set_DONATION_MESSAGE')
 {
-	$freemessage = GETPOST('DONATION_MESSAGE');	// No alpha here, we want exact string
+	$freemessage = GETPOST('DONATION_MESSAGE','none');	// No alpha here, we want exact string
 
     $res = dolibarr_set_const($db, "DONATION_MESSAGE",$freemessage,'chaine',0,'',$conf->entity);
 
@@ -287,14 +289,14 @@ if (is_resource($handle))
 					else
 					{
 						print "<td align=\"center\">\n";
-						print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Enabled"),'switch_on').'</a>';
+						print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Enabled"),'switch_on').'</a>';
 						print '</td>';
 					}
 				}
 				else
 				{
 					print "<td align=\"center\">\n";
-					print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
+					print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
 					print "</td>";
 				}
 
@@ -308,7 +310,7 @@ if (is_resource($handle))
 				else
 				{
 					print "<td align=\"center\">";
-					print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
+					print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
 					print '</td>';
 				}
 

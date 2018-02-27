@@ -44,13 +44,16 @@ if (! $user->admin) accessforbidden();
 $action = GETPOST('action','alpha');
 $value = GETPOST('value','alpha');
 $label = GETPOST('label','alpha');
-$scandir = GETPOST('scandir','alpha');
+$scandir = GETPOST('scan_dir','alpha');
 $type='ficheinter';
 
 
 /*
  * Actions
  */
+
+include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
+
 if ($action == 'updateMask')
 {
 	$maskconst=GETPOST('maskconst','alpha');
@@ -114,35 +117,6 @@ else if ($action == 'specimen') // For fiche inter
 	}
 }
 
-// Define constants for submodules that contains parameters (forms with param1, param2, ... and value1, value2, ...)
-if ($action == 'setModuleOptions')
-{
-	$post_size=count($_POST);
-
-	$db->begin();
-
-	for($i=0;$i < $post_size;$i++)
-	{
-		if (array_key_exists('param'.$i,$_POST))
-		{
-			$param=GETPOST("param".$i,'alpha');
-			$value=GETPOST("value".$i,'alpha');
-			if ($param) $res = dolibarr_set_const($db,$param,$value,'chaine',0,'',$conf->entity);
-			if (! $res > 0) $error++;
-		}
-	}
-	if (! $error)
-	{
-		$db->commit();
-		setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
-	}
-	else
-	{
-		$db->rollback();
-		setEventMessages($langs->trans("Error"), null, 'errors');
-	}
-}
-
 // Activate a model
 else if ($action == 'set')
 {
@@ -186,7 +160,7 @@ else if ($action == 'setmod')
 
 else if ($action == 'set_FICHINTER_FREE_TEXT')
 {
-	$freetext= GETPOST('FICHINTER_FREE_TEXT');	// No alpha here, we want exact string
+	$freetext= GETPOST('FICHINTER_FREE_TEXT','none');	// No alpha here, we want exact string
 	$res = dolibarr_set_const($db, "FICHINTER_FREE_TEXT",$freetext,'chaine',0,'',$conf->entity);
 
 	if (! $res > 0) $error++;
@@ -247,7 +221,36 @@ elseif ($action == 'set_FICHINTER_PRINT_PRODUCTS')
 	} else {
 		setEventMessages($langs->trans("Error"), null, 'errors');
 	}
+} elseif ($action == 'set_FICHINTER_WITHOUT_DURATION') {
+        $val = GETPOST('FICHINTER_WITHOUT_DURATION', 'alpha');
+        $res = dolibarr_set_const($db, "FICHINTER_WITHOUT_DURATION", ($val == 'on' ? 1 : 0), 'bool', 0, '',
+                $conf->entity);
+
+        if (!$res > 0) {
+                $error++;
+        }
+
+        if (!$error) {
+                setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
+        } else {
+                setEventMessages($langs->trans("Error"), null, 'errors');
+        }
+} elseif ($action == 'set_FICHINTER_DATE_WITHOUT_HOUR') {
+        $val = GETPOST('FICHINTER_DATE_WITHOUT_HOUR', 'alpha');
+        $res = dolibarr_set_const($db, "FICHINTER_DATE_WITHOUT_HOUR", ($val == 'on' ? 1 : 0), 'bool', 0, '',
+                $conf->entity);
+
+        if (!$res > 0) {
+                $error++;
+        }
+
+        if (!$error) {
+                setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
+        } else {
+                setEventMessages($langs->trans("Error"), null, 'errors');
+        }
 }
+
 
 
 /*
@@ -310,7 +313,7 @@ foreach ($dirmodels as $reldir)
 						if ($module->version == 'development'  && $conf->global->MAIN_FEATURES_LEVEL < 2) continue;
 						if ($module->version == 'experimental' && $conf->global->MAIN_FEATURES_LEVEL < 1) continue;
 
-						
+
 						print '<tr class="oddeven"><td>'.$module->nom."</td><td>\n";
 						print $module->info();
 						print '</td>';
@@ -432,7 +435,7 @@ foreach ($dirmodels as $reldir)
 		    	{
 		    		if (file_exists($dir.'/'.$file))
 		    		{
-		    			
+
 
 		    			$name = substr($file, 4, dol_strlen($file) -16);
 		    			$classname = substr($file, 0, dol_strlen($file) -12);
@@ -457,7 +460,7 @@ foreach ($dirmodels as $reldir)
 		    				if (in_array($name, $def))
 		    				{
 		    					print "<td align=\"center\">\n";
-		    					print '<a href="'.$_SERVER["PHP_SELF"].'?action=del&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">';
+		    					print '<a href="'.$_SERVER["PHP_SELF"].'?action=del&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">';
 		    					print img_picto($langs->trans("Enabled"),'switch_on');
 		    					print '</a>';
 		    					print "</td>";
@@ -465,7 +468,7 @@ foreach ($dirmodels as $reldir)
 		    				else
 		    				{
 		    					print "<td align=\"center\">\n";
-		    					print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
+		    					print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
 		    					print "</td>";
 		    				}
 
@@ -477,7 +480,7 @@ foreach ($dirmodels as $reldir)
 		    				}
 		    				else
 		    				{
-		    					print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&amp;value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
+		    					print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&amp;value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
 		    				}
 		    				print '</td>';
 
@@ -551,7 +554,7 @@ if (empty($conf->global->PDF_ALLOW_HTML_FOR_FREE_TEXT))
 else
 {
     include_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
-    $doleditor=new DolEditor($variablename, $conf->global->$variablename,'',80,'dolibarr_details');
+    $doleditor=new DolEditor($variablename, $conf->global->$variablename,'',80,'dolibarr_notes');
     print $doleditor->Create();
 }
 print '</td><td align="right">';
@@ -573,7 +576,6 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print "</td></tr>\n";
 print '</form>';
 // print products on fichinter
-$var=! $var;
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="post">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_FICHINTER_PRINT_PRODUCTS">';
@@ -586,6 +588,7 @@ print '/>';
 print '</td><td align="right">';
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
 print "</td></tr>\n";
+print '</form>';
 // Use services duration
 print '<form action="' . $_SERVER["PHP_SELF"] . '" method="post">';
 print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
@@ -602,6 +605,40 @@ print '<input type="submit" class="button" value="' . $langs->trans("Modify") . 
 print '</td>';
 print '</tr>';
 print '</form>';
+// Use duration
+print '<form action="' . $_SERVER["PHP_SELF"] . '" method="post">';
+print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
+print '<input type="hidden" name="action" value="set_FICHINTER_WITHOUT_DURATION">';
+print '<tr class="oddeven">';
+print '<td>';
+print $langs->trans("UseDurationOnFichinter");
+print '</td>';
+print '<td align="center">';
+print '<input type="checkbox" name="FICHINTER_WITHOUT_DURATION"' . ($conf->global->FICHINTER_WITHOUT_DURATION?' checked':'') . '>';
+print '</td>';
+print '<td align="right">';
+print '<input type="submit" class="button" value="' . $langs->trans("Modify") . '">';
+print '</td>';
+print '</tr>';
+print '</form>';
+// use date without hour
+print '<form action="' . $_SERVER["PHP_SELF"] . '" method="post">';
+print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
+print '<input type="hidden" name="action" value="set_FICHINTER_DATE_WITHOUT_HOUR">';
+print '<tr class="oddeven">';
+print '<td>';
+print $langs->trans("UseDateWithoutHourOnFichinter");
+print '</td>';
+print '<td align="center">';
+print '<input type="checkbox" name="FICHINTER_DATE_WITHOUT_HOUR"' . ($conf->global->FICHINTER_DATE_WITHOUT_HOUR?' checked':'') . '>';
+print '</td>';
+print '<td align="right">';
+print '<input type="submit" class="button" value="' . $langs->trans("Modify") . '">';
+print '</td>';
+print '</tr>';
+print '</form>';
+
+
 
 
 print '</table>';

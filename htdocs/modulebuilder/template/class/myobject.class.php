@@ -21,8 +21,8 @@
 
 /**
  * \file        htdocs/modulebuilder/template/class/myobject.class.php
- * \ingroup     mymodule othermodule1 othermodule2
- * \brief       This file is an example for a CRUD class file (Create/Read/Update/Delete)
+ * \ingroup     mymodule
+ * \brief       This file is a CRUD class file for MyObject (Create/Read/Update/Delete)
  */
 
 // Put here all includes required by your class file
@@ -31,53 +31,88 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/commonobject.class.php';
 //require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
 /**
- * Class MyModuleObject
- *
- * Put here description of your class.
+ * Class for MyObject
  */
-class MyModuleObject extends CommonObject
+class MyObject extends CommonObject
 {
 	/**
-	 * @var string Id to identify managed object
+	 * @var string ID to identify managed object
 	 */
-	public $element = 'mymoduleobject';
+	public $element = 'myobject';
 	/**
 	 * @var string Name of table without prefix where object is stored
 	 */
-	public $table_element = 'mymoduleobject';
-    /**
-     * @var array Array with all fields and their property
-     */
-	public $picto = 'generic';
-    /**
-     * @var array Array with all fields and their property
-     */
-	public $fields;
-	
-	/**
-	 * @var mixed Sample property 1
-	 */
-	public $prop1;
-	/**
-	 * @var mixed Sample property 2
-	 */
-	public $prop2;
-	
-	//...
-	
-	protected $ismultientitymanaged = 1;	// 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
-	
-	public $table_element_line = 'mymoduleobjectdet';
-    public $class_element_line = 'MyModuleObjectline';
-    public $fk_element = 'fk_mymoduleobject';
+	public $table_element = 'myobject';
 
-    /**
-	 * @var MyModuleObjectLine[] Lines
+	/**
+	 * @var array  Does this field is linked to a thirdparty ?
 	 */
-	public $lines = array();
-	
-	
-	
+	protected $isnolinkedbythird = 1;
+	/**
+	 * @var array  Does myobject support multicompany module ? 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
+	 */
+	protected $ismultientitymanaged = 1;
+	/**
+	 * @var string String with name of icon for myobject
+	 */
+	public $picto = 'myobject';
+
+
+	/**
+	 *             'type' if the field format, 'label' the translation key, 'enabled' is a condition when the filed must be managed,
+	 *             'visible' says if field is visible in list (-1 means not shown by default but can be aded into list to be viewed)
+	 *             'notnull' if not null in database
+	 *             'index' if we want an index in database
+	 *             'position' is the sort order of field
+	 *             'searchall' is 1 if we want to search in this field when making a search from the quick search button
+	 *             'isameasure' must be set to 1 if you want to have a total on list for this field. Field type must be summable like integer or double(24,8).
+	 *             'comment' is not used. You can store here any text of your choice.
+	 */
+
+	// BEGIN MODULEBUILDER PROPERTIES
+	/**
+     * @var array  Array with all fields and their property
+     */
+	public $fields=array(
+	    'rowid'         =>array('type'=>'integer',      'label'=>'TechnicalID',      'enabled'=>1, 'visible'=>-1, 'notnull'=>true, 'index'=>true, 'position'=>1,  'comment'=>'Id'),
+		'ref'           =>array('type'=>'varchar(64)',  'label'=>'Ref',              'enabled'=>1, 'visible'=>1,  'notnull'=>true, 'index'=>true, 'position'=>10, 'searchall'=>1, 'comment'=>'Reference of object'),
+	    'entity'        =>array('type'=>'integer',      'label'=>'Entity',           'enabled'=>1, 'visible'=>0,  'notnull'=>true, 'index'=>true, 'position'=>20),
+	    'label'         =>array('type'=>'varchar(255)', 'label'=>'Label',            'enabled'=>1, 'visible'=>1,  'position'=>30,  'searchall'=>1),
+	    'qty'           =>array('type'=>'double(24,8)', 'label'=>'Qty',              'enabled'=>1, 'visible'=>1,  'position'=>40,  'searchall'=>0, 'isameasure'=>1),
+	    'status'        =>array('type'=>'integer',      'label'=>'Status',           'enabled'=>1, 'visible'=>1,  'index'=>true,   'position'=>1000),
+		'date_creation' =>array('type'=>'datetime',     'label'=>'DateCreation',     'enabled'=>1, 'visible'=>-1, 'notnull'=>true, 'position'=>500),
+	    'tms'           =>array('type'=>'timestamp',    'label'=>'DateModification', 'enabled'=>1, 'visible'=>-1, 'notnull'=>true, 'position'=>500),
+		'import_key'    =>array('type'=>'varchar(14)',  'label'=>'ImportId',         'enabled'=>1, 'visible'=>-1,  'index'=>true,  'position'=>1000, 'nullifempty'=>1),
+	);
+	// END MODULEBUILDER PROPERTIES
+
+
+
+	// If this object has a subtable with lines
+
+	/**
+	 * @var int    Name of subtable line
+	 */
+	//public $table_element_line = 'myobjectdet';
+	/**
+	 * @var int    Field with ID of parent key if this field has a parent
+	 */
+	//public $fk_element = 'fk_myobject';
+	/**
+	 * @var int    Name of subtable class that manage subtable lines
+	 */
+	//public $class_element_line = 'MyObjectline';
+	/**
+	 * @var array  Array of child tables (child tables to delete before deleting a record)
+	 */
+	//protected $childtables=array('myobjectdet');
+	/**
+	 * @var MyObjectLine[]     Array of subtable lines
+	 */
+	//public $lines = array();
+
+
+
 	/**
 	 * Constructor
 	 *
@@ -88,375 +123,6 @@ class MyModuleObject extends CommonObject
 		$this->db = $db;
 	}
 
-	/**
-	 * Create object into database
-	 *
-	 * @param  User $user      User that creates
-	 * @param  bool $notrigger false=launch triggers after, true=disable triggers
-	 *
-	 * @return int <0 if KO, Id of created object if OK
-	 */
-	public function create(User $user, $notrigger = false)
-	{
-		dol_syslog(__METHOD__, LOG_DEBUG);
-
-		$error = 0;
-
-		// Clean parameters
-		if (isset($this->prop1)) {
-			$this->prop1 = trim($this->prop1);
-		}
-		if (isset($this->prop2)) {
-			$this->prop2 = trim($this->prop2);
-		}
-		//...
-
-		// Check parameters
-		// Put here code to add control on parameters values
-
-		// Insert request
-		$sql = 'INSERT INTO ' . MAIN_DB_PREFIX . $this->table_element . '(';
-		$sql .= ' field1,';
-		$sql .= ' field2';
-		//...
-		$sql .= ') VALUES (';
-		$sql .= ' \'' . $this->prop1 . '\',';
-		$sql .= ' \'' . $this->prop2 . '\'';
-		//...
-		$sql .= ')';
-
-		$this->db->begin();
-
-		$resql = $this->db->query($sql);
-		if (!$resql) {
-			$error ++;
-			$this->errors[] = 'Error ' . $this->db->lasterror();
-			dol_syslog(__METHOD__ . ' ' . implode(',', $this->errors), LOG_ERR);
-		}
-
-		if (!$error) {
-			$this->id = $this->db->last_insert_id(MAIN_DB_PREFIX . $this->table_element);
-
-			if (!$notrigger) {
-				// Uncomment this and change MYOBJECT to your own tag if you
-				// want this action to call a trigger.
-
-				//// Call triggers
-				//$result=$this->call_trigger('MYOBJECT_CREATE',$user);
-				//if ($result < 0) $error++;
-				//// End call triggers
-			}
-		}
-
-		// Commit or rollback
-		if ($error) {
-			$this->db->rollback();
-
-			return - 1 * $error;
-		} else {
-			$this->db->commit();
-
-			return $this->id;
-		}
-	}
-
-	/**
-	 * Load object in memory from the database
-	 *
-	 * @param int    $id  Id object
-	 * @param string $ref Ref
-	 *
-	 * @return int <0 if KO, 0 if not found, >0 if OK
-	 */
-	public function fetch($id, $ref = null)
-	{
-		dol_syslog(__METHOD__, LOG_DEBUG);
-
-		$sql = 'SELECT';
-		$sql .= ' t.rowid,';
-		$sql .= ' t.field1,';
-		$sql .= ' t.field2';
-		//...
-		$sql .= ' FROM ' . MAIN_DB_PREFIX . $this->table_element . ' as t';
-		$sql.= ' WHERE 1 = 1';
-		if (! empty($conf->multicompany->enabled)) {
-		    $sql .= " AND entity IN (" . getEntity("mymoduleobject", 1) . ")";
-		}
-		if (null !== $ref) {
-			$sql .= ' AND t.ref = ' . '\'' . $ref . '\'';
-		} else {
-			$sql .= ' AND t.rowid = ' . $id;
-		}
-
-		$resql = $this->db->query($sql);
-		if ($resql) {
-			$numrows = $this->db->num_rows($resql);
-			if ($numrows) {
-				$obj = $this->db->fetch_object($resql);
-
-				$this->id = $obj->rowid;
-				$this->prop1 = $obj->field1;
-				$this->prop2 = $obj->field2;
-				//...
-			}
-			
-			// Retrieve all extrafields for invoice
-			// fetch optionals attributes and labels
-			/*
-			require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-			$extrafields=new ExtraFields($this->db);
-			$extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
-			$this->fetch_optionals($this->id,$extralabels);
-            */
-			
-			// $this->fetch_lines();
-			
-			$this->db->free($resql);
-
-			if ($numrows) {
-				return 1;
-			} else {
-				return 0;
-			}
-		} else {
-			$this->errors[] = 'Error ' . $this->db->lasterror();
-			dol_syslog(__METHOD__ . ' ' . implode(',', $this->errors), LOG_ERR);
-
-			return - 1;
-		}
-	}
-
-	/**
-	 * Load object in memory from the database
-	 *
-	 * @param string $sortorder Sort Order
-	 * @param string $sortfield Sort field
-	 * @param int    $limit     offset limit
-	 * @param int    $offset    offset limit
-	 * @param array  $filter    filter array
-	 * @param string $filtermode filter mode (AND or OR)
-	 *
-	 * @return int <0 if KO, >0 if OK
-	 */
-	public function fetchAll($sortorder='', $sortfield='', $limit=0, $offset=0, array $filter = array(), $filtermode='AND')
-	{
-		dol_syslog(__METHOD__, LOG_DEBUG);
-
-		$sql = 'SELECT';
-		$sql .= ' t.rowid,';
-		$sql .= ' t.field1,';
-		$sql .= ' t.field2';
-		//...
-		$sql .= ' FROM ' . MAIN_DB_PREFIX . $this->table_element. ' as t';
-
-		// Manage filter
-		$sqlwhere = array();
-		if (count($filter) > 0) {
-			foreach ($filter as $key => $value) {
-				$sqlwhere [] = $key . ' LIKE \'%' . $this->db->escape($value) . '%\'';
-			}
-		}
-		$sql.= ' WHERE 1 = 1';
-		if (! empty($conf->multicompany->enabled)) {
-		    $sql .= " AND entity IN (" . getEntity("mymoduleobject", 1) . ")";
-		}
-		if (count($sqlwhere) > 0) {
-			$sql .= ' AND ' . implode(' '.$filtermode.' ', $sqlwhere);
-		}
-		if (!empty($sortfield)) {
-			$sql .= $this->db->order($sortfield,$sortorder);
-		}
-		if (!empty($limit)) {
-		 $sql .=  ' ' . $this->db->plimit($limit, $offset);
-		}
-
-		$resql = $this->db->query($sql);
-		if ($resql) {
-			$num = $this->db->num_rows($resql);
-
-			while ($obj = $this->db->fetch_object($resql)) {
-				$line = new self($this->db);
-
-				$line->id = $obj->rowid;
-				$line->prop1 = $obj->field1;
-				$line->prop2 = $obj->field2;
-				//...
-			}
-			$this->db->free($resql);
-
-			return $num;
-		} else {
-			$this->errors[] = 'Error ' . $this->db->lasterror();
-			dol_syslog(__METHOD__ . ' ' . implode(',', $this->errors), LOG_ERR);
-
-			return - 1;
-		}
-	}
-
-	/**
-	 * Update object into database
-	 *
-	 * @param  User $user      User that modifies
-	 * @param  bool $notrigger false=launch triggers after, true=disable triggers
-	 *
-	 * @return int <0 if KO, >0 if OK
-	 */
-	public function update(User $user, $notrigger = false)
-	{
-		dol_syslog(__METHOD__, LOG_DEBUG);
-
-		$error = 0;
-		
-		// Clean parameters
-		if (isset($this->prop1)) {
-			$this->prop1 = trim($this->prop1);
-		}
-		if (isset($this->prop2)) {
-			$this->prop2 = trim($this->prop2);
-		}
-		//...
-
-		// Check parameters
-		// Put here code to add a control on parameters values
-
-		// Update request
-		$sql = 'UPDATE ' . MAIN_DB_PREFIX . $this->table_element . ' SET';
-		$sql .= " field1=".(isset($this->field1)?"'".$this->db->escape($this->field1)."'":"null").",";
-        $sql .= " field2=".(isset($this->field2)?"'".$this->db->escape($this->field2)."'":"null")."";
-		//...
-		$sql .= ' WHERE rowid=' . $this->id;
-
-		$this->db->begin();
-
-		$resql = $this->db->query($sql);
-		if (!$resql) {
-			$error ++;
-			$this->errors[] = 'Error ' . $this->db->lasterror();
-			dol_syslog(__METHOD__ . ' ' . implode(',', $this->errors), LOG_ERR);
-		}
-
-		if (!$error && !$notrigger) {
-			// Uncomment this and change MYOBJECT to your own tag if you
-			// want this action calls a trigger.
-
-			//// Call triggers
-			//$result=$this->call_trigger('MYOBJECT_MODIFY',$user);
-			//if ($result < 0) { $error++; //Do also what you must do to rollback action if trigger fail}
-			//// End call triggers
-		}
-
-		// Commit or rollback
-		if ($error) {
-			$this->db->rollback();
-
-			return - 1 * $error;
-		} else {
-			$this->db->commit();
-
-			return 1;
-		}
-	}
-
-	/**
-	 * Delete object in database
-	 *
-	 * @param User $user      User that deletes
-	 * @param bool $notrigger false=launch triggers after, true=disable triggers
-	 *
-	 * @return int <0 if KO, >0 if OK
-	 */
-	public function delete(User $user, $notrigger = false)
-	{
-		dol_syslog(__METHOD__, LOG_DEBUG);
-
-		$error = 0;
-
-		$this->db->begin();
-
-		if (!$error) {
-			if (!$notrigger) {
-				// Uncomment this and change MYOBJECT to your own tag if you
-				// want this action calls a trigger.
-
-				//// Call triggers
-				//$result=$this->call_trigger('MYOBJECT_DELETE',$user);
-				//if ($result < 0) { $error++; //Do also what you must do to rollback action if trigger fail}
-				//// End call triggers
-			}
-		}
-
-		// If you need to delete child tables to, you can insert them here
-		
-		if (!$error) {
-			$sql = 'DELETE FROM ' . MAIN_DB_PREFIX . $this->table_element;
-			$sql .= ' WHERE rowid=' . $this->id;
-
-			$resql = $this->db->query($sql);
-			if (!$resql) {
-				$error ++;
-				$this->errors[] = 'Error ' . $this->db->lasterror();
-				dol_syslog(__METHOD__ . ' ' . implode(',', $this->errors), LOG_ERR);
-			}
-		}
-
-		// Commit or rollback
-		if ($error) {
-			$this->db->rollback();
-
-			return - 1 * $error;
-		} else {
-			$this->db->commit();
-
-			return 1;
-		}
-	}
-
-	/**
-	 * Load an object from its id and create a new one in database
-	 *
-	 * @param int $fromid Id of object to clone
-	 *
-	 * @return int New id of clone
-	 */
-	public function createFromClone($fromid)
-	{
-		dol_syslog(__METHOD__, LOG_DEBUG);
-
-		global $user;
-		$error = 0;
-		$object = new MyModuleObject($this->db);
-
-		$this->db->begin();
-
-		// Load source object
-		$object->fetch($fromid);
-		// Reset object
-		$object->id = 0;
-
-		// Clear fields
-		// ...
-
-		// Create clone
-		$result = $object->create($user);
-
-		// Other options
-		if ($result < 0) {
-			$error ++;
-			$this->errors = $object->errors;
-			dol_syslog(__METHOD__ . ' ' . implode(',', $this->errors), LOG_ERR);
-		}
-
-		// End
-		if (!$error) {
-			$this->db->commit();
-
-			return $object->id;
-		} else {
-			$this->db->rollback();
-
-			return - 1;
-		}
-	}
 
 	/**
 	 *  Return a link to the object card (with optionaly the picto)
@@ -464,40 +130,39 @@ class MyModuleObject extends CommonObject
 	 *	@param	int		$withpicto			Include picto in link (0=No picto, 1=Include picto into link, 2=Only picto)
 	 *	@param	string	$option				On what the link point to
      *  @param	int  	$notooltip			1=Disable tooltip
-     *  @param	int		$maxlen				Max length of visible user name
      *  @param  string  $morecss            Add more css on link
 	 *	@return	string						String with URL
 	 */
-	function getNomUrl($withpicto=0, $option='', $notooltip=0, $maxlen=24, $morecss='')
+	function getNomUrl($withpicto=0, $option='', $notooltip=0, $morecss='')
 	{
 		global $db, $conf, $langs;
         global $dolibarr_main_authentication, $dolibarr_main_demo;
         global $menumanager;
 
         if (! empty($conf->dol_no_mouse_hover)) $notooltip=1;   // Force disable tooltips
-        
+
         $result = '';
         $companylink = '';
 
-        $label = '<u>' . $langs->trans("MyModule") . '</u>';
+        $label = '<u>' . $langs->trans("MyObject") . '</u>';
         $label.= '<br>';
         $label.= '<b>' . $langs->trans('Ref') . ':</b> ' . $this->ref;
 
-        $url = DOL_URL_ROOT.'/mymodule/'.$this->table_name.'_card.php?id='.$this->id;
-        
+        $url = $url = dol_buildpath('/mymodule/m_card.php',1).'?id='.$this->id;
+
         $linkclose='';
         if (empty($notooltip))
         {
             if (! empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER))
             {
-                $label=$langs->trans("ShowProject");
+                $label=$langs->trans("ShowMyObject");
                 $linkclose.=' alt="'.dol_escape_htmltag($label, 1).'"';
             }
             $linkclose.=' title="'.dol_escape_htmltag($label, 1).'"';
             $linkclose.=' class="classfortooltip'.($morecss?' '.$morecss:'').'"';
         }
         else $linkclose = ($morecss?' class="'.$morecss.'"':'');
-        
+
 		$linkstart = '<a href="'.$url.'"';
 		$linkstart.=$linkclose.'>';
 		$linkend='</a>';
@@ -580,9 +245,7 @@ class MyModuleObject extends CommonObject
 	 */
 	public function initAsSpecimen()
 	{
-		$this->id = 0;
-		$this->prop1 = 'prop1';
-		$this->prop2 = 'prop2';
+		$this->initAsSpecimenCommon();
 	}
 
 }

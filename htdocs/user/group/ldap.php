@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2006-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2006-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2006-2017 Regis Houssin        <regis.houssin@capnetworks.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,13 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/ldap.lib.php';
 $langs->load("companies");
 $langs->load("ldap");
 $langs->load("users");
+$langs->load("admin");
+
+// Users/Groups management only in master entity if transverse mode
+if (! empty($conf->multicompany->enabled) && $conf->entity > 1 && $conf->global->MULTICOMPANY_TRANSVERSE_MODE)
+{
+	accessforbidden();
+}
 
 $canreadperms=true;
 if (! empty($conf->global->MAIN_USE_ADVANCED_PERMS))
@@ -98,27 +105,28 @@ $head = group_prepare_head($object);
 dol_fiche_head($head, 'ldap', $langs->trans("Group"), -1, 'group');
 
 dol_banner_tab($object,'id','',$user->rights->user->user->lire || $user->admin);
- 
+
 print '<div class="fichecenter">';
 print '<div class="underbanner clearboth"></div>';
 
 print '<table class="border" width="100%">';
 
-// Name
-print '<tr><td class="titlefield">'.$langs->trans("Name").'</td>';
-print '<td class="valeur">'.$object->name;
-if (!$object->entity)
+// Name (already in dol_banner, we keep it to have the GlobalGroup picto, but we should move it in dol_banner)
+if (! empty($conf->mutlicompany->enabled))
 {
-	print img_picto($langs->trans("GlobalGroup"),'redstar');
+    print '<tr><td class="titlefield">'.$langs->trans("Name").'</td>';
+    print '<td class="valeur">'.$object->name;
+    if (!$object->entity)
+    {
+    	print img_picto($langs->trans("GlobalGroup"),'redstar');
+    }
+    print "</td></tr>\n";
 }
-print "</td></tr>\n";
 
 // Note
-print '<tr><td width="25%" class="tdtop">'.$langs->trans("Note").'</td>';
-print '<td class="valeur">'.nl2br($object->note).'&nbsp;</td>';
+print '<tr><td class="tdtop">'.$langs->trans("Description").'</td>';
+print '<td class="valeur">'.dol_htmlentitiesbr($object->note).'</td>';
 print "</tr>\n";
-
-$langs->load("admin");
 
 // LDAP DN
 print '<tr><td>LDAP '.$langs->trans("LDAPGroupDn").'</td><td class="valeur">'.$conf->global->LDAP_GROUP_DN."</td></tr>\n";

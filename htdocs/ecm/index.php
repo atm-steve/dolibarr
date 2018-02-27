@@ -58,7 +58,7 @@ $section_dir=GETPOST('section_dir');
 $sortfield = GETPOST("sortfield",'alpha');
 $sortorder = GETPOST("sortorder",'alpha');
 $page = GETPOST("page",'int');
-if ($page == -1) { $page = 0; }
+if (empty($page) || $page == -1) { $page = 0; }     // If $page is not defined, or '' or -1
 $offset = $conf->liste_limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
@@ -110,7 +110,7 @@ if (GETPOST("sendit") && ! empty($conf->global->MAIN_UPLOAD_DOC))
 
 	if (! $error)
 	{
-	    $res = dol_add_file_process($upload_dir, 0, 1, 'userfile', '', '', '');
+	    $res = dol_add_file_process($upload_dir, 0, 1, 'userfile', '', '', '', 0);
 	    if ($res > 0)
 	    {
 	       $result=$ecmdir->changeNbOfFiles('+');
@@ -430,7 +430,7 @@ if (empty($action) || $action == 'file_manager' || preg_match('/refresh/i',$acti
 
 	// Manual section
 	$htmltooltip=$langs->trans("ECMAreaDesc2");
-	
+
     if (! empty($conf->use_javascript_ajax) && empty($conf->global->MAIN_ECM_DISABLE_JS))
     {
         print '<tr><td colspan="6">';

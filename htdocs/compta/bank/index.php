@@ -55,11 +55,11 @@ $result=restrictedArea($user,'banque');
 
 $diroutputmassaction=$conf->bank->dir_output . '/temp/massgeneration/'.$user->id;
 
-$limit = GETPOST("limit")?GETPOST("limit","int"):$conf->liste_limit;
+$limit = GETPOST('limit','int')?GETPOST('limit','int'):$conf->liste_limit;
 $sortfield = GETPOST("sortfield",'alpha');
 $sortorder = GETPOST("sortorder",'alpha');
 $page = GETPOST("page",'int');
-if ($page == -1) { $page = 0; }
+if (empty($page) || $page == -1) { $page = 0; }     // If $page is not defined, or '' or -1
 $offset = $limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
@@ -69,12 +69,12 @@ if (! $sortorder) $sortorder='ASC';
 // Initialize technical object to manage context to save list fields
 $contextpage='bankaccountlist';
 
-// Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array($contextpage));
 $extrafields = new ExtraFields($db);
 
 // fetch optionals attributes and labels
-$extralabels = $extrafields->fetch_name_optionals_label('bankaccount');
+$extralabels = $extrafields->fetch_name_optionals_label('bank_account');
 $search_array_options=$extrafields->getOptionalsFromPost($extralabels,'','search_');
 
 // List of fields to search into when doing a "search in all"
@@ -121,7 +121,7 @@ if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'e
 include DOL_DOCUMENT_ROOT.'/core/actions_changeselectedfields.inc.php';
 
 // Purge search criteria
-if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter.x") || GETPOST("button_removefilter")) // All test are required to be compatible with all browsers
+if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x','alpha') || GETPOST('button_removefilter','alpha')) // All test are required to be compatible with all browsers
 {
     $statut = 'all';
     $search_ref='';
@@ -129,9 +129,9 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter.x") || GETP
     $search_number='';
     $search_statut='';
 }
-    
-    
-    
+
+
+
 /*
  * View
  */
@@ -143,7 +143,7 @@ $title=$langs->trans('BankAccounts');
 // Load array of financial accounts (opened by default)
 $accounts = array();
 
-$sql  = "SELECT rowid, label, courant, rappro, account_number, fk_accountancy_journal, datec as date_creation, tms as date_update";
+$sql  = "SELECT b.rowid, b.label, b.courant, b.rappro, b.account_number, b.fk_accountancy_journal, b.datec as date_creation, b.tms as date_update";
 // Add fields from extrafields
 foreach ($extrafields->attribute_label as $key => $val) $sql.=($extrafields->attribute_type[$key] != 'separate' ? ",ef.".$key.' as options_'.$key : '');
 // Add fields from hooks
@@ -151,8 +151,8 @@ $parameters=array();
 $reshook=$hookmanager->executeHooks('printFieldListSelect',$parameters);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
 $sql.= " FROM ".MAIN_DB_PREFIX."bank_account as b";
-if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bankcacount_extrafields as ef on (c.rowid = ef.fk_object)";
-$sql.= " WHERE entity IN (".getEntity('bank_account', 1).")";
+if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account_extrafields as ef on (b.rowid = ef.fk_object)";
+$sql.= " WHERE entity IN (".getEntity('bank_account').")";
 if ($statut == 'opened')  $sql.= " AND clos = 0";
 if ($statut == 'closed')  $sql.= " AND clos = 1";
 if ($search_ref != '')    $sql.=natural_search('b.ref', $search_ref);
@@ -165,8 +165,9 @@ foreach ($search_array_options as $key => $val)
     $tmpkey=preg_replace('/search_options_/','',$key);
     $typ=$extrafields->attribute_type[$tmpkey];
     $mode=0;
-    if (in_array($typ, array('int','double'))) $mode=1;    // Search on a numeric
-    if ($val && ( ($crit != '' && ! in_array($typ, array('select'))) || ! empty($crit)))
+    if (in_array($typ, array('int','double','real'))) $mode=1;    							// Search on a numeric
+    if (in_array($typ, array('sellist')) && $crit != '0' && $crit != '-1') $mode=2;    		// Search on a foreign key int
+    if ($crit != '' && (! in_array($typ, array('select','sellist')) || $crit != '0'))
     {
         $sql .= natural_search('ef.'.$tmpkey, $crit, $mode);
     }
@@ -416,7 +417,9 @@ if (is_array($extrafields->attribute_label) && count($extrafields->attribute_lab
         if (! empty($arrayfields["ef.".$key]['checked']))
         {
             $align=$extrafields->getAlignFlag($key);
-            print_liste_field_titre($langs->trans($extralabels[$key]),$_SERVER["PHP_SELF"],"ef.".$key,"",$param,($align?'align="'.$align.'"':''),$sortfield,$sortorder);
+			$sortonfield = "ef.".$key;
+			if (! empty($extrafields->attribute_computed[$key])) $sortonfield='';
+			print_liste_field_titre($extralabels[$key],$_SERVER["PHP_SELF"],$sortonfield,"",$param,($align?'align="'.$align.'"':''),$sortfield,$sortorder);
         }
     }
 }
@@ -437,7 +440,7 @@ $var=true;
 foreach ($accounts as $key=>$type)
 {
 	if ($i >= $limit) break;
-	
+
     $found++;
 
 	$acc = new Account($db);
@@ -454,7 +457,7 @@ foreach ($accounts as $key=>$type)
 	{
 		$lastcurrencycode=$acc->currency_code;
 	}
-	
+
 	print '<tr class="oddeven">';
 
     // Ref
@@ -463,14 +466,14 @@ foreach ($accounts as $key=>$type)
         print '<td>'.$acc->getNomUrl(1).'</td>';
 	    if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Label
     if (! empty($arrayfields['b.label']['checked']))
     {
 		print '<td>'.$acc->label.'</td>';
         if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Account type
     if (! empty($arrayfields['accountype']['checked']))
     {
@@ -479,37 +482,50 @@ foreach ($accounts as $key=>$type)
 		print '</td>';
         if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Number
     if (! empty($arrayfields['b.number']['checked']))
     {
         print '<td>'.$acc->number.'</td>';
 	    if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Account number
     if (! empty($arrayfields['b.account_number']['checked']))
     {
-        include_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
-
-		$accountingaccount = new AccountingAccount($db);
-		$accountingaccount->fetch('',$acc->account_number);
-
-		print '<td>'.length_accountg($accountingaccount->getNomUrl(0,1,1,'',1)).'</td>';
-
+    	print '<td>';
+    	if (! empty($conf->accounting->enabled))
+    	{
+    		$accountingaccount = new AccountingAccount($db);
+    		$accountingaccount->fetch('',$acc->account_number);
+    		print $accountingaccount->getNomUrl(0,1,1,'',1);
+    	}
+    	else
+    	{
+    		print $acc->account_number;
+    	}
+    	print '</td>';
 	    if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Accountancy journal
     if (! empty($arrayfields['b.fk_accountancy_journal']['checked']))
     {
-		$accountingjournal = new AccountingJournal($db);
-		$accountingjournal->fetch($acc->fk_accountancy_journal);
-
-		print '<td>'.$accountingjournal->getNomUrl(0,1,1,'',1).'</td>';
+    	print '<td>';
+    	if (! empty($conf->accounting->enabled))
+    	{
+    		$accountingjournal = new AccountingJournal($db);
+    		$accountingjournal->fetch($acc->fk_accountancy_journal);
+    		print $accountingjournal->getNomUrl(0,1,1,'',1);
+    	}
+    	else
+    	{
+    		print '';
+    	}
+    	print '</td>';
 		if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Transactions to reconcile
     if (! empty($arrayfields['toreconcile']['checked']))
     {
@@ -528,13 +544,13 @@ foreach ($accounts as $key=>$type)
 	    print '</td>';
 	    if (! $i) $totalarray['nbfield']++;
     }
-    
+
 	// Extra fields
 	if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
 	{
-	   foreach($extrafields->attribute_label as $key => $val) 
+	   foreach($extrafields->attribute_label as $key => $val)
 	   {
-			if (! empty($arrayfields["ef.".$key]['checked'])) 
+			if (! empty($arrayfields["ef.".$key]['checked']))
 			{
 				print '<td';
 				$align=$extrafields->getAlignFlag($key);
@@ -567,14 +583,14 @@ foreach ($accounts as $key=>$type)
         print '</td>';
 	    if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Statut
     if (! empty($arrayfields['b.clos']['checked']))
     {
 		print '<td align="center">'.$acc->getLibStatut(5).'</td>';
 	    if (! $i) $totalarray['nbfield']++;
     }
-    
+
     // Balance
     if (! empty($arrayfields['balance']['checked']))
     {
@@ -585,7 +601,7 @@ foreach ($accounts as $key=>$type)
 		if (! $i) $totalarray['totalbalancefield']=$totalarray['nbfield'];
 	    $totalarray['totalbalance'] += $solde;
     }
-    
+
 	// Action column
 	print '<td class="nowrap" align="center">';
 	if ($massactionbutton || $massaction)   // If we are in select mode (massactionbutton defined) or if we have already selected and sent an action ($massaction) defined
@@ -596,7 +612,7 @@ foreach ($accounts as $key=>$type)
 	}
 	print '</td>';
 	if (! $i) $totalarray['nbfield']++;
-	
+
 	print '</tr>';
 
 	$total[$acc->currency_code] += $solde;

@@ -3,8 +3,8 @@
  * Copyright (C) 2012-2016	Laurent Destailleur	<eldy@users.sourceforge.net>
  * Copyright (C) 2012-2016	Regis Houssin		<regis.houssin@capnetworks.com>
  * Copyright (C) 2013		Juanjo Menent		<jmenent@2byte.es>
- * Copyright (C) 2014		Ferran Marcet		<fmarcet@2byte.es>
  * Copyright (C) 2017		Alexandre Spangaro	<aspangaro@zendsi.com>
+ * Copyright (C) 2014-2017	Ferran Marcet		<fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ require_once DOL_DOCUMENT_ROOT.'/holiday/common.inc.php';
 $myparam = GETPOST("myparam");
 $action=GETPOST('action', 'alpha');
 $id=GETPOST('id', 'int');
-$userid = GETPOST('userid')?GETPOST('userid'):$user->id;
+$fuserid = (GETPOST('fuserid','int')?GETPOST('fuserid','int'):$user->id);
 
 // Protection if external user
 if ($user->societe_id > 0) accessforbidden();
@@ -61,7 +61,8 @@ if ($action == 'create')
 	$object = new Holiday($db);
 
     // If no right to create a request
-    if (($userid == $user->id && empty($user->rights->holiday->write)) || ($userid != $user->id && empty($user->rights->holiday->write_all)))
+    $fuserid = GETPOST('fuserid','int');
+    if (($fuserid == $user->id && empty($user->rights->holiday->write)) || ($fuserid != $user->id && empty($user->rights->holiday->write_all)))
     {
     	$error++;
     	setEventMessages($langs->trans('CantCreateCP'), null, 'errors');
@@ -86,7 +87,6 @@ if ($action == 'create')
 
 	    $valideur = GETPOST('valideur');
 	    $description = trim(GETPOST('description'));
-	    $userID = GETPOST('userID');
 
     	// If no type
 	    if ($type <= 0)
@@ -119,7 +119,7 @@ if ($action == 'create')
 	    }
 
 	    // Check if there is already holiday for this period
-	    $verifCP = $object->verifDateHolidayCP($userID, $date_debut, $date_fin, $halfday);
+	    $verifCP = $object->verifDateHolidayCP($fuserid, $date_debut, $date_fin, $halfday);
 	    if (! $verifCP)
 	    {
 	        setEventMessages($langs->trans("alreadyCPexist"), null, 'errors');
@@ -145,11 +145,9 @@ if ($action == 'create')
 
 	    $result = 0;
 
-	    $result = 0;
-
 	    if (! $error)
 	    {
-    	    $object->fk_user = $userid;
+    	    $object->fk_user = $fuserid;
     	    $object->description = $description;
     	    $object->date_debut = $date_debut;
     	    $object->date_fin = $date_fin;
@@ -158,10 +156,15 @@ if ($action == 'create')
     		$object->fk_type = $type;
 
     		$result = $object->create($user);
+    		if ($result <= 0)
+    		{
+    			setEventMessages($object->error, $object->errors, 'errors');
+    			$error++;
+    		}
 	    }
 
 	    // If no SQL error we redirect to the request card
-	    if (! $error && $result > 0)
+	    if (! $error)
 	    {
 			$db->commit();
 
@@ -279,8 +282,8 @@ if ($action == 'confirm_delete' && GETPOST('confirm') == 'yes' && $user->rights-
 
 	$canedit=(($user->id == $object->fk_user && $user->rights->holiday->write) || ($user->id != $object->fk_user && $user->rights->holiday->write_all));
 
-    // If this is a rough draft
-	if ($object->statut == 1 || $object->statut == 3)
+    // If this is a rough draft, approved, canceled or refused
+	if ($object->statut == 1 || $object->statut == 4 || $object->statut == 5)
 	{
 		// Si l'utilisateur à le droit de lire cette demande, il peut la supprimer
 		if ($canedit)
@@ -570,14 +573,43 @@ if ($action == 'confirm_refuse')
     }
 }
 
+
+// Si Validation de la demande
+if ($action == 'confirm_draft' && GETPOST('confirm') == 'yes')
+{
+    $object = new Holiday($db);
+    $object->fetch($id);
+
+    $oldstatus = $object->statut;
+    $object->statut = 1;
+
+    $result = $object->update($user);
+    if ($result < 0)
+    {
+        $error = $langs->trans('ErrorBackToDraft');
+    }
+
+    if (! $error)
+    {
+        $db->commit();
+
+        header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
+        exit;
+    }
+    else
+    {
+        $db->rollback();
+    }
+}
+
 // Si Validation de la demande
 if ($action == 'confirm_cancel' && GETPOST('confirm') == 'yes')
 {
     $object = new Holiday($db);
     $object->fetch($id);
 
-    // Si statut en attente de validation et valideur = utilisateur
-    if (($object->statut == 2 || $object->statut == 3) && ($user->id == $object->fk_validator || $user->id == $object->fk_user))
+    // Si statut en attente de validation et valideur = valideur ou utilisateur, ou droits de faire pour les autres
+    if (($object->statut == 2 || $object->statut == 3) && ($user->id == $object->fk_validator || $user->id == $object->fk_user || ! empty($user->rights->holiday->write_all)))
     {
     	$db->begin();
 
@@ -693,7 +725,7 @@ llxHeader('', $langs->trans('CPTitreMenu'));
 if (empty($id) || $action == 'add' || $action == 'request' || $action == 'create')
 {
     // Si l'utilisateur n'a pas le droit de faire une demande
-    if (($userid == $user->id && empty($user->rights->holiday->write)) || ($userid != $user->id && empty($user->rights->holiday->write_all)))
+    if (($fuserid == $user->id && empty($user->rights->holiday->write)) || ($fuserid != $user->id && empty($user->rights->holiday->write_all)))
     {
         $errors[]=$langs->trans('CantCreateCP');
     }
@@ -773,7 +805,6 @@ if (empty($id) || $action == 'add' || $action == 'request' || $action == 'create
         // Formulaire de demande
         print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'" onsubmit="return valider()" name="demandeCP">'."\n";
         print '<input type="hidden" name="action" value="create" />'."\n";
-        print '<input type="hidden" name="userID" value="'.$userid.'" />'."\n";
 
         dol_fiche_head();
 
@@ -804,10 +835,10 @@ if (empty($id) || $action == 'add' || $action == 'request' || $action == 'create
         print '<td>';
         if (empty($user->rights->holiday->write_all))
         {
-        	print $form->select_dolusers($userid, 'useridbis', 0, '', 1, '', '', 0, 0, 0, '', 0, '', 'maxwidth300');
-        	print '<input type="hidden" name="userid" value="'.$userid.'">';
+        	print $form->select_dolusers($fuserid, 'useridbis', 0, '', 1, '', '', 0, 0, 0, '', 0, '', 'maxwidth300');
+        	print '<input type="hidden" name="fuserid" value="'.($fuserid?$fuserid:$user->id).'">';
         }
-        else print $form->select_dolusers(GETPOST('userid')?GETPOST('userid'):$user->id,'userid',0,'',0);
+        else print $form->select_dolusers(GETPOST('fuserid','int')?GETPOST('fuserid','int'):$user->id,'fuserid',0,'',0);
         print '</td>';
         print '</tr>';
 
@@ -995,6 +1026,12 @@ else
                     print $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id,$langs->trans("TitleCancelCP"),$langs->trans("ConfirmCancelCP"),"confirm_cancel", '', 1, 1);
                 }
 
+                // Si back to draft
+                if ($action == 'backtodraft')
+                {
+                    print $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id,$langs->trans("TitleSetToDraft"),$langs->trans("ConfirmSetToDraft"),"confirm_draft", '', 1, 1);
+                }
+
                 $head=holiday_prepare_head($object);
 
 
@@ -1006,17 +1043,17 @@ else
                     print '<input type="hidden" name="id" value="'.$object->id.'" />'."\n";
                 }
 
-                dol_fiche_head($head,'card',$langs->trans("CPTitreMenu"),0,'holiday');
+                dol_fiche_head($head, 'card', $langs->trans("CPTitreMenu"), -1, 'holiday');
 
                 $linkback='<a href="'.DOL_URL_ROOT.'/holiday/list.php">'.$langs->trans("BackToList").'</a>';
-                
+
                 dol_banner_tab($object, 'id', $linkback, 1, 'rowid', 'ref');
-                
-                
+
+
                 print '<div class="fichecenter">';
                 print '<div class="fichehalfleft">';
                 print '<div class="underbanner clearboth"></div>';
-                
+
                 print '<table class="border centpercent">';
                 print '<tbody>';
 
@@ -1118,9 +1155,9 @@ else
                 print '</div>';
                 print '<div class="fichehalfright">';
                 print '<div class="ficheaddleft">';
-                
+
                 print '<div class="underbanner clearboth"></div>';
-                
+
 				// Info workflow
                 print '<table class="border centpercent">'."\n";
                 print '<tbody>';
@@ -1177,12 +1214,12 @@ else
                 print '</div>';
                 print '</div>';
                 print '</div>';
-                
+
                 print '<div class="clearboth"></div>';
-                
+
                 dol_fiche_end();
 
-                
+
                 if ($action == 'edit' && $object->statut == 1)
                 {
                     print '<div align="center">';
@@ -1209,21 +1246,34 @@ else
                     {
                         print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=sendToValidate" class="butAction">'.$langs->trans("Validate").'</a>';
                     }
-                    if ($user->rights->holiday->delete && $object->statut == 1)	// If draft
+                    if ($user->rights->holiday->delete && ($object->statut == 1 || $object->statut == 4 || $object->statut == 5))	// If draft or canceled or refused
                     {
                     	print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=delete" class="butActionDelete">'.$langs->trans("DeleteCP").'</a>';
                     }
 
-                    if ($user->id == $object->fk_validator && $object->statut == 2)
+                    if ($object->statut == 2)
                     {
-                        print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=valid" class="butAction">'.$langs->trans("Approve").'</a>';
-                        print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=refuse" class="butAction">'.$langs->trans("ActionRefuseCP").'</a>';
+                        if ($user->id == $object->fk_validator)
+                        {
+                            print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=valid" class="butAction">'.$langs->trans("Approve").'</a>';
+                            print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=refuse" class="butAction">'.$langs->trans("ActionRefuseCP").'</a>';
+                        }
+                        else
+                        {
+                            print '<a href="#" class="butActionRefused" title="'.$langs->trans("NotTheAssignedApprover").'">'.$langs->trans("Approve").'</a>';
+                            print '<a href="#" class="butActionRefused" title="'.$langs->trans("NotTheAssignedApprover").'">'.$langs->trans("ActionRefuseCP").'</a>';
+                        }
                     }
 
-                    if (($user->id == $object->fk_validator || $user->id == $object->fk_user) && ($object->statut == 2 || $object->statut == 3))	// Status validated or approved
+                    if (($user->id == $object->fk_validator || $user->id == $object->fk_user || ! empty($user->rights->holiday->write_all)) && ($object->statut == 2 || $object->statut == 3))	// Status validated or approved
                     {
                     	if (($object->date_debut > dol_now()) || $user->admin) print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=cancel" class="butAction">'.$langs->trans("ActionCancelCP").'</a>';
                     	else print '<a href="#" class="butActionRefused" title="'.$langs->trans("HolidayStarted").'">'.$langs->trans("ActionCancelCP").'</a>';
+                    }
+
+                    if ($canedit && $object->statut == 4)
+                    {
+                        print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=backtodraft" class="butAction">'.$langs->trans("SetToDraft").'</a>';
                     }
 
                     print '</div>';

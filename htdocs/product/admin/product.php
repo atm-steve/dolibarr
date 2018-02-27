@@ -46,7 +46,7 @@ if (! $user->admin || (empty($conf->product->enabled) && empty($conf->service->e
 $action = GETPOST('action','alpha');
 $value = GETPOST('value','alpha');
 $label = GETPOST('label','alpha');
-$scandir = GETPOST('scandir','alpha');
+$scandir = GETPOST('scan_dir','alpha');
 $type='product';
 
 // Pricing Rules
@@ -57,7 +57,6 @@ $select_pricing_rules=array(
 );
 if ($conf->global->MAIN_FEATURES_LEVEL >= 2)
 {
-    $langs->load("admin");
 	$select_pricing_rules['PRODUIT_CUSTOMER_PRICES_BY_QTY'] = $langs->trans('PriceByQuantity').' ('.$langs->trans("VersionExperimental").')';	// TODO If this is enabled, price must be hidden when price by qty is enabled, also price for quantity must be used when adding product into order/propal/invoice
 	$select_pricing_rules['PRODUIT_CUSTOMER_PRICES_BY_QTY&PRODUIT_MULTIPRICES'] = $langs->trans('MultiPricesAbility') . '+' . $langs->trans('PriceByQuantity').' ('.$langs->trans("VersionExperimental").')';
 }
@@ -74,6 +73,9 @@ $error = 0;
  * Actions
  */
 
+$nomessageinsetmoduleoptions=1;
+include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
+
 if ($action == 'setcodeproduct')
 {
 	if (dolibarr_set_const($db, "PRODUCT_CODEPRODUCT_ADDON",$value,'chaine',0,'',$conf->entity) > 0)
@@ -84,36 +86,6 @@ if ($action == 'setcodeproduct')
 	else
 	{
 		dol_print_error($db);
-	}
-}
-
-// Define constants for submodules that contains parameters (forms with param1, param2, ... and value1, value2, ...)
-if ($action == 'setModuleOptions')
-{
-	$post_size=count($_POST);
-
-	$db->begin();
-
-	for($i=0;$i < $post_size;$i++)
-    {
-    	if (array_key_exists('param'.$i,$_POST))
-    	{
-    		$param=GETPOST("param".$i,'alpha');
-    		$value=GETPOST("value".$i,'alpha');
-    		if ($param) $res = dolibarr_set_const($db,$param,$value,'chaine',0,'',$conf->entity);
-	    	if (! $res > 0) $error++;
-    	}
-    }
-	if (! $error)
-    {
-        $db->commit();
-	//setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
-    }
-    else
-    {
-        $db->rollback();
-	// message yet present at the bottom if($action)
-	//setEventMessages($langs->trans("Error"), null, 'errors');
 	}
 }
 
@@ -278,7 +250,7 @@ if ($action)
     }
     else
     {
-	    setEventMessages($langs->trans("Error"), null, 'errors');
+	    setEventMessages($langs->trans("SetupNotError"), null, 'errors');
     }
 }
 
@@ -487,7 +459,7 @@ foreach ($dirmodels as $reldir)
 	                            else
 	                            {
 	                                print '<td align="center">'."\n";
-	                                print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
+	                                print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>';
 	                                print "</td>";
 	                            }
 
@@ -499,7 +471,7 @@ foreach ($dirmodels as $reldir)
 	                            }
 	                            else
 	                            {
-	                                print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&value='.$name.'&amp;scandir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
+	                                print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&value='.$name.'&amp;scan_dir='.$module->scandir.'&amp;label='.urlencode($module->name).'" alt="'.$langs->trans("Default").'">'.img_picto($langs->trans("Disabled"),'off').'</a>';
 	                            }
 	                            print '</td>';
 
@@ -543,7 +515,7 @@ foreach ($dirmodels as $reldir)
 
 print '</table>';
 print "<br>";
-    
+
 /*
  * Other conf
  */
@@ -598,7 +570,7 @@ print '</tr>';
 // multiprix nombre de prix a proposer
 if (! empty($conf->global->PRODUIT_MULTIPRICES))
 {
-	
+
 	print '<tr class="oddeven">';
 	print '<td>'.$langs->trans("MultiPricesNumPrices").'</td>';
 	print '<td align="right"><input size="3" type="text" class="flat" name="value_PRODUIT_MULTIPRICES_LIMIT" value="'.$conf->global->PRODUIT_MULTIPRICES_LIMIT.'"></td>';
@@ -640,7 +612,7 @@ print '</tr>';
 
 if (empty($conf->global->PRODUIT_USE_SEARCH_TO_SELECT))
 {
-	
+
 	print '<tr class="oddeven">';
 	print '<td>'.$langs->trans("NumberOfProductShowInSelect").'</td>';
 	print '<td align="right"><input size="3" type="text" class="flat" name="value_PRODUIT_LIMIT_SIZE" value="'.$conf->global->PRODUIT_LIMIT_SIZE.'"></td>';
@@ -681,7 +653,7 @@ print '</tr>';
 // View product description in thirdparty language
 if (! empty($conf->global->MAIN_MULTILANGS))
 {
-	
+
 	print '<tr class="oddeven">';
 	print '<td>'.$langs->trans("ViewProductDescInThirdpartyLanguageAbility").'</td>';
 	print '<td width="60" align="right">';
@@ -723,7 +695,7 @@ if (! empty($conf->global->PRODUCT_CANVAS_ABILITY))
 
     				if ($conf->$module->enabled)
     				{
-    					
+
     					print "<tr ".$bc[$var]."><td>";
 
     					print $object->description;

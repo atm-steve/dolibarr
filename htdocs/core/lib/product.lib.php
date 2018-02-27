@@ -52,7 +52,7 @@ function product_prepare_head($object)
     	$head[$h][2] = 'price';
     	$h++;
 	}
-	
+
 	if (! empty($object->status_buy) || (! empty($conf->margin->enabled) && ! empty($object->status)))   // If margin is on and product on sell, we may need the cost price even if product os not on purchase
 	{
     	if ((! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->lire)
@@ -102,7 +102,7 @@ function product_prepare_head($object)
 
 		$prodcomb = new ProductCombination($db);
 
-		if ($prodcomb->fetchByFkProductChild($object->id) == -1) 
+		if ($prodcomb->fetchByFkProductChild($object->id) == -1)
 		{
 			$head[$h][0] = DOL_URL_ROOT."/variants/combinations.php?id=".$object->id;
 			$head[$h][1] = $langs->trans('ProductCombinations');
@@ -184,7 +184,7 @@ function productlot_prepare_head($object)
     global $db, $langs, $conf, $user;
     $langs->load("products");
     $langs->load("productbatch");
-    
+
     $h = 0;
     $head = array();
 
@@ -208,7 +208,7 @@ function productlot_prepare_head($object)
     $head[$h][2] = 'info';
     $h++;
     */
-    
+
     return $head;
 }
 
@@ -301,9 +301,9 @@ function show_stats_for_company($product,$socid)
 	global $conf,$langs,$user,$db;
 
 	$nblines = 0;
-	
-	print '<tr>';
-	print '<td align="left" width="25%" valign="top">'.$langs->trans("Referers").'</td>';
+
+	print '<tr class="liste_titre">';
+	print '<td align="left" class="tdtop" width="25%">'.$langs->trans("Referers").'</td>';
 	print '<td align="right" width="25%">'.$langs->trans("NbOfThirdParties").'</td>';
 	print '<td align="right" width="25%">'.$langs->trans("NbOfObjectReferers").'</td>';
 	print '<td align="right" width="25%">'.$langs->trans("TotalQuantity").'</td>';
@@ -441,7 +441,8 @@ function measuring_units_string($unit,$measuring_style='')
 		$measuring_units[0] = $langs->transnoentitiesnoconv("WeightUnitkg");
 		$measuring_units[-3] = $langs->transnoentitiesnoconv("WeightUnitg");
 		$measuring_units[-6] = $langs->transnoentitiesnoconv("WeightUnitmg");
-        $measuring_units[99] = $langs->transnoentitiesnoconv("WeightUnitpound");
+		$measuring_units[98] = $langs->transnoentitiesnoconv("WeightUnitounce");
+		$measuring_units[99] = $langs->transnoentitiesnoconv("WeightUnitpound");
 	}
 	else if ($measuring_style == 'size')
 	{
@@ -474,5 +475,44 @@ function measuring_units_string($unit,$measuring_style='')
         $measuring_units[99] = $langs->transnoentitiesnoconv("VolumeUnitgallon");
 	}
 
+	return $measuring_units[$unit];
+}
+
+/**
+ *	Transform a given unit into the square of that unit, if known
+ *
+ *	@param	int		$unit            Unit key (-3,-2,-1,0,98,99...)
+ *	@return	int	   			         Squared unit key (-6,-4,-2,0,98,99...)
+ * 	@see	formproduct->load_measuring_units
+ */
+function measuring_units_squared($unit)
+{
+	$measuring_units=array();
+	$measuring_units[0] = 0;   // m -> m3
+	$measuring_units[-1] = -2; // dm-> dm2
+	$measuring_units[-2] = -4; // cm -> cm2
+	$measuring_units[-3] = -6; // mm -> mm2
+	$measuring_units[98] = 98; // foot -> foot2
+	$measuring_units[99] = 99; // inch -> inch2
+	return $measuring_units[$unit];
+}
+
+
+/**
+ *	Transform a given unit into the cube of that unit, if known
+ *
+ *	@param	int		$unit            Unit key (-3,-2,-1,0,98,99...)
+ *	@return	int	   			         Cubed unit key (-9,-6,-3,0,88,89...)
+ * 	@see	formproduct->load_measuring_units
+ */
+function measuring_units_cubed($unit)
+{
+	$measuring_units=array();
+	$measuring_units[0] = 0;   // m -> m2
+	$measuring_units[-1] = -3; // dm-> dm3
+	$measuring_units[-2] = -6; // cm -> cm3
+	$measuring_units[-3] = -9; // mm -> mm3
+	$measuring_units[98] = 88; // foot -> foot3
+	$measuring_units[99] = 89; // inch -> inch3
 	return $measuring_units[$unit];
 }

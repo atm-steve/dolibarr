@@ -42,20 +42,28 @@ class DolibarrApi
     /**
      * Constructor
      *
-     * @param	DoliDb	$db		      Database handler
-     * @param   string  $cachedir     Cache dir
+     * @param	DoliDb	$db		        Database handler
+     * @param   string  $cachedir       Cache dir
+     * @param   boolean $refreshCache   Update cache
      */
-    function __construct($db, $cachedir='')
+    function __construct($db, $cachedir='', $refreshCache=false)
     {
-        global $conf;
+        global $conf, $dolibarr_main_url_root;
 
         if (empty($cachedir)) $cachedir = $conf->api->dir_temp;
         Defaults::$cacheDirectory = $cachedir;
 
         $this->db = $db;
         $production_mode = ( empty($conf->global->API_PRODUCTION_MODE) ? false : true );
-        $this->r = new Restler($production_mode);
+        $this->r = new Restler($production_mode, $refreshCache);
 
+        $urlwithouturlroot=preg_replace('/'.preg_quote(DOL_URL_ROOT,'/').'$/i','',trim($dolibarr_main_url_root));
+        $urlwithroot=$urlwithouturlroot.DOL_URL_ROOT; // This is to use external domain name found into config file
+
+        $urlwithouturlrootautodetect=preg_replace('/'.preg_quote(DOL_URL_ROOT,'/').'$/i','',trim(DOL_MAIN_URL_ROOT));
+        $urlwithrootautodetect=$urlwithouturlroot.DOL_URL_ROOT; // This is to use local domain autodetected by dolibarr from url
+
+        $this->r->setBaseUrls($urlwithouturlroot, $urlwithouturlrootautodetect);
         $this->r->setAPIVersion(1);
     }
 
@@ -66,7 +74,7 @@ class DolibarrApi
      *
      * @return array
      */
-    /* Disabled, most APIs does not share same signature for method index 
+    /* Disabled, most APIs does not share same signature for method index
     function index()
     {
         return array(
@@ -93,9 +101,9 @@ class DolibarrApi
         unset($object->linkedObjects);
 
         unset($object->lines); // should be ->lines
-        
+
         unset($object->fields);
-        
+
         unset($object->oldline);
 
         unset($object->error);
@@ -127,6 +135,9 @@ class DolibarrApi
         unset($object->table_element);
         unset($object->table_element_line);
         unset($object->picto);
+
+        unset($object->skip_update_total);
+        unset($object->context);
 
         // Remove the $oldcopy property because it is not supported by the JSON
         // encoder. The following error is generated when trying to serialize
@@ -175,7 +186,7 @@ class DolibarrApi
 	 * @throws RestException
 	 */
 	static function _checkAccessToResource($resource, $resource_id=0, $dbtablename='', $feature2='', $dbt_keyfield='fk_soc', $dbt_select='rowid') {
-        
+
 		// Features/modules to check
 		$featuresarray = array($resource);
 		if (preg_match('/&/', $resource)) {

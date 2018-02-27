@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2001-2007  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
- * Copyright (C) 2004-2013  Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2004-2017  Laurent Destailleur     <eldy@users.sourceforge.net>
  * Copyright (C) 2005       Eric Seigne             <eric.seigne@ryxeo.com>
  * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@capnetworks.com>
  * Copyright (C) 2006       Andre Cianfarani        <acianfa@free.fr>
@@ -86,8 +86,8 @@ if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->se
 				$action = 're-edit';
 				if ($object->error == "isFatherOfThis") {
 					setEventMessages($langs->trans("ErrorAssociationIsFatherOfThis"), null, 'errors');
-				} 
-				else 
+				}
+				else
 				{
 					setEventMessages($object->error, $object->errors, 'errors');
 				}
@@ -142,13 +142,13 @@ if ($action == 'search')
 {
 	$current_lang = $langs->getDefaultLang();
 
-    $sql = 'SELECT DISTINCT p.rowid, p.ref, p.label, p.barcode, p.price, p.price_ttc, p.price_base_type, p.entity,';
+    $sql = 'SELECT DISTINCT p.rowid, p.ref, p.label, p.fk_product_type as type, p.barcode, p.price, p.price_ttc, p.price_base_type, p.entity,';
     $sql.= ' p.fk_product_type, p.tms as datem';
 	if (! empty($conf->global->MAIN_MULTILANGS)) $sql.= ', pl.label as labelm, pl.description as descriptionm';
 	$sql.= ' FROM '.MAIN_DB_PREFIX.'product as p';
 	$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product as cp ON p.rowid = cp.fk_product';
 	if (! empty($conf->global->MAIN_MULTILANGS)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_lang as pl ON pl.fk_product = p.rowid AND lang='".($current_lang)."'";
-	$sql.= ' WHERE p.entity IN ('.getEntity('product', 1).')';
+	$sql.= ' WHERE p.entity IN ('.getEntity('product').')';
 	if ($key != "")
 	{
 		// For natural search
@@ -204,27 +204,31 @@ if ($id > 0 || ! empty($ref))
 	if ($user->rights->produit->lire || $user->rights->service->lire)
 	{
         $linkback = '<a href="'.DOL_URL_ROOT.'/product/list.php">'.$langs->trans("BackToList").'</a>';
-	    
-        dol_banner_tab($object, 'ref', $linkback, ($user->societe_id?0:1), 'ref', '', '', '', 0, '', '', 1);
-		
+
+        $shownav = 1;
+        if ($user->societe_id && ! in_array('product', explode(',',$conf->global->MAIN_MODULES_FOR_EXTERNAL))) $shownav=0;
+
+        dol_banner_tab($object, 'ref', $linkback, $shownav, 'ref', '', '', '', 0, '', '', 0);
+
         if ($object->type!=Product::TYPE_SERVICE || empty($conf->global->PRODUIT_MULTIPRICES))
         {
             print '<div class="fichecenter">';
-    	    print '<div class="underbanner clearboth"></div>';	
-            print '<table class="border tableforfield" width="100%">';
-        
+    	    print '<div class="underbanner clearboth"></div>';
+
+    	    print '<table class="border tableforfield" width="100%">';
+
     		// Nature
     		if ($object->type!=Product::TYPE_SERVICE)
     		{
-    			print '<tr><td>'.$langs->trans("Nature").'</td><td>';
+    			print '<tr><td class="titlefield">'.$langs->trans("Nature").'</td><td>';
     			print $object->getLibFinished();
     			print '</td></tr>';
     		}
-    
+
     		if (empty($conf->global->PRODUIT_MULTIPRICES))
     		{
     		    // Price
-    			print '<tr><td>'.$langs->trans("SellingPrice").'</td><td>';
+    			print '<tr><td class="titlefield">'.$langs->trans("SellingPrice").'</td><td>';
     			if ($object->price_base_type == 'TTC')
     			{
     				print price($object->price_ttc).' '.$langs->trans($object->price_base_type);
@@ -234,7 +238,7 @@ if ($id > 0 || ! empty($ref))
     				print price($object->price).' '.$langs->trans($object->price_base_type?$object->price_base_type:'HT');
     			}
     			print '</td></tr>';
-    
+
     			// Price minimum
     			print '<tr><td>'.$langs->trans("MinPrice").'</td><td>';
     			if ($object->price_base_type == 'TTC')
@@ -255,11 +259,11 @@ if ($id > 0 || ! empty($ref))
 		dol_fiche_end();
 
         print '<br>';
-        
+
 		$prodsfather = $object->getFather(); 		// Parent Products
 		$object->get_sousproduits_arbo();			// Load $object->sousprods
-		$prods_arbo=$object->get_arbo_each_prod();		
-		
+		$prods_arbo=$object->get_arbo_each_prod();
+
 		$nbofsubsubproducts=count($prods_arbo);		// This include sub sub product into nb
 		$prodschild = $object->getChildsArbo($id,1);
 		$nbofsubproducts=count($prodschild);		// This include only first level of childs
@@ -368,7 +372,7 @@ if ($id > 0 || ! empty($ref))
 
 					    $totalline=price2num($value['nb'] * ($product_fourn->fourn_unitprice * (1 - $product_fourn->fourn_remise_percent/100) + $product_fourn->fourn_unitcharges - $product_fourn->fourn_remise), 'MT');
 						$total+=$totalline;
-						
+
 						print '<td align="right">';
 						print ($notdefined?'':($value['nb']> 1 ? $value['nb'].'x' : '').price($product_fourn->fourn_unitprice,'','',0,0,-1,$conf->currency));
 						print '</td>';
@@ -384,7 +388,7 @@ if ($id > 0 || ! empty($ref))
 						print '<td align="right" colspan="2">';
 						print ($notdefined?'':($value['nb']> 1 ? $value['nb'].'x' : '').price($pricesell,'','',0,0,-1,$conf->currency));
 						print '</td>';
-						
+
 						// Stock
 						if (! empty($conf->stock->enabled)) print '<td align="right">'.$value['stock'].'</td>';	// Real stock
 
@@ -423,7 +427,7 @@ if ($id > 0 || ! empty($ref))
 						// Best selling price
 						print '<td>&nbsp;</td>';
 						print '<td>&nbsp;</td>';
-						
+
 						if (! empty($conf->stock->enabled)) print '<td></td>';	// Real stock
 						print '<td align="center">'.$value['nb'].'</td>';
 						print '<td>&nbsp;</td>';
@@ -455,7 +459,7 @@ if ($id > 0 || ! empty($ref))
 				if ($atleastonenotdefined) print $langs->trans("Unknown").' ('.$langs->trans("SomeSubProductHaveNoPrices").')';
 				print ($atleastonenotdefined?'':price($totalsell,'','',0,0,-1,$conf->currency));
 				print '</td>';
-				
+
 				// Stock
 				if (! empty($conf->stock->enabled)) print '<td class="liste_total" align="right">&nbsp;</td>';
 
@@ -570,8 +574,9 @@ if ($id > 0 || ! empty($ref))
 								continue;
 							}
 						}
-						
-						print "\n<tr ".$bc[$var].">";
+
+						print "\n".'<tr class="oddeven">';
+
 						$productstatic->id=$objp->rowid;
 						$productstatic->ref=$objp->ref;
 						$productstatic->label=$objp->label;

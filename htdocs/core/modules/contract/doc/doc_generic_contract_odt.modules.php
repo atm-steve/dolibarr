@@ -1,6 +1,7 @@
 <?php
 /* Copyright (C) 2010-2012 	Laurent Destailleur <eldy@users.sourceforge.net>
  * Copyright (C) 2012		Juanjo Menent		<jmenent@2byte.es>
+ * Copyright (C) 2018		Ferran Marcet		<fmarcet@2byte.es>
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -102,16 +103,10 @@ class doc_generic_contract_odt extends ModelePDFContract
 		$form = new Form($this->db);
 
 		$texte = $this->description.".<br>\n";
-		$texte.= '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
+		$texte.= '<form action="'.$_SERVER["PHP_SELF"].'" method="POST" enctype="multipart/form-data">';
 		$texte.= '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 		$texte.= '<input type="hidden" name="action" value="setModuleOptions">';
 		$texte.= '<input type="hidden" name="param1" value="CONTRACT_ADDON_PDF_ODT_PATH">';
-		if ($conf->global->MAIN_PROPAL_CHOOSE_ODT_DOCUMENT > 0)
-		{
-			$texte.= '<input type="hidden" name="param2" value="CONTRACT_ADDON_PDF_ODT_DEFAULT">';
-			$texte.= '<input type="hidden" name="param3" value="CONTRACT_ADDON_PDF_ODT_TOBILL">';
-			$texte.= '<input type="hidden" name="param4" value="CONTRACT_ADDON_PDF_ODT_CLOSED">';
-		}
 		$texte.= '<table class="nobordernopadding" width="100%">';
 
 		// List of directories area
@@ -144,39 +139,20 @@ class doc_generic_contract_odt extends ModelePDFContract
 		$texte.=$conf->global->CONTRACT_ADDON_PDF_ODT_PATH;
 		$texte.= '</textarea>';
 		$texte.= '</div><div style="display: inline-block; vertical-align: middle;">';
-		$texte.= '<input type="submit" class="button" value="'.$langs->trans("Modify").'" name="Button">';
+		$texte.= '<input type="submit" class="button" value="'.dol_escape_htmltag($langs->trans("Modify")).'" name="Button">';
 		$texte.= '<br></div></div>';
 
 		// Scan directories
 		if (count($listofdir))
 		{
 			$texte.=$langs->trans("NumberOfModelFilesFound").': <b>'.count($listoffiles).'</b>';
-
-			if ($conf->global->MAIN_PROPAL_CHOOSE_ODT_DOCUMENT > 0)
-			{
-				// Model for creation
-				$liste=ModelePDFContract::liste_modeles($this->db);
-				$texte.= '<table width="50%;">';
-				$texte.= '<tr>';
-				$texte.= '<td width="60%;">'.$langs->trans("DefaultModelPropalCreate").'</td>';
-				$texte.= '<td colspan="">';
-				$texte.= $form->selectarray('value2',$liste,$conf->global->CONTRACT_ADDON_PDF_ODT_DEFAULT);
-				$texte.= "</td></tr>";
-
-				$texte.= '<tr>';
-				$texte.= '<td width="60%;">'.$langs->trans("DefaultModelPropalToBill").'</td>';
-				$texte.= '<td colspan="">';
-				$texte.= $form->selectarray('value3',$liste,$conf->global->CONTRACT_ADDON_PDF_ODT_TOBILL);
-				$texte.= "</td></tr>";
-				$texte.= '<tr>';
-
-				$texte.= '<td width="60%;">'.$langs->trans("DefaultModelPropalClosed").'</td>';
-				$texte.= '<td colspan="">';
-				$texte.= $form->selectarray('value4',$liste,$conf->global->CONTRACT_ADDON_PDF_ODT_CLOSED);
-				$texte.= "</td></tr>";
-				$texte.= '</table>';
-			}
 		}
+
+		// Add select to upload a new template file. TODO Copy this feature on other admin pages.
+		$texte.= '<div>'.$langs->trans("UploadNewTemplate").' <input type="file" name="uploadfile">';
+		$texte.= '<input type="hidden" value="CONTRACT_ADDON_PDF_ODT_PATH" name="keyforuploaddir">';
+		$texte.= '<input type="submit" class="button" value="'.dol_escape_htmltag($langs->trans("Upload")).'" name="upload">';
+        $texte.= '</div>';
 
 		$texte.= '</td>';
 
@@ -236,7 +212,7 @@ class doc_generic_contract_odt extends ModelePDFContract
 			if (! is_object($object))
 			{
 				$id = $object;
-				$object = new Contract($this->db);
+				$object = new Contrat($this->db);
 				$result=$object->fetch($id);
 				if ($result < 0)
 				{
@@ -305,14 +281,14 @@ class doc_generic_contract_odt extends ModelePDFContract
 					// On peut utiliser le nom de la societe du contact
 					if (! empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT)) $socobject = $object->contact;
 					else {
-                        			$socobject = $object->client;
+                        			$socobject = $object->thirdparty;
                         			// if we have a CUSTOMER contact and we dont use it as recipient we store the contact object for later use
                         			$contactobject = $object->contact;
                     			}
 				}
 				else
 				{
-					$socobject=$object->client;
+					$socobject=$object->thirdparty;
 				}
 				// Make substitution
 				$substitutionarray=array(
