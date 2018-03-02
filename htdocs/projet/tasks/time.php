@@ -492,11 +492,11 @@ if ($id > 0 || ! empty($ref))
 			print '<td class="nowrap">';
 			if ($_GET['action'] == 'editline' && $_GET['lineid'] == $task_time->rowid)
 			{
-				print $form->select_date(($date2?$date2:$date1),'timeline',1,1,2,"timespent_date",1,0,1);
+				print $form->select_date(($date1?$date1:$date2),'timeline',1,1,2,"timespent_date",1,0,1);
 			}
 			else
 			{
-				print dol_print_date(($date2?$date2:$date1),($task_time->task_date_withhour?'dayhour':'day'));
+				print dol_print_date(($date1?$date1:$date2),($task_time->task_date_withhour?'dayhour':'day'));
 			}
 			print '</td>';
 
