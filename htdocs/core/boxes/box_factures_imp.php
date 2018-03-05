@@ -97,7 +97,8 @@ class box_factures_imp extends ModeleBoxes
 			if (!$user->rights->societe->client->voir && !$user->societe_id) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 			$sql.= ", ".MAIN_DB_PREFIX."facture as f";
 			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON f.rowid=pf.fk_facture ";
-			$sql.= " WHERE f.fk_soc = s.rowid";
+			$sql.=" LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields fex ON (fex.fk_object=f.fk_soc) ";
+			$sql.= " WHERE f.fk_soc = s.rowid AND fex.indice_confiance!='rouge'";
 			$sql.= " AND f.entity = ".$conf->entity;
 			$sql.= " AND f.paye = 0";
 			$sql.= " AND fk_statut = 1";
