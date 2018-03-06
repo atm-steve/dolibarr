@@ -320,7 +320,7 @@ jQuery(document).ready(function()
 			jQuery("input[name='np_markRate']:first").val('');
 		});
 		jQuery("input[name='np_marginRate']:first").keyup(function() {
-			jQuery("#price_ht").val( price2numjs(jQuery("#buying_price").val()) * (1 + price2numjs( $(this).val() ) / 100 ) );
+			jQuery("#price_ht").val( dolroundjs(price2numjs(jQuery("#buying_price").val()) * (1 + price2numjs( $(this).val() ) / 100 ), <?php echo min($conf->global->MAIN_MAX_DECIMALS_UNIT,$conf->global->MAIN_MAX_DECIMALS_TOT); ?> ) );
 		});
 
 		/* Init field buying_price and fournprice */
