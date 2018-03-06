@@ -722,6 +722,8 @@ if (empty($reshook))
 	        if ($result > 0)
 	        {
 	            $db->commit();
+				header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $object->id);
+				exit;
 	        }
 	        else
 	        {
