@@ -539,6 +539,15 @@ class Facture extends CommonInvoice
 						}
 
 						$newinvoiceline->fk_parent_line=$fk_parent_line;
+
+						if($this->type === Facture::TYPE_REPLACEMENT && $newinvoiceline->fk_remise_except){
+                            $discount = new DiscountAbsolute($this->db);
+                            $discount->fetch($newinvoiceline->fk_remise_except);
+
+						    $discountId = $soc->set_remise_except($discount->amount_ht, $user, $discount->description, $discount->tva_tx);
+						    $newinvoiceline->fk_remise_except = $discountId;
+                        }
+
 						$result=$newinvoiceline->insert();
 
 						// Defined the new fk_parent_line
@@ -2274,9 +2283,12 @@ class Facture extends CommonInvoice
     					$final = ($this->lines[$i]->situation_percent == 100);
     					$i++;
     				}
-    				if ($final) {
-    					$this->setFinal($user);
-    				}
+
+    				if (empty($final)) $this->situation_final = 0;
+    				else $this->situation_final = 1;
+
+				$this->setFinal($user);
+
                 }
 			}
 		}
@@ -2919,6 +2931,9 @@ class Facture extends CommonInvoice
 		$line->total_ttc = $tabprice[2];
 		$line->total_localtax1 = $tabprice[9];
 		$line->total_localtax2 = $tabprice[10];
+		$line->multicurrency_total_ht  = $tabprice[16];
+		$line->multicurrency_total_tva = $tabprice[17];
+		$line->multicurrency_total_ttc = $tabprice[18];
 		$line->update($user);
 		$this->update_price(1);
 		$this->db->commit();
@@ -4094,7 +4109,6 @@ class Facture extends CommonInvoice
 
 		$this->db->begin();
 
-		$this->situation_final = 1;
 		$sql = 'UPDATE ' . MAIN_DB_PREFIX . 'facture SET situation_final = ' . $this->situation_final . ' where rowid = ' . $this->id;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
