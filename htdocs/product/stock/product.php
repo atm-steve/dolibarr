@@ -195,7 +195,8 @@ if ($action == 'setdesiredstock')
 if ($action == "correct_stock" && ! $cancel)
 {
 	$author = new User($db);
-	$author->fetch($_POST['author']);
+	if($_POST['author']>0) $author->fetch($_POST['author']);
+	else $author = clone $user; 
 
 	if (! (GETPOST("id_entrepot") > 0))
 	{
