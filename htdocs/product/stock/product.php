@@ -194,6 +194,9 @@ if ($action == 'setdesiredstock')
 // Correct stock
 if ($action == "correct_stock" && ! $cancel)
 {
+	$author = new User($db);
+	$author->fetch($_POST['author']);
+
 	if (! (GETPOST("id_entrepot") > 0))
 	{
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Warehouse")), null, 'errors');
@@ -241,7 +244,7 @@ if ($action == "correct_stock" && ! $cancel)
 			if ($object->hasbatch())
 			{
 				$result=$object->correct_stock_batch(
-					$user,
+					$author,
 					GETPOST("id_entrepot"),
 					GETPOST("nbpiece"),
 					GETPOST("mouvement"),
@@ -258,7 +261,7 @@ if ($action == "correct_stock" && ! $cancel)
 			else
 			{
 				$result=$object->correct_stock(
-		    		$user,
+		    		$author,
 		    		GETPOST("id_entrepot"),
 		    		GETPOST("nbpiece"),
 		    		GETPOST("mouvement"),
