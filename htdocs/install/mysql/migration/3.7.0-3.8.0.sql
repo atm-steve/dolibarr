@@ -819,3 +819,4 @@ update llx_opensurvey_sondage set format = 'A' where format = 'A+';
 --DROP TABLE llx_holiday_users;
 --ALTER TABLE llx_holiday_users_tmp RENAME TO llx_holiday_users;
 
+ALTER TABLE llx_product_fournisseur_price ADD supplier_reputation varchar(10) NULL;
