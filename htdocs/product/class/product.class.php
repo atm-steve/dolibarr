@@ -1508,7 +1508,7 @@ class Product extends CommonObject
 		$sql.= " ,pfp.default_vat_code";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price as pfp";
 		$sql.= " WHERE pfp.rowid = ".$prodfournprice;
-		if ($qty > 0) $sql.= " AND pfp.quantity <= ".$qty;
+		if ($qty > 0) $sql.= " AND pfp.quantity <= ".$qty." / IFNULL(pfp.conditionnement,1)";
 		$sql.= " ORDER BY pfp.quantity DESC";
 
 		dol_syslog(get_class($this)."::get_buyprice first search by prodfournprice/qty", LOG_DEBUG);
