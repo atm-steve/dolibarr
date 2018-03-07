@@ -569,6 +569,8 @@ else
     			print '&nbsp;';
     			print '</td>';
     		}
+		
+		print '<td class="liste_titre" align="center">'.$langs->trans("Fournisseur Préféré").'</td>';
 			// Number buying Price
 			if (! empty($arrayfields['p.numbuyprice']['checked']))
     		{
@@ -821,7 +823,21 @@ else
     							if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->lire)
     							{
     								$htmltext=$product_fourn->display_price_product_fournisseur(1, 1, 0, 1);
-    								print $form->textwithpicto(price($product_fourn->fourn_unitprice * (1 - $product_fourn->fourn_remise_percent/100) + $product_fourn->fourn_unitcharges - $product_fourn->fourn_remise).' '.$langs->trans("HT"),$htmltext);
+    								print $form->textwithpicto(price($product_fourn->fourn_unitprice).' '.$langs->trans("HT"),$htmltext);
+    								
+									$sql = '
+										SELECT conditionnement 
+										FROM ' . MAIN_DB_PREFIX . 'product_fournisseur_price 
+										WHERE rowid = ' . $product_fourn->product_fourn_price_id . '
+									';
+									
+									$statement = $db->query($sql);
+									$objCond = $db->fetch_object($statement);
+									
+									print ' / '.$objCond->conditionnement;
+									print ' ('.price($product_fourn->fourn_unitprice / $objCond->conditionnement).')';
+									print img_help(1, " / conditionnement (PU) ");
+									
     							}
     							else print price($product_fourn->fourn_unitprice).' '.$langs->trans("HT");
     						}
@@ -830,6 +846,18 @@ else
         			print '</td>';
 		            if (! $i) $totalarray['nbfield']++;
     			}
+
+			$resReput = $db->query("SELECT fk_soc FROM ".MAIN_DB_PREFIX."product_fournisseur_price WHERE fk_product=".$objp->rowid." AND supplier_reputation='FAVORITE'");
+			$TSupplierFavorite = array();
+			while($objreput = $db->fetch_object($resReput)) {
+					$ff=new Societe($db);
+					if($ff->fetch($objreput->fk_soc)>0) {
+						$TSupplierFavorite[] = $ff->getNomUrl(0);
+					}
+			}
+			echo '<td align="center">'. implode(', ', $TSupplierFavorite) .'</td>';
+
+			}
 
 				// Number of buy prices
 				if (! empty($arrayfields['p.numbuyprice']['checked']))

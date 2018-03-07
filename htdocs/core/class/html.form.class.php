@@ -2366,7 +2366,7 @@ class Form
         $sql = "SELECT p.rowid, p.label, p.ref, p.price, p.duration, p.fk_product_type,";
         $sql.= " pfp.ref_fourn, pfp.rowid as idprodfournprice, pfp.price as fprice, pfp.quantity, pfp.remise_percent, pfp.remise, pfp.unitprice,";
         $sql.= " pfp.fk_supplier_price_expression, pfp.fk_product, pfp.tva_tx, pfp.fk_soc, s.nom as name,";
-        $sql.= " pfp.supplier_reputation";
+		$sql.= " pfp.supplier_reputation,pfp.conditionnement";
         $sql.= " FROM ".MAIN_DB_PREFIX."product as p";
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_fournisseur_price as pfp ON p.rowid = pfp.fk_product";
         if ($socid) $sql.= " AND pfp.fk_soc = ".$socid;
@@ -2487,11 +2487,15 @@ class Form
                         $outval.= ' '.$langs->transnoentities("Units");
                     }
 
-                    if ($objp->quantity >= 1)
+                    if ($objp->quantity > 1)
                     {
                         $opt.=" (".price($objp->unitprice,1,$langs,0,0,-1,$conf->currency)."/".$langs->trans("Unit").")";	// Do not use strtolower because it breaks utf8 encoding
                         $outval.=" (".price($objp->unitprice,0,$langs,0,0,-1,$conf->currency)."/".$langs->transnoentities("Unit").")";	// Do not use strtolower because it breaks utf8 encoding
                     }
+					
+					$opt.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+					$outval.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+					
 					if ($objp->remise_percent >= 1)
                     {
                         $opt.=" - ".$langs->trans("Discount")." : ".vatrate($objp->remise_percent).' %';
