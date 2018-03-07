@@ -176,12 +176,12 @@ if ($action == 'order' && isset($_POST['valid']))
         $i = 0;
         $orders = array();
         $suppliersid = array_keys($suppliers);
-        foreach ($suppliers as $supplier)
+        foreach ($suppliers as $id_fourn => $supplier)
         {
             $order = new CommandeFournisseur($db);
             // Check if an order for the supplier exists
             $sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."commande_fournisseur";
-            $sql.= " WHERE fk_soc = ".$suppliersid[$i];
+            $sql.= " WHERE fk_soc = ".$id_fourn;
             $sql.= " AND source = 42 AND fk_statut = 0";
             $sql.= " ORDER BY date_creation DESC";
             $resql = $db->query($sql);
@@ -214,7 +214,7 @@ if ($action == 'order' && isset($_POST['valid']))
                     $id = $result;
                 }
             } else {
-                $order->socid = $suppliersid[$i];
+                $order->socid = $id_fourn;
                 $order->fetch_thirdparty();
                 //trick to know which orders have been generated this way
                 $order->source = 42;
