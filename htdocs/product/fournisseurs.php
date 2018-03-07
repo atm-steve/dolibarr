@@ -267,6 +267,20 @@ if (empty($reshook))
 			{
 				$db->commit();
 				$action='';
+				
+				if (!empty($conf->climetiffiot->enabled)) {
+					$conditionnement = GETPOST('conditionnement');
+					
+					if (!empty($conditionnement) && $conditionnement > 0) {
+						$sql = '
+							UPDATE ' . MAIN_DB_PREFIX . 'product_fournisseur_price
+							SET conditionnement = ' . $conditionnement . '
+							WHERE rowid = ' . $product->product_fourn_price_id . ';
+						';
+						
+						$result = $db->query($sql);
+					}
+				}
 			}
 			else
 			{
@@ -561,6 +575,28 @@ if ($id > 0 || $ref)
 					}
 				}
 
+
+				// Metiffiot : Conditionnement
+				if (!empty($conf->climetiffiot->enabled)) {
+					$objet = null;
+					if ($rowid) {
+						$sql = '
+							SELECT conditionnement
+							FROM ' . MAIN_DB_PREFIX . 'product_fournisseur_price
+							WHERE rowid = ' . $rowid . ';
+						';
+						
+						$statement = $db->query($sql);
+						$objet = $db->fetch_object($statement);
+					}
+					
+					print '<tr>';
+					print '<td>Conditionnement</td>';
+					print '<td><input class="flat" name="conditionnement" size="6" value="'.(!empty($objet) ? $objet->conditionnement : 1) . '">';
+	        			print '</td>';
+					print '</tr>';		
+				}
+
 				if (is_object($hookmanager))
 				{
 					$parameters=array('id_fourn'=>$id_fourn,'prod_id'=>$object->id);
@@ -641,6 +677,9 @@ if ($id > 0 || $ref)
 				{
 					if (! empty($conf->margin->enabled)) print_liste_field_titre("UnitCharges");
 				}
+				// Metiffiot
+				if (!empty($conf->climetiffiot->enabled))  print '<td align="right">Conditionnement</td>';
+				
 				print_liste_field_titre('');
 				print "</tr>\n";
 
@@ -717,6 +756,22 @@ if ($id > 0 || $ref)
 								print '</td>';
 							}
 						}*/
+						// Metiffiot : Conditionnement
+						if (!empty($conf->climetiffiot->enabled)) {
+							// Récupération du conditionnement
+							$sql = '
+								SELECT conditionnement 
+								FROM ' . MAIN_DB_PREFIX . 'product_fournisseur_price 
+								WHERE rowid = ' . $productfourn->product_fourn_price_id . '
+							';
+							
+							$statement = $db->query($sql);
+							$obj = $db->fetch_object($statement);
+							
+							print '<td align="right">';
+							print $obj->conditionnement;
+							print '</td>';
+						}
 
 						if (is_object($hookmanager))
 						{
