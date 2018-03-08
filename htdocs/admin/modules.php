@@ -33,6 +33,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/geturl.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/admin/dolistore/class/dolistore.class.php';
+require_once DOL_DOCUMENT_ROOT . '/conf/price.php';
 
 $langs->loadLangs(array("errors","admin","modulebuilder"));
 
@@ -674,6 +675,16 @@ if ($mode == 'common')
         print $versiontrans;
         print "</td>\n";
 
+        echo '<td align="right">';
+        
+        if(isset($TPriceModule[(int)$objMod->numero])) {
+        	list($price) = $TPriceModule[(int)$objMod->numero];
+        	
+        	echo price($price).'&euro;' ;
+        	
+        }
+        
+        echo '</td>';
         // Activate/Disable and Setup (2 columns)
         if (! empty($conf->global->$const_name))	// If module is already activated
         {

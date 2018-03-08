@@ -100,10 +100,34 @@ if ($disablenofollow) echo '</a>';
 ?>
 </div>
 
+<style type="text/css">
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color: pink;
+  opacity:1;
+}
+::-moz-placeholder { /* Firefox 19+ */
+  color: pink;
+  opacity:1;
+}
+:-ms-input-placeholder { /* IE 10+ */
+  color: pink;
+  opacity:1;
+}
+:-moz-placeholder { /* Firefox 18- */
+  color: pink;
+  opacity:1;
+}
+</style>
+<?php if(!empty($_COOKIE['dol_company_code'])) { ?>
+<div class="login_table" style="background:rgba(200,255,200,0.8); float:right;padding:20px;">
+<?php echo $langs->trans('OrCreateAnAccountText') ?>
+<p><a href="create-account.php" class="button"><?php echo $langs->trans('OrCreateAnAccount') ?></a></p>
+</div>
+<?php 
+}
 
-
-<div class="login_table">
-
+?>
+<div class="login_table" style="background:rgba(255,255,255,0.5);">
 <div id="login_line1">
 
 <div id="login_left">
@@ -116,6 +140,14 @@ if ($disablenofollow) echo '</a>';
 
 <table class="left centpercent" title="<?php echo $langs->trans("EnterLoginDetail"); ?>">
 <!-- Login -->
+<tr>
+<td class="nowrap center valignmiddle">
+<?php if (! empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)) { ?><label for="company_code" class="hidden"><?php echo $langs->trans("CompanyCode"); ?></label><?php } ?>
+<span class="span-icon-company">
+<input type="text" id="company_code" placeholder="<?php echo $langs->trans("CompanyCode"); ?>" name="company_code" class="flat input-icon-company" size="20" value="<?php echo !empty($_COOKIE['dol_company_code']) ? $_COOKIE['dol_company_code'] : ''; ?>" tabindex="1" autofocus="autofocus" />
+</span>
+</td>
+</tr>
 <tr>
 <td class="nowrap center valignmiddle">
 <?php if (! empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)) { ?><label for="username" class="hidden"><?php echo $langs->trans("Login"); ?></label><?php } ?>
