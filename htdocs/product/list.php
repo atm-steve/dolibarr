@@ -269,6 +269,7 @@ else
     $sql.= ' p.fk_product_type, p.duration, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,';
     $sql.= ' p.tobatch, p.accountancy_code_sell, p.accountancy_code_buy,';
     $sql.= ' p.datec as date_creation, p.tms as date_update, p.pmp,';
+    $sql.= ' pfp.supplier_reputation,';
     //$sql.= ' pfp.ref_fourn as ref_supplier, ';
     $sql.= ' MIN(pfp.unitprice) as minsellprice';
 	if (!empty($conf->variants->enabled) && $search_hidechildproducts && ($search_type === 0)) {
@@ -338,7 +339,7 @@ else
 	$sql.=$hookmanager->resPrint;
     $sql.= " GROUP BY p.rowid, p.ref, p.label, p.barcode, p.price, p.price_ttc, p.price_base_type,";
     $sql.= " p.fk_product_type, p.duration, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,";
-    $sql.= ' p.datec, p.tms, p.entity, p.tobatch, p.accountancy_code_sell, p.accountancy_code_buy, p.pmp';
+    $sql.= ' p.datec, p.tms, p.entity, p.tobatch, p.accountancy_code_sell, p.accountancy_code_buy, p.pmp, pfp.supplier_reputation';
 	if (!empty($conf->variants->enabled) && $search_hidechildproducts && ($search_type === 0)) {
 		$sql .= ', pac.rowid';
 	}
@@ -569,8 +570,10 @@ else
     			print '&nbsp;';
     			print '</td>';
     		}
-		
-		print '<td class="liste_titre" align="center">'.$langs->trans("Fournisseur Préféré").'</td>';
+    		print '<td class="liste_titre">';
+    		print '&nbsp;';
+    		print '</td>';
+		// print '<td class="liste_titre" align="center">'.$langs->trans("Fournisseur Préféré").'</td>';
 			// Number buying Price
 			if (! empty($arrayfields['p.numbuyprice']['checked']))
     		{
@@ -662,6 +665,8 @@ else
     		if (! empty($arrayfields['p.sellprice']['checked']))  print_liste_field_titre($arrayfields['p.sellprice']['label'], $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
     		if (! empty($arrayfields['p.minbuyprice']['checked']))  print_liste_field_titre($arrayfields['p.minbuyprice']['label'], $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
     		if (! empty($arrayfields['p.numbuyprice']['checked']))  print_liste_field_titre($arrayfields['p.numbuyprice']['label'], $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
+    		print_liste_field_titre($langs->trans("Fournisseur Préféré"), $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
+    		//print '<td class="liste_titre" align="center">'.$langs->trans("Fournisseur Préféré").'</td>';
     		if (! empty($arrayfields['p.pmp']['checked']))  print_liste_field_titre($arrayfields['p.pmp']['label'], $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
     		if (! empty($arrayfields['p.seuil_stock_alerte']['checked']))  print_liste_field_titre($arrayfields['p.seuil_stock_alerte']['label'], $_SERVER["PHP_SELF"],"p.seuil_stock_alerte","",$param,'align="right"',$sortfield,$sortorder);
     		if (! empty($arrayfields['p.desiredstock']['checked']))  print_liste_field_titre($arrayfields['p.desiredstock']['label'], $_SERVER["PHP_SELF"],"p.desiredstock","",$param,'align="right"',$sortfield,$sortorder);
@@ -845,19 +850,11 @@ else
         			}
         			print '</td>';
 		            if (! $i) $totalarray['nbfield']++;
+		            
+		            
     			}
 
-			$resReput = $db->query("SELECT fk_soc FROM ".MAIN_DB_PREFIX."product_fournisseur_price WHERE fk_product=".$objp->rowid." AND supplier_reputation='FAVORITE'");
-			$TSupplierFavorite = array();
-			while($objreput = $db->fetch_object($resReput)) {
-					$ff=new Societe($db);
-					if($ff->fetch($objreput->fk_soc)>0) {
-						$TSupplierFavorite[] = $ff->getNomUrl(0);
-					}
-			}
-			echo '<td align="center">'. implode(', ', $TSupplierFavorite) .'</td>';
-
-			}
+			
 
 				// Number of buy prices
 				if (! empty($arrayfields['p.numbuyprice']['checked']))
@@ -893,6 +890,20 @@ else
     				print '</td>';
 		            if (! $i) $totalarray['nbfield']++;
         		}
+        		
+        		$resReput = $db->query("SELECT fk_soc FROM ".MAIN_DB_PREFIX."product_fournisseur_price WHERE fk_product=".$obj->rowid." AND supplier_reputation='FAVORITE'");
+        		$TSupplierFavorite = array();
+        		if ($resReput){
+        		    while($objreput = $db->fetch_object($resReput)) {
+        		        $ff=new Societe($db);
+        		        if($ff->fetch($objreput->fk_soc)>0) {
+        		            $TSupplierFavorite[] = $ff->getNomUrl(0);
+        		        }
+        		    }
+        		}
+        		echo '<td align="center">'. implode(', ', $TSupplierFavorite) .'</td>';
+        		if (! $i) $totalarray['nbfield']++;
+        		
     			// Desired stock
 		        if (! empty($arrayfields['p.desiredstock']['checked']))
         		{

@@ -2584,7 +2584,8 @@ elseif (! empty($object->id))
 				}
 
 				// Send
-				if (in_array($object->statut, array(2, 3, 4, 5)))
+				//if (in_array($object->statut, array(2, 3, 4, 5)))
+				if (in_array($object->statut, array(3)))
 				{
 					if ($user->rights->fournisseur->commande->commander)
 					{
