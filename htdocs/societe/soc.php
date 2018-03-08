@@ -249,9 +249,10 @@ if (empty($reshook))
             	$object->country=$tmparray['label'];
             }
 			
-			// Vérification de la cohérence SIREN / SIRET
+			// SPECIFIQUE CPRO
 			$siren = $object->idprof1;
 			$siret = $object->idprof2;
+			// Vérification de la cohérence SIREN / SIRET
 			if(!empty($siret)) {
 				if(strpos($siret, $siren) !== 0) {
 					$langs->load("errors");
@@ -259,6 +260,14 @@ if (empty($reshook))
 					$action = ($action=='add'?'create':'edit');
 				}
 			}
+			
+			// Vérification SIRET = 14 caractères
+			if(strlen($siret) != 14) {
+				$langs->load("errors");
+				$error++; $errors[] = "Merci de renseigner un SIRET complet (14 caractères)";
+				$action = ($action=='add'?'create':'edit');
+			}
+			// FIN SPECIFIQUE CPRO
 
             // Check for duplicate or mandatory prof id
         	for ($i = 1; $i < 5; $i++)
