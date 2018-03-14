@@ -10,6 +10,7 @@
  * Copyright (C) 2015       Jean-François Ferry     <jfefe@aternatik.fr>
  * Copyright (C) 2015       Marcos García           <marcosgdf@gmail.com>
  * Copyright (C) 2015       Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2018       Nicolas ZABOURI	    <info@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,7 +74,9 @@ $extralabels=$extrafields->fetch_name_optionals_label($object->table_element);
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('thirdpartycard','globalcard'));
 
-if ($action == 'view' && $object->fetch($socid)<=0)
+if ($socid > 0) $object->fetch($socid);
+
+if (! ($object->id > 0) && $action == 'view')
 {
 	$langs->load("errors");
 	print($langs->trans('ErrorRecordNotFound'));
@@ -117,8 +120,6 @@ if (empty($reshook))
 
 	if ($action == 'confirm_merge' && $confirm == 'yes' && $user->rights->societe->creer)
 	{
-		$object->fetch($socid);
-
 		$error = 0;
 		$soc_origin_id = GETPOST('soc_origin', 'int');
 		$soc_origin = new Societe($db);
