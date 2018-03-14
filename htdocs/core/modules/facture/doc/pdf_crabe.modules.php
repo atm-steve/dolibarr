@@ -100,8 +100,6 @@ class pdf_crabe extends ModelePDFFactures
 		$this->marge_haute =isset($conf->global->MAIN_PDF_MARGIN_TOP)?$conf->global->MAIN_PDF_MARGIN_TOP:10;
 		$this->marge_basse =isset($conf->global->MAIN_PDF_MARGIN_BOTTOM)?$conf->global->MAIN_PDF_MARGIN_BOTTOM:10;
 
-		$this->marge_haute+=15;//APDISAR
-
 		$this->option_logo = 1;                    // Affiche logo
 		$this->option_tva = 1;                     // Gere option tva FACTURE_TVAOPTION
 		$this->option_modereg = 1;                 // Affiche mode reglement
@@ -341,7 +339,7 @@ class pdf_crabe extends ModelePDFFactures
 				$pdf->MultiCell(0, 3, '');		// Set interline to 3
 				$pdf->SetTextColor(0,0,0);
 
-				$tab_top = 90+$top_shift+15;//APDISAR
+				$tab_top = 90+$top_shift;
 				$tab_top_newpage = (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)?42+$top_shift:10);
 				$tab_height = 130-$top_shift;
 				$tab_height_newpage = 150;
@@ -906,35 +904,16 @@ class pdf_crabe extends ModelePDFFactures
 			$titre = $outputlangs->transnoentities("PaymentConditions").':';
 			$pdf->MultiCell(43, 4, $titre, 0, 'L');
 
-			/*
 			$pdf->SetFont('','', $default_font_size - 2);
 			$pdf->SetXY($posxval, $posy);
 			$lib_condition_paiement=$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code)!=('PaymentCondition'.$object->cond_reglement_code)?$outputlangs->transnoentities("PaymentCondition".$object->cond_reglement_code):$outputlangs->convToOutputCharset($object->cond_reglement_doc);
 			$lib_condition_paiement=str_replace('\n',"\n",$lib_condition_paiement);
 			$pdf->MultiCell(67, 4, $lib_condition_paiement,0,'L');
-			*/
+
 			$posy=$pdf->GetY()+3;
 		}
 
-		$pdf->SetXY($this->marge_gauche, $posy);
-		//$pdf->SetTextColor(200,0,0);
-		$pdf->SetFont('','B', $default_font_size - 2);
-		$pdf->MultiCell(100, 3, "A 45 jours date de facture.",0,'L',0);
-		$pdf->MultiCell(100, 3, "Pas d'escompte en cas de paiement anticipé.",0,'L',0);
-		$pdf->MultiCell(100, 3, "Pénalités pour paiement tardif égales à 3 fois le taux d'intérêt légal.",0,'L',0);
-		$pdf->MultiCell(130, 3, "En plus des prénalités de retard dues de plein droit, une indemnité forfaitaire",0,'L',0);
-		$pdf->MultiCell(100, 3, "pour frais de recouvrement de 40 € est due (loi du 22/03/2012)",0,'L',0);
-		$pdf->MultiCell(100, 3, "",0,'L',0);
-		$pdf->MultiCell(100, 3, "SIRET : 40539661500016 - APE : 9499Z",0,'L',0,1,$pdf->GetX()+40);
-		$pdf->MultiCell(100, 3, "N° d'identification TVA : FR 74 405 396 615",0,'L',0,1,$pdf->GetX()+40);
-//		$pdf->MultiCell(100, 3, "DOM.BANCAIRE : CL BDI LYON ST ETN COLOC 02220",0,'L',0,1,$pdf->GetX()+40);
-//		$pdf->MultiCell(100, 3, "CPTE N° 30002/02620/0000060115N/79",0,'L',0,1,$pdf->GetX()+40);
-		$pdf->MultiCell(100, 3, "IBAN N° FR45 3000 2042 0000 0070 6223 N26",0,'L',0,1,$pdf->GetX()+40);
-		$pdf->MultiCell(100, 3, "BIC N° CRLYFRPP",0,'L',0,1,$pdf->GetX()+40);
-		
-		$posy=$pdf->GetY()+1;
-
-		/*if ($object->type != 2)
+		if ($object->type != 2)
 		{
 			// Check a payment mode is defined
 			if (empty($object->mode_reglement_code)
@@ -1039,7 +1018,6 @@ class pdf_crabe extends ModelePDFFactures
 					$posy+=2;
 				}
 			}
-			*/
 		}
 
 		return $posy;
@@ -1301,7 +1279,7 @@ class pdf_crabe extends ModelePDFFactures
 				$index++;
 				$pdf->SetXY($col1x, $tab2_top + $tab2_hl * $index);
 				$pdf->SetTextColor(0,0,60);
-				$pdf->SetFillColor(255,255,255);
+				$pdf->SetFillColor(224,224,224);
 				$pdf->MultiCell($col2x-$col1x, $tab2_hl, $outputlangs->transnoentities("TotalTTC"), $useborder, 'L', 1);
 
 				$pdf->SetXY($col2x, $tab2_top + $tab2_hl * $index);
@@ -1567,7 +1545,7 @@ class pdf_crabe extends ModelePDFFactures
 		$pdf->SetXY($this->marge_gauche,$posy);
 
 		// Logo
-		/*$logo=$conf->mycompany->dir_output.'/logos/'.$this->emetteur->logo;
+		$logo=$conf->mycompany->dir_output.'/logos/'.$this->emetteur->logo;
 		if ($this->emetteur->logo)
 		{
 			if (is_readable($logo))
@@ -1587,7 +1565,7 @@ class pdf_crabe extends ModelePDFFactures
 		{
 			$text=$this->emetteur->name;
 			$pdf->MultiCell($w, 4, $outputlangs->convToOutputCharset($text), 0, 'L');
-		}*/
+		}
 
 		$pdf->SetFont('','B', $default_font_size + 3);
 		$pdf->SetXY($posx,$posy);
@@ -1718,7 +1696,7 @@ class pdf_crabe extends ModelePDFFactures
 
 			// Show sender
 			$posy=!empty($conf->global->MAIN_PDF_USE_ISO_LOCATION) ? 40 : 42;
-			$posy+=$top_shift+10;
+			$posy+=$top_shift;
 			$posx=$this->marge_gauche;
 			if (! empty($conf->global->MAIN_INVERT_SENDER_RECIPIENT)) $posx=$this->page_largeur-$this->marge_droite-80;
 
@@ -1774,7 +1752,7 @@ class pdf_crabe extends ModelePDFFactures
 			$widthrecbox=!empty($conf->global->MAIN_PDF_USE_ISO_LOCATION) ? 92 : 100;
 			if ($this->page_largeur < 210) $widthrecbox=84;	// To work with US executive format
 			$posy=!empty($conf->global->MAIN_PDF_USE_ISO_LOCATION) ? 40 : 42;
-			$posy+=$top_shift-8;
+			$posy+=$top_shift;
 			$posx=$this->page_largeur-$this->marge_droite-$widthrecbox;
 			if (! empty($conf->global->MAIN_INVERT_SENDER_RECIPIENT)) $posx=$this->marge_gauche;
 
@@ -1815,10 +1793,7 @@ class pdf_crabe extends ModelePDFFactures
 	{
 		global $conf;
 		$showdetails=$conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS;
-		$pdf->SetXY($pdf->marge_droite-50, $pdf->marge_basse-20);
-		$pdf->SetFont('','', 9);
-		$pdf->MultiCell(100, 3, "TT-MOD-facture-20150414",0,'L',0);		
-		//return pdf_pagefoot($pdf,$outputlangs,'INVOICE_FREE_TEXT',$this->emetteur,$this->marge_basse,$this->marge_gauche,$this->page_hauteur,$object,$showdetails,$hidefreetext);
+		return pdf_pagefoot($pdf,$outputlangs,'INVOICE_FREE_TEXT',$this->emetteur,$this->marge_basse,$this->marge_gauche,$this->page_hauteur,$object,$showdetails,$hidefreetext);
 	}
 
 }
