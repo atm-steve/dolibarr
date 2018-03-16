@@ -275,7 +275,7 @@ if (empty($reshook))
 						$sql = '
 							UPDATE ' . MAIN_DB_PREFIX . 'product_fournisseur_price
 							SET conditionnement = ' . $conditionnement . '
-							WHERE rowid = ' . $product->product_fourn_price_id . ';
+							WHERE rowid = ' . $object->product_fourn_price_id . ';
 						';
 						
 						$result = $db->query($sql);
