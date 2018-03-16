@@ -2362,6 +2362,7 @@ class Form
         $outarray=array();
 
         $langs->load('stocks');
+        $langs->load('suppliers');
 
         $sql = "SELECT p.rowid, p.label, p.ref, p.price, p.duration, p.fk_product_type,";
         $sql.= " pfp.ref_fourn, pfp.rowid as idprodfournprice, pfp.price as fprice, pfp.quantity, pfp.remise_percent, pfp.remise, pfp.unitprice,";
