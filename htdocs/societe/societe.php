@@ -433,7 +433,7 @@ if ($resql)
         $companystatic->fournisseur=$obj->fournisseur;
         $companystatic->code_client=$obj->code_client;
         $companystatic->code_fournisseur=$obj->code_fournisseur;
-        print '<a href="'.dol_buildpath('/financement/simulation.php',2).'?socid='.$companystatic->id.'">'.img_object($langs->trans("ShowCompany").': '.$companystatic->name,'company').''.$companystatic->name.'<a>';//.$companystatic->getNomUrl(1,'',100);
+        print '<a href="'.dol_buildpath('/financement/simulation.php',2).'?socid='.$companystatic->id.'&from=search">'.img_object($langs->trans("ShowCompany").': '.$companystatic->name,'company').''.$companystatic->name.'<a>';//.$companystatic->getNomUrl(1,'',100);
 		print "</td>\n";
 		// Barcode
 		if (! empty($conf->barcode->enabled))
