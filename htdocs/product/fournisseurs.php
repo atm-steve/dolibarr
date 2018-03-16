@@ -690,56 +690,62 @@ if ($id > 0 || $ref)
 					foreach($product_fourn_list as $productfourn)
 					{
 
-
+					    if($productfourn->supplier_reputation == 'FAVORITE') {
+					        $style = ' style="background-color:#eeffee;" ';
+					    }
+					    else if($productfourn->supplier_reputation=='DONOTORDER'){
+					        $style = ' style="background-color:#ffdddd;" ';
+					    } else $style =  '';
+					    
 						print '<tr class="oddeven">';
 
 						// Supplier
-						print '<td>'.$productfourn->getSocNomUrl(1,'supplier').'</td>';
+						print '<td '.$style.'>'.$productfourn->getSocNomUrl(1,'supplier').'</td>';
 
 						// Supplier
-						print '<td align="left">'.$productfourn->fourn_ref.'</td>';
+						print '<td align="left" '.$style.'>'.$productfourn->fourn_ref.'</td>';
 
 						// Availability
 						if(!empty($conf->global->FOURN_PRODUCT_AVAILABILITY))
 						{
 							$form->load_cache_availability();
                 			$availability= $form->cache_availability[$productfourn->fk_availability]['label'];
-							print '<td align="left">'.$availability.'</td>';
+							print '<td align="left" '.$style.'>'.$availability.'</td>';
 						}
 
 						// Quantity
-						print '<td align="right">';
+						print '<td align="right" '.$style.'>';
 						print $productfourn->fourn_qty;
 						print '</td>';
 
 						// VAT rate
-						print '<td align="right">';
+						print '<td align="right" '.$style.'>';
 						print vatrate($productfourn->fourn_tva_tx,true);
 						print '</td>';
 
 						// Price for the quantity
-						print '<td align="right">';
+						print '<td align="right" '.$style.'>';
 						print $productfourn->fourn_price?price($productfourn->fourn_price):"";
 						print '</td>';
 
 						// Unit price
-						print '<td align="right">';
+						print '<td align="right" '.$style.'>';
 						print price($productfourn->fourn_unitprice);
 						//print $objp->unitprice? price($objp->unitprice) : ($objp->quantity?price($objp->price/$objp->quantity):"&nbsp;");
 						print '</td>';
 
 						// Discount
-						print '<td align="right">';
+						print '<td align="right" '.$style.'>';
 						print price2num($productfourn->fourn_remise_percent).'%';
 						print '</td>';
 
 						// Delivery delay
-						print '<td align="right">';
+						print '<td align="right" '.$style.'>';
 						print $productfourn->delivery_time_days;
 						print '</td>';
 
 						// Reputation
-						print '<td align="center">';
+						print '<td align="center" '.$style.'>';
 						if (!empty($productfourn->supplier_reputation) && !empty($object->reputations[$productfourn->supplier_reputation])) {
 							print $object->reputations[$productfourn->supplier_reputation];
 						}
@@ -768,7 +774,7 @@ if ($id > 0 || $ref)
 							$statement = $db->query($sql);
 							$obj = $db->fetch_object($statement);
 							
-							print '<td align="right">';
+							print '<td align="right" '.$style.'>';
 							print $obj->conditionnement;
 							print ' ('.price($productfourn->fourn_unitprice / $obj->conditionnement).')';
 							print '</td>';
@@ -781,7 +787,7 @@ if ($id > 0 || $ref)
 						}
 
 						// Modify-Remove
-						print '<td align="center">';
+						print '<td align="center" '.$style.'>';
 						if ($user->rights->produit->creer || $user->rights->service->creer)
 						{
 							print '<a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&amp;socid='.$productfourn->fourn_id.'&amp;action=add_price&amp;rowid='.$productfourn->product_fourn_price_id.'">'.img_edit()."</a>";
