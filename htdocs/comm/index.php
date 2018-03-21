@@ -165,7 +165,7 @@ if (! empty($conf->propal->enabled) && $user->rights->propal->lire)
 		if ($num > 0)
 		{
 			$i = 0;
-			while ($i < $num)
+			while ($i < $num && $i < $conf->liste_limit)
 			{
 				$obj = $db->fetch_object($resql);
 
@@ -327,7 +327,7 @@ if (! empty($conf->commande->enabled) && $user->rights->commande->lire)
 		if ($num > 0)
 		{
 			$i = 0;
-			while ($i < $num)
+			while ($i < $num && $i < $conf->liste_limit)
 			{
 
 				$obj = $db->fetch_object($resql);
@@ -410,7 +410,7 @@ if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->commande
         if ($num > 0)
         {
             $i = 0;
-            while ($i < $num)
+            while ($i < $num && $i < $conf->liste_limit)
             {
 
                 $obj = $db->fetch_object($resql);
@@ -701,7 +701,7 @@ if (! empty($conf->propal->enabled) && $user->rights->propal->lire)
 			print '<tr class="liste_titre"><th colspan="5">'.$langs->trans("ProposalsOpened").' <a href="'.DOL_URL_ROOT.'/comm/propal/list.php?viewstatut=1"><span class="badge">'.$num.'</span></th></tr>';
 
 			$nbofloop=min($num, (empty($conf->global->MAIN_MAXLIST_OVERLOAD)?500:$conf->global->MAIN_MAXLIST_OVERLOAD));
-			while ($i < $nbofloop)
+			while ($i < $nbofloop && $i < $conf->liste_limit)
 			{
 				$obj = $db->fetch_object($result);
 
