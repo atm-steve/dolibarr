@@ -37,6 +37,14 @@
  * $type, $text, $description, $line
  */
 
+// Protection to avoid direct call of template
+if (empty($object) || ! is_object($object))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
+
 global $forceall, $senderissupplier, $inputalsopricewithtax, $outputalsopricetotalwithtax;
 
 $usemargins=0;
@@ -145,7 +153,7 @@ if (empty($outputalsopricetotalwithtax)) $outputalsopricetotalwithtax=0;
 	<td align="right" class="linecolvat nowrap"><?php $coldisplay++; ?><?php
 	//var_dump($line);
 	$positiverates='';
-	if (price2num($line->tva_tx))       $positiverates.=($positiverates?'/':'').price2num($line->tva_tx);
+	if (price2num($line->tva_tx))          $positiverates.=($positiverates?'/':'').price2num($line->tva_tx);
 	if (price2num($line->total_localtax1)) $positiverates.=($positiverates?'/':'').price2num($line->localtax1_tx);
 	if (price2num($line->total_localtax2)) $positiverates.=($positiverates?'/':'').price2num($line->localtax2_tx);
 	if (empty($positiverates)) $positiverates='0';

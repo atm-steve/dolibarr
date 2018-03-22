@@ -127,7 +127,7 @@ if (empty($reshook))
 
 	include DOL_DOCUMENT_ROOT.'/core/actions_dellink.inc.php';		// Must be include, not include_once
 
-	// Set incoterm
+	// Reopen
 	if ($action == 'reopen' && $user->rights->expedition->creer)
 	{
 	    $object->fetch($id);
@@ -212,15 +212,15 @@ if (empty($reshook))
 	    $objectsrc->fetch($object->origin_id);
 
 	    $object->socid					= $objectsrc->socid;
-	    $object->ref_customer			= '';                   // We don't use $objectsrc->ref_client, this is ref or order not shipment
-	    $object->model_pdf				= GETPOST('model','alpha');
+	    $object->ref_customer			= GETPOST('ref_customer','alpha');
+	    $object->model_pdf				= GETPOST('model');
 	    $object->date_delivery			= $date_delivery;	    // Date delivery planed
 	    $object->fk_delivery_address	= $objectsrc->fk_delivery_address;
 	    $object->shipping_method_id		= GETPOST('shipping_method_id','int');
 	    $object->tracking_number		= GETPOST('tracking_number','alpha');
 	    $object->ref_int				= GETPOST('ref_int','alpha');
-	    $object->note_private			= GETPOST('note_private');
-	    $object->note_public			= GETPOST('note_public');
+	    $object->note_private			= GETPOST('note_private','none');
+	    $object->note_public			= GETPOST('note_public','none');
 		$object->fk_incoterms 			= GETPOST('incoterm_id', 'int');
 		$object->location_incoterms 	= GETPOST('location_incoterms', 'alpha');
 
@@ -503,8 +503,8 @@ if (empty($reshook))
 	    }
 	}
 
-	// Action update description of emailing
-	else if ($action == 'settrackingnumber' || $action == 'settrackingurl'
+	// Action update
+	else if ($action == 'settracking_number' || $action == 'settracking_url'
 	|| $action == 'settrueWeight'
 	|| $action == 'settrueWidth'
 	|| $action == 'settrueHeight'
@@ -513,8 +513,8 @@ if (empty($reshook))
 	{
 	    $error=0;
 
-	    if ($action == 'settrackingnumber')		$object->tracking_number = trim(GETPOST('trackingnumber','alpha'));
-	    if ($action == 'settrackingurl')		$object->tracking_url = trim(GETPOST('trackingurl','int'));
+	    if ($action == 'settracking_number')		$object->tracking_number = trim(GETPOST('tracking_number','alpha'));
+	    if ($action == 'settracking_url')		$object->tracking_url = trim(GETPOST('tracking_url','int'));
 	    if ($action == 'settrueWeight')	{
 	    	$object->trueWeight = trim(GETPOST('trueWeight','int'));
 			$object->weight_units = GETPOST('weight_units','int');
@@ -691,7 +691,7 @@ if ($action == 'create')
             else if ($origin == 'propal') print $langs->trans('RefCustomerOrder');
             else print $langs->trans('RefCustomer');
             print '</td><td colspan="3">';
-            print $object->ref_client;
+            print '<input type="text" name="ref_customer" value="'.$object->ref_client.'" />';
             print '</td>';
             print '</tr>';
 
@@ -777,7 +777,7 @@ if ($action == 'create')
 
             // Other attributes
             $parameters = array('objectsrc' => $objectsrc, 'colspan' => ' colspan="3"', 'socid'=>$socid);
-            $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+            $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$expe,$action);    // Note that $action and $object may have been modified by hook
             print $hookmanager->resPrint;
 
 			if (empty($reshook) && ! empty($extrafields->attribute_label)) {
@@ -1240,6 +1240,7 @@ if ($action == 'create')
 
 									print '<!-- Show details of lot -->';
 									print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$dbatch->id.'">';
+
 									//print $langs->trans("DetailBatchFormat", $dbatch->batch, dol_print_date($dbatch->eatby,"day"), dol_print_date($dbatch->sellby,"day"), $dbatch->qty);
 									//print $line->fk_product.' - '.$dbatch->batch;
 									print $langs->trans("Batch").': ';
@@ -1691,8 +1692,8 @@ else if ($id || $ref)
 		print '</tr>';
 
 		// Tracking Number
-		print '<tr><td class="titlefield">'.$form->editfieldkey("TrackingNumber",'trackingnumber',$object->tracking_number,$object,$user->rights->expedition->creer).'</td><td colspan="3">';
-		print $form->editfieldval("TrackingNumber",'trackingnumber',$object->tracking_url,$object,$user->rights->expedition->creer,'string',$object->tracking_number);
+		print '<tr><td class="titlefield">'.$form->editfieldkey("TrackingNumber",'tracking_number',$object->tracking_number,$object,$user->rights->expedition->creer).'</td><td colspan="3">';
+		print $form->editfieldval("TrackingNumber",'tracking_number',$object->tracking_url,$object,$user->rights->expedition->creer,'string',$object->tracking_number);
 		print '</td></tr>';
 
 		// Incoterms
@@ -2122,7 +2123,7 @@ else if ($id || $ref)
 		$urlsource = $_SERVER["PHP_SELF"]."?id=".$object->id;
 
 		$genallowed=$user->rights->expedition->lire;
-		$delallowed=$user->rights->expedition->supprimer;
+		$delallowed=$user->rights->expedition->creer;
 
 		print $formfile->showdocuments('expedition',$objectref,$filedir,$urlsource,$genallowed,$delallowed,$object->modelpdf,1,0,0,28,0,'','','',$soc->default_lang);
 

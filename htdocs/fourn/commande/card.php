@@ -54,16 +54,7 @@ if (!empty($conf->variants->enabled)) {
 	require_once DOL_DOCUMENT_ROOT.'/variants/class/ProductCombination.class.php';
 }
 
-$langs->load('admin');
-$langs->load('orders');
-$langs->load('sendings');
-$langs->load('companies');
-$langs->load('bills');
-$langs->load('propal');
-$langs->load('supplier_proposal');
-$langs->load('deliveries');
-$langs->load('products');
-$langs->load('stocks');
+$langs->loadLangs(array('admin','orders','sendings','companies','bills','propal','supplier_proposal','deliveries','products','stocks','productbatch'));
 if (!empty($conf->incoterm->enabled)) $langs->load('incoterm');
 
 $id 			= GETPOST('id','int');
@@ -90,7 +81,7 @@ $datelivraison=dol_mktime(GETPOST('liv_hour','int'), GETPOST('liv_min','int'), G
 
 // Security check
 if ($user->societe_id) $socid=$user->societe_id;
-$result = restrictedArea($user, 'fournisseur', $id, '', 'commande');
+$result = restrictedArea($user, 'fournisseur', $id, 'commande_fournisseur', 'commande');
 
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('ordersuppliercard','globalcard'));
@@ -2109,7 +2100,7 @@ elseif (! empty($object->id))
 	//$result = $object->getLinesArray();
 
 
-	print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline')?'#add':'#line_'.GETPOST('lineid')).'" method="POST">
+	print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline')?'#addline':'#line_'.GETPOST('lineid')).'" method="POST">
 	<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">
 	<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline') . '">
 	<input type="hidden" name="mode" value="">
@@ -2757,8 +2748,8 @@ if ($action != 'makeorder')
     		$relativepath =	$comfournref.'/'.$comfournref.'.pdf';
     		$filedir = $conf->fournisseur->dir_output	. '/commande/' .	$comfournref;
     		$urlsource=$_SERVER["PHP_SELF"]."?id=".$object->id;
-    		$genallowed=$user->rights->fournisseur->commande->creer;
-    		$delallowed=$user->rights->fournisseur->commande->supprimer;
+    		$genallowed=$user->rights->fournisseur->commande->lire;
+    		$delallowed=$user->rights->fournisseur->commande->creer;
 
     		print $formfile->showdocuments('commande_fournisseur',$comfournref,$filedir,$urlsource,$genallowed,$delallowed,$object->modelpdf,1,0,0,0,0,'','','',$object->thirdparty->default_lang);
     		$somethingshown=$formfile->numoffiles;

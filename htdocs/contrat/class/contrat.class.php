@@ -322,7 +322,11 @@ class Contrat extends CommonObject
 		$result=$this->thirdparty->set_as_client();
 
 		// Define new ref
-		if (! $error && (preg_match('/^[\(]?PROV/i', $this->ref) || empty($this->ref))) // empty should not happened, but when it occurs, the test save life
+		if ($force_number)
+		{
+			$num = $force_number;
+		}
+		else if (! $error && (preg_match('/^[\(]?PROV/i', $this->ref) || empty($this->ref))) // empty should not happened, but when it occurs, the test save life
 		{
 			$num = $this->getNextNumRef($this->thirdparty);
 		}
@@ -946,7 +950,12 @@ class Contrat extends CommonObject
 
 			if (! $error)
 			{
-    			// Add object linked
+				if (! empty($this->linkedObjectsIds) && empty($this->linked_objects))	// To use new linkedObjectsIds instead of old linked_objects
+				{
+					$this->linked_objects = $this->linkedObjectsIds;	// TODO Replace linked_objects with linkedObjectsIds
+				}
+
+				// Add object linked
     			if (! $error && $this->id && is_array($this->linked_objects) && ! empty($this->linked_objects))
     			{
     			    foreach($this->linked_objects as $origin => $tmp_origin_id)
@@ -958,7 +967,7 @@ class Contrat extends CommonObject
     			                $ret = $this->add_object_linked($origin, $origin_id);
     			                if (! $ret)
     			                {
-    			                    dol_print_error($this->db);
+    			                    $this->error=$this->db->lasterror();
     			                    $error++;
     			                }
     			            }
@@ -969,7 +978,7 @@ class Contrat extends CommonObject
     			            $ret = $this->add_object_linked($origin, $origin_id);
     			            if (! $ret)
     			            {
-    			                dol_print_error($this->db);
+    			                $this->error=$this->db->lasterror();
     			                $error++;
     			            }
     			        }
@@ -2251,6 +2260,16 @@ class Contrat extends CommonObject
 	}
 
 	/**
+	 * 	Create an array of order lines
+	 *
+	 * 	@return int		>0 if OK, <0 if KO
+	 */
+	function getLinesArray()
+	{
+		return $this->fetch_lines();
+	}
+
+	/**
 	 *  Create a document onto disk according to template module.
 	 *
 	 * 	@param	    string		$modele			Force model to use ('' to not force)
@@ -2968,7 +2987,16 @@ class ContratLigne extends CommonObjectLine
 		{
 			$this->id = $this->db->last_insert_id(MAIN_DB_PREFIX.'contratdet');
 
-			// FIXME Missing insert of extrafields
+			// Insert of extrafields
+			if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED) && is_array($this->array_options) && count($this->array_options)>0) // For avoid conflicts if trigger used
+			{
+				$result = $this->insertExtraFields();
+				if ($result < 0)
+				{
+					$this->db->rollback();
+					return -1;
+				}
+			}
 
 			if (!$notrigger)
 			{
