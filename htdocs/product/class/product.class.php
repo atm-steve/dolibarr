@@ -3409,6 +3409,49 @@ class Product extends CommonObject
 		return $tabobj;
 	}
 
+
+	/**
+	 *  Retourne tableau de toutes les photos du produit (spécifique La Foir'Fouille)
+	 *
+	 *  @param      string		$dir        Repertoire a scanner
+	 *  @param      int			$nbmax      Nombre maximum de photos (0=pas de max)
+	 *  @return     array       			Tableau de photos
+	 */
+	function liste_photos_lafoirfouille($dir,$nbmax=0)
+	{
+		global $conf;
+
+		$TRes = $this->liste_photos($dir, $nbmax);
+
+		if(empty($TRes)) {
+			$sdir = $conf->product->multidir_temp[$this->entity];
+			if(empty($this->entity)) $sdir = $conf->product->dir_temp;
+
+			$path = $sdir.'/'.dol_sanitizeFileName($this->ref).'.jpg';
+
+			$found = false;
+
+			if(dol_is_file($path)) {
+				$found = true;
+			} else {
+
+				$url = 'https://www.infos-lafoirfouille.fr/photos/resizer.php?photo=fichiers%2F'.$this->ref.'.jpg&max_height=350&max_width=350';
+
+				$content = file_get_contents($url);
+
+				if($content !== false && file_put_contents($path, $content) !== false) {
+					$found = true;
+				}
+			}
+
+			if($found) {
+				$TRes[]['photo'] = $path;
+			}
+		}
+
+		return $TRes;
+	}
+
 	/**
 	 *  Efface la photo du produit et sa vignette
 	 *
