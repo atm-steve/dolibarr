@@ -24,6 +24,8 @@
  *      \remarks    Call to wrapper is '<img src="'.DOL_URL_ROOT.'/viewimage.php?modulepart=diroffile&file=relativepathofofile&cache=0">'
  */
 
+ob_start();
+
 //if (! defined('NOREQUIREUSER'))	define('NOREQUIREUSER','1');	// Not disabled cause need to load personalized language
 //if (! defined('NOREQUIREDB'))		define('NOREQUIREDB','1');		// Not disabled cause need to load personalized language
 if (! defined('NOREQUIRESOC'))		define('NOREQUIRESOC','1');
@@ -199,6 +201,8 @@ else					// Open and return file
     }
 
     $fullpath_original_file_osencoded=dol_osencode($fullpath_original_file);
+
+ob_clean();
 
     readfile($fullpath_original_file_osencoded);
 }
