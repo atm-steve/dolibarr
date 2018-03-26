@@ -390,7 +390,7 @@ class TExportComptaDiacompta extends TExportCompta {
 			$facture = &$infosFacture['facture'];
 			
 			$label = $tiers['nom'];
-			if(!empty($conf->global->EXPORT_COMPTA_FOURN_INVOICE_REF_AND_REFSUPPLIER_ON_LABEL) && !empty($facture['ref_supplier'])) $label = $facture['ref'].' - '.$facture['ref_supplier'].' - '.$label;
+			if(!empty($conf->global->EXPORT_COMPTA_FOURN_INVOICE_REF_AND_REFSUPPLIER_ON_LABEL) && !empty($facture['ref_supplier'])) $label = $facture['ref_supplier'].' - '.$label;
 			
 			// Configuration permettant d'afficher la ligne tiers au crédit et les lignes complémentaires au débit. si non renseigné : tout au crédit 
 			$sens = array();
