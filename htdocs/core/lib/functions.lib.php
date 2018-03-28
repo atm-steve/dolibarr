@@ -1318,6 +1318,8 @@ function dol_banner_tab($object, $paramid, $morehtml='', $shownav=1, $fieldid='r
 	    if (! empty($conf->use_javascript_ajax) && $user->rights->societe->creer && ! empty($conf->global->MAIN_DIRECT_STATUS_UPDATE))
     	{
 	       	$morehtmlstatus.=ajax_object_onoff($object, 'status', 'status', 'InActivity', 'ActivityCeased');
+    	} else {
+    		$morehtmlstatus.='<span class="statusrefactiv">'.$object->getLibStatut(5,0).'</span>';
     	}
 	}
 	elseif ($object->element == 'product')
@@ -6276,6 +6278,8 @@ function natural_search($fields, $value, $mode=0, $nofirstand=0)
 				$i3 = 0;
 				foreach($tmpcrits as $tmpcrit)
 				{
+					if(empty($tmpcrit)) continue;
+
 					$newres .= (($i2 > 0 || $i3 > 0) ? ' OR ' : '');
 
 					if (preg_match('/\.(id|rowid)$/', $field))	// Special cas for rowid that is sometimes a ref so used as a search field
