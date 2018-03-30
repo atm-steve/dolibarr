@@ -154,6 +154,7 @@ if ($conf->fournisseur->enabled) $elementList['order_supplier_send']=$langs->tra
 if ($conf->fournisseur->enabled) $elementList['invoice_supplier_send']=$langs->trans('MailToSendSupplierInvoice');
 if ($conf->societe->enabled) $elementList['thirdparty']=$langs->trans('MailToThirdparty');
 if ($conf->contrat->enabled) $elementList['contract']=$langs->trans('MailToSendContract');
+$elementList['postevent']="Mail de remerciement post event";
 
 $parameters=array('elementList'=>$elementList);
 $reshook=$hookmanager->executeHooks('emailElementlist',$parameters);    // Note that $action and $object may have been modified by some hooks
