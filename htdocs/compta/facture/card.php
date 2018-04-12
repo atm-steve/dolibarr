@@ -641,7 +641,7 @@ if (empty($reshook))
 		// Check if there is already a discount (protection to avoid duplicate creation when resubmit post)
 		$discountcheck=new DiscountAbsolute($db);
 		$result=$discountcheck->fetch(0,$object->id);
-		
+
 		$canconvert=0;
 		if ($object->type == Facture::TYPE_DEPOSIT && $object->paye == 1 && empty($discountcheck->id)) $canconvert=1;	// we can convert deposit into discount if deposit is payed completely and not already converted (see real condition into condition used to show button converttoreduc)
 		if (($object->type == Facture::TYPE_CREDIT_NOTE || $object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_SITUATION) && $object->paye == 0 && empty($discountcheck->id)) $canconvert=1;	// we can convert credit note into discount if credit note is not payed back and not already converted and amount of payment is 0 (see real condition into condition used to show button converttoreduc)
@@ -873,7 +873,7 @@ if (empty($reshook))
 	                            // load extrafields
 	                            $line->fetch_optionals();
 	                        }
-	                        
+
 	                    	// Reset fk_parent_line for no child products and special product
 	                    	if (($line->product_type != 9 && empty($line->fk_parent_line)) || $line->product_type == 9) {
 	                    		$fk_parent_line = 0;
@@ -1413,7 +1413,7 @@ if (empty($reshook))
 
 				$object->situation_counter = $object->situation_counter + 1;
 				$id = $object->createFromCurrent($user);
-				if ($id <= 0) 
+				if ($id <= 0)
 				{
 					$mesg = $object->error;
 				}
@@ -3890,7 +3890,7 @@ else if ($id > 0 || ! empty($ref))
                 $obj = $db->fetch_object($resql);
                 $invoice->fetch($obj->fk_facture_source);
                 print '<tr><td colspan="' . $nbcols . '" align="right">';
-                if ($invoice->type == Facture::TYPE_CREDIT_NOTE)
+                if ($invoice->type == Facture::TYPE_CREDIT_NOTE || ($invoice->type == Facture::TYPE_SITUATION && $invoice->total_ht<0))
                     print $langs->trans("CreditNote") . ' ';
                 if ($invoice->type == Facture::TYPE_DEPOSIT)
                     print $langs->trans("Deposit") . ' ';
@@ -3901,8 +3901,8 @@ else if ($id > 0 || ! empty($ref))
                 print '<a href="' . $_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&action=unlinkdiscount&discountid=' . $obj->rowid . '">' . img_delete() . '</a>';
                 print '</td></tr>';
                 $i ++;
-                if ($invoice->type == Facture::TYPE_CREDIT_NOTE)
-                    $creditnoteamount += $obj->amount_ttc;
+                if ($invoice->type == Facture::TYPE_CREDIT_NOTE || ($invoice->type == Facture::TYPE_SITUATION && $invoice->total_ht<0))
+                	$creditnoteamount += $obj->amount_ttc;
                 if ($invoice->type == Facture::TYPE_DEPOSIT)
                     $depositamount += $obj->amount_ttc;
             }
