@@ -2160,7 +2160,7 @@ class Facture extends CommonInvoice
 
 		if ($num)
 		{
-			$this->update_price(1);
+			$this->update_price(1,'auto');
 
 			// Validate
 			$sql = 'UPDATE '.MAIN_DB_PREFIX.'facture';
