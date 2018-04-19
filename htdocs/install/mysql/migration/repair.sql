@@ -171,7 +171,7 @@ delete from llx_categorie_fournisseur where fk_categorie not in (select rowid fr
 delete from llx_categorie_societe where fk_categorie not in (select rowid from llx_categorie where type = 2);
 delete from llx_categorie_member where fk_categorie not in (select rowid from llx_categorie where type = 3);
 delete from llx_categorie_contact where fk_categorie not in (select rowid from llx_categorie where type = 4);
-delete from llx_categorie_project where fk_categorie not in (select rowid from llx_categorie where type = 5);
+delete from llx_categorie_project where fk_categorie not in (select rowid from llx_categorie where type = 6);
 
 
 -- Fix: delete orphelin deliveries. Note: deliveries are linked to shipment by llx_element_element only. No other links.
@@ -343,6 +343,8 @@ update llx_facturedet set product_type = 1 where product_type = 2;
 --update llx_propaldet as d set d.product_type = 1 where d.fk_product = 22 and d.product_type = 0;
 --update llx_commandedet as d set d.product_type = 1 where d.fk_product = 22 and d.product_type = 0;
 --update llx_facturedet as d set d.product_type = 1 where d.fk_product = 22 and d.product_type = 0;
+
+update llx_propal set fk_statut = 1 where fk_statut = -1;
 
 delete from llx_commande_fournisseur_dispatch where fk_commandefourndet = 0 or fk_commandefourndet IS NULL;
 

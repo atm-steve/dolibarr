@@ -1441,7 +1441,7 @@ class Form
 	/**
 	 *	Return select list of users
 	 *
-	 *  @param	string	$selected       User id or user object of user preselected. If -1, we use id of current user.
+	 *  @param	string	$selected       User id or user object of user preselected. If 0 or < -2, we use id of current user. If -1, keep unselected (if empty is allowed)
 	 *  @param  string	$htmlname       Field name in form
 	 *  @param  int		$show_empty     0=list with no empty value, 1=add also an empty value into list
 	 *  @param  array	$exclude        Array list of users id to exclude
@@ -1451,7 +1451,7 @@ class Form
 	 *  @param	int		$force_entity	0 or Id of environment to force
 	 *  @param	int		$maxlength		Maximum length of string into list (0=no limit)
 	 *  @param	int		$showstatus		0=show user status only if status is disabled, 1=always show user status into label, -1=never show user status
-	 *  @param	string	$morefilter		Add more filters into sql request
+	 *  @param	string	$morefilter		Add more filters into sql request (Example: 'employee = 1')
 	 *  @param	integer	$show_every		0=default list, 1=add also a value "Everybody" at beginning of list
 	 *  @param	string	$enableonlytext	If option $enableonlytext is set, we use this text to explain into label why record is disabled. Not used if enableonly is empty.
 	 *  @param	string	$morecss		More css
@@ -1523,7 +1523,6 @@ class Form
 		}else{
 			$sql.= " ORDER BY u.lastname ASC";
 		}
-
 
 		dol_syslog(get_class($this)."::select_dolusers", LOG_DEBUG);
 		$resql=$this->db->query($sql);
@@ -5294,7 +5293,8 @@ class Form
 		$sql = "SELECT t.rowid, ".$fieldstoshow." FROM ".MAIN_DB_PREFIX .$objecttmp->table_element." as t";
 		if ($objecttmp->ismultientitymanaged == 2)
 			if (!$user->rights->societe->client->voir && !$user->societe_id) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
-		$sql.= " WHERE t.entity IN (".getEntity($objecttmp->table_element).")";
+		$sql.= " WHERE 1=1";
+		if(! empty($objecttmp->ismultientitymanaged)) $sql.= " AND t.entity IN (".getEntity($objecttmp->table_element).")";
 		if ($objecttmp->ismultientitymanaged == 1 && ! empty($user->societe_id))
 		{
 			if ($objecttmp->element == 'societe') $sql.= " AND t.rowid = ".$user->societe_id;

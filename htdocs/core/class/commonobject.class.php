@@ -1358,19 +1358,24 @@ abstract class CommonObject
 		if (empty($format))   $format='text';
 		if (empty($id_field)) $id_field='rowid';
 
+		$fk_user_field = 'fk_user_modif';
+
 		$error=0;
 
 		$this->db->begin();
 
 		// Special case
 		if ($table == 'product' && $field == 'note_private') $field='note';
+		if (in_array($table, array('actioncomm', 'adherent', 'advtargetemailing', 'cronjob', 'establishment'))) {
+			$fk_user_field = 'fk_user_mod';
+		}
 
 		$sql = "UPDATE ".MAIN_DB_PREFIX.$table." SET ";
 		if ($format == 'text') $sql.= $field." = '".$this->db->escape($value)."'";
 		else if ($format == 'int') $sql.= $field." = ".$this->db->escape($value);
 		else if ($format == 'date') $sql.= $field." = ".($value ? "'".$this->db->idate($value)."'" : "null");
-		if (! empty($fuser) && is_object($fuser)) $sql.=", fk_user_modif = ".$fuser->id;
-		elseif (empty($fuser) || $fuser != 'none') $sql.=", fk_user_modif = ".$user->id;
+		if (! empty($fuser) && is_object($fuser)) $sql.=", ".$fk_user_field." = ".$fuser->id;
+		elseif (empty($fuser) || $fuser != 'none') $sql.=", ".$fk_user_field." = ".$user->id;
 		$sql.= " WHERE ".$id_field." = ".$id;
 
 		dol_syslog(get_class($this)."::".__FUNCTION__."", LOG_DEBUG);
@@ -2307,11 +2312,13 @@ abstract class CommonObject
 
 		if (! $this->table_element)
 		{
+			$this->error='update_note was called on objet with property table_element not defined';
 			dol_syslog(get_class($this)."::update_note was called on objet with property table_element not defined", LOG_ERR);
 			return -1;
 		}
 		if (! in_array($suffix,array('','_public','_private')))
 		{
+			$this->error='update_note Parameter suffix must be empty, \'_private\' or \'_public\'';
 			dol_syslog(get_class($this)."::update_note Parameter suffix must be empty, '_private' or '_public'", LOG_ERR);
 			return -2;
 		}
@@ -4602,6 +4609,10 @@ abstract class CommonObject
 						$new_array_options[$key] = $this->db->idate($this->array_options[$key]);
 						break;
 					case 'datetime':
+						// If data is a string instead of a timestamp, we convert it
+						if (! is_int($this->array_options[$key])) {
+							$this->array_options[$key] = strtotime($this->array_options[$key]);
+						}
 						$new_array_options[$key] = $this->db->idate($this->array_options[$key]);
 						break;
 		   			case 'link':
@@ -4787,6 +4798,7 @@ abstract class CommonObject
 			if (! $resql)
 			{
 				$this->error=$this->db->lasterror();
+				dol_syslog(get_class($this) . "::".__METHOD__ . $this->error, LOG_ERR);
 				$this->db->rollback();
 				return -1;
 			}
@@ -5371,7 +5383,7 @@ abstract class CommonObject
 		$label = $val['label'];
 		$type  = $val['type'];
 		$size  = $val['css'];
-		
+
 		// Convert var to be able to share same code than showOutputField of extrafields
 		if (preg_match('/varchar\((\d+)\)/', $type, $reg))
 		{
@@ -5708,15 +5720,15 @@ abstract class CommonObject
 	/**
 	 * Function to show lines of extrafields with output datas
 	 *
-	 * @param Extrafields   $extrafields    Extrafield Object
-	 * @param string        $mode           Show output (view) or input (edit) for extrafield
-	 * @param array         $params         Optional parameters
-	 * @param string        $keysuffix      Suffix string to add after name and id of field (can be used to avoid duplicate names)
-	 * @param string        $keyprefix      Prefix string to add before name and id of field (can be used to avoid duplicate names)
-	 *
-	 * @return string
+	 * @param 	Extrafields $extrafields    Extrafield Object
+	 * @param 	string      $mode           Show output (view) or input (edit) for extrafield
+	 * @param 	array       $params         Optional parameters
+	 * @param 	string      $keysuffix      Suffix string to add after name and id of field (can be used to avoid duplicate names)
+	 * @param 	string      $keyprefix      Prefix string to add before name and id of field (can be used to avoid duplicate names)
+	 * @param	string		$onetrtd		All fields in same tr td
+	 * @return 	string
 	 */
-	function showOptionals($extrafields, $mode='view', $params=null, $keysuffix='', $keyprefix='')
+	function showOptionals($extrafields, $mode='view', $params=null, $keysuffix='', $keyprefix='', $onetrtd=0)
 	{
 		global $_POST, $conf, $langs, $action;
 
@@ -5780,15 +5792,13 @@ abstract class CommonObject
 							$csstyle=$params['style'];
 						}
 					}
-					if ( !empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0)
+
+					$out .= '<tr '.$class.$csstyle.' class="'.$this->element.'_extras_'.$key.'">';
+					if (empty($onetrtd))
 					{
-						$out .= '<tr '.$class.$csstyle.' class="'.$this->element.'_extras_'.$key.'">';
-						$colspan='0';
+						if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0) { $colspan='0'; }
 					}
-					else
-					{
-						$out .= '<tr '.$class.$csstyle.' class="'.$this->element.'_extras_'.$key.'">';
-					}
+
 					// Convert date into timestamp format (value in memory must be a timestamp)
 					if (in_array($extrafields->attribute_type[$key],array('date','datetime')))
 					{
@@ -5806,10 +5816,17 @@ abstract class CommonObject
 					{
 						$labeltoshow = '<span'.($mode != 'view' ? ' class="fieldrequired"':'').'>'.$labeltoshow.'</span>';
 					}
-					$out .= '<td>'.$labeltoshow.'</td>';
+
+					if (empty($onetrtd)) $out .= '<td>';
+					else $out .= '<td'.($colspan?' colspan="'.($colspan+1).'"':'').'>';
+
+					$out .= $labeltoshow;
+
+					if (empty($onetrtd)) $out .= '</td><td'.($colspan?' colspan="'.($colspan).'"':'').'>';
+					else $out.=' ';
 
 					$html_id = !empty($this->id) ? $this->element.'_extras_'.$key.'_'.$this->id : '';
-					$out .='<td id="'.$html_id.'" class="'.$this->element.'_extras_'.$key.'" '.($colspan?' colspan="'.$colspan.'"':'').'>';
+					$out .='<span id="'.$html_id.'" class="'.$this->element.'_extras_'.$key.'">';
 
 					switch($mode) {
 						case "view":
@@ -5821,9 +5838,8 @@ abstract class CommonObject
 					}
 
 					$out .= '</td>';
+					$out .= '</tr>';
 
-					if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && (($e % 2) == 1)) $out .= '</tr>';
-					else $out .= '</tr>';
 					$e++;
 				}
 			}
@@ -6107,7 +6123,7 @@ abstract class CommonObject
 	 *
 	 * @return array
 	 */
-	private function set_save_query()
+	protected function setSaveQuery()
 	{
 		global $conf;
 
@@ -6161,7 +6177,7 @@ abstract class CommonObject
 	 *
 	 * @param   stdClass    $obj    Contain data of object from database
 	 */
-	private function setVarsFromFetchObj(&$obj)
+	protected function setVarsFromFetchObj(&$obj)
 	{
 		foreach ($this->fields as $field => $info)
 		{
@@ -6206,7 +6222,7 @@ abstract class CommonObject
 	 *
 	 * @return string
 	 */
-	private function get_field_list()
+	protected function getFieldList()
 	{
 		$keys = array_keys($this->fields);
 		return implode(',', $keys);
@@ -6241,7 +6257,7 @@ abstract class CommonObject
 
 		$now=dol_now();
 
-		$fieldvalues = $this->set_save_query();
+		$fieldvalues = $this->setSaveQuery();
 		if (array_key_exists('date_creation', $fieldvalues) && empty($fieldvalues['date_creation'])) $fieldvalues['date_creation']=$this->db->idate($now);
 		if (array_key_exists('fk_user_creat', $fieldvalues) && ! ($fieldvalues['fk_user_creat'] > 0)) $fieldvalues['fk_user_creat']=$user->id;
 		unset($fieldvalues['rowid']);	// The field 'rowid' is reserved field name for autoincrement field so we don't need it into insert.
@@ -6333,7 +6349,7 @@ abstract class CommonObject
 	{
 		if (empty($id) && empty($ref)) return false;
 
-		$sql = 'SELECT '.$this->get_field_list();
+		$sql = 'SELECT '.$this->getFieldList();
 		$sql.= ' FROM '.MAIN_DB_PREFIX.$this->table_element;
 
 		if(!empty($id)) $sql.= ' WHERE rowid = '.$id;
@@ -6376,7 +6392,7 @@ abstract class CommonObject
 
 		$now=dol_now();
 
-		$fieldvalues = $this->set_save_query();
+		$fieldvalues = $this->setSaveQuery();
 		if (array_key_exists('date_modification', $fieldvalues) && empty($fieldvalues['date_modification'])) $fieldvalues['date_modification']=$this->db->idate($now);
 		if (array_key_exists('fk_user_modif', $fieldvalues) && ! ($fieldvalues['fk_user_modif'] > 0)) $fieldvalues['fk_user_modif']=$user->id;
 		unset($fieldvalues['rowid']);	// The field 'rowid' is reserved field name for autoincrement field so we don't need it into update.
