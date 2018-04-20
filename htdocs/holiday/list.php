@@ -48,7 +48,7 @@ $contextpage= GETPOST('contextpage','aZ')?GETPOST('contextpage','aZ'):'myobjectl
 $backtopage = GETPOST('backtopage','alpha');											// Go back to a dedicated page
 $optioncss  = GETPOST('optioncss','aZ');												// Option for the css output (always '' except when 'print')
 
-$childis = $user->getAllChildIds(1);
+$childids = $user->getAllChildIds(1);
 
 // Security check
 $socid=0;
@@ -85,7 +85,7 @@ if (! $sortorder) $sortorder="DESC";
 
 
 $sall                = trim((GETPOST('search_all', 'alphanohtml')!='')?GETPOST('search_all', 'alphanohtml'):GETPOST('sall', 'alphanohtml'));
-$search_ref          = GETPOST('search_ref','alpha');
+$search_ref          = GETPOST('search_ref','alphanohtml');
 $search_day_create   = GETPOST('search_day_create','int');
 $search_month_create = GETPOST('search_month_create','int');
 $search_year_create  = GETPOST('search_year_create','int');
@@ -107,7 +107,6 @@ $fieldstosearchall = array(
     'uu.firstname'=>'EmployeeFirstname'
 );
 
-$childids = $user->getAllChildIds(1);
 
 
 /*
@@ -186,7 +185,7 @@ $order = $db->order($sortfield,$sortorder).$db->plimit($limit + 1, $offset);
 // Ref
 if(!empty($search_ref))
 {
-    $filter.= " AND cp.rowid = ".$db->escape($search_ref);
+    $filter.= " AND cp.rowid = ".(int) $db->escape($search_ref);
 }
 
 // Start date
@@ -275,14 +274,16 @@ if ($id > 0)
 	$search_employee = $user_id;
 }
 
-// Récupération des congés payés de l'utilisateur ou de tous les users
+// Récupération des congés payés de l'utilisateur ou de tous les users de sa hierarchy
+// Load array $holiday->holiday
 if (empty($user->rights->holiday->read_all) || $id > 0)
 {
-	$result = $holiday->fetchByUser($user_id,$order,$filter);	// Load array $holiday->holiday
+	if ($id > 0) $result = $holiday->fetchByUser($id, $order, $filter);
+	else  $result = $holiday->fetchByUser(join(',',$childids), $order, $filter);
 }
 else
 {
-    $result = $holiday->fetchAll($order,$filter);	// Load array $holiday->holiday
+    $result = $holiday->fetchAll($order, $filter);
 }
 // Si erreur SQL
 if ($result == '-1')

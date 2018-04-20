@@ -171,7 +171,8 @@ if ($result) {
 		$line->fetch($obj->fdid);
 
 		// Situation invoices handling
-		$prev_progress = $line->get_prev_progress($obj->fdid);
+		$prev_progress = $line->get_prev_progress($obj->rowid);
+
 		if ($obj->type == Facture::TYPE_SITUATION) {
 			// Avoid divide by 0
 			if ($obj->situation_percent == 0) {
@@ -653,7 +654,7 @@ if (empty($action) || $action == 'view') {
 	else
 		$description .= $langs->trans("DepositsAreIncluded");
 
-	$listofchoices=array('already'=>$langs->trans("AlreadyInGeneralLedger"), 'notyet'=>$langs->trans("NotYetInGeneralLedger"));
+	$listofchoices=array('notyet'=>$langs->trans("NotYetInGeneralLedger"), 'already'=>$langs->trans("AlreadyInGeneralLedger"));
 	$period = $form->select_date($date_start?$date_start:-1, 'date_start', 0, 0, 0, '', 1, 0, 1) . ' - ' . $form->select_date($date_end?$date_end:-1, 'date_end', 0, 0, 0, '', 1, 0, 1). ' -  ' .$langs->trans("JournalizationInLedgerStatus").' '. $form->selectarray('in_bookkeeping', $listofchoices, $in_bookkeeping, 1);
 
 	$varlink = 'id_journal=' . $id_journal;

@@ -1583,7 +1583,7 @@ class CommandeFournisseur extends CommonOrder
             $this->line->product_type=$product_type;
             $this->line->remise_percent=$remise_percent;
             $this->line->subprice=$pu_ht;
-            $this->line->rang=$this->rang;
+            $this->line->rang=$rang;
             $this->line->info_bits=$info_bits;
 
             $this->line->vat_src_code=$vat_src_code;
@@ -1963,7 +1963,7 @@ class CommandeFournisseur extends CommonOrder
     	// List of already dispatched lines
 		$sql = "SELECT p.ref, p.label,";
 		$sql.= " e.rowid as warehouse_id, e.ref as entrepot,";
-		$sql.= " cfd.rowid as dispatchlineid, cfd.fk_product, cfd.qty, cfd.eatby, cfd.sellby, cfd.batch, cfd.comment, cfd.status";
+		$sql.= " cfd.rowid as dispatchedlineid, cfd.fk_product, cfd.qty, cfd.eatby, cfd.sellby, cfd.batch, cfd.comment, cfd.status";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product as p,";
 		$sql.= " ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as cfd";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."entrepot as e ON cfd.fk_entrepot = e.rowid";
@@ -1981,7 +1981,15 @@ class CommandeFournisseur extends CommonOrder
 			while ($i < $num)
 			{
 				$objp = $this->db->fetch_object($resql);
-				if ($objp) $ret[]=array('id'=>$objp->dispatchedlineid, 'productid'=>$objp->fk_product, 'warehouseid'=>$objp->warehouse_id);
+				if ($objp)
+				{
+					$ret[] = array(
+						'id' => $objp->dispatchedlineid,
+						'productid' => $objp->fk_product,
+						'warehouseid' => $objp->warehouse_id,
+						'qty' => $objp->qty,
+					);
+				}
 
 				$i++;
 			}
@@ -3009,6 +3017,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
     public $fk_facture;
     public $label;
     public $rang = 0;
+    public $special_code = 0;
 
 	/**
 	 * Unit price without taxes
@@ -3048,7 +3057,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
      */
     public function fetch($rowid)
     {
-        $sql = 'SELECT cd.rowid, cd.fk_commande, cd.fk_product, cd.product_type, cd.description, cd.qty, cd.tva_tx,';
+        $sql = 'SELECT cd.rowid, cd.fk_commande, cd.fk_product, cd.product_type, cd.description, cd.qty, cd.tva_tx, cd.special_code,';
         $sql.= ' cd.localtax1_tx, cd.localtax2_tx, cd.localtax1_type, cd.localtax2_type, cd.ref,';
         $sql.= ' cd.remise, cd.remise_percent, cd.subprice,';
         $sql.= ' cd.info_bits, cd.total_ht, cd.total_tva, cd.total_ttc,';
@@ -3087,6 +3096,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
             $this->total_localtax2	= $objp->total_localtax2;
             $this->total_ttc        = $objp->total_ttc;
             $this->product_type     = $objp->product_type;
+            $this->special_code     = $objp->special_code;
 
             $this->ref	            = $objp->product_ref;
             $this->product_ref      = $objp->product_ref;
@@ -3193,7 +3203,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
         // Insertion dans base de la ligne
         $sql = 'INSERT INTO '.MAIN_DB_PREFIX.$this->table_element;
         $sql.= " (fk_commande, label, description, date_start, date_end,";
-        $sql.= " fk_product, product_type,";
+        $sql.= " fk_product, product_type, special_code, rang,";
         $sql.= " qty, vat_src_code, tva_tx, localtax1_tx, localtax2_tx, localtax1_type, localtax2_type, remise_percent, subprice, ref,";
         $sql.= " total_ht, total_tva, total_localtax1, total_localtax2, total_ttc, fk_unit,";
         $sql.= " fk_multicurrency, multicurrency_code, multicurrency_subprice, multicurrency_total_ht, multicurrency_total_tva, multicurrency_total_ttc";
@@ -3204,8 +3214,9 @@ class CommandeFournisseurLigne extends CommonOrderLine
         if ($this->fk_product) { $sql.= $this->fk_product.","; }
         else { $sql.= "null,"; }
         $sql.= "'".$this->db->escape($this->product_type)."',";
+        $sql.= "'".$this->db->escape($this->special_code)."',";
+        $sql.= "'".$this->db->escape($this->rang)."',";
         $sql.= "'".$this->db->escape($this->qty)."', ";
-
         $sql.= " ".(empty($this->vat_src_code)?"''":"'".$this->db->escape($this->vat_src_code)."'").",";
         $sql.= " ".$this->tva_tx.", ";
         $sql.= " ".$this->localtax1_tx.",";
@@ -3308,6 +3319,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
         $sql.= ", total_localtax2='".price2num($this->total_localtax2)."'";
         $sql.= ", total_ttc='".price2num($this->total_ttc)."'";
         $sql.= ", product_type=".$this->product_type;
+        $sql.= ", special_code=".(!empty($this->special_code) ? $this->special_code : 0);
         $sql.= ($this->fk_unit ? ", fk_unit='".$this->db->escape($this->fk_unit)."'":", fk_unit=null");
 
         // Multicurrency
