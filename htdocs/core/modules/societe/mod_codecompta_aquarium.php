@@ -105,7 +105,7 @@ class mod_codecompta_aquarium extends ModeleAccountancyCode
 	 *  @param  string		$type			'customer' or 'supplier'
 	 *  @return	int							>=0 if OK, <0 if KO
 	 */
-	function get_code($db, $societe, $type)
+	function get_code($db, $societe, $type='')
 	{
 		$i = 0;
 		$this->db = $db;
@@ -159,7 +159,7 @@ class mod_codecompta_aquarium extends ModeleAccountancyCode
 		$sql.= " WHERE ";
 		if ($type == 'customer') $sql.= "code_compta";
 		else if ($type == 'supplier') $sql.= "code_compta_fournisseur";
-		$sql.= " = '".$this->db->escape($code)."'";
+		$sql.= " = '".$db->escape($code)."'";
 		if (! empty($societe->id)) $sql.= " AND rowid <> ".$societe->id;
 
 		$resql=$db->query($sql);

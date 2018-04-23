@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2005-2013 Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2005-2017 Laurent Destailleur  <eldy@users.sourceforge.net>
  *
  * This file is a modified version of datepicker.php from phpBSM to fix some
  * bugs, to add new features and to dramatically increase speed.
@@ -20,7 +20,7 @@
 
 /**
  *       \file       htdocs/core/search_page.php
- *       \brief      File to return search box
+ *       \brief      File to return a page with search boxes
  */
 
 //if (! defined('NOREQUIREUSER'))   define('NOREQUIREUSER','1');	// Not disabled cause need to load personalized language
@@ -35,8 +35,10 @@ if (! defined('NOREQUIREMENU'))  define('NOREQUIREMENU',1);
 
 require_once '../main.inc.php';
 
-if (GETPOST('lang')) $langs->setDefaultLang(GETPOST('lang'));	// If language was forced on URL by the main.inc.php
+if (GETPOST('lang', 'aZ09')) $langs->setDefaultLang(GETPOST('lang', 'aZ09'));	// If language was forced on URL by the main.inc.php
+
 $langs->load("main");
+
 $right=($langs->trans("DIRECTION")=='rtl'?'left':'right');
 $left=($langs->trans("DIRECTION")=='rtl'?'right':'left');
 
@@ -67,51 +69,32 @@ $hookmanager->initHooks(array('searchform'));
 // Define $searchform
 $searchform = '';
 
-// TODO Mutualize code here with function left_menu into main.inc.php page
-if ($conf->use_javascript_ajax && 1 == 2)
+if ($conf->use_javascript_ajax && 1 == 2)   // select2 is ko with jmobile
 {
     if (! is_object($form)) $form=new Form($db);
     $selected=-1;
-    $searchform.=$form->selectArrayAjax('searchselectcombo', DOL_URL_ROOT.'/core/ajax/selectsearchbox.php', $selected, 'data-role="none"', '', 0, 1, 'vmenusearchselectcombo', 1, $langs->trans("Search"), 0);
+    $searchform.='<br><br>'.$form->selectArrayAjax('searchselectcombo', DOL_URL_ROOT.'/core/ajax/selectsearchbox.php', $selected, '', '', 0, 1, 'minwidth300', 1, $langs->trans("Search"), 0);
 }
 else
 {
-    // Define $searchform
-    if ((( ! empty($conf->societe->enabled) && (empty($conf->global->SOCIETE_DISABLE_PROSPECTS) || empty($conf->global->SOCIETE_DISABLE_CUSTOMERS))) || ! empty($conf->fournisseur->enabled)) && $user->rights->societe->lire)
-    {
-        $langs->load("companies");
-        $searchform.=printSearchForm(DOL_URL_ROOT.'/societe/list.php', DOL_URL_ROOT.'/societe/list.php', $langs->trans("ThirdParties"), 'soc', 'sall', 'T', 'searchleftt', img_object('','company'));
-    }
+    $usedbyinclude = 1; // Used into next include
+	$showtitlebefore = GETPOST('showtitlebefore','int');
+	include DOL_DOCUMENT_ROOT.'/core/ajax/selectsearchbox.php';
 
-    if (! empty($conf->societe->enabled) && $user->rights->societe->lire)
+    $accesskeyalreadyassigned=array();
+    foreach($arrayresult as $key => $val)
     {
-        $langs->load("companies");
-        $searchform.=printSearchForm(DOL_URL_ROOT.'/contact/list.php', DOL_URL_ROOT.'/contact/list.php', $langs->trans("Contacts"), 'contact', 'sall', 'A', 'searchleftc', img_object('','contact'));
-    }
+        $tmp=explode('?', $val['url']);
+        $urlaction=$tmp[0];
+        $keysearch='search_all';
 
-    if (((! empty($conf->product->enabled) && $user->rights->produit->lire) || (! empty($conf->service->enabled) && $user->rights->service->lire))
-    )
-    {
-        $langs->load("products");
-        $searchform.=printSearchForm(DOL_URL_ROOT.'/product/list.php', DOL_URL_ROOT.'/product/list.php', $langs->trans("Products")."/".$langs->trans("Services"), 'products', 'sall', 'P', 'searchleftp', img_object('','product'));
-    }
-
-    if (! empty($conf->projet->enabled) && $user->rights->projet->lire)
-    {
-        $langs->load("projects");
-        $searchform.=printSearchForm(DOL_URL_ROOT.'/projet/list.php', DOL_URL_ROOT.'/projet/list.php', $langs->trans("Projects"), 'project', 'search_all', 'Q', 'searchleftproj', img_object('','projectpub'));
-    }
-
-    if (! empty($conf->adherent->enabled) && $user->rights->adherent->lire)
-    {
-        $langs->load("members");
-        $searchform.=printSearchForm(DOL_URL_ROOT.'/adherents/list.php', DOL_URL_ROOT.'/adherents/list.php', $langs->trans("Members"), 'member', 'sall', 'M', 'searchleftm', img_object('','user'));
-    }
-
-	if (! empty($conf->user->enabled) && $user->rights->user->user->lire)
-    {
-        $langs->load("users");
-        $searchform.=printSearchForm(DOL_URL_ROOT.'/user/index.php', DOL_URL_ROOT.'/user/index.php', $langs->trans("Users"), 'user', 'sall', 'M', 'searchleftuser', img_object('','user'));
+        $accesskey='';
+        if (! $accesskeyalreadyassigned[$val['label'][0]])
+        {
+            $accesskey=$val['label'][0];
+            $accesskeyalreadyassigned[$accesskey]=$accesskey;
+        }
+        $searchform.=printSearchForm($urlaction, $urlaction, $val['label'], 'minwidth200', $keysearch, $accesskey, $key, img_picto('',$val['img'],'', 0, 1), $showtitlebefore);
     }
 }
 
@@ -127,13 +110,11 @@ else $searchform=$hookmanager->resPrint;
 
 print "\n";
 print "<!-- Begin SearchForm -->\n";
-print '<div class="center" data-role="page" align="center"><div align="center" style="padding: 6px;">';
+print '<div class="center" align="center"><div align="center" style="padding: 6px;">';
 print '<style>.menu_titre { padding-top: 7px; }</style>';
-//print '<div id="distance"></div><div id="container" class="center">';
 print '<div id="blockvmenusearch">'."\n";
 print $searchform;
 print '</div>'."\n";
-//print '</div></div>';
 print '</div></div>';
 print "\n<!-- End SearchForm -->\n";
 

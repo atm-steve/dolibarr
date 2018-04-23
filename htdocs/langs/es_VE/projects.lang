@@ -1,4 +1,4 @@
 # Dolibarr language file - Source file is en_US - projects
-ProjectsArea=Projects Area
+MyProjectsDesc=This view is limited to projects you are a contact for
+MyTasksDesc=This view is limited to projects or tasks you are a contact for
 DocumentModelBaleine=Plantilla de informe tareas del Proyecto
-OpportunityPonderatedAmountDesc=Opportunities amount weighted with probability

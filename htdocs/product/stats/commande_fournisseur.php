@@ -210,7 +210,7 @@ if ($id > 0 || ! empty($ref)) {
 				print_liste_field_titre($langs->trans("Company"), $_SERVER["PHP_SELF"], "s.nom", "", $option, '', $sortfield, $sortorder);
 				if(!empty($conf->projet->enabled)){
 					print_liste_field_titre($langs->trans('Project'),$_SERVER["PHP_SELF"],'p.ref','',$option,'',$sortfield,$sortorder);
-				}
+				}				
 				print_liste_field_titre($langs->trans("SupplierCode"), $_SERVER["PHP_SELF"], "s.code_client", "", $option, '', $sortfield, $sortorder);
 				print_liste_field_titre($langs->trans("OrderDate"), $_SERVER["PHP_SELF"], "c.date_commande", "", $option, 'align="center"', $sortfield, $sortorder);
 				print_liste_field_titre($langs->trans("Qty"), $_SERVER["PHP_SELF"], "d.qty", "", $option, 'align="center"', $sortfield, $sortorder);

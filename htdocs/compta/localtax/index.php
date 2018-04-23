@@ -27,10 +27,15 @@ require_once DOL_DOCUMENT_ROOT.'/compta/tva/class/tva.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
 $langs->load("other");
+$langs->load("compta");
+$langs->load("banks");
+$langs->load("bills");
+
 $localTaxType=GETPOST('localTaxType', 'int');
 
-$year=$_GET["year"];
-if ($year == 0 ) {
+$year=GETPOST("year","int");
+if ($year == 0)
+{
     $year_current = strftime("%Y",time());
     $year_start = $year_current;
 } else {
@@ -40,14 +45,14 @@ if ($year == 0 ) {
 
 // Security check
 $socid = isset($_GET["socid"])?$_GET["socid"]:'';
-if ($user->societe_id) 
+if ($user->societe_id)
     $socid=$user->societe_id;
 $result = restrictedArea($user, 'tax', '', '', 'charges');
 
 // Define modetax (0 or 1)
 // 0=normal, 1=option vat for services is on debit
 $modetax = $conf->global->TAX_MODE;
-if (isset($_GET["modetax"])) 
+if (isset($_GET["modetax"]))
     $modetax=$_GET["modetax"];
 
 /**
@@ -76,8 +81,8 @@ function pt ($db, $sql, $date)
         $var=True;
         while ($i < $num) {
             $obj = $db->fetch_object($result);
-            $var=!$var;
-            print '<tr '.$bc[$var].'>';
+
+            print '<tr class="oddeven">';
             print '<td class="nowrap">'.$obj->dm."</td>\n";
             $total = $total + $obj->mm;
 
@@ -122,25 +127,24 @@ if($localTaxType==1) {
 $textprevyear="<a href=\"index.php?localTaxType=".$localTaxType."&year=" . ($year_current-1) . "\">".img_previous()."</a>";
 $textnextyear=" <a href=\"index.php?localTaxType=".$localTaxType."&year=" . ($year_current+1) . "\">".img_next()."</a>";
 
-print load_fiche_titre($langs->transcountry($LT,$mysoc->country_code),"$textprevyear ".$langs->trans("Year")." $year_start $textnextyear");
+print load_fiche_titre($langs->transcountry($LT,$mysoc->country_code),"$textprevyear ".$langs->trans("Year")." $year_start $textnextyear", 'title_accountancy.png');
 
 print $langs->trans("LTReportBuildWithOptionDefinedInModule").'<br>';
 print '('.$langs->trans("TaxModuleSetupToModifyRulesLT",DOL_URL_ROOT.'/admin/company.php').')<br>';
 print '<br>';
 
-print '<table width="100%" class="nobordernopadding">';
-print '<tr><td>';
-print load_fiche_titre($langs->transcountry($LTSummary,$mysoc->country_code));
-
-print '</td><td width="5">&nbsp;</td><td>';
-print load_fiche_titre($langs->transcountry($LTPaid,$mysoc->country_code));
+print '<table width="100%" class="notopnoleftnoright">';
+print '<tr><td class="notopnoleft width="50%">';
+print load_fiche_titre($langs->transcountry($LTSummary,$mysoc->country_code), '', '');
+print '</td><td>&nbsp;</td><td>';
+print load_fiche_titre($langs->transcountry($LTPaid,$mysoc->country_code), '', '');
 print '</td></tr>';
 
-print '<tr><td width="50%" valign="top">';
+print '<tr><td class="notopnoleft" width="50%" valign="top">';
 
-print "<table class=\"noborder\" width=\"100%\">";
-print "<tr class=\"liste_titre\">";
-print "<td width=\"30%\">".$langs->trans("Year")." $y</td>";
+print '<table class="noborder" width="100%">';
+print '<tr class="liste_titre">';
+print '<td width="30%">'.$langs->trans("Year")." ".$y."</td>";
 if($CalcLT==0) {
     print "<td align=\"right\">".$langs->transcountry($LTCustomer,$mysoc->country_code)."</td>";
     print "<td align=\"right\">".$langs->transcountry($LTSupplier,$mysoc->country_code)."</td>";
@@ -162,16 +166,16 @@ $var=True;
 $total=0; $subtotalcoll=0; $subtotalpaye=0; $subtotal=0;
 $i=0;
 for ($m = 1 ; $m < 13 ; $m++ ) {
-    $coll_listsell = vat_by_date($db, $y, 0, 0, 0, $modetax, 'sell', $m);
-    $coll_listbuy = vat_by_date($db, $y, 0, 0, 0, $modetax, 'buy', $m);
-    
+	$coll_listsell = tax_by_date('vat', $db, $y, 0, 0, 0, $modetax, 'sell', $m);
+	$coll_listbuy = tax_by_date('vat', $db, $y, 0, 0, 0, $modetax, 'buy', $m);
+
     $action = "tva";
     $object = array(&$coll_listsell, &$coll_listbuy);
     $parameters["mode"] = $modetax;
     $parameters["year"] = $y;
     $parameters["month"] = $m;
     $parameters["type"] = 'localtax'.$localTaxType;
-    
+
     // Initialize technical object to manage hooks of expenses. Note that conf->hooks_modules contains array array
     $hookmanager->initHooks(array('externalbalance'));
     $reshook=$hookmanager->executeHooks('addVatLine',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
@@ -186,8 +190,8 @@ for ($m = 1 ; $m < 13 ; $m++ ) {
         break;
     }
 
-    $var=!$var;
-    print '<tr '.$bc[$var].'>';
+
+    print '<tr class="oddeven">';
     print '<td class="nowrap">'.dol_print_date(dol_mktime(0,0,0,$m,1,$y),"%b %Y").'</td>';
     if($CalcLT==0) {
         $x_coll = 0;
@@ -217,7 +221,7 @@ for ($m = 1 ; $m < 13 ; $m++ ) {
     	}
     	$subtotalcoll = $subtotalcoll + $x_coll;
     	print "<td class=\"nowrap\" align=\"right\">".price($x_coll)."</td><td></td>";
-    
+
     }
 
     if($CalcLT==0) {
@@ -227,7 +231,7 @@ for ($m = 1 ; $m < 13 ; $m++ ) {
     } elseif($CalcLT==2) {
         $diff= $x_coll;
     }
-    
+
     $total = $total + $diff;
     $subtotal = $subtotal + $diff;
 

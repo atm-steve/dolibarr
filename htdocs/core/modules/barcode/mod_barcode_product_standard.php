@@ -109,7 +109,7 @@ class mod_barcode_product_standard extends ModeleNumRefBarCode
 	 */
 	function getExample($langs,$objproduct=0)
 	{
-		$examplebarcode = $this->getNextValue($objproduct,0);
+		$examplebarcode = $this->getNextValue($objproduct,'');
 		if (! $examplebarcode)
 		{
 			$examplebarcode = $langs->trans('NotConfigured');
@@ -127,10 +127,10 @@ class mod_barcode_product_standard extends ModeleNumRefBarCode
 	 * Return next value
 	 *
 	 * @param	Product		$objproduct     Object product
-	 * @param	string		$type       	type of barcode (EAN, ISBN, ...)
+	 * @param	string		$type       	Type of barcode (EAN, ISBN, ...)
 	 * @return 	string      				Value if OK, '' if module not configured, <0 if KO
 	 */
-	function getNextValue($objproduct,$type='')
+	function getNextValue($objproduct=null,$type='')
 	{
 		global $db,$conf;
 
@@ -267,14 +267,14 @@ class mod_barcode_product_standard extends ModeleNumRefBarCode
 	{
 		global $conf;
 
-		$res = 0;
+		$result = 0;
 
 		// Get Mask value
 		$mask = empty($conf->global->BARCODE_STANDARD_PRODUCT_MASK)?'':$conf->global->BARCODE_STANDARD_PRODUCT_MASK;
 		if (! $mask)
 		{
 			$this->error='NotConfigured';
-			return '';
+			return -1;
 		}
 
 		dol_syslog(get_class($this).'::verif_syntax codefortest='.$codefortest." typefortest=".$typefortest);
@@ -292,6 +292,11 @@ class mod_barcode_product_standard extends ModeleNumRefBarCode
 		}
 
 		$result=check_value($mask,$newcodefortest);
+		if (is_string($result))
+		{
+			$this->error = $result;
+			return -1;
+		}
 
 		return $result;
 	}

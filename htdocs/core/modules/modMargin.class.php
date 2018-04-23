@@ -81,7 +81,7 @@ class modMargin extends DolibarrModules
 		// Example: $this->const=array(0=>array('MYMODULE_MYNEWCONST1','chaine','myvalue','This is a constant to add',1),
 		//                             1=>array('MYMODULE_MYNEWCONST2','chaine','myvalue','This is another constant to add',0, 'current', 1)
 		// );
-		$this->const = array(0=>array('MARGIN_TYPE','chaine','1','Rule for margin calculation by default',0,'current',0));			// List of particular constants to add when module is enabled
+		$this->const = array(0=>array('MARGIN_TYPE','chaine','costprice','Rule for margin calculation by default',0,'current',0));			// List of particular constants to add when module is enabled
 
 		// New pages on tabs
 		$this->tabs = array(
@@ -104,10 +104,10 @@ class modMargin extends DolibarrModules
 
 		// left menu entry
 		$this->menu[$r]=array(
-				'fk_menu'=>'fk_mainmenu=accountancy',			// Put 0 if this is a top menu
+				'fk_menu'=>'fk_mainmenu=billing',			// Put 0 if this is a top menu
     			'type'=>'left',			// This is a Top menu entry
     			'titre'=>'Margins',
-    			'mainmenu'=>'accountancy',
+    			'mainmenu'=>'billing',
     			'leftmenu'=>'margins',
     			'url'=>'/margin/index.php',
     			'langs'=>'margins',	// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
@@ -126,7 +126,7 @@ class modMargin extends DolibarrModules
 		$this->rights[$r][0] = 59001; // id de la permission
 		$this->rights[$r][1] = 'Visualiser les marges'; // libelle de la permission
 		$this->rights[$r][2] = 'r'; // type de la permission (deprecie a ce jour)
-		$this->rights[$r][3] = 1; // La permission est-elle une permission par defaut
+		$this->rights[$r][3] = 0; // La permission est-elle une permission par defaut
 		$this->rights[$r][4] = 'liretous';
 
 		$r++;

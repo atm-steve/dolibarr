@@ -1,6 +1,6 @@
 -- ========================================================================
 -- Copyright (C) 2000-2004 Rodolphe Quiedeville <rodolphe@quiedeville.org>
--- Copyright (C) 2004-2014 Laurent Destailleur  <eldy@users.sourceforge.net>
+-- Copyright (C) 2004-2017 Laurent Destailleur  <eldy@users.sourceforge.net>
 -- Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@capnetworks.com>
 -- Copyright (C) 2010      Juanjo Menent        <dolibarr@2byte.es>
 -- Copyright (C) 2014      Teddy Andreotti      <125155@supinfo.com>
@@ -25,11 +25,11 @@ create table llx_societe
 (
   rowid                    integer AUTO_INCREMENT PRIMARY KEY,
   nom                      varchar(128),                                -- company reference name (should be same length than adherent.societe)
-  name_alias          varchar(128) NULL,
-  entity                   integer DEFAULT 1 NOT NULL,               -- multi company id
+  name_alias               varchar(128) NULL,
+  entity                   integer DEFAULT 1 NOT NULL,                  -- multi company id
 
-  ref_ext                  varchar(128),                               -- reference into an external system (not used by dolibarr)
-  ref_int                  varchar(60),                                -- reference into an internal system (deprecated)
+  ref_ext                  varchar(255),                                -- reference into an external system (not used by dolibarr)
+  ref_int                  varchar(255),                                -- reference into an internal system (deprecated)
 
   statut                   tinyint        DEFAULT 0,            		-- statut
   parent                   integer,
@@ -47,6 +47,7 @@ create table llx_societe
   town                     varchar(50),                         		-- town
   fk_departement           integer        DEFAULT 0,            		--
   fk_pays                  integer        DEFAULT 0,            		--
+  fk_account               integer        DEFAULT 0,            		--
   phone                    varchar(20),                         		-- phone number
   fax                      varchar(20),                         		-- fax number
   url                      varchar(255),                        		--
@@ -63,7 +64,7 @@ create table llx_societe
   idprof5                  varchar(128),                         		-- IDProf5: nu for france
   idprof6                  varchar(128),                         		-- IDProf6: nu for france
   tva_intra                varchar(20),                         		-- tva
-  capital                  real,                                		-- capital de la societe
+  capital                  double(24,8),                       		-- capital de la societe
   fk_stcomm                integer        DEFAULT 0 NOT NULL,      	-- commercial statut
   note_private             text,                                		--
   note_public              text,                                        --
@@ -85,19 +86,23 @@ create table llx_societe
   cond_reglement           tinyint,                             		-- condition de reglement
   mode_reglement_supplier  tinyint,                             		-- mode de reglement fournisseur
   cond_reglement_supplier  tinyint,                             		-- condition de reglement fournisseur
+  fk_shipping_method       integer,                                     -- preferred shipping method id
   tva_assuj                tinyint        DEFAULT 1,	        		-- assujeti ou non a la TVA
   localtax1_assuj          tinyint        DEFAULT 0,	        		-- assujeti ou non a local tax 1
   localtax1_value 		   double(6,3),
   localtax2_assuj          tinyint        DEFAULT 0,	        		-- assujeti ou non a local tax 2
   localtax2_value 		   double(6,3),
-  barcode                  varchar(255),                        		-- barcode
+  barcode                  varchar(180),                        		-- barcode
   fk_barcode_type          integer NULL   DEFAULT 0,                    -- barcode type
   price_level              integer NULL,                        		-- level of price for multiprices
-  outstanding_limit	       double(24,8)  DEFAULT NULL,				-- allowed outstanding limit
+  outstanding_limit	       double(24,8)   DEFAULT NULL,					-- allowed outstanding limit
   default_lang             varchar(6),									-- default language
-  logo                     varchar(255),
-  canvas				   varchar(32),			                        -- type of canvas if used (null by default)
+  logo                     varchar(255)   DEFAULT NULL,
+  canvas				   varchar(32)    DEFAULT NULL,	                -- type of canvas if used (null by default)
   import_key               varchar(14),                          		-- import key
-  webservices_url          varchar(255),                            -- supplier webservice url
-  webservices_key          varchar(128)                            -- supplier webservice key
+  webservices_url          varchar(255),                            	-- supplier webservice url
+  webservices_key          varchar(128),                            	-- supplier webservice key
+  
+  fk_multicurrency			integer,
+  multicurrency_code		varchar(255)
 )ENGINE=innodb;
