@@ -621,6 +621,9 @@ if ($resql)
 		print '<input class="flat" type="text" size="4" name="search_total_ht" value="'.$search_total_ht.'">';
 		print '</td>';
 	}
+	if(!empty($conf->margin->enabled)){
+		print '<td></td>';
+	}
 	if (! empty($arrayfields['c.total_vat']['checked']))
 	{
 		// Amount
@@ -696,7 +699,11 @@ if ($resql)
 	if (! empty($arrayfields['typent.code']['checked']))      print_liste_field_titre($arrayfields['typent.code']['label'],$_SERVER["PHP_SELF"],"typent.code","",$param,'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.date_commande']['checked']))  print_liste_field_titre($arrayfields['c.date_commande']['label'],$_SERVER["PHP_SELF"],'c.date_commande','',$param, 'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.date_delivery']['checked']))  print_liste_field_titre($arrayfields['c.date_delivery']['label'],$_SERVER["PHP_SELF"],'c.date_livraison','',$param, 'align="center"',$sortfield,$sortorder);
+	
 	if (! empty($arrayfields['c.total_ht']['checked']))       print_liste_field_titre($arrayfields['c.total_ht']['label'],$_SERVER["PHP_SELF"],'c.total_ht','',$param, 'align="right"',$sortfield,$sortorder);
+	if(!empty($conf->margin->enabled)){
+		print_liste_field_titre($langs->trans('Margin'),$_SERVER["PHP_SELF"],'','',$param,'align="right"',$sortfield,$sortorder);
+	}
 	if (! empty($arrayfields['c.total_vat']['checked']))      print_liste_field_titre($arrayfields['c.total_vat']['label'],$_SERVER["PHP_SELF"],'c.tva','',$param, 'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.total_ttc']['checked']))      print_liste_field_titre($arrayfields['c.total_ttc']['label'],$_SERVER["PHP_SELF"],'c.total_ttc','',$param, 'align="right"',$sortfield,$sortorder);
 	// Extra fields
@@ -710,6 +717,7 @@ if ($resql)
 	if (! empty($arrayfields['c.fk_statut']['checked'])) print_liste_field_titre($arrayfields['c.fk_statut']['label'],$_SERVER["PHP_SELF"],"c.fk_statut","",$param,'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.facture']['checked']))   print_liste_field_titre($arrayfields['c.facture']['label'],$_SERVER["PHP_SELF"],'c.facture','',$param,'align="center"',$sortfield,$sortorder,'');
 	print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"],"",'',$param,'align="center"',$sortfield,$sortorder,'maxwidthsearch ');
+	
 	print '</tr>'."\n";
 
 	$total=0;
@@ -997,8 +1005,9 @@ if ($resql)
 		}
 		//Marge
 		$commande = new Commande($db);
-		$commande->fetch($objp->rowid);
+		$commande->fetch($obj->rowid);
 		$formmargin = new FormMargin($db);
+		
 		$marginInfo = $formmargin->getMarginInfosArray($commande);
 		print '<td align="right" class="nowrap">'.price($marginInfo['total_margin']).'</td>';
 		
