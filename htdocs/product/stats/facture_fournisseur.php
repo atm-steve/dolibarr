@@ -258,7 +258,7 @@ if(!empty($conf->projet->enabled)){
 				}
 				print '<tr class="liste_total">';
 				print '<td>' . $langs->trans('Total') . '</td>';
-				print '<td colspan="3"></td>';
+				print '<td colspan="4"></td>';
 				print '<td align="center">' . $total_qty . '</td>';
 				print '<td align="right">' . price($total_ht) . '</td>';
 				print '<td></td>';

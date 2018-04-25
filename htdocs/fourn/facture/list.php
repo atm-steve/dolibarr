@@ -283,10 +283,7 @@ $sql.=$hookmanager->resPrint;
 $sql.= ' FROM '.MAIN_DB_PREFIX.'societe as s';
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_country as country on (country.rowid = s.fk_pays)";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_typent as typent on (typent.id = s.fk_typent)";
-$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee2 ON (ee2.fk_target = fac.rowid AND ee2.sourcetype = 'order_supplier' AND ee2.targettype = 'invoice_supplier')";
-$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee ON (ee.fk_target = ee2.fk_source AND ee.sourcetype = 'commande' AND ee.targettype = 'order_supplier')";
-$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = ee.fk_source)";
-$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s2 ON (s2.rowid = c.fk_soc)";
+
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_departements as state on (state.rowid = s.fk_departement)";
 $sql.= ', '.MAIN_DB_PREFIX.'facture_fourn as f';
 if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture_fourn_extrafields as ef on (f.rowid = ef.fk_object)";
@@ -294,6 +291,10 @@ if (! $search_all) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiementfourn_facturefou
 if ($search_all || $search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facture_fourn_det as pd ON f.rowid=pd.fk_facture_fourn';
 if ($search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product as cp ON cp.fk_product=pd.fk_product';
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON p.rowid = f.fk_projet";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee2 ON (ee2.fk_target = f.rowid AND ee2.sourcetype = 'order_supplier' AND ee2.targettype = 'invoice_supplier')";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee ON (ee.fk_target = ee2.fk_source AND ee.sourcetype = 'commande' AND ee.targettype = 'order_supplier')";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = ee.fk_source)";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s2 ON (s2.rowid = c.fk_soc)";
 // We'll need this table joined to the select in order to filter by sale
 if ($search_sale > 0 || (! $user->rights->societe->client->voir && ! $socid)) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 if ($search_user > 0)
@@ -394,7 +395,7 @@ if (! $search_all)
 	$sql.= " typent.code,";
 	$sql.= " state.code_departement, state.nom,";
 	$sql.= ' country.code,';
-	$sql.= " p.rowid, p.ref";
+	$sql.= " p.rowid, p.ref, s2.rowid";
 
 	foreach ($extrafields->attribute_label as $key => $val) //prevent error with sql_mode=only_full_group_by
 	{

@@ -85,6 +85,7 @@ $search_total_ttc=GETPOST('search_total_ttc','alpha');
 $optioncss = GETPOST('optioncss','alpha');
 $search_billed = GETPOST('search_billed','int');
 $search_project_ref=GETPOST('search_project_ref','alpha');
+$search_client_final=GETPOST('search_client_final','alpha');
 
 
 $status=GETPOST('statut','alpha');
@@ -212,6 +213,7 @@ if (empty($reshook))
 		$search_billed='';
 		$toselect='';
 		$search_array_options=array();
+		$search_client_final='';
 
 	}
 	if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x','alpha') || GETPOST('button_removefilter','alpha')
@@ -485,7 +487,7 @@ llxHeader('',$title,$help_url);
 
 $sql = 'SELECT';
 if ($sall || $search_product_category > 0) $sql = 'SELECT DISTINCT';
-$sql.= ' s.rowid as socid, s.nom as name, s.town, s.zip, s.fk_pays, s.client, s.code_client,';
+$sql.= ' s.rowid as socid, s.nom as name, s.town, s.zip, s.fk_pays, s.client, s.code_client,s2.rowid as socid2, s2.nom as name2,';
 $sql.= " typent.code as typent_code,";
 $sql.= " state.code_departement as state_code, state.nom as state_name,";
 $sql.= " cf.rowid, cf.ref, cf.ref_supplier, cf.fk_statut, cf.billed, cf.total_ht, cf.tva as total_tva, cf.total_ttc, cf.fk_user_author, cf.date_commande as date_commande, cf.date_livraison as date_delivery,";
@@ -508,6 +510,9 @@ if ($sall || $search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'
 if ($search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product as cp ON cp.fk_product=pd.fk_product';
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."user as u ON cf.fk_user_author = u.rowid";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON p.rowid = cf.fk_projet";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee ON (ee.fk_target = cf.rowid AND ee.sourcetype = 'commande' AND ee.targettype = 'order_supplier')";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = ee.fk_source)";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s2 ON (s2.rowid = c.fk_soc)";
 // We'll need this table joined to the select in order to filter by sale
 if ($search_sale > 0 || (!$user->rights->societe->client->voir && ! $socid)) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 if ($search_user > 0)
@@ -523,8 +528,14 @@ if ($search_ref) $sql .= natural_search('cf.ref', $search_ref);
 if ($search_refsupp) $sql.= natural_search("cf.ref_supplier", $search_refsupp);
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
 if ($search_company) $sql .= natural_search('s.nom', $search_company);
+if ($search_client_final)
+{
+	$sql .= natural_search('s2.nom', $search_client_final);
+
+}
 if ($search_request_author) $sql.=natural_search(array('u.lastname','u.firstname','u.login'), $search_request_author) ;
 if ($search_billed != '' && $search_billed >= 0) $sql .= " AND cf.billed = ".$db->escape($search_billed);
+
 
 //Required triple check because statut=0 means draft filter
 if (GETPOST('statut', 'intcomma') !== '')
@@ -788,6 +799,7 @@ if ($resql)
 	{
 		print '<td class="liste_titre"><input type="text" size="6" class="flat" name="search_company" value="'.$search_company.'"></td>';
 	}
+	print '<td class="liste_titre"><input type="text" class="flat" size="8" name="search_client_final" value="'.$search_client_final.'"></td>';
 	// Town
 	if (! empty($arrayfields['s.town']['checked'])) print '<td class="liste_titre"><input class="flat" type="text" size="6" name="search_town" value="'.$search_town.'"></td>';
 	// Zip
@@ -899,6 +911,7 @@ if ($resql)
 	if (! empty($arrayfields['p.project_ref']['checked'])) 	   print_liste_field_titre($arrayfields['p.project_ref']['label'],$_SERVER["PHP_SELF"],"p.ref","",$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['u.login']['checked'])) 	       print_liste_field_titre($arrayfields['u.login']['label'],$_SERVER["PHP_SELF"],"u.login","",$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['s.nom']['checked']))             print_liste_field_titre($arrayfields['s.nom']['label'],$_SERVER["PHP_SELF"],"s.nom","",$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("Client final"),$_SERVER["PHP_SELF"],"s2.nom","",$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['s.town']['checked']))            print_liste_field_titre($arrayfields['s.town']['label'],$_SERVER["PHP_SELF"],'s.town','',$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['s.zip']['checked']))             print_liste_field_titre($arrayfields['s.zip']['label'],$_SERVER["PHP_SELF"],'s.zip','',$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['state.nom']['checked']))         print_liste_field_titre($arrayfields['state.nom']['label'],$_SERVER["PHP_SELF"],"state.nom","",$param,'',$sortfield,$sortorder);
@@ -1014,6 +1027,13 @@ if ($resql)
 			print '</td>'."\n";
 			if (! $i) $totalarray['nbfield']++;
 		}
+		print '<td>';
+		if( $obj->socid2){
+			$thirdpartytmp->id = $obj->socid2;
+			$thirdpartytmp->name = $obj->name2;
+			print $thirdpartytmp->getNomUrl(1,'supplier');
+		}
+		print '</td>'."\n";
 		// Town
 		if (! empty($arrayfields['s.town']['checked']))
 		{
