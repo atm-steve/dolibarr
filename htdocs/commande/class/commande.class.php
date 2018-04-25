@@ -3126,8 +3126,13 @@ class Commande extends CommonOrder
             if ($result < 0) $error++;
             // End call triggers
         }
-		if($this->nb_expedition()!=0)$error++;
-
+        
+        if ($this->nb_expedition() != 0) 
+	{
+		$this->errors[] = $langs->trans('SomeShipmentExists');
+		$error++;
+	}
+	    
         //TODO: Check for error after each action. If one failed we rollback, don't waste time to do action if previous fail
         if (! $error)
         {
@@ -3716,24 +3721,6 @@ class Commande extends CommonOrder
 
         return max($this->date_commande, $this->date_livraison) < ($now - $conf->commande->client->warning_delay);
     }
-	/*
-	 * Function to know if order has a product not for sell
-	 * @return boolean
-	 */
-	function hasProductNotForSell(){
-		if(!empty($this->lines)){
-			foreach($this->lines as $line){
-				if(!empty($line->fk_product)){
-					$prod = new Product($this->db);
-					$prod->fetch($line->fk_product);
-					if(empty($prod->status)){
-						return 1;
-					}
-				}
-			}
-		}
-		return 0;
-	}
 
     /**
      * Show the customer delayed info
@@ -4053,7 +4040,7 @@ class OrderLine extends CommonOrderLine
         $sql.= " ".(! empty($this->date_start)?"'".$this->db->idate($this->date_start)."'":"null").',';
         $sql.= " ".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null").',';
 	    $sql.= ' '.(!$this->fk_unit ? 'NULL' : $this->fk_unit);
-		$sql.= ", ".$this->fk_multicurrency;
+		$sql.= ", ".(! empty($this->fk_multicurrency) ? $this->fk_multicurrency : 'NULL');
 		$sql.= ", '".$this->db->escape($this->multicurrency_code)."'";
 		$sql.= ", ".$this->multicurrency_subprice;
 		$sql.= ", ".$this->multicurrency_total_ht;

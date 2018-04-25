@@ -1473,7 +1473,7 @@ function dol_print_reduction($reduction,$langs)
     }
     else
     {
-        $string = price($reduction).'%';
+    	$string = vatrate($reduction,true);
     }
 
     return $string;

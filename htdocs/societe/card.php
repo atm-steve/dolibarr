@@ -10,6 +10,7 @@
  * Copyright (C) 2015       Jean-François Ferry     <jfefe@aternatik.fr>
  * Copyright (C) 2015       Marcos García           <marcosgdf@gmail.com>
  * Copyright (C) 2015       Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2018       Nicolas ZABOURI	    <info@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,7 +73,7 @@ $extralabels=$extrafields->fetch_name_optionals_label($object->table_element);
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('thirdpartycard','globalcard'));
 
-if ( $object->fetch($socid)<=0 && $action == 'view' )
+if ($object->fetch($socid)<=0 && $action == 'view')
 {
 	$langs->load("errors");
 	print($langs->trans('ErrorRecordNotFound'));
@@ -301,11 +302,15 @@ if (empty($reshook))
         // Fill array 'array_options' with data from update form
         $extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
         $ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute'));
-        if ($ret < 0) $error++;
+        if ($ret < 0) { $error++; }
         if (! $error)
         {
             $result = $object->insertExtraFields();
-            if ($result < 0) $error++;
+            if ($result < 0) 
+	    {
+		    $error++;
+		    $errors = $object->errors;
+	    }
         }
         if ($error) $action = 'edit_extras';
     }
@@ -529,7 +534,8 @@ if (empty($reshook))
                             $error=$object->error; $errors=$object->errors;
                         }
                     }
-
+				
+					
 					// Customer categories association
 					$custcats = GETPOST( 'custcats', 'array' );
 					$object->setCategories($custcats, 'customer');
@@ -537,7 +543,7 @@ if (empty($reshook))
 					// Supplier categories association
 					$suppcats = GETPOST('suppcats', 'array');
 					$object->setCategories($suppcats, 'supplier');
-
+					
                     // Logo/Photo save
                     $dir     = $conf->societe->multidir_output[$conf->entity]."/".$object->id."/logos/";
                     $file_OK = is_uploaded_file($_FILES['photo']['tmp_name']);
@@ -644,8 +650,8 @@ if (empty($reshook))
                 {
                     $error = $object->error; $errors = $object->errors;
                 }
-				//Prevent thirdparty's emptying if a user hasn't rights $user->rights->categorie->lire
-				if(!empty($user->rights->categorie->lire)){
+				// Prevent thirdparty's emptying if a user hasn't rights $user->rights->categorie->lire (in such a case, post of 'custcats' is not defined)
+				if(!empty($user->rights->categorie->lire)){ 
 					// Customer categories association
 					$categories = GETPOST( 'custcats', 'array' );
 					$object->setCategories($categories, 'customer');
@@ -874,7 +880,7 @@ else
             $object->client=-1;
             if (! empty($conf->global->THIRDPARTY_CUSTOMERPROSPECT_BY_DEFAULT))  { $object->client=3; }
         }
-        if (GETPOST("type")=='c')  { $object->client=1; }   // Prospect / Customer
+        if (GETPOST("type")=='c')  { $object->client=3; }   // Prospect / Customer
         if (GETPOST("type")=='p')  { $object->client=2; }
         if (! empty($conf->fournisseur->enabled) && (GETPOST("type")=='f' || (GETPOST("type")=='' && ! empty($conf->global->THIRDPARTY_SUPPLIER_BY_DEFAULT))))  { $object->fournisseur=1; }
 
