@@ -1358,19 +1358,24 @@ abstract class CommonObject
 		if (empty($format))   $format='text';
 		if (empty($id_field)) $id_field='rowid';
 
+		$fk_user_field = 'fk_user_modif';
+
 		$error=0;
 
 		$this->db->begin();
 
 		// Special case
 		if ($table == 'product' && $field == 'note_private') $field='note';
+		if (in_array($table, array('actioncomm', 'adherent', 'advtargetemailing', 'cronjob', 'establishment'))) {
+			$fk_user_field = 'fk_user_mod';
+		}
 
 		$sql = "UPDATE ".MAIN_DB_PREFIX.$table." SET ";
 		if ($format == 'text') $sql.= $field." = '".$this->db->escape($value)."'";
 		else if ($format == 'int') $sql.= $field." = ".$this->db->escape($value);
 		else if ($format == 'date') $sql.= $field." = ".($value ? "'".$this->db->idate($value)."'" : "null");
-		if (! empty($fuser) && is_object($fuser)) $sql.=", fk_user_modif = ".$fuser->id;
-		elseif (empty($fuser) || $fuser != 'none') $sql.=", fk_user_modif = ".$user->id;
+		if (! empty($fuser) && is_object($fuser)) $sql.=", ".$fk_user_field." = ".$fuser->id;
+		elseif (empty($fuser) || $fuser != 'none') $sql.=", ".$fk_user_field." = ".$user->id;
 		$sql.= " WHERE ".$id_field." = ".$id;
 
 		dol_syslog(get_class($this)."::".__FUNCTION__."", LOG_DEBUG);
@@ -4604,6 +4609,10 @@ abstract class CommonObject
 						$new_array_options[$key] = $this->db->idate($this->array_options[$key]);
 						break;
 					case 'datetime':
+						// If data is a string instead of a timestamp, we convert it
+						if (! is_int($this->array_options[$key])) {
+							$this->array_options[$key] = strtotime($this->array_options[$key]);
+						}
 						$new_array_options[$key] = $this->db->idate($this->array_options[$key]);
 						break;
 		   			case 'link':
@@ -5460,11 +5469,19 @@ abstract class CommonObject
 		elseif ($key == 'status' && method_exists($this, 'getLibStatut')) $value=$this->getLibStatut(3);
 		elseif ($type == 'date')
 		{
-			$value=dol_print_date($value,'day');
+			if(! empty($value)) {
+				$value=dol_print_date($value,'day');
+			} else {
+				$value='';
+			}
 		}
 		elseif ($type == 'datetime')
 		{
-			$value=dol_print_date($value,'dayhour');
+			if(! empty($value)) {
+				$value=dol_print_date($value,'dayhour');
+			} else {
+				$value='';
+			}
 		}
 		elseif ($type == 'double')
 		{
@@ -5766,9 +5783,9 @@ abstract class CommonObject
 						} else {
 							$value = $this->array_options["options_" . $key];			// No GET, no POST, no default value, so we take value of object.
 						}
+						//var_dump($keyprefix.' - '.$key.' - '.$keysuffix.' - '.$keyprefix.'options_'.$key.$keysuffix.' - '.$this->array_options["options_".$key.$keysuffix].' - '.$getposttemp.' - '.$value);
 						break;
 				}
-				//var_dump($value);
 
 				if ($extrafields->attribute_type[$key] == 'separate')
 				{
@@ -5793,12 +5810,12 @@ abstract class CommonObject
 					// Convert date into timestamp format (value in memory must be a timestamp)
 					if (in_array($extrafields->attribute_type[$key],array('date','datetime')))
 					{
-						$value = GETPOSTISSET($keyprefix.'options_'.$key.$keysuffix)?dol_mktime(GETPOST($keyprefix.'options_'.$key.$keysuffix."hour",'int',3), GETPOST($keyprefix.'options_'.$key.$keysuffix."min",'int',3), 0, GETPOST($keyprefix.'options_'.$key.$keysuffix."month",'int',3), GETPOST($keyprefix.'options_'.$key.$keysuffix."day",'int',3), GETPOST($keyprefix.'options_'.$key.$keysuffix."year",'int',3)):$this->db->jdate($this->array_options['options_'.$key]);
+						$value = GETPOSTISSET($keyprefix.'options_'.$key.$keysuffix)?dol_mktime(GETPOST($keyprefix.'options_'.$key.$keysuffix."hour", 'int', 3), GETPOST($keyprefix.'options_'.$key.$keysuffix."min",'int',3), 0, GETPOST($keyprefix.'options_'.$key.$keysuffix."month",'int',3), GETPOST($keyprefix.'options_'.$key.$keysuffix."day",'int',3), GETPOST($keyprefix.'options_'.$key.$keysuffix."year",'int',3)):$this->db->jdate($this->array_options['options_'.$key]);
 					}
 					// Convert float submited string into real php numeric (value in memory must be a php numeric)
 					if (in_array($extrafields->attribute_type[$key],array('price','double')))
 					{
-						$value = GETPOSTISSET($keyprefix.'options_'.$key.$keysuffix)?price2num(GETPOST($keyprefix.'options_'.$key.$keysuffix,'int',3)):$this->array_options['options_'.$key];
+						$value = GETPOSTISSET($keyprefix.'options_'.$key.$keysuffix)?price2num(GETPOST($keyprefix.'options_'.$key.$keysuffix, 'alpha', 3)):$this->array_options['options_'.$key];
 					}
 
 					$labeltoshow = $langs->trans($label);
@@ -6269,7 +6286,7 @@ abstract class CommonObject
 			if (! empty($this->fields[$key]['foreignkey']) && $values[$key] == '-1') $values[$key]='';
 
 			//var_dump($key.'-'.$values[$key].'-'.($this->fields[$key]['notnull'] == 1));
-			if ($this->fields[$key]['notnull'] == 1 && ! isset($values[$key]))
+			if ($this->fields[$key]['notnull'] == 1 && ! isset($values[$key]) && is_null($val['default']))
 			{
 				$error++;
 				$this->errors[]=$langs->trans("ErrorFieldRequired", $this->fields[$key]['label']);
