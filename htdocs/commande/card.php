@@ -1149,6 +1149,15 @@ if (empty($reshook))
 			$action = 'edit_extras';
 	}
 
+        if ($action == 'set_thirdparty' && $user->rights->commande->creer)
+        {
+                $object->fetch($id);
+                $object->setValueFrom('fk_soc', $socid);
+
+                header('Location: ' . $_SERVER["PHP_SELF"] . '?id=' . $id);
+                exit();
+        }
+
 	include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
 
 
@@ -1842,8 +1851,17 @@ if ($action == 'create' && $user->rights->commande->creer)
 		print '</tr>';
 
 		// Third party
-		print '<tr><td>' . $langs->trans('Company') . '</td>';
-		print '<td colspan="3">' . $soc->getNomUrl(1) . '</td>';
+		print '<tr><td><table class="nobordernopadding" width="100%"><tr><td>' . $langs->trans('Company') . '</td>';
+		print '<td colspan="3">';
+	        if (! empty($conf->global->COMMANDE_CHANGE_THIRDPARTY) && $action != 'editthirdparty' && $object->brouillon && $user->rights->commande->creer)
+	            print '<td align="right"><a href="' . $_SERVER["PHP_SELF"] . '?action=editthirdparty&amp;id=' . $object->id . '">' . img_edit($langs->trans('SetLinkToThirdParty'), 1) . '</a></td>';
+	        print '</tr></table>';
+	        print '</td><td colspan="3">';
+	        if ($action == 'editthirdparty') {
+	            $form->form_thirdparty($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, 'socid','client>0');
+	        } else {
+	            print $soc->getNomUrl(1, 'compta');
+	        }
 		print '</tr>';
 
 		if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
