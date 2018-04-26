@@ -48,6 +48,8 @@ ALTER TABLE llx_product MODIFY COLUMN seuil_stock_alerte integer DEFAULT NULL;
 -- VPGSQL8.2 ALTER TABLE llx_product ALTER COLUMN seuil_stock_alerte SET DEFAULT NULL;
 
 ALTER TABLE llx_facture_rec ADD COLUMN suspended integer DEFAULT 0;
+ALTER TABLE llx_facture_rec ADD COLUMN modelpdf varchar(255) AFTER note_public;
+ALTER TABLE llx_facture_rec ADD COLUMN generate_pdf integer DEFAULT 0 AFTER auto_validate;
 
 ALTER TABLE llx_facture_rec MODIFY COLUMN titre VARCHAR(100);
 
