@@ -1536,7 +1536,8 @@ if (empty($reshook))
 				}
 
 				$type = $prod->type;
-				$fk_unit = $prod->fk_unit;
+				$fk_unit = GETPOST('units');
+				if($fk_unit == 'none') $fk_unit = $prod->fk_unit;
 			} else {
 				$pu_ht = price2num($price_ht, 'MU');
 				$pu_ttc = price2num(GETPOST('price_ttc'), 'MU');
