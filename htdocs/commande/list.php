@@ -74,6 +74,8 @@ $search_total_ht=GETPOST('search_total_ht','alpha');
 $optioncss = GETPOST('optioncss','alpha');
 $billed = GETPOST('billed','int');
 $viewstatut=GETPOST('viewstatut');
+$search_categ_cus=trim(GETPOST("search_categ_cus",'int'));
+
 
 // Security check
 $id = (GETPOST('orderid')?GETPOST('orderid','int'):GETPOST('id','int'));
@@ -190,6 +192,8 @@ if (empty($reshook))
         $billed='';
         $toselect='';
         $search_array_options=array();
+		$search_categ_cus=0;
+
     }
     if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x','alpha') || GETPOST('button_removefilter','alpha')
      || GETPOST('button_search_x','alpha') || GETPOST('button_search.x','alpha') || GETPOST('button_search','alpha'))
@@ -450,6 +454,8 @@ $sql.= " state.code_departement as state_code, state.nom as state_name,";
 $sql.= ' c.rowid, c.ref, c.total_ht, c.tva as total_tva, c.total_ttc, c.ref_client,';
 $sql.= ' c.date_valid, c.date_commande, c.note_private, c.date_livraison as date_delivery, c.fk_statut, c.facture as billed,';
 $sql.= ' c.date_creation as date_creation, c.tms as date_update';
+// We'll need these fields in order to filter by categ
+if ($search_categ_cus) $sql .= ", cc.fk_categorie, cc.fk_soc";
 // Add fields from extrafields
 foreach ($extrafields->attribute_label as $key => $val) $sql.=($extrafields->attribute_type[$key] != 'separate' ? ",ef.".$key.' as options_'.$key : '');
 // Add fields from hooks
@@ -460,6 +466,8 @@ $sql.= ' FROM '.MAIN_DB_PREFIX.'societe as s';
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_country as country on (country.rowid = s.fk_pays)";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_typent as typent on (typent.id = s.fk_typent)";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_departements as state on (state.rowid = s.fk_departement)";
+// We'll need this table joined to the select in order to filter by categ
+if (! empty($search_categ_cus)) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX."categorie_societe as cc ON s.rowid = cc.fk_soc"; // We'll need this table joined to the select in order to filter by categ
 $sql.= ', '.MAIN_DB_PREFIX.'commande as c';
 if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."commande_extrafields as ef on (c.rowid = ef.fk_object)";
 if ($sall || $search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'commandedet as pd ON c.rowid=pd.fk_commande';
@@ -538,6 +546,9 @@ if ($search_company) $sql .= natural_search('s.nom', $search_company);
 if ($search_sale > 0) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$search_sale;
 if ($search_user > 0) $sql.= " AND ec.fk_c_type_contact = tc.rowid AND tc.element='commande' AND tc.source='internal' AND ec.element_id = c.rowid AND ec.fk_socpeople = ".$search_user;
 if ($search_total_ht != '') $sql.= natural_search('c.total_ht', $search_total_ht, 1);
+if ($search_categ_cus > 0) $sql.= " AND cc.fk_categorie = ".$db->escape($search_categ_cus);
+if ($search_categ_cus == -2)   $sql.= " AND cc.fk_categorie IS NULL";
+
 // Add where from extra fields
 foreach ($search_array_options as $key => $val)
 {
@@ -628,6 +639,8 @@ if ($resql)
     if ($show_files)            $param.='&show_files=' .$show_files;
     if ($optioncss != '')       $param.='&optioncss='.$optioncss;
 	if ($billed != '')			$param.='&billed='.$billed;
+	if ($search_categ_cus > 0) $param.='&search_categ_cus='.urlencode($search_categ_cus);
+
 	// Add $param from extra fields
 	foreach ($search_array_options as $key => $val)
 	{
@@ -837,6 +850,14 @@ if ($resql)
 		$cate_arbo = $form->select_all_categories(Categorie::TYPE_PRODUCT, null, 'parent', null, null, 1);
 		$moreforfilter.=$form->selectarray('search_product_category', $cate_arbo, $search_product_category, 1, 0, 0, '', 0, 0, 0, 0, 'maxwidth300', 1);
 		$moreforfilter.='</div>';
+	}
+	if (! empty($conf->categorie->enabled))
+	{
+		require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+		$moreforfilter.='<div class="divsearchfield">';
+	 	$moreforfilter.=$langs->trans('CustomersProspectsCategoriesShort').': ';
+		$moreforfilter.=$formother->select_categories('customer',$search_categ_cus,'search_categ_cus',1);
+	 	$moreforfilter.='</div>';
 	}
 	$parameters=array();
 	$reshook=$hookmanager->executeHooks('printFieldPreListTitle',$parameters);    // Note that $action and $object may have been modified by hook
