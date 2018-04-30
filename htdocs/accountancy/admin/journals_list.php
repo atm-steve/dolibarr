@@ -86,7 +86,7 @@ $tablib[35]= "DictionaryAccountancyJournal";
 
 // Requests to extract data
 $tabsql=array();
-$tabsql[35]= "SELECT a.rowid as rowid, a.code as code, a.label, a.nature, a.active FROM ".MAIN_DB_PREFIX."accounting_journal as a";
+$tabsql[35]= "SELECT a.rowid as rowid, a.code as code, a.label, a.nature, a.active FROM ".MAIN_DB_PREFIX."accounting_journal as a WHERE entity=".$conf->entity;
 
 // Criteria to sort dictionaries
 $tabsqlsort=array();
