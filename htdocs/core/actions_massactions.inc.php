@@ -600,6 +600,11 @@ if (! $error && $massaction == 'delete' && $permtodelete)
         if ($result > 0)
         {
             if (in_array($objecttmp->element, array('societe','member'))) $result = $objecttmp->delete($objecttmp->id, $user, 1);
+			elseif($objecttmp->element == 'commande' && $objecttmp->statut >= Commande::STATUS_VALIDATED){
+				setEventMessages('Suppression en masse de commande ayant le statut validé ou supérieur impossible', '', 'errors');
+                $error++;
+                break;
+			}
             else $result = $objecttmp->delete($user);
             if ($result <= 0)
             {

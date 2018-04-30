@@ -427,6 +427,16 @@ if (empty($reshook))
     		$error++;
     	}
     }
+	if($massaction == 'cancelorders'){
+		$orders = GETPOST('toselect','array');
+		foreach($orders as $id_order)
+    	{
+			
+    		$cmd = new Commande($db);
+    		if ($cmd->fetch($id_order) <= 0) continue;
+			$cmd->cancel();
+		}
+	}
 }
 
 
@@ -653,11 +663,13 @@ if ($resql)
 	$arrayofmassactions =  array(
 	    'presend'=>$langs->trans("SendByMail"),
 	    'builddoc'=>$langs->trans("PDFMerge"),
+		'cancelorders'=>$langs->trans("Cancel"),
 	);
 	if($user->rights->facture->creer) $arrayofmassactions['createbills']=$langs->trans("CreateInvoiceForThisCustomer");
 	if ($user->rights->commande->supprimer) $arrayofmassactions['delete']=$langs->trans("Delete");
 	if ($massaction == 'presend' || $massaction == 'createbills') $arrayofmassactions=array();
 	$massactionbutton=$form->selectMassAction('', $arrayofmassactions);
+	
 
 	// Lines of title fields
 	print '<form method="POST" id="searchFormList" action="'.$_SERVER["PHP_SELF"].'">';
