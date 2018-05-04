@@ -842,3 +842,6 @@ SearchIntoContracts=Contrats
 SearchIntoCustomerShipments=Expéditions clients
 SearchIntoExpenseReports=Notes de frais
 SearchIntoLeaves=Congés
+ParentCategory=Catégorie parente
+FirstLevelChildCategory=Catégorie enfant de premier niveau
+SecondLevelChildCategory=Catégorie enfant de second niveau
