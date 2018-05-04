@@ -2707,17 +2707,23 @@ else if ($id > 0 || ! empty($ref))
 		$i ++;
 		$close [$i] ['code'] = 'badcustomer';
 		$i ++;
+		$close [$i] ['code'] = 'deducfraisbank';
+		$i ++;
 		// Help
 		$i = 0;
 		$close [$i] ['label'] = $langs->trans("HelpEscompte") . '<br><br>' . $langs->trans("ConfirmClassifyPaidPartiallyReasonDiscountVatDesc");
 		$i ++;
 		$close [$i] ['label'] = $langs->trans("ConfirmClassifyPaidPartiallyReasonBadCustomerDesc");
 		$i ++;
+		$close [$i] ['label'] = 'Des frais bancaires ont été déduits du reste à payer';
+		$i ++;
 		// Texte
 		$i = 0;
 		$close [$i] ['reason'] = $form->textwithpicto($langs->transnoentities("ConfirmClassifyPaidPartiallyReasonDiscountVat", $resteapayer, $langs->trans("Currency" . $conf->currency)), $close [$i] ['label'], 1);
 		$i ++;
 		$close [$i] ['reason'] = $form->textwithpicto($langs->transnoentities("ConfirmClassifyPaidPartiallyReasonBadCustomer", $resteapayer, $langs->trans("Currency" . $conf->currency)), $close [$i] ['label'], 1);
+		$i ++;
+		$close [$i] ['reason'] = $form->textwithpicto('Déduction de frais bancaires', $close [$i] ['label'], 1);
 		$i ++;
 		// arrayreasons[code]=reason
 		foreach ($close as $key => $val) {
@@ -3232,6 +3238,13 @@ else if ($id > 0 || ! empty($ref))
 			print '</td><td align="right">' . price($object->total_ttc - $creditnoteamount - $depositamount - $totalpaye) . '</td><td>&nbsp;</td></tr>';
 			// $resteapayeraffiche=0;
 		}
+                // Paye partiellement ou Abandon 'badcustomer'
+                if (($object->statut == 2 || $object->statut == 3) && $object->close_code == 'deducfraisbank') {
+                        print '<tr><td colspan="' . $nbcols . '" align="right" class="nowrap">';
+                        print $form->textwithpicto('Ne sera pas réglé' . ':', 'Il s\'agit d\'une déduction de frais bancaires (commentaire : "'.$object->close_note.'")', - 1);
+                        print '</td><td align="right">' . price($object->total_ttc - $creditnoteamount - $depositamount - $totalpaye) . '</td><td>&nbsp;</td></tr>';
+                        // $resteapayeraffiche=0;
+                }
 		// Paye partiellement ou Abandon 'product_returned'
 		if (($object->statut == 2 || $object->statut == 3) && $object->close_code == 'product_returned') {
 			print '<tr><td colspan="' . $nbcols . '" align="right" class="nowrap">';
