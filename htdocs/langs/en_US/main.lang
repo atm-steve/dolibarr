@@ -923,3 +923,5 @@ CommentDeleted=Comment deleted
 Everybody=Everybody
 PayedBy=Payed by
 PayedTo=Payed to
+AmountHTBeforeDiscount=Amount (net) before discount
+AmountDiscount=Amount discount
