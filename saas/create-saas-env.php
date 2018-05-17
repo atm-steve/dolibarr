@@ -1,8 +1,20 @@
+#!/usr/bin/env php
 <?php
 
-chdir(__DIR__);
+$company_code = '';
 
-require '../master.inc.php';
+$sapi_type = php_sapi_name();
+$script_file = basename(__FILE__);
+$path=dirname(__FILE__).'/';
+
+// Test if batch mode
+if (substr($sapi_type, 0, 3) != 'cli') {
+    echo "Error: You are using PHP for CGI. To execute ".$script_file." from command line, you must use PHP for CLI mode.\n";
+    exit(-1);
+}
+
+chdir(__DIR__);
+require '../htdocs/master.inc.php';
 
 $res = $db->query("SELECT saas_env,fk_object FROM ".MAIN_DB_PREFIX."societe_extrafields WHERE saas_env IS NOT NULL AND saas_status='todo'");
 if($res === false) {
