@@ -48,6 +48,7 @@ class TExportCompta extends TObjetStd {
 			,'orma' => 'Orma'
 			,'comptor' => 'Comptor'
 			,'winfic' => 'Winfic'
+			,'agiris' => 'Agiris'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture'
@@ -1211,7 +1212,7 @@ class TExportCompta extends TObjetStd {
 
 					$conf_code_compta_client_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $conf->global->COMPTA_ACCOUNT_CUSTOMER;
 					$conf_code_compta_fourn_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
-					if(in_array($bankline->label, array('(CustomerInvoicePayment)', 'Règlement client', '(InvoiceRefused)', '(CustomerInvoicePaymentBack)', 'Remboursement client'))) {
+					if(in_array($bankline->label, array('(CustomerInvoicePayment)', 'Règlement client', '(InvoiceRefused)', '(CustomerInvoicePaymentBack)', 'Remboursement client','(WithdrawalPayment)'))) {
 						$codeCompta = !empty($tiers->code_compta) ? $tiers->code_compta : $conf_code_compta_client_defaut;
 					} else if(in_array($bankline->label, array('(SupplierInvoicePayment)', 'Règlement fournisseur'))) {
 						$codeCompta = $tiers->code_compta_fournisseur;
@@ -1245,7 +1246,7 @@ class TExportCompta extends TObjetStd {
 					}
 				}
 				// Cas du prélèvement
-				if($lineType == 'withdraw') {
+				if($lineType == 'withdraw' && (float)DOL_VERSION < 6.0) {
 					$prel = new BonPrelevement($db);
 					$prel->fetch($links[$key]['url_id']);
 

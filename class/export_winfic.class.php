@@ -67,6 +67,16 @@ class TExportComptaWinfic extends TExportCompta {
 		$this->filename = 'ECRITURE.WIN';
 	}
 
+	private function normalizeRef($ref) {
+
+		if(strlen($ref) > 5 ) {
+			$ref = substr($ref, -5);
+			if($ref[0] == '-') $ref[0] = 'F';
+		} 
+
+		return $ref;
+	}
+
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
 		global $conf;
 
@@ -83,6 +93,8 @@ class TExportComptaWinfic extends TExportCompta {
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
+
+			$facture['ref'] = $this->normalizeRef($facture['ref']);
 
 			if(!empty($infosFacture['entity'])) {
 				$entity = $infosFacture['entity'];
@@ -189,7 +201,7 @@ class TExportComptaWinfic extends TExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 
-
+			$facture['ref'] = $this->normalizeRef($facture['ref']);
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
