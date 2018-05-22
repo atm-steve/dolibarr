@@ -181,6 +181,10 @@ class TExportCompta extends TObjetStd {
 		}
 
 //echo $sql;
+		if($resql === false) {
+			var_dump($db);exit;
+		}
+
 		// Construction du tableau de données
 		$TIdFactures = array();
 		while($obj = $db->fetch_object($resql)) {
@@ -523,19 +527,14 @@ class TExportCompta extends TObjetStd {
 		// On récupère les catégories du client
 		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_societe WHERE fk_soc = '.$facture->socid;
 		$resql = $db->query($sql);
-		if(!$resql) {
-			var_dump($db);exit;
-		}
+		if($resql===false) { var_dump($db);exit; }
 		while($res = $db->fetch_object($resql)) $TCategClient[] = $res->fk_categorie;
 
 		$TCategProduits = array();
 		// On récupère les catégories du produit
 		$sql = 'SELECT fk_categorie FROM '.MAIN_DB_PREFIX.'categorie_product WHERE fk_product = '.$produit->id;
 		$resql = $db->query($sql);
-                if(!$resql) {
-                        var_dump($db);exit;
-                }
-
+		if($resql===false) { var_dump($db);exit; }
 		while($res = $db->fetch_object($resql)) $TCategProduits[] = $res->fk_categorie;
 
 		// On récupère le code compta paramétré si existant
@@ -547,9 +546,7 @@ class TExportCompta extends TObjetStd {
 							AND fk_category = '.$id_categ_client.'
 							AND fk_category_product = '.$id_categ_prod;
 					$resql = $db->query($sql);
-			                if(!$resql) {
-			                        var_dump($db);exit;
-			                }
+					if($resql===false) { var_dump($db);exit; }
 					while($res = $db->fetch_object($resql)) {
 						return $res->code_compta;
 					}
@@ -751,11 +748,12 @@ class TExportCompta extends TObjetStd {
                     $codeComptableTVA  = $produit->array_options['options_code_tva_achat'];
 				}
                 else{
+			$conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_BUY_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
                 	if($ligne->fk_product_type == 1) {
-                		$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                		$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy_service'] : $conf_compte_tva;
                 	}
                     else{
-                    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
+                    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf_compte_tva;
                     }
                 }
 
@@ -1158,7 +1156,7 @@ class TExportCompta extends TObjetStd {
 		$TExcludedBankAcount = !empty($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT) ? strtr($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT, array(';'=>'","', ','=>'","')) : '';
 
 		// Requête de récupération des écritures bancaires
-		$sql = "SELECT b.rowid, ba.entity";
+		$sql = "SELECT DISTINCT b.rowid, ba.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
 		if(!$this->exportAllreadyExported) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank_class bc ON(b.rowid = bc.lineid)';
@@ -1235,11 +1233,17 @@ class TExportCompta extends TObjetStd {
 					$sql.= " WHERE c.id = ".$charge->type;
 
 					$resql=$this->db->query($sql);
-					$obj = $this->db->fetch_object($resql);
+					if($resql) {
+						$obj = $this->db->fetch_object($resql);
 
-					$codeCompta = $obj->accountancy_code;
-					$TCodeCompta[$codeCompta] = $bankline->amount;
-					$object = $charge;
+						$codeCompta = $obj->accountancy_code;
+						$TCodeCompta[$codeCompta] = $bankline->amount;
+						$object = $charge;
+					} else {
+						$codeCompta = 'XXXX';
+                                        	$TCodeCompta[$codeCompta] = $bankline->amount;
+                                        	$object = $charge;
+					}
 				}
 				// Cas du prélèvement
 				if($lineType == 'withdraw' && (float)DOL_VERSION < 6.0) {
