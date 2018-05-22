@@ -1476,6 +1476,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         foreach ($histo as $key=>$value)
         {
 			$actionstatic->fetch($histo[$key]['id']);    // TODO Do we need this, we already have a lot of data of line into $histo
+            $title = htmlentities(nl2br($actionstatic->note));
 
             $out.='<tr class="oddeven">';
 
@@ -1504,7 +1505,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.='</td>';
 
             // Type
-            $out.='<td>';
+            $out.='<td class="classfortooltip" title="'.$title.'">';
             if (! empty($conf->global->AGENDA_USE_EVENT_TYPE))
             {
             	if ($histo[$key]['apicto']) $out.=img_picto('', $histo[$key]['apicto']);
@@ -1523,7 +1524,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.='</td>';
 
             // Title
-            $out.='<td>';
+            $out.='<td class="classfortooltip" title="'.$title.'">';
             if (isset($histo[$key]['type']) && $histo[$key]['type']=='action')
             {
                 $actionstatic->type_code=$histo[$key]['acode'];
@@ -1544,7 +1545,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.='</td>';
 
             // Date
-            $out.='<td class="center nowrap">';
+            $out.='<td class="center nowrap classfortooltip" title="'.$title.'">';
             $out.=dol_print_date($histo[$key]['datestart'],'dayhour');
             if ($histo[$key]['dateend'] && $histo[$key]['dateend'] != $histo[$key]['datestart'])
             {
