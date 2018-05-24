@@ -687,6 +687,12 @@ if ($resql)
     if ($show_files)            $param.='&show_files=' .$show_files;
     if ($optioncss != '')       $param.='&optioncss='.$optioncss;
 	if ($billed != '')			$param.='&billed='.$billed;
+	if ($search_town != '')			$param.='&search_town='.$search_town;
+	if ($search_zip != '')			$param.='&search_zip='.$search_zip;
+	if ($search_state != '')			$param.='&search_state='.$search_state;
+	if ($search_country != '')			$param.='&search_country='.$search_country;
+	if ($search_type_thirdparty != '')			$param.='&search_type_thirdparty='.$search_type_thirdparty;
+	if ($search_product_category != '')			$param.='&search_product_category='.$search_product_category;
 	if ($search_categ_cus > 0) $param.='&search_categ_cus='.urlencode($search_categ_cus);
 
 	// Add $param from extra fields
@@ -1111,7 +1117,7 @@ if ($resql)
            }
 	   }
 	}
-	// Hook fields
+	// Hook fieldssearch_town
 	$parameters=array('arrayfields'=>$arrayfields);
     $reshook=$hookmanager->executeHooks('printFieldListTitle',$parameters);    // Note that $action and $object may have been modified by hook
     print $hookmanager->resPrint;
