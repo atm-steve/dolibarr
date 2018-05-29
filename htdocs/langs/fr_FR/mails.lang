@@ -157,3 +157,4 @@ NoContactLinkedToThirdpartieWithCategoryFound=Pas de contact/adresses associés 
 OutGoingEmailSetup=Configuration email sortant
 InGoingEmailSetup=Configuration email entrant
 
+NoRecipientEmail=Aucun e-mail de destinataire pour %s

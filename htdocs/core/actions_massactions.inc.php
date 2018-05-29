@@ -172,6 +172,7 @@ if (! $error && $massaction == 'confirm_presend')
             $attachedfiles=array('paths'=>array(), 'names'=>array(), 'mimes'=>array());
             $listofqualifiedid=array();
             $listofqualifiedref=array();
+			$thirdpartywithoutemail=array();
             foreach($listofobjectref[$thirdpartyid] as $objectid => $object)
             {
                 //var_dump($thirdpartyid.' - '.$objectid.' - '.$object->statut);
@@ -210,6 +211,13 @@ if (! $error && $massaction == 'confirm_presend')
                     if (empty($sendto))
                     {
                         //print "No recipient for thirdparty ".$object->thirdparty->name;
+						$nbignored++;
+						if (empty($thirdpartywithoutemail[$object->thirdparty->id]))
+						{
+							$resaction.='<div class="error">'.$langs->trans('NoRecipientEmail',$object->thirdparty->name).'</div><br>';
+						}
+						dol_syslog('No recipient for thirdparty: '.$object->thirdparty->name, LOG_WARNING);
+						$thirdpartywithoutemail[$object->thirdparty->id]=1;
                         $nbignored++;
                         continue;
                     }
