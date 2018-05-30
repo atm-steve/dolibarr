@@ -363,6 +363,24 @@ function show_stats_for_company($product,$socid)
 		print '</td>';
 		print '</tr>';
 	}
+	// Propales fournisseurs
+	if (! empty($conf->supplier_proposal->enabled) && $user->rights->supplier_proposal->lire)
+	{
+	    $nblines++;
+	    $ret=$product->load_stats_propal_fournisseur($socid);
+	    if ($ret < 0) dol_print_error($db);
+	    $langs->load("orders");
+	    print '<tr><td>';
+	    print '<a href="propal_fournisseur.php?id='.$product->id.'">'.img_object('','propal').' '.$langs->trans("SupplierProposals").'</a>';
+	    print '</td><td align="right">';
+	    print $product->stats_propal_fournisseur['suppliers'];
+	    print '</td><td align="right">';
+	    print $product->stats_propal_fournisseur['nb'];
+	    print '</td><td align="right">';
+	    print $product->stats_propal_fournisseur['qty'];
+	    print '</td>';
+	    print '</tr>';
+	}
 	// Contrats
 	if (! empty($conf->contrat->enabled) && $user->rights->contrat->lire)
 	{

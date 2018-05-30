@@ -2244,6 +2244,49 @@ class Product extends CommonObject
 			return -1;
 		}
 	}
+	
+	/**
+	 *  Charge tableau des stats propales fournisseur pour le produit/service
+	 *
+	 *  @param    int      $socid           Id societe pour filtrer sur une societe
+	 *  @param    string   $filtrestatut    Id des statuts pour filtrer sur des statuts
+	 *  @param    int      $forVirtualStock Ignore rights filter for virtual stock calculation.
+	 *  @return   array                     Tableau des stats
+	 */
+	function load_stats_propal_fournisseur($socid=0,$filtrestatut='', $forVirtualStock = 0)
+	{
+	    global $conf,$user;
+	    
+	    $sql = "SELECT COUNT(DISTINCT sp.fk_soc) as nb_suppliers, COUNT(DISTINCT sp.rowid) as nb,";
+	    $sql.= " COUNT(spd.rowid) as nb_rows, SUM(spd.qty) as qty";
+	    $sql.= " FROM ".MAIN_DB_PREFIX."supplier_proposaldet as spd";
+	    $sql.= ", ".MAIN_DB_PREFIX."supplier_proposal as sp";
+	    $sql.= ", ".MAIN_DB_PREFIX."societe as s";
+	    if (!$user->rights->societe->client->voir && !$socid && !$forVirtualStock) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+	    $sql.= " WHERE sp.rowid = spd.fk_supplier_proposal";
+	    $sql.= " AND sp.fk_soc = s.rowid";
+	    $sql.= " AND sp.entity IN (".getEntity('supplier_proposal').")";
+	    $sql.= " AND spd.fk_product = ".$this->id;
+	    if (!$user->rights->societe->client->voir && !$socid && !$forVirtualStock) $sql.= " AND sp.fk_soc = sc.fk_soc AND sc.fk_user = " .$user->id;
+	    if ($socid > 0) $sql.= " AND sp.fk_soc = ".$socid;
+	    if ($filtrestatut != '') $sql.= " AND sp.fk_statut in (".$filtrestatut.")"; // Peut valoir 0
+	    
+	    $result = $this->db->query($sql);
+	    if ( $result )
+	    {
+	        $obj=$this->db->fetch_object($result);
+	        $this->stats_propal_fournisseur['suppliers']=$obj->nb_suppliers;
+	        $this->stats_propal_fournisseur['nb']=$obj->nb;
+	        $this->stats_propal_fournisseur['rows']=$obj->nb_rows;
+	        $this->stats_propal_fournisseur['qty']=$obj->qty?$obj->qty:0;
+	        return 1;
+	    }
+	    else
+	    {
+	        $this->error=$this->db->error().' sql='.$sql;
+	        return -1;
+	    }
+	}
 
 	/**
 	 *  Charge tableau des stats expedition client pour le produit/service
