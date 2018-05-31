@@ -110,9 +110,9 @@ if ($id > 0 || ! empty($ref))
             $sql .= " AND d.fk_supplier_proposal = sp.rowid";
             $sql .= " AND d.fk_product =" . $product->id;
             if (! empty($search_month))
-                $sql .= ' AND MONTH(p.datep) IN (' . $search_month . ')';
+                $sql .= ' AND MONTH(sp.date_valid) IN (' . $search_month . ')';
             if (! empty($search_year))
-                $sql .= ' AND YEAR(p.datep) IN (' . $search_year . ')';
+                $sql .= ' AND YEAR(sp.date_valid) IN (' . $search_year . ')';
             if (! $user->rights->societe->client->voir && ! $socid)
                 $sql .= " AND s.rowid = sc.fk_soc AND sc.fk_user = " . $user->id;
             if ($socid)
