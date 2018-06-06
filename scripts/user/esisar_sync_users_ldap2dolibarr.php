@@ -242,6 +242,16 @@ while($obj = $db->fetch_object($res)) {
 			$fuser->office_phone=$ldapuser[$conf->global->LDAP_FIELD_PHONE];
 			$fuser->user_mobile=$ldapuser[$conf->global->LDAP_FIELD_MOBILE];
 			$fuser->office_fax=$ldapuser[$conf->global->LDAP_FIELD_FAX];
+		
+			/*
+			 * Demande : remplacer etu par pi après @
+			 */
+			$mail_ldap=$ldapuser[$conf->global->LDAP_FIELD_MAIL];
+			$offset = strpos($mail_ldap, '@');
+			if(strpos($mail_ldap, 'etu',$offset) !== false  && !empty($offset)){
+				$ldapuser[$conf->global->LDAP_FIELD_MAIL] =   substr($mail_ldap, 0, $offset) . str_replace('etu','pi',substr($mail_ldap,$offset));
+			}
+
 			$fuser->email=$ldapuser[$conf->global->LDAP_FIELD_MAIL];
 			$fuser->ldap_sid=$ldapuser[$conf->global->LDAP_FIELD_SID];
 
