@@ -328,7 +328,7 @@ while($obj = $db->fetch_object($res)) {
 		}
 		
 		//disable users
-		$res = $db->query("UPDATE llx_user SET statut = 0 WHERE rowid NOT IN (".implode(',',$usersToKeep).")");
+		$res = $db->query("UPDATE llx_user SET statut = 0 WHERE rowid NOT IN (".implode(',',$usersToKeep).") AND admin = 0");
 		
 		
 		if (! $error || $forcecommit)
