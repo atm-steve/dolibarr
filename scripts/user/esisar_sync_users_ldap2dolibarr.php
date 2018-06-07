@@ -197,7 +197,7 @@ while($obj = $db->fetch_object($res)) {
         (|(memberOf=CN=inpg-esisar-gf-PI-01,OU=Groups,DC=esisar,DC=inpg,DC=fr))';
 */
 	$ldaprecords = $ldap->getRecords('*',$conf->global->LDAP_USER_DN, $conf->global->LDAP_KEY_USERS, $required_fields, 1);
-
+	$usersToKeep = array();
 
 //var_dump($ldaprecords,$conf->global->LDAP_USER_DN,$conf->global->LDAP_FIELD_LOGIN,'nb:'.count($ldaprecords),$ldap->filter);exit;
 	if (is_array($ldaprecords))
@@ -277,7 +277,7 @@ while($obj = $db->fetch_object($res)) {
 			if($fuser->id > 0) { // User update
 				print $langs->transnoentities("UserUpdate").' # '.$key.': login='.$fuser->login.', fullname='.$fuser->getFullName($langs);
 				$res=$fuser->update($user);
-
+				$usersToKeep[] = $fuser->id;
 				if ($res < 0)
 				{
 					$error++;
@@ -290,7 +290,7 @@ while($obj = $db->fetch_object($res)) {
 			} else { // User creation
 				print $langs->transnoentities("UserCreate").' # '.$key.': login='.$fuser->login.', fullname='.$fuser->getFullName($langs);
 				$res=$fuser->create($user);
-
+				$usersToKeep[] = $res;
 				if ($res > 0)
 				{
 					print ' --> Created user id='.$fuser->id.' login='.$fuser->login;
@@ -326,7 +326,11 @@ while($obj = $db->fetch_object($res)) {
 			}
 //			exit;
 		}
-
+		
+		//disable users
+		$res = $db->query("UPDATE llx_user SET statut = 0 WHERE rowid NOT IN (".implode(',',$usersToKeep).")");
+		
+		
 		if (! $error || $forcecommit)
 		{
 			if (! $error) print $langs->transnoentities("NoErrorCommitIsDone")."\n";
