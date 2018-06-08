@@ -1374,7 +1374,7 @@ class CommandeFournisseur extends CommonOrder
 
         $error = 0;
 
-        dol_syslog(get_class($this)."::addline $desc, $pu_ht, $qty, $txtva, $txlocaltax1, $txlocaltax2, $fk_product, $fk_prod_fourn_price, $fourn_ref, $remise_percent, $price_base_type, $pu_ttc, $type, $fk_unit");
+        dol_syslog(get_class($this)."::addline $desc, $pu_ht, $qty, $txtva, $txlocaltax1, $txlocaltax2, $fk_product, $fk_prod_fourn_price, $fourn_ref, $remise_percent, $price_base_type, $pu_ttc, $type, $fk_unit, $pu_ht_devise, $origin, $origin_id");
         include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
         // Clean parameters
@@ -1401,7 +1401,7 @@ class CommandeFournisseur extends CommonOrder
             $pu=$pu_ttc;
         }
         $desc=trim($desc);
-        $ref_supplier=''; // Ref of supplier price when we add line
+        $ref_supplier=$fourn_ref; // Ref of supplier price when we add line
 
         // Check parameters
         if ($qty < 1 && ! $fk_product)
@@ -1430,15 +1430,14 @@ class CommandeFournisseur extends CommonOrder
                         // We use 'none' instead of $fourn_ref, because fourn_ref may not exists anymore. So we will take the first supplier price ok.
                         // If we want a dedicated supplier price, we must provide $fk_prod_fourn_price.
                         $result=$prod->get_buyprice($fk_prod_fourn_price, $qty, $fk_product, 'none', ($this->fk_soc?$this->fk_soc:$this->socid));   // Search on couple $fk_prod_fourn_price/$qty first, then on triplet $qty/$fk_product/$fourn_ref/$this->fk_soc
-                        if ($result > 0)
+                        // If supplier order created from customer order, we take best supplier price
+                        // If $pu (defined previously from pu_ht or pu_ttc) is not defined at all, we also take the best supplier price
+                        if ($result > 0 && ($origin == 'commande' || $pu === ''))
                         {
-			    $pu           = $prod->fourn_pu;       // Unit price supplier price set by get_buyprice
-                            $ref_supplier = $prod->ref_supplier;   // Ref supplier price set by get_buyprice
-			    // is remise percent not keyed but present for the product we add it
-                            if ($remise_percent == 0 && $prod->remise_percent !=0)
-                            	$remise_percent =$prod->remise_percent;
-
-
+                        	$pu           = $prod->fourn_pu;       // Unit price supplier price set by get_buyprice
+                        	$ref_supplier = $prod->ref_supplier;   // Ref supplier price set by get_buyprice
+                        	// is remise percent not keyed but present for the product we add it
+                        	if ($remise_percent == 0 && $prod->remise_percent !=0) $remise_percent = $prod->remise_percent;
                         }
                         if ($result == 0)                   // If result == 0, we failed to found the supplier reference price
                         {
@@ -1535,7 +1534,7 @@ class CommandeFournisseur extends CommonOrder
             $this->line->product_type=$product_type;
             $this->line->remise_percent=$remise_percent;
             $this->line->subprice=$pu_ht;
-            $this->line->rang=$this->rang;
+            $this->line->rang=$rang;
             $this->line->info_bits=$info_bits;
 
             $this->line->vat_src_code=$vat_src_code;
@@ -2973,6 +2972,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
     public $fk_facture;
     public $label;
     public $rang = 0;
+    public $special_code = 0;
 
 	/**
 	 * Unit price without taxes
@@ -3012,7 +3012,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
      */
     public function fetch($rowid)
     {
-        $sql = 'SELECT cd.rowid, cd.fk_commande, cd.fk_product, cd.product_type, cd.description, cd.qty, cd.tva_tx,';
+        $sql = 'SELECT cd.rowid, cd.fk_commande, cd.fk_product, cd.product_type, cd.description, cd.qty, cd.tva_tx, cd.special_code,';
         $sql.= ' cd.localtax1_tx, cd.localtax2_tx, cd.localtax1_type, cd.localtax2_type, cd.ref,';
         $sql.= ' cd.remise, cd.remise_percent, cd.subprice,';
         $sql.= ' cd.info_bits, cd.total_ht, cd.total_tva, cd.total_ttc,';
@@ -3051,6 +3051,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
             $this->total_localtax2	= $objp->total_localtax2;
             $this->total_ttc        = $objp->total_ttc;
             $this->product_type     = $objp->product_type;
+            $this->special_code     = $objp->special_code;
 
             $this->ref	            = $objp->product_ref;
             $this->product_ref      = $objp->product_ref;
@@ -3157,7 +3158,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
         // Insertion dans base de la ligne
         $sql = 'INSERT INTO '.MAIN_DB_PREFIX.$this->table_element;
         $sql.= " (fk_commande, label, description, date_start, date_end,";
-        $sql.= " fk_product, product_type,";
+        $sql.= " fk_product, product_type, special_code, rang,";
         $sql.= " qty, vat_src_code, tva_tx, localtax1_tx, localtax2_tx, localtax1_type, localtax2_type, remise_percent, subprice, ref,";
         $sql.= " total_ht, total_tva, total_localtax1, total_localtax2, total_ttc, fk_unit,";
         $sql.= " fk_multicurrency, multicurrency_code, multicurrency_subprice, multicurrency_total_ht, multicurrency_total_tva, multicurrency_total_ttc";
@@ -3168,6 +3169,8 @@ class CommandeFournisseurLigne extends CommonOrderLine
         if ($this->fk_product) { $sql.= $this->fk_product.","; }
         else { $sql.= "null,"; }
         $sql.= "'".$this->product_type."',";
+        $sql.= "'".$this->special_code."',";
+        $sql.= "'".$this->rang."',";
         $sql.= "'".$this->qty."', ";
 
         $sql.= " ".(empty($this->vat_src_code)?"''":"'".$this->vat_src_code."'").",";
@@ -3271,6 +3274,7 @@ class CommandeFournisseurLigne extends CommonOrderLine
         $sql.= ", total_localtax2='".price2num($this->total_localtax2)."'";
         $sql.= ", total_ttc='".price2num($this->total_ttc)."'";
         $sql.= ", product_type=".$this->product_type;
+        $sql.= ", special_code=".(!empty($this->special_code) ? $this->special_code : 0);
         $sql.= ($this->fk_unit ? ", fk_unit='".$this->db->escape($this->fk_unit)."'":", fk_unit=null");
 
         // Multicurrency
