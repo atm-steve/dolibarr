@@ -1324,6 +1324,16 @@ class pdf_crabe extends ModelePDFFactures
 			$pdf->MultiCell(100, 3, $outputlangs->transnoentities("CustomerCode")." : " . $outputlangs->transnoentities($object->client->code_client), '', 'R');
 		}
 
+                if ($object->client->code_compta)
+                {
+			$outputlangs->load('compta');
+                        $posy+=3;
+                        $pdf->SetXY($posx,$posy);
+                        $pdf->SetTextColor(0,0,60);
+                        $pdf->MultiCell(100, 3, $outputlangs->transnoentities("CustomerAccountancyCode")." : " . $outputlangs->transnoentities($object->client->code_compta), '', 'R');
+                }
+
+
 		$posy+=1;
 
 		// Show list of linked objects
