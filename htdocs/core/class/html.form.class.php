@@ -4351,13 +4351,19 @@ class Form
 				require_once DOL_DOCUMENT_ROOT .'/societe/class/societe.class.php';
 				$soc = new Societe($this->db);
 				$soc->fetch($selected);
-				print $soc->getNomUrl($langs);
-			}
-			else
-			{
-				print "&nbsp;";
-			}
+				if($soc->id){
+					print $soc->getNomUrl($langs);
+				}
+				else
+				{
+					print "&nbsp;";
+				}
 		}
+            else
+            {
+                print "&nbsp;";
+            }
+        }
 	}
 
 	/**
