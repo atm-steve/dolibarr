@@ -44,6 +44,7 @@ require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 
 $langs->loadLangs(array('companies','propal','compta','bills','orders','products'));
+$langs->load('cliceribois@cliceribois');
 
 $socid=GETPOST('socid','int');
 
