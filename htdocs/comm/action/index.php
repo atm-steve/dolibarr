@@ -504,6 +504,7 @@ if (! empty($actioncode))
         }
     }
 }
+if ($conf->global->DONT_SHOW_AUTO_EVENT && strpos($actioncode,'AC_OTH_AUTO') == FALSE) $sql.=" AND ca.code != 'AC_OTH_AUTO'";
 if ($resourceid > 0) $sql.=" AND r.element_type = 'action' AND r.element_id = a.id AND r.resource_id = ".$db->escape($resourceid);
 if ($pid) $sql.=" AND a.fk_project=".$db->escape($pid);
 if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND (a.fk_soc IS NULL OR sc.fk_user = " .$user->id . ")";
