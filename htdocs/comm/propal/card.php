@@ -2023,7 +2023,7 @@ if ($action == 'create')
 	print '<table class="nobordernopadding" width="100%"><tr><td>';
 	print $langs->trans('Source');
 	print '</td>';
-	if ($action != 'editdemandreason' && ! empty($object->brouillon))
+	if ($action != 'editdemandreason')
 		print '<td align="right"><a href="' . $_SERVER["PHP_SELF"] . '?action=editdemandreason&amp;id=' . $object->id . '">' . img_edit($langs->transnoentitiesnoconv('SetDemandReason'), 1) . '</a></td>';
 	print '</tr></table>';
 	print '</td><td>';
