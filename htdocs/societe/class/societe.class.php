@@ -2510,6 +2510,7 @@ class Societe extends CommonObject
 	 */
 	function check_codeclient()
 	{
+		return 1;
 		global $conf;
 		if (! empty($conf->global->SOCIETE_CODECLIENT_ADDON))
 		{
