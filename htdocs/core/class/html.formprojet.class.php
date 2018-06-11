@@ -306,7 +306,7 @@ class FormProjets
 	 *  @param	string	$morecss        More css added to the select component
 	 *	@return int         			Nbr of project if OK, <0 if KO
 	 */
-	function selectTasks($socid=-1, $selected='', $htmlname='taskid', $maxlength=24, $option_only=0, $show_empty='1', $discard_closed=0, $forcefocus=0, $disabled=0, $morecss='maxwidth500')
+	function selectTasks($socid=-1, $selected='', $htmlname='taskid', $maxlength=24, $option_only=0, $show_empty='1', $discard_closed=0, $forcefocus=0, $disabled=0, $morecss='maxwidth500', $projectsListId=false )
 	{
 		global $user,$conf,$langs;
 
@@ -317,13 +317,19 @@ class FormProjets
 		$hideunselectables = false;
 		if (! empty($conf->global->PROJECT_HIDE_UNSELECTABLES)) $hideunselectables = true;
 
-		$projectsListId = false;
-		if (empty($user->rights->projet->all->lire))
-		{
-			$projectstatic=new Project($this->db);
-			$projectsListId = $projectstatic->getProjectsAuthorizedForUser($user,0,1);
-		}
+		if(empty($projectsListId) {
+			$projectsListId = false;
+			if (empty($user->rights->projet->all->lire))
+			{
+				$projectstatic=new Project($this->db);
+				$projectsListId = $projectstatic->getProjectsAuthorizedForUser($user,0,1);
+			}
 
+		}
+		elseif(!is_array($projectsListId)) {
+			$projectsListId=array($projectsListId);
+		}
+		
 		// Search all projects
 		$sql = 'SELECT t.rowid, t.ref as tref, t.label as tlabel, p.ref, p.title, p.fk_soc, p.fk_statut, p.public,';
 		$sql.= ' s.nom as name';
