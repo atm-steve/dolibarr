@@ -1281,7 +1281,7 @@ if (empty($reshook))
 									$desc=(! empty($lines[$i]->desc)?$lines[$i]->desc:$lines[$i]->libelle);
 									if ($object->situation_counter == 1) $lines[$i]->situation_percent =  0;
 
-									if ($lines[$i]->subprice < 0)
+									if (false && $lines[$i]->subprice < 0)
 									{
 										// Negative line, we create a discount line
 										$discount = new DiscountAbsolute($db);
