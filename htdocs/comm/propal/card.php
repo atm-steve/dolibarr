@@ -1744,7 +1744,7 @@ if ($action == 'create')
 	{
 		//Form to close proposal (signed or not)
 		$formquestion = array(
-				array('type' => 'select','name' => 'statut','label' => $langs->trans("CloseAs"),'values' => array(2=>$object->labelstatut [2],3=>$object->labelstatut [3])),
+				array('type' => 'select','name' => 'statut','label' => $langs->trans("CloseAs"),'values' => array(2=>$object->labelstatut [2],3=>$object->labelstatut [3], 5=>$object->labelstatut [5])),
 				array('type' => 'text', 'name' => 'note_private', 'label' => $langs->trans("Note"),'value' => '')				// Field to complete private note (not replace)
 		);
 
