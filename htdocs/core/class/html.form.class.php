@@ -3054,7 +3054,7 @@ class Form
 	function select_conditions_paiements($selected=0, $htmlname='condid', $filtertype=-1, $addempty=0, $noinfoadmin=0, $morecss='')
 	{
 		global $langs, $user, $conf;
-
+		$selected = ($selected) ? $selected : 2 ;
 		dol_syslog(__METHOD__." selected=".$selected.", htmlname=".$htmlname, LOG_DEBUG);
 
 		$this->load_cache_conditions_paiements();
@@ -3102,6 +3102,7 @@ class Form
 
 		dol_syslog(__METHOD__." ".$selected.", ".$htmlname.", ".$filtertype.", ".$format, LOG_DEBUG);
 
+		$selected = ($selected) ? $selected : 2 ;
 		$filterarray=array();
 		if ($filtertype == 'CRDT')  	$filterarray=array(0,2,3);
 		elseif ($filtertype == 'DBIT') 	$filterarray=array(1,2,3);
