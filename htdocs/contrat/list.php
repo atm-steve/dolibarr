@@ -289,12 +289,10 @@ if ($search_dfyear > 0 && $search_op2df)
 	elseif ($search_op2df == '>=') $sql.= " HAVING MIN(".$db->ifsql("cd.statut=4", "cd.date_fin_validite", "null").") >= '".$db->idate(dol_get_first_day($search_dfyear,$search_dfmonth,false))."'";
 	else $sql.= " HAVING MIN(".$db->ifsql("cd.statut=4", "cd.date_fin_validite", "null").") <= '".$db->idate(dol_get_last_day($search_dfyear,$search_dfmonth,false))."' AND MIN(".$db->ifsql("cd.statut=4", "cd.date_fin_validite", "null").") >= '".$db->idate(dol_get_first_day($search_dfyear,$search_dfmonth,false))."'";
 }
-<<<<<<< HEAD
-=======
-$sql.= " GROUP BY c.rowid, c.ref, c.datec, c.date_contrat, c.statut, c.ref_supplier, s.nom, s.rowid";
+
 // FIX TK 5882
 if($sortfield== 'c.rowid') $sortfield = "c.ref";
->>>>>>> b6db0dd8fa... FIX TK 5882 : trie liste contrat
+
 $sql.= $db->order($sortfield,$sortorder);
 //print $sql;
 
