@@ -2510,7 +2510,7 @@ class Societe extends CommonObject
 	 */
 	function check_codeclient()
 	{
-		return 1;
+		return 0;
 		global $conf;
 		if (! empty($conf->global->SOCIETE_CODECLIENT_ADDON))
 		{
@@ -2546,6 +2546,7 @@ class Societe extends CommonObject
 	 */
 	function check_codefournisseur()
 	{
+		return 0;
 		global $conf;
 		if (! empty($conf->global->SOCIETE_CODECLIENT_ADDON))
 		{
