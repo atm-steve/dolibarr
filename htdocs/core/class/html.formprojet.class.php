@@ -317,7 +317,7 @@ class FormProjets
 		$hideunselectables = false;
 		if (! empty($conf->global->PROJECT_HIDE_UNSELECTABLES)) $hideunselectables = true;
 
-		if(empty($projectsListId) {
+		if(empty($projectsListId)) {
 			$projectsListId = false;
 			if (empty($user->rights->projet->all->lire))
 			{
@@ -329,7 +329,7 @@ class FormProjets
 		elseif(!is_array($projectsListId)) {
 			$projectsListId=array($projectsListId);
 		}
-		
+
 		// Search all projects
 		$sql = 'SELECT t.rowid, t.ref as tref, t.label as tlabel, p.ref, p.title, p.fk_soc, p.fk_statut, p.public,';
 		$sql.= ' s.nom as name';
