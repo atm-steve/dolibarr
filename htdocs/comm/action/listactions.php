@@ -103,7 +103,7 @@ if ($socid < 0) $socid='';
 
 $canedit=1;
 if (! $user->rights->agenda->myactions->read) accessforbidden();
-if (! $user->rights->agenda->allactions->read) $canedit=0;
+if (! $user->rights->agenda->myactions->read) $canedit=0;
 if (! $user->rights->agenda->allactions->read || $filter=='mine')	// If no permission to see all, we show only affected to me
 {
 	$filtert=$user->id;
@@ -238,7 +238,7 @@ if (! empty($actioncode))
  		else
  		{
  	        	$sql.=" AND c.code IN ('".implode("','", explode(',', $actioncode))."')";
- 		}		
+ 		}
         }
     }
 }
@@ -253,8 +253,8 @@ if ($status == '0') { $sql.= " AND a.percent = 0"; }
 if ($status == '-1') { $sql.= " AND a.percent = -1"; }	// Not applicable
 if ($status == '50') { $sql.= " AND (a.percent > 0 AND a.percent < 100)"; }	// Running already started
 if ($status == '100') { $sql.= " AND a.percent = 100"; }
-if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep2 <= '".$db->idate($now)."'))"; }
-if ($status == 'todo') { $sql.= " AND ((a.percent >= 0 AND a.percent < 100) OR (a.percent = -1 AND a.datep2 > '".$db->idate($now)."'))"; }
+if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100)"; }
+if ($status == 'todo') { $sql.= " AND (a.percent >= 0 AND a.percent < 100)"; }
 if ($search_title) $sql.=natural_search("a.label", $search_title);
 // We must filter on assignement table
 if ($filtert > 0 || $usergroup > 0)

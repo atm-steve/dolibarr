@@ -296,7 +296,7 @@ if (empty($reshook))
         if (! $error)
         {
             $result = $object->insertExtraFields();
-            if ($result < 0) 
+            if ($result < 0)
 	    {
 		    $error++;
 		    $errors = $object->errors;
@@ -524,8 +524,8 @@ if (empty($reshook))
                             $error=$object->error; $errors=$object->errors;
                         }
                     }
-				
-					
+
+
 					// Customer categories association
 					$custcats = GETPOST( 'custcats', 'array' );
 					$object->setCategories($custcats, 'customer');
@@ -533,7 +533,7 @@ if (empty($reshook))
 					// Supplier categories association
 					$suppcats = GETPOST('suppcats', 'array');
 					$object->setCategories($suppcats, 'supplier');
-					
+
                     // Logo/Photo save
                     $dir     = $conf->societe->multidir_output[$conf->entity]."/".$object->id."/logos/";
                     $file_OK = is_uploaded_file($_FILES['photo']['tmp_name']);
@@ -638,10 +638,13 @@ if (empty($reshook))
                 $result = $object->update($socid, $user, 1, $object->oldcopy->codeclient_modifiable(), $object->oldcopy->codefournisseur_modifiable(), 'update', 0);
                 if ($result <=  0)
                 {
-                    $error = $object->error; $errors = $object->errors;
+                    $error++;
+                    $errors = $object->errors;
+                    setEventMessages($object->error, $object->errors, 'errors');
                 }
+
 				// Prevent thirdparty's emptying if a user hasn't rights $user->rights->categorie->lire (in such a case, post of 'custcats' is not defined)
-				if(!empty($user->rights->categorie->lire)){ 
+				if(!empty($user->rights->categorie->lire)){
 					// Customer categories association
 					$categories = GETPOST( 'custcats', 'array' );
 					$object->setCategories($categories, 'customer');
@@ -718,6 +721,7 @@ if (empty($reshook))
                 	{
                 		$error++;
                 		$object->error .= $object->db->lasterror();
+                		setEventMessages($object->error, $object->errors, 'errors');
                 	}
                 }
 
@@ -1321,7 +1325,7 @@ else
 			$langs->load('categories');
 
 			// Customer
-			if ($object->prospect || $object->client) {
+			if ($object->prospect || $object->client || (! $object->fournisseur && ! empty($conf->global->THIRDPARTY_CAN_HAVE_CATEGORY_EVEN_IF_NOT_CUSTOMER_PROSPECT_SUPPLIER))) {
 				print '<tr><td class="toptd">' . fieldLabel('CustomersCategoriesShort', 'custcats') . '</td><td colspan="3">';
 				$cate_arbo = $form->select_all_categories(Categorie::TYPE_CUSTOMER, null, 'parent', null, null, 1);
 				print $form->multiselectarray('custcats', $cate_arbo, GETPOST('custcats', 'array'), null, null, null,
@@ -1879,7 +1883,7 @@ else
 			if (! empty($conf->categorie->enabled)  && ! empty($user->rights->categorie->lire))
 			{
 				// Customer
-				if ($object->prospect || $object->client) {
+				if ($object->prospect || $object->client || (! $object->fournisseur && ! empty($conf->global->THIRDPARTY_CAN_HAVE_CATEGORY_EVEN_IF_NOT_CUSTOMER_PROSPECT_SUPPLIER))) {
 					print '<tr><td>' . fieldLabel('CustomersCategoriesShort', 'custcats') . '</td>';
 					print '<td colspan="3">';
 					$cate_arbo = $form->select_all_categories(Categorie::TYPE_CUSTOMER, null, null, null, null, 1);
@@ -2269,7 +2273,7 @@ else
 		if (! empty($conf->categorie->enabled)  && ! empty($user->rights->categorie->lire))
 		{
 			// Customer
-			if ($object->prospect || $object->client) {
+			if ($object->prospect || $object->client || (! $object->fournisseur && ! empty($conf->global->THIRDPARTY_CAN_HAVE_CATEGORY_EVEN_IF_NOT_CUSTOMER_PROSPECT_SUPPLIER))) {
 				print '<tr><td>' . $langs->trans("CustomersCategoriesShort") . '</td>';
 				print '<td>';
 				print $form->showCategories($object->id, 'customer', 1);
