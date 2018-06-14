@@ -189,13 +189,16 @@ if (empty($reshook))
 			$qualified_for_stock_change = $object->hasProductsOrServices(1);
 		}
 
-		$result = $object->delete($user, 0, $idwarehouse);
-		if ($result > 0) {
-			header('Location: ' . DOL_URL_ROOT . '/compta/facture/list.php?restore_lastsearch_values=1');
-			exit();
-		} else {
-			setEventMessages($object->error, $object->errors, 'errors');
-			$action='';
+		if ($object->is_erasable())
+		{
+			$result = $object->delete($user, 0, $idwarehouse);
+			if ($result > 0) {
+				header('Location: ' . DOL_URL_ROOT . '/compta/facture/list.php?restore_lastsearch_values=1');
+				exit();
+			} else {
+				setEventMessages($object->error, $object->errors, 'errors');
+				$action='';
+			}
 		}
 	}
 
@@ -405,7 +408,7 @@ if (empty($reshook))
 
 			//var_dump($object->getRemainToPay(0));
 			//var_dump($discount->amount_ttc);exit;
-			if ($discount->amount_ttc > $object->getRemainToPay(0))
+			if (price2num($discount->amount_ttc) > price2num($object->getRemainToPay(0)))
 			{
 				// TODO Split the discount in 2 automatically
 				$error++;
@@ -720,7 +723,6 @@ if (empty($reshook))
 				$sql.= ' WHERE pf.fk_facture = '.$object->id;
 				$sql.= ' AND pf.fk_paiement = p.rowid';
 				$sql.= ' AND p.entity IN (' . getEntity('facture').')';
-				$sql.= ' ORDER BY p.datep, p.tms';
 
 				$resql = $db->query($sql);
 				if (! $resql) dol_print_error($db);
@@ -1444,11 +1446,26 @@ if (empty($reshook))
 					$object->origin = $origin;
 					$object->origin_id = $originid;
 
-					foreach ($object->lines as &$line)
+					foreach ($object->lines as $i => &$line)
 					{
 						$line->origin = $object->origin;
 						$line->origin_id = $line->id;
 						$line->fetch_optionals($line->id);
+
+						// Si fk_remise_except defini on vérifie si la réduction à déjà été appliquée
+						if ($line->fk_remise_except)
+						{
+						    $discount=new DiscountAbsolute($line->db);
+						    $result=$discount->fetch($line->fk_remise_except);
+						    if ($result > 0)
+						    {
+						        // Check if discount not already affected to another invoice
+						        if ($discount->fk_facture_line > 0)
+						        {
+						            $line->fk_remise_except = 0;
+						        }
+						    }
+						}
 					}
 				}
 

@@ -4261,7 +4261,8 @@ function get_localtax($vatrate, $local, $thirdparty_buyer="", $thirdparty_seller
 
 		if ($local == 2)
 		{
-			if (! $mysoc->localtax2_assuj || (string) $vatratecleaned == "0") return 0;
+			//if (! $mysoc->localtax2_assuj || (string) $vatratecleaned == "0") return 0;
+			if (! $mysoc->localtax2_assuj) return 0;		// If main vat is 0, IRPF may be different than 0.
 			if ($thirdparty_seller->id == $mysoc->id)
 			{
 				if (! $thirdparty_buyer->localtax2_assuj) return 0;
@@ -5548,6 +5549,11 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 		$substitutionarray['__AMOUNT_VAT__']      = is_object($object)?($object->total_vat?$object->total_vat:$object->total_tva):'';
  		if ($onlykey != 2 || $mysoc->useLocalTax(1)) $substitutionarray['__AMOUNT_TAX2__']     = is_object($object)?($object->total_localtax1?$object->total_localtax1:$object->total_localtax1):'';
 		if ($onlykey != 2 || $mysoc->useLocalTax(2)) $substitutionarray['__AMOUNT_TAX3__']     = is_object($object)?($object->total_localtax2?$object->total_localtax2:$object->total_localtax2):'';
+		$substitutionarray['__AMOUNT_FORMATED__']          = is_object($object)?price($object->total_ttc, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
+		$substitutionarray['__AMOUNT_EXCL_TAX_FORMATED__'] = is_object($object)?price($object->total_ht, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
+		$substitutionarray['__AMOUNT_VAT_FORMATED__']      = is_object($object)?($object->total_vat?price($object->total_vat, 0, $outputlangs, 0, 0, -1, $conf->currency_code):price($object->total_tva, 0, $outputlangs, 0, 0, -1, $conf->currency_code)):'';
+		if ($onlykey != 2 || $mysoc->useLocalTax(1)) $substitutionarray['__AMOUNT_TAX2_FORMATED__']     = is_object($object)?price($object->total_localtax1, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
+		if ($onlykey != 2 || $mysoc->useLocalTax(2)) $substitutionarray['__AMOUNT_TAX3_FORMATED__']     = is_object($object)?price($object->total_localtax2, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
 
 		/* TODO Add key for multicurrency
     	$substitutionarray['__AMOUNT_FORMATED__']          = is_object($object)?price($object->total_ttc, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
