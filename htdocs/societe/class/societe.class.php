@@ -1787,11 +1787,16 @@ class Societe extends CommonObject
             $sql = "INSERT INTO ".MAIN_DB_PREFIX."societe_commerciaux";
             $sql.= " ( fk_soc, fk_user )";
             $sql.= " VALUES (".$this->id.",".$commid.")";
-
+ 
             if (! $this->db->query($sql) )
             {
                 dol_syslog(get_class($this)."::add_commercial Erreur");
-            }
+            }else {
+				$this->context=array('commercial_modified'=>$commid);
+				
+				$result=$this->call_trigger('COMPANY_LINK_SALE_REPRESENTATIVE',$user);
+                if ($result < 0) $error++;
+			}
         }
     }
 
@@ -1804,7 +1809,13 @@ class Societe extends CommonObject
      */
     function del_commercial(User $user, $commid)
     {
-        if ($this->id > 0 && $commid > 0)
+		$error=0;
+		$this->context=array('commercial_modified'=>$commid);
+				
+		$result=$this->call_trigger('COMPANY_UNLINK_SALE_REPRESENTATIVE',$user);
+        if ($result < 0) $error++;
+		
+        if ( !$error && $this->id > 0 && $commid > 0)
         {
             $sql  = "DELETE FROM  ".MAIN_DB_PREFIX."societe_commerciaux ";
             $sql .= " WHERE fk_soc = ".$this->id." AND fk_user =".$commid;

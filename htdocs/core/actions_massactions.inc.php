@@ -172,6 +172,7 @@ if (! $error && $massaction == 'confirm_presend')
             $attachedfiles=array('paths'=>array(), 'names'=>array(), 'mimes'=>array());
             $listofqualifiedid=array();
             $listofqualifiedref=array();
+			$thirdpartywithoutemail=array();
             foreach($listofobjectref[$thirdpartyid] as $objectid => $object)
             {
                 //var_dump($thirdpartyid.' - '.$objectid.' - '.$object->statut);
@@ -210,6 +211,13 @@ if (! $error && $massaction == 'confirm_presend')
                     if (empty($sendto))
                     {
                         //print "No recipient for thirdparty ".$object->thirdparty->name;
+						$nbignored++;
+						if (empty($thirdpartywithoutemail[$object->thirdparty->id]))
+						{
+							$resaction.='<div class="error">'.$langs->trans('NoRecipientEmail',$object->thirdparty->name).'</div><br>';
+						}
+						dol_syslog('No recipient for thirdparty: '.$object->thirdparty->name, LOG_WARNING);
+						$thirdpartywithoutemail[$object->thirdparty->id]=1;
                         $nbignored++;
                         continue;
                     }
@@ -600,6 +608,11 @@ if (! $error && $massaction == 'delete' && $permtodelete)
         if ($result > 0)
         {
             if (in_array($objecttmp->element, array('societe','member'))) $result = $objecttmp->delete($objecttmp->id, $user, 1);
+			elseif($objecttmp->element == 'commande' && $objecttmp->statut >= Commande::STATUS_VALIDATED){
+				setEventMessages('Suppression en masse de commande ayant le statut validé ou supérieur impossible', '', 'errors');
+                $error++;
+                break;
+			}
             else $result = $objecttmp->delete($user);
             if ($result <= 0)
             {
