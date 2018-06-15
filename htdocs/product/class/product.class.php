@@ -3869,7 +3869,7 @@ class Product extends CommonObject
 	 *    @return     int                   < 0 if KO, > 0 if OK
 	 *    @see		  load_virtual_stock, getBatchInfo
 	 */
-	function load_stock($option='')
+	function load_stock($option='', $TWarehouses = array())
 	{
 		global $conf;
 
@@ -3897,6 +3897,7 @@ class Product extends CommonObject
 		$sql.= ", ".MAIN_DB_PREFIX."entrepot as w";
 		$sql.= " WHERE w.entity IN (".getEntity('stock').")";
 		$sql.= " AND w.rowid = ps.fk_entrepot";
+		if(!empty($TWarehouses)) $sql.= " AND w.rowid IN (".$this->db->escape(implode(',',$TWarehouses)).")";
 		$sql.= " AND ps.fk_product = ".$this->id;
 		if ($conf->global->ENTREPOT_EXTRA_STATUS && count($warehouseStatus)) $sql.= " AND w.statut IN (".$this->db->escape(implode(',',$warehouseStatus)).")";
 

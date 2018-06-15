@@ -54,7 +54,8 @@ $tobuy = GETPOST('tobuy', 'int');
 $salert = GETPOST('salert', 'alpha');
 $mode = GETPOST('mode','alpha');
 $draftorder = GETPOST('draftorder','alpha');
-
+$multiwarehouse = GETPOST('multiwarehouse', 'array');
+if(GETPOST('multipostwarehouse')) $multiwarehouse = explode(',', GETPOST('multipostwarehouse'));
 
 $fourn_id = GETPOST('fourn_id','int');
 $fk_supplier = GETPOST('fk_supplier','int');
@@ -272,7 +273,7 @@ $prod = new Product($db);
 
 $title = $langs->trans('Status');
 
-if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
 	$sqldesiredtock=$db->ifsql("pse.desiredstock IS NULL", "p.desiredstock", "pse.desiredstock");
 	$sqlalertstock=$db->ifsql("pse.seuil_stock_alerte IS NULL", "p.seuil_stock_alerte", "pse.seuil_stock_alerte");
 } else {
@@ -285,7 +286,7 @@ $sql = 'SELECT p.rowid, p.ref, p.label, p.description, p.price,';
 $sql.= ' p.price_ttc, p.price_base_type,p.fk_product_type,';
 $sql.= ' p.tms as datem, p.duration, p.tobuy';
 $sql.= ' ,p.desiredstock,p.seuil_stock_alerte';
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
 	$sql.= ', pse.desiredstock' ;
 	$sql.= ', pse.seuil_stock_alerte' ;
 }
@@ -298,8 +299,8 @@ $sql.= ' ON p.rowid = s.fk_product';
 if($fk_supplier > 0) {
 	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'product_fournisseur_price pfp ON (pfp.fk_product = p.rowid AND pfp.fk_soc = '.$fk_supplier.')';
 }
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
-	$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_warehouse_properties AS pse ON (p.rowid = pse.fk_product AND pse.fk_entrepot = '.$fk_entrepot.')';
+if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
+    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_warehouse_properties AS pse ON (p.rowid = pse.fk_product AND pse.fk_entrepot IN ('.$db->escape(implode(',',$multiwarehouse)).'))';
 }
 $sql.= ' WHERE p.entity IN (' . getEntity('product') . ')';
 if ($sall) $sql .= natural_search(array('p.ref', 'p.label', 'p.description', 'p.note'), $sall);
@@ -320,7 +321,7 @@ $sql.= ', p.price_ttc, p.price_base_type,p.fk_product_type, p.tms';
 $sql.= ', p.duration, p.tobuy';
 $sql.= ', p.desiredstock';
 $sql.= ', p.seuil_stock_alerte';
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
 	$sql.= ', pse.desiredstock' ;
 	$sql.= ', pse.seuil_stock_alerte' ;
 }
@@ -419,13 +420,13 @@ if ($usevirtualstock == 1)
 {
 	print $langs->trans("CurentSelectionMode").': ';
 	print $langs->trans("CurentlyUsingVirtualStock").' - ';
-	print '<a href="'.$_SERVER["PHP_SELF"].'?mode=physical&fk_supplier='.$fk_supplier.'&fk_entrepot='.$fk_entrepot.'">'.$langs->trans("UsePhysicalStock").'</a><br>';
+	print '<a href="'.$_SERVER["PHP_SELF"].'?mode=physical&fk_supplier='.$fk_supplier.'&multipostwarehouse=' .implode(",",$multiwarehouse) . '">'.$langs->trans("UsePhysicalStock").'</a><br>';
 }
 if ($usevirtualstock == 0)
 {
 	print $langs->trans("CurentSelectionMode").': ';
 	print $langs->trans("CurentlyUsingPhysicalStock").' - ';
-	print '<a href="'.$_SERVER["PHP_SELF"].'?mode=virtual&fk_supplier='.$fk_supplier.'&fk_entrepot='.$fk_entrepot.'">'.$langs->trans("UseVirtualStock").'</a><br>';
+	print '<a href="'.$_SERVER["PHP_SELF"].'?mode=virtual&fk_supplier='.$fk_supplier.'&multipostwarehouse=' .implode(",",$multiwarehouse) . '">'.$langs->trans("UseVirtualStock").'</a><br>';
 }
 print '<br>'."\n";
 
@@ -439,7 +440,7 @@ print '<input type="hidden" name="mode" value="'.$mode.'">';
 if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE))
 {
 	print '<div class="inline-block valignmiddle" style="padding-right: 20px;">';
-	print $langs->trans('Warehouse').' '.$formproduct->selectWarehouses($fk_entrepot, 'fk_entrepot', '', 1);
+	print $langs->trans('Warehouse').' '.selectMultiWarehouses($multiwarehouse, 'multiwarehouse');
 	print '</div>';
 }
 print '<div class="inline-block valignmiddle" style="padding-right: 20px;">';
@@ -457,7 +458,7 @@ if ($sref || $snom || $sall || $salert || $draftorder || GETPOST('search', 'alph
 	$filters .= '&draftorder=' . $draftorder;
 	$filters .= '&mode=' . $mode;
 	$filters .= '&fk_supplier=' . $fk_supplier;
-	$filters .= '&fk_entrepot=' . $fk_entrepot;
+	$filters .= '&multiwarehouse[]=' . implode('&multiwarehouse[]=', $multiwarehouse);
 	print_barre_liste(
 		$texte,
 		$page,
@@ -476,7 +477,7 @@ if ($sref || $snom || $sall || $salert || $draftorder || GETPOST('search', 'alph
 	$filters .= '&draftorder=' . $draftorder;
 	$filters .= '&mode=' . $mode;
 	$filters .= '&fk_supplier=' . $fk_supplier;
-	$filters .= '&fk_entrepot=' . $fk_entrepot;
+	$filters .= '&multiwarehouse[]=' . implode('&multiwarehouse[]=', $multiwarehouse);
 	print_barre_liste(
 		$texte,
 		$page,
@@ -497,7 +498,7 @@ $param .= '&fourn_id=' . $fourn_id . '&snom='. $snom . '&salert=' . $salert . '&
 $param .= '&sref=' . $sref;
 $param .= '&mode=' . $mode;
 $param .= '&fk_supplier=' . $fk_supplier;
-$param .= '&fk_entrepot=' . $fk_entrepot;
+$param .= '&multiwarehouse[]=' . implode('&multiwarehouse[]=', $multiwarehouse);
 
 $stocklabel = $langs->trans('Stock');
 if ($usevirtualstock == 1) $stocklabel = 'VirtualStock';
@@ -507,6 +508,7 @@ print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST" name="formulaire">'
 	'<input type="hidden" name="token" value="' .$_SESSION['newtoken'] . '">'.
 	'<input type="hidden" name="fk_supplier" value="' . $fk_supplier . '">'.
 	'<input type="hidden" name="fk_entrepot" value="' .$fk_entrepot . '">'.
+	'<input type="hidden" name="multipostwarehouse" value="' .implode(",",$multiwarehouse) . '">'.
 	'<input type="hidden" name="sortfield" value="' . $sortfield . '">'.
 	'<input type="hidden" name="sortorder" value="' . $sortorder . '">'.
 	'<input type="hidden" name="type" value="' . $type . '">'.
@@ -545,14 +547,33 @@ print_liste_field_titre('StockToBuy', $_SERVER["PHP_SELF"], '', $param, '', 'ali
 print_liste_field_titre('SupplierRef', $_SERVER["PHP_SELF"], '', $param, '', 'align="right"', $sortfield, $sortorder);
 print "</tr>\n";
 
+$TempProd = array();
+
+while($obj = $db->fetch_object($resql))
+{
+    if(!isset($TempProd[$obj->rowid]))
+    {
+        $TempProd[$obj->rowid] = $obj;
+    } else {
+        $TempProd[$obj->rowid]->desiredstock += $obj->desiredstock;
+        $TempProd[$obj->rowid]->alertstock += $obj->alertstock;
+    }
+}
+
+$TProd = array();
+
+foreach($TempProd as $produit) $TProd[] = $produit;
+
+//echo '<pre>'; var_dump($TProd[0]);
+$num = count($TProd);
 while ($i < ($limit ? min($num, $limit) : $num))
 {
-	$objp = $db->fetch_object($resql);
+    $objp = $TProd[$i];
 
 	if (! empty($conf->global->STOCK_SUPPORTS_SERVICES) || $objp->fk_product_type == 0)
 	{
 		$prod->fetch($objp->rowid);
-		$prod->load_stock('warehouseopen, warehouseinternal');
+		$prod->load_stock('warehouseopen, warehouseinternal', $multiwarehouse);
 
 		// Multilangs
 		if (! empty($conf->global->MAIN_MULTILANGS))
@@ -701,5 +722,25 @@ function toggle(source)
 
 
 llxFooter();
+
+function selectMultiWarehouses($selected=array(), $htmlName='multiwarehouse')
+{
+    global $db, $form;
+    
+    dol_include_once('/product/class/html.formproduct.class.php');
+    $f = new FormProduct($db);
+    $ret = $f->loadWarehouses(0, '', '', true);
+    
+    $array = array();
+    if($ret > 0)
+    {
+        foreach($f->cache_warehouses as $id => $arraytypes)
+        {
+            $array[$id] = $arraytypes['label'];
+        }
+    }
+    
+    return $form->multiselectarray($htmlName, $array, $selected, 0, 0, '', 0, "150px");
+}
 
 $db->close();
