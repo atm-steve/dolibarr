@@ -57,8 +57,7 @@ $tobuy = GETPOST('tobuy', 'int');
 $salert = GETPOST('salert', 'alpha');
 $mode = GETPOST('mode','alpha');
 $draftorder = GETPOST('draftorder','alpha');
-$multiwarehouse = GETPOST('multiwarehouse', 'array');
-if(GETPOST('multipostwarehouse')) $multiwarehouse = explode(',', GETPOST('multipostwarehouse'));
+
 
 $fourn_id = GETPOST('fourn_id','int');
 $fk_supplier = GETPOST('fk_supplier','int');
@@ -83,8 +82,8 @@ if (!$sortorder) {
 // Define virtualdiffersfromphysical
 $virtualdiffersfromphysical=0;
 if (! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT)
-|| ! empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_DISPATCH_ORDER)
-|| ! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT_CLOSE))
+    || ! empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_DISPATCH_ORDER)
+    || ! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT_CLOSE))
 {
     $virtualdiffersfromphysical=1;		// According to increase/decrease stock options, virtual and physical stock may differs.
 }
@@ -105,7 +104,7 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
     $snom = '';
     $sal = '';
     $salert = '';
-	$draftorder='';
+    $draftorder='';
 }
 if($draftorder == 'on') $draftchecked = "checked";
 
@@ -117,14 +116,14 @@ if ($action == 'order' && isset($_POST['valid']))
     unset($_POST['linecount']);
     if ($linecount > 0)
     {
-    	$db->begin();
-
+        $db->begin();
+        
         $suppliers = array();
         for ($i = 0; $i < $linecount; $i++)
         {
             if (GETPOST('choose' . $i, 'alpha') === 'on' && GETPOST('fourn' . $i, 'int') > 0)
             {
-            	//one line
+                //one line
                 $box = $i;
                 $supplierpriceid = GETPOST('fourn'.$i, 'int');
                 //get all the parameters needed to create a line
@@ -137,41 +136,41 @@ if ($action == 'order' && isset($_POST['valid']))
                 $resql = $db->query($sql);
                 if ($resql && $db->num_rows($resql) > 0)
                 {
-                	if ($qty)
-                	{
-	                    //might need some value checks
-	                    $obj = $db->fetch_object($resql);
-	                    $line = new CommandeFournisseurLigne($db);
-	                    $line->qty = $qty;
-	                    $line->fk_product = $obj->fk_product;
-
-	                    $product = new Product($db);
-	                    $product->fetch($obj->fk_product);
-	                    if (! empty($conf->global->MAIN_MULTILANGS))
-	                    {
-	                        $product->getMultiLangs();
-	                    }
-	                    $line->desc = $product->description;
+                    if ($qty)
+                    {
+                        //might need some value checks
+                        $obj = $db->fetch_object($resql);
+                        $line = new CommandeFournisseurLigne($db);
+                        $line->qty = $qty;
+                        $line->fk_product = $obj->fk_product;
+                        
+                        $product = new Product($db);
+                        $product->fetch($obj->fk_product);
+                        if (! empty($conf->global->MAIN_MULTILANGS))
+                        {
+                            $product->getMultiLangs();
+                        }
+                        $line->desc = $product->description;
                         if (! empty($conf->global->MAIN_MULTILANGS))
                         {
                             // TODO Get desc in language of thirdparty
                         }
-
-	                    $line->tva_tx = $obj->tva_tx;
-	                    $line->subprice = $obj->unitprice;
-	                    $line->total_ht = $obj->unitprice * $qty;
-	                    $tva = $line->tva_tx / 100;
-	                    $line->total_tva = $line->total_ht * $tva;
-	                    $line->total_ttc = $line->total_ht + $line->total_tva;
-						$line->remise_percent = $obj->remise_percent;
-	                    $line->ref_fourn = $obj->ref_fourn;
-						$line->type = $product->type;
-						$line->fk_unit = $product->fk_unit;
-	                    $suppliers[$obj->fk_soc]['lines'][] = $line;
-                	}
+                        
+                        $line->tva_tx = $obj->tva_tx;
+                        $line->subprice = $obj->unitprice;
+                        $line->total_ht = $obj->unitprice * $qty;
+                        $tva = $line->tva_tx / 100;
+                        $line->total_tva = $line->total_ht * $tva;
+                        $line->total_ttc = $line->total_ht + $line->total_tva;
+                        $line->remise_percent = $obj->remise_percent;
+                        $line->ref_fourn = $obj->ref_fourn;
+                        $line->type = $product->type;
+                        $line->fk_unit = $product->fk_unit;
+                        $suppliers[$obj->fk_soc]['lines'][] = $line;
+                    }
                 }
                 else
-				{
+                {
                     $error=$db->lasterror();
                     dol_print_error($db);
                 }
@@ -180,7 +179,7 @@ if ($action == 'order' && isset($_POST['valid']))
             }
             unset($_POST[$i]);
         }
-
+        
         //we now know how many orders we need and what lines they have
         $i = 0;
         $orders = array();
@@ -213,12 +212,12 @@ if ($action == 'order' && isset($_POST['valid']))
                         0,
                         $line->type,
                         0,
-						false,
-						null,
-						null,
-						0,
-						$line->fk_unit
-                    );
+                        false,
+                        null,
+                        null,
+                        0,
+                        $line->fk_unit
+                        );
                 }
                 if ($result < 0) {
                     $fail++;
@@ -248,18 +247,18 @@ if ($action == 'order' && isset($_POST['valid']))
                 $i++;
             }
         }
-
+        
         if (! $fail && $id)
         {
-        	$db->commit();
-
+            $db->commit();
+            
             setEventMessages($langs->trans('OrderCreated'), null, 'mesgs');
             header('Location: replenishorders.php');
             exit;
         }
         else
         {
-        	$db->rollback();
+            $db->rollback();
         }
     }
     if ($box == 0)
@@ -279,12 +278,12 @@ $prod = new Product($db);
 
 $title = $langs->trans('Status');
 
-if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
-	$sqldesiredtock=$db->ifsql("pse.desiredstock IS NULL", "p.desiredstock", "pse.desiredstock");
-	$sqlalertstock=$db->ifsql("pse.seuil_stock_alerte IS NULL", "p.seuil_stock_alerte", "pse.seuil_stock_alerte");
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+    $sqldesiredtock=$db->ifsql("pse.desiredstock IS NULL", "p.desiredstock", "pse.desiredstock");
+    $sqlalertstock=$db->ifsql("pse.seuil_stock_alerte IS NULL", "p.seuil_stock_alerte", "pse.seuil_stock_alerte");
 } else {
-	$sqldesiredtock='p.desiredstock';
-	$sqlalertstock='p.seuil_stock_alerte';
+    $sqldesiredtock='p.desiredstock';
+    $sqlalertstock='p.seuil_stock_alerte';
 }
 
 
@@ -292,9 +291,9 @@ $sql = 'SELECT p.rowid, p.ref, p.label, p.description, p.price,';
 $sql.= ' p.price_ttc, p.price_base_type,p.fk_product_type,';
 $sql.= ' p.tms as datem, p.duration, p.tobuy';
 $sql.= ' ,p.desiredstock,p.seuil_stock_alerte';
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
-	$sql.= ', pse.desiredstock' ;
-	$sql.= ', pse.seuil_stock_alerte' ;
+if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+    $sql.= ', pse.desiredstock' ;
+    $sql.= ', pse.seuil_stock_alerte' ;
 }
 $sql.= ' ,'.$sqldesiredtock.' as desiredstock, '.$sqlalertstock.' as alertstock,';
 
@@ -303,10 +302,10 @@ $sql.= ' FROM ' . MAIN_DB_PREFIX . 'product as p';
 $sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'product_stock as s';
 $sql.= ' ON p.rowid = s.fk_product';
 if($fk_supplier > 0) {
-	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'product_fournisseur_price pfp ON (pfp.fk_product = p.rowid AND pfp.fk_soc = '.$fk_supplier.')';
+    $sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'product_fournisseur_price pfp ON (pfp.fk_product = p.rowid AND pfp.fk_soc = '.$fk_supplier.')';
 }
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
-    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_warehouse_properties AS pse ON (p.rowid = pse.fk_product AND pse.fk_entrepot IN ('.$db->escape(implode(',',$multiwarehouse)).'))';
+if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_warehouse_properties AS pse ON (p.rowid = pse.fk_product AND pse.fk_entrepot = '.$fk_entrepot.')';
 }
 $sql.= ' WHERE p.entity IN (' . getEntity('product') . ')';
 if ($sall) $sql .= natural_search(array('p.ref', 'p.label', 'p.description', 'p.note'), $sall);
@@ -327,65 +326,65 @@ $sql.= ', p.price_ttc, p.price_base_type,p.fk_product_type, p.tms';
 $sql.= ', p.duration, p.tobuy';
 $sql.= ', p.desiredstock';
 $sql.= ', p.seuil_stock_alerte';
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && !empty($multiwarehouse)) {
-	$sql.= ', pse.desiredstock' ;
-	$sql.= ', pse.seuil_stock_alerte' ;
+if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+    $sql.= ', pse.desiredstock' ;
+    $sql.= ', pse.seuil_stock_alerte' ;
 }
 $sql.= ', s.fk_product';
 
 if ($usevirtualstock)
 {
-	$sqlCommandesCli = "(SELECT ".$db->ifsql("SUM(cd.qty) IS NULL", "0", "SUM(cd.qty)")." as qty";
-	$sqlCommandesCli.= " FROM ".MAIN_DB_PREFIX."commandedet as cd";
-	$sqlCommandesCli.= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = cd.fk_commande)";
-	$sqlCommandesCli.= " WHERE c.entity IN (".getEntity('commande').")";
-	$sqlCommandesCli.= " AND cd.fk_product = p.rowid";
-	$sqlCommandesCli.= " AND c.fk_statut IN (1,2))";
-
-	$sqlExpeditionsCli = "(SELECT ".$db->ifsql("SUM(ed.qty) IS NULL", "0", "SUM(ed.qty)")." as qty";
-	$sqlExpeditionsCli.= " FROM ".MAIN_DB_PREFIX."expedition as e";
-	$sqlExpeditionsCli.= " LEFT JOIN ".MAIN_DB_PREFIX."expeditiondet as ed ON (ed.fk_expedition = e.rowid)";
-	$sqlExpeditionsCli.= " LEFT JOIN ".MAIN_DB_PREFIX."commandedet as cd ON (cd.rowid = ed.fk_origin_line)";
-	$sqlExpeditionsCli.= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = cd.fk_commande)";
-	$sqlExpeditionsCli.= " WHERE e.entity IN (".getEntity('expedition').")";
-	$sqlExpeditionsCli.= " AND cd.fk_product = p.rowid";
-	$sqlExpeditionsCli.= " AND c.fk_statut IN (1,2))";
-
-	$sqlCommandesFourn = "(SELECT ".$db->ifsql("SUM(cd.qty) IS NULL", "0", "SUM(cd.qty)")." as qty";
-	$sqlCommandesFourn.= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as cd";
-	$sqlCommandesFourn.= ", ".MAIN_DB_PREFIX."commande_fournisseur as c";
-	$sqlCommandesFourn.= " WHERE c.rowid = cd.fk_commande";
-	$sqlCommandesFourn.= " AND c.entity IN (".getEntity('supplier_order').")";
-	$sqlCommandesFourn.= " AND cd.fk_product = p.rowid";
-	$sqlCommandesFourn.= " AND c.fk_statut IN (3,4))";
-
-	$sqlReceptionFourn = "(SELECT ".$db->ifsql("SUM(fd.qty) IS NULL", "0", "SUM(fd.qty)")." as qty";
-	$sqlReceptionFourn.= " FROM ".MAIN_DB_PREFIX."commande_fournisseur as cf";
-	$sqlReceptionFourn.= " LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as fd ON (fd.fk_commande = cf.rowid)";
-	$sqlReceptionFourn.= " WHERE cf.entity IN (".getEntity('supplier_order').")";
-	$sqlReceptionFourn.= " AND fd.fk_product = p.rowid";
-	$sqlReceptionFourn.= " AND cf.fk_statut IN (3,4))";
-
-	$sql.= ' HAVING ((('.$db->ifsql($sqldesiredtock." IS NULL", "0", $sqldesiredtock).' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
-	$sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.')))';
-	$sql.= ' OR ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
-	$sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.'))))';
-
-	if ($salert == 'on')	// Option to see when stock is lower than alert
-	{
-		$sql.= ' AND ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
-		$sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.')))';
-		$alertchecked = 'checked';
-	}
+    $sqlCommandesCli = "(SELECT ".$db->ifsql("SUM(cd.qty) IS NULL", "0", "SUM(cd.qty)")." as qty";
+    $sqlCommandesCli.= " FROM ".MAIN_DB_PREFIX."commandedet as cd";
+    $sqlCommandesCli.= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = cd.fk_commande)";
+    $sqlCommandesCli.= " WHERE c.entity IN (".getEntity('commande').")";
+    $sqlCommandesCli.= " AND cd.fk_product = p.rowid";
+    $sqlCommandesCli.= " AND c.fk_statut IN (1,2))";
+    
+    $sqlExpeditionsCli = "(SELECT ".$db->ifsql("SUM(ed.qty) IS NULL", "0", "SUM(ed.qty)")." as qty";
+    $sqlExpeditionsCli.= " FROM ".MAIN_DB_PREFIX."expedition as e";
+    $sqlExpeditionsCli.= " LEFT JOIN ".MAIN_DB_PREFIX."expeditiondet as ed ON (ed.fk_expedition = e.rowid)";
+    $sqlExpeditionsCli.= " LEFT JOIN ".MAIN_DB_PREFIX."commandedet as cd ON (cd.rowid = ed.fk_origin_line)";
+    $sqlExpeditionsCli.= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = cd.fk_commande)";
+    $sqlExpeditionsCli.= " WHERE e.entity IN (".getEntity('expedition').")";
+    $sqlExpeditionsCli.= " AND cd.fk_product = p.rowid";
+    $sqlExpeditionsCli.= " AND c.fk_statut IN (1,2))";
+    
+    $sqlCommandesFourn = "(SELECT ".$db->ifsql("SUM(cd.qty) IS NULL", "0", "SUM(cd.qty)")." as qty";
+    $sqlCommandesFourn.= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as cd";
+    $sqlCommandesFourn.= ", ".MAIN_DB_PREFIX."commande_fournisseur as c";
+    $sqlCommandesFourn.= " WHERE c.rowid = cd.fk_commande";
+    $sqlCommandesFourn.= " AND c.entity IN (".getEntity('supplier_order').")";
+    $sqlCommandesFourn.= " AND cd.fk_product = p.rowid";
+    $sqlCommandesFourn.= " AND c.fk_statut IN (3,4))";
+    
+    $sqlReceptionFourn = "(SELECT ".$db->ifsql("SUM(fd.qty) IS NULL", "0", "SUM(fd.qty)")." as qty";
+    $sqlReceptionFourn.= " FROM ".MAIN_DB_PREFIX."commande_fournisseur as cf";
+    $sqlReceptionFourn.= " LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as fd ON (fd.fk_commande = cf.rowid)";
+    $sqlReceptionFourn.= " WHERE cf.entity IN (".getEntity('supplier_order').")";
+    $sqlReceptionFourn.= " AND fd.fk_product = p.rowid";
+    $sqlReceptionFourn.= " AND cf.fk_statut IN (3,4))";
+    
+    $sql.= ' HAVING ((('.$db->ifsql($sqldesiredtock." IS NULL", "0", $sqldesiredtock).' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
+    $sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.')))';
+    $sql.= ' OR ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
+    $sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.'))))';
+    
+    if ($salert == 'on')	// Option to see when stock is lower than alert
+    {
+        $sql.= ' AND ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
+        $sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.')))';
+        $alertchecked = 'checked';
+    }
 } else {
-	$sql.= ' HAVING (('.$sqldesiredtock.' >= 0 AND ('.$sqldesiredtock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')))';
-	$sql.= ' OR ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").'))))';
-
-	if ($salert == 'on')	// Option to see when stock is lower than alert
-	{
-		$sql.= ' AND ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')))';
-		$alertchecked = 'checked';
-	}
+    $sql.= ' HAVING (('.$sqldesiredtock.' >= 0 AND ('.$sqldesiredtock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')))';
+    $sql.= ' OR ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").'))))';
+    
+    if ($salert == 'on')	// Option to see when stock is lower than alert
+    {
+        $sql.= ' AND ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')))';
+        $alertchecked = 'checked';
+    }
 }
 
 $sql.= $db->order($sortfield,$sortorder);
@@ -424,15 +423,15 @@ dol_fiche_head($head, 'replenish', '', -1, '');
 print $langs->trans("ReplenishmentStatusDesc").'<br>'."\n";
 if ($usevirtualstock == 1)
 {
-	print $langs->trans("CurentSelectionMode").': ';
-	print $langs->trans("CurentlyUsingVirtualStock").' - ';
-	print '<a href="'.$_SERVER["PHP_SELF"].'?mode=physical&fk_supplier='.$fk_supplier.'&multipostwarehouse=' .implode(",",$multiwarehouse) . '">'.$langs->trans("UsePhysicalStock").'</a><br>';
+    print $langs->trans("CurentSelectionMode").': ';
+    print $langs->trans("CurentlyUsingVirtualStock").' - ';
+    print '<a href="'.$_SERVER["PHP_SELF"].'?mode=physical&fk_supplier='.$fk_supplier.'&fk_entrepot='.$fk_entrepot.'">'.$langs->trans("UsePhysicalStock").'</a><br>';
 }
 if ($usevirtualstock == 0)
 {
-	print $langs->trans("CurentSelectionMode").': ';
-	print $langs->trans("CurentlyUsingPhysicalStock").' - ';
-	print '<a href="'.$_SERVER["PHP_SELF"].'?mode=virtual&fk_supplier='.$fk_supplier.'&multipostwarehouse=' .implode(",",$multiwarehouse) . '">'.$langs->trans("UseVirtualStock").'</a><br>';
+    print $langs->trans("CurentSelectionMode").': ';
+    print $langs->trans("CurentlyUsingPhysicalStock").' - ';
+    print '<a href="'.$_SERVER["PHP_SELF"].'?mode=virtual&fk_supplier='.$fk_supplier.'&fk_entrepot='.$fk_entrepot.'">'.$langs->trans("UseVirtualStock").'</a><br>';
 }
 print '<br>'."\n";
 
@@ -445,9 +444,9 @@ print '<input type="hidden" name="draftorder" value="'.$draftorder.'">';
 print '<input type="hidden" name="mode" value="'.$mode.'">';
 if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE))
 {
-	print '<div class="inline-block valignmiddle" style="padding-right: 20px;">';
-	print $langs->trans('Warehouse').' '.selectMultiWarehouses($multiwarehouse, 'multiwarehouse');
-	print '</div>';
+    print '<div class="inline-block valignmiddle" style="padding-right: 20px;">';
+    print $langs->trans('Warehouse').' '.$formproduct->selectWarehouses($fk_entrepot, 'fk_entrepot', '', 1);
+    print '</div>';
 }
 print '<div class="inline-block valignmiddle" style="padding-right: 20px;">';
 print $langs->trans('Supplier').' '.$form->select_company($fk_supplier, 'fk_supplier', 'fournisseur=1', 1);
@@ -458,42 +457,42 @@ print '</div>';
 print '</form>';
 
 if ($sref || $snom || $sall || $salert || $draftorder || GETPOST('search', 'alpha')) {
-	$filters = '&sref=' . $sref . '&snom=' . $snom;
-	$filters .= '&sall=' . $sall;
-	$filters .= '&salert=' . $salert;
-	$filters .= '&draftorder=' . $draftorder;
-	$filters .= '&mode=' . $mode;
-	$filters .= '&fk_supplier=' . $fk_supplier;
-	$filters .= '&multiwarehouse[]=' . implode('&multiwarehouse[]=', $multiwarehouse);
-	print_barre_liste(
-		$texte,
-		$page,
-		'replenish.php',
-		$filters,
-		$sortfield,
-		$sortorder,
-		'',
-		$num
-	);
+    $filters = '&sref=' . $sref . '&snom=' . $snom;
+    $filters .= '&sall=' . $sall;
+    $filters .= '&salert=' . $salert;
+    $filters .= '&draftorder=' . $draftorder;
+    $filters .= '&mode=' . $mode;
+    $filters .= '&fk_supplier=' . $fk_supplier;
+    $filters .= '&fk_entrepot=' . $fk_entrepot;
+    print_barre_liste(
+        $texte,
+        $page,
+        'replenish.php',
+        $filters,
+        $sortfield,
+        $sortorder,
+        '',
+        $num
+        );
 } else {
-	$filters = '&sref=' . $sref . '&snom=' . $snom;
-	$filters .= '&fourn_id=' . $fourn_id;
-	$filters .= (isset($type)?'&type=' . $type:'');
-	$filters .=  '&=' . $salert;
-	$filters .= '&draftorder=' . $draftorder;
-	$filters .= '&mode=' . $mode;
-	$filters .= '&fk_supplier=' . $fk_supplier;
-	$filters .= '&multiwarehouse[]=' . implode('&multiwarehouse[]=', $multiwarehouse);
-	print_barre_liste(
-		$texte,
-		$page,
-		'replenish.php',
-		$filters,
-		$sortfield,
-		$sortorder,
-		'',
-		$num
-	);
+    $filters = '&sref=' . $sref . '&snom=' . $snom;
+    $filters .= '&fourn_id=' . $fourn_id;
+    $filters .= (isset($type)?'&type=' . $type:'');
+    $filters .=  '&=' . $salert;
+    $filters .= '&draftorder=' . $draftorder;
+    $filters .= '&mode=' . $mode;
+    $filters .= '&fk_supplier=' . $fk_supplier;
+    $filters .= '&fk_entrepot=' . $fk_entrepot;
+    print_barre_liste(
+        $texte,
+        $page,
+        'replenish.php',
+        $filters,
+        $sortfield,
+        $sortorder,
+        '',
+        $num
+        );
 }
 
 print '<div class="div-table-responsive">';		// You can use div-table-responsive-no-min if you dont need reserved height for your table
@@ -504,23 +503,22 @@ $param .= '&fourn_id=' . $fourn_id . '&snom='. $snom . '&salert=' . $salert . '&
 $param .= '&sref=' . $sref;
 $param .= '&mode=' . $mode;
 $param .= '&fk_supplier=' . $fk_supplier;
-$param .= '&multiwarehouse[]=' . implode('&multiwarehouse[]=', $multiwarehouse);
+$param .= '&fk_entrepot=' . $fk_entrepot;
 
 $stocklabel = $langs->trans('Stock');
 if ($usevirtualstock == 1) $stocklabel = 'VirtualStock';
 if ($usevirtualstock == 0) $stocklabel = 'PhysicalStock';
 
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST" name="formulaire">'.
-	'<input type="hidden" name="token" value="' .$_SESSION['newtoken'] . '">'.
-	'<input type="hidden" name="fk_supplier" value="' . $fk_supplier . '">'.
-	'<input type="hidden" name="fk_entrepot" value="' .$fk_entrepot . '">'.
-	'<input type="hidden" name="multipostwarehouse" value="' .implode(",",$multiwarehouse) . '">'.
-	'<input type="hidden" name="sortfield" value="' . $sortfield . '">'.
-	'<input type="hidden" name="sortorder" value="' . $sortorder . '">'.
-	'<input type="hidden" name="type" value="' . $type . '">'.
-	'<input type="hidden" name="linecount" value="' . $num . '">'.
-	'<input type="hidden" name="action" value="order">'.
-	'<input type="hidden" name="mode" value="' . $mode . '">';
+    '<input type="hidden" name="token" value="' .$_SESSION['newtoken'] . '">'.
+    '<input type="hidden" name="fk_supplier" value="' . $fk_supplier . '">'.
+    '<input type="hidden" name="fk_entrepot" value="' .$fk_entrepot . '">'.
+    '<input type="hidden" name="sortfield" value="' . $sortfield . '">'.
+    '<input type="hidden" name="sortorder" value="' . $sortorder . '">'.
+    '<input type="hidden" name="type" value="' . $type . '">'.
+    '<input type="hidden" name="linecount" value="' . $num . '">'.
+    '<input type="hidden" name="action" value="order">'.
+    '<input type="hidden" name="mode" value="' . $mode . '">';
 
 // Lignes des champs de filtre
 print '<tr class="liste_titre_filter">';
@@ -553,149 +551,130 @@ print_liste_field_titre('StockToBuy', $_SERVER["PHP_SELF"], '', $param, '', 'ali
 print_liste_field_titre('SupplierRef', $_SERVER["PHP_SELF"], '', $param, '', 'align="right"', $sortfield, $sortorder);
 print "</tr>\n";
 
-$TempProd = array();
-
-while($obj = $db->fetch_object($resql))
-{
-    if(!isset($TempProd[$obj->rowid]))
-    {
-        $TempProd[$obj->rowid] = $obj;
-    } else {
-        $TempProd[$obj->rowid]->desiredstock += $obj->desiredstock;
-        $TempProd[$obj->rowid]->alertstock += $obj->alertstock;
-    }
-}
-
-$TProd = array();
-
-foreach($TempProd as $produit) $TProd[] = $produit;
-
-//echo '<pre>'; var_dump($TProd[0]);
-$num = count($TProd);
 while ($i < ($limit ? min($num, $limit) : $num))
 {
-    $objp = $TProd[$i];
-
-	if (! empty($conf->global->STOCK_SUPPORTS_SERVICES) || $objp->fk_product_type == 0)
-	{
-		$prod->fetch($objp->rowid);
-		$prod->load_stock('warehouseopen, warehouseinternal', $multiwarehouse);
-
-		// Multilangs
-		if (! empty($conf->global->MAIN_MULTILANGS))
-		{
-			$sql = 'SELECT label,description';
-			$sql .= ' FROM ' . MAIN_DB_PREFIX . 'product_lang';
-			$sql .= ' WHERE fk_product = ' . $objp->rowid;
-			$sql .= ' AND lang = "' . $langs->getDefaultLang() . '"';
-			$sql .= ' LIMIT 1';
-
-			$resqlm = $db->query($sql);
-			if ($resqlm)
-			{
-				$objtp = $db->fetch_object($resqlm);
-				if (!empty($objtp->description)) $objp->description = $objtp->description;
-				if (!empty($objtp->label)) $objp->label = $objtp->label;
-			}
-		}
-
-		if ($usevirtualstock)
-		{
-			// If option to increase/decrease is not on an object validation, virtual stock may differs from physical stock.
-			$stock = $prod->stock_theorique;
-		}
-		else
-		{
-			$stock = $prod->stock_reel;
-		}
-
-		// Force call prod->load_stats_xxx to choose status to count (otherwise it is loaded by load_stock function)
-		if(isset($draftchecked)){
-			$result=$prod->load_stats_commande_fournisseur(0,'0,1,2,3,4');
-		}else {
-			$result=$prod->load_stats_commande_fournisseur(0,'1,2,3,4');
-		}
-
-		$result=$prod->load_stats_reception(0,'4');
-
-		//print $prod->stats_commande_fournisseur['qty'].'<br>'."\n";
-		//print $prod->stats_reception['qty'];
-		$ordered = $prod->stats_commande_fournisseur['qty'] - $prod->stats_reception['qty'];
-
-		$warning='';
-		if ($objp->alertstock && ($stock < $objp->alertstock))
-		{
-			$warning = img_warning($langs->trans('StockTooLow')) . ' ';
-		}
-
-		//depending on conf, use either physical stock or
-		//virtual stock to compute the stock to buy value
-		$stocktobuy = max(max($objp->desiredstock, $objp->alertstock) - $stock - $ordered, 0);
-		$disabled = '';
-		if ($ordered > 0)
-		{
-			$stockforcompare = $usevirtualstock ? $stock : $stock + $ordered;
-			if ($stockforcompare >= $objp->desiredstock)
-			{
-				$picto = img_picto('', './img/yes', '', 1);
-				$disabled = 'disabled';
-			}
-			else {
-				$picto = img_picto('', './img/no', '', 1);
-			}
-		} else {
-			//$picto = img_help('',$langs->trans("NoPendingReceptionOnSupplierOrder"));
-			$picto = img_picto($langs->trans("NoPendingReceptionOnSupplierOrder"), './img/no', '', 1);
-		}
-
-		print '<tr class="oddeven">';
-
-		// Select field
-		//print '<td><input type="checkbox" class="check" name="' . $i . '"' . $disabled . '></td>';
-		print '<td><input type="checkbox" class="check" name="choose'.$i.'"></td>';
-
-		print '<td class="nowrap">'.$prod->getNomUrl(1, '').'</td>';
-
-		print '<td>'.$objp->label ;
-		print '<input type="hidden" name="desc' . $i . '" value="' . dol_escape_htmltag($objp->description) . '">';  // TODO Remove this and make a fetch to get description when creating order instead of a GETPOST
-		print '</td>';
-
-		if (!empty($conf->service->enabled) && $type == 1)
-		{
-			if (preg_match('/([0-9]+)y/i', $objp->duration, $regs)) {
-				$duration =  $regs[1] . ' ' . $langs->trans('DurationYear');
-			} elseif (preg_match('/([0-9]+)m/i', $objp->duration, $regs)) {
-				$duration =  $regs[1] . ' ' . $langs->trans('DurationMonth');
-			} elseif (preg_match('/([0-9]+)d/i', $objp->duration, $regs)) {
-				$duration =  $regs[1] . ' ' . $langs->trans('DurationDay');
-			} else {
-				$duration = $objp->duration;
-			}
-			print '<td align="center">'.$duration.'</td>';
-		}
-
-		// Desired stock
-		print '<td align="right">' . $objp->desiredstock . '</td>';
-
-		// Limit stock for alerr
-		print '<td align="right">' . $objp->alertstock . '</td>';
-
-		// Current stock
-		print '<td align="right">'. $warning . $stock. '</td>';
-
-		// Already ordered
-		print '<td align="right"><a href="replenishorders.php?sproduct=' . $prod->id . '">'. $ordered . '</a> ' . $picto. '</td>';
-
-		// To order
-		//print '<td align="right"><input type="text" name="tobuy'.$i.'" value="'.$stocktobuy.'" '.$disabled.'></td>';
-		print '<td align="right"><input type="text" size="4" name="tobuy'.$i.'" value="'.$stocktobuy.'"></td>';
-
-		// Supplier
-		print '<td align="right">'.	$form->select_product_fourn_price($prod->id, 'fourn'.$i, $fk_supplier).'</td>';
-
-		print '</tr>';
-	}
-	$i++;
+    $objp = $db->fetch_object($resql);
+    
+    if (! empty($conf->global->STOCK_SUPPORTS_SERVICES) || $objp->fk_product_type == 0)
+    {
+        $prod->fetch($objp->rowid);
+        $prod->load_stock('warehouseopen, warehouseinternal');
+        
+        // Multilangs
+        if (! empty($conf->global->MAIN_MULTILANGS))
+        {
+            $sql = 'SELECT label,description';
+            $sql .= ' FROM ' . MAIN_DB_PREFIX . 'product_lang';
+            $sql .= ' WHERE fk_product = ' . $objp->rowid;
+            $sql .= ' AND lang = "' . $langs->getDefaultLang() . '"';
+            $sql .= ' LIMIT 1';
+            
+            $resqlm = $db->query($sql);
+            if ($resqlm)
+            {
+                $objtp = $db->fetch_object($resqlm);
+                if (!empty($objtp->description)) $objp->description = $objtp->description;
+                if (!empty($objtp->label)) $objp->label = $objtp->label;
+            }
+        }
+        
+        if ($usevirtualstock)
+        {
+            // If option to increase/decrease is not on an object validation, virtual stock may differs from physical stock.
+            $stock = $prod->stock_theorique;
+        }
+        else
+        {
+            $stock = $prod->stock_reel;
+        }
+        
+        // Force call prod->load_stats_xxx to choose status to count (otherwise it is loaded by load_stock function)
+        if(isset($draftchecked)){
+            $result=$prod->load_stats_commande_fournisseur(0,'0,1,2,3,4');
+        }else {
+            $result=$prod->load_stats_commande_fournisseur(0,'1,2,3,4');
+        }
+        
+        $result=$prod->load_stats_reception(0,'4');
+        
+        //print $prod->stats_commande_fournisseur['qty'].'<br>'."\n";
+        //print $prod->stats_reception['qty'];
+        $ordered = $prod->stats_commande_fournisseur['qty'] - $prod->stats_reception['qty'];
+        
+        $warning='';
+        if ($objp->alertstock && ($stock < $objp->alertstock))
+        {
+            $warning = img_warning($langs->trans('StockTooLow')) . ' ';
+        }
+        
+        //depending on conf, use either physical stock or
+        //virtual stock to compute the stock to buy value
+        $stocktobuy = max(max($objp->desiredstock, $objp->alertstock) - $stock - $ordered, 0);
+        $disabled = '';
+        if ($ordered > 0)
+        {
+            $stockforcompare = $usevirtualstock ? $stock : $stock + $ordered;
+            if ($stockforcompare >= $objp->desiredstock)
+            {
+                $picto = img_picto('', './img/yes', '', 1);
+                $disabled = 'disabled';
+            }
+            else {
+                $picto = img_picto('', './img/no', '', 1);
+            }
+        } else {
+            //$picto = img_help('',$langs->trans("NoPendingReceptionOnSupplierOrder"));
+            $picto = img_picto($langs->trans("NoPendingReceptionOnSupplierOrder"), './img/no', '', 1);
+        }
+        
+        print '<tr class="oddeven">';
+        
+        // Select field
+        //print '<td><input type="checkbox" class="check" name="' . $i . '"' . $disabled . '></td>';
+        print '<td><input type="checkbox" class="check" name="choose'.$i.'"></td>';
+        
+        print '<td class="nowrap">'.$prod->getNomUrl(1, '').'</td>';
+        
+        print '<td>'.$objp->label ;
+        print '<input type="hidden" name="desc' . $i . '" value="' . dol_escape_htmltag($objp->description) . '">';  // TODO Remove this and make a fetch to get description when creating order instead of a GETPOST
+        print '</td>';
+        
+        if (!empty($conf->service->enabled) && $type == 1)
+        {
+            if (preg_match('/([0-9]+)y/i', $objp->duration, $regs)) {
+                $duration =  $regs[1] . ' ' . $langs->trans('DurationYear');
+            } elseif (preg_match('/([0-9]+)m/i', $objp->duration, $regs)) {
+                $duration =  $regs[1] . ' ' . $langs->trans('DurationMonth');
+            } elseif (preg_match('/([0-9]+)d/i', $objp->duration, $regs)) {
+                $duration =  $regs[1] . ' ' . $langs->trans('DurationDay');
+            } else {
+                $duration = $objp->duration;
+            }
+            print '<td align="center">'.$duration.'</td>';
+        }
+        
+        // Desired stock
+        print '<td align="right">' . $objp->desiredstock . '</td>';
+        
+        // Limit stock for alerr
+        print '<td align="right">' . $objp->alertstock . '</td>';
+        
+        // Current stock
+        print '<td align="right">'. $warning . $stock. '</td>';
+        
+        // Already ordered
+        print '<td align="right"><a href="replenishorders.php?sproduct=' . $prod->id . '">'. $ordered . '</a> ' . $picto. '</td>';
+        
+        // To order
+        //print '<td align="right"><input type="text" name="tobuy'.$i.'" value="'.$stocktobuy.'" '.$disabled.'></td>';
+        print '<td align="right"><input type="text" size="4" name="tobuy'.$i.'" value="'.$stocktobuy.'"></td>';
+        
+        // Supplier
+        print '<td align="right">'.	$form->select_product_fourn_price($prod->id, 'fourn'.$i, $fk_supplier).'</td>';
+        
+        print '</tr>';
+    }
+    $i++;
 }
 
 $parameters=array('sql'=>$sql);
@@ -733,25 +712,5 @@ function toggle(source)
 
 
 llxFooter();
-
-function selectMultiWarehouses($selected=array(), $htmlName='multiwarehouse')
-{
-    global $db, $form;
-    
-    dol_include_once('/product/class/html.formproduct.class.php');
-    $f = new FormProduct($db);
-    $ret = $f->loadWarehouses(0, '', '', true);
-    
-    $array = array();
-    if($ret > 0)
-    {
-        foreach($f->cache_warehouses as $id => $arraytypes)
-        {
-            $array[$id] = $arraytypes['label'];
-        }
-    }
-    
-    return $form->multiselectarray($htmlName, $array, $selected, 0, 0, '', 0, "150px");
-}
 
 $db->close();
