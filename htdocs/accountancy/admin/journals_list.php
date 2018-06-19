@@ -390,7 +390,7 @@ if ($id)
 {
     // Complete requete recherche valeurs avec critere de tri
     $sql=$tabsql[$id];
-    $sql.=' WHERE entity='.$conf->entity;
+
     if ($search_country_id > 0)
     {
         if (preg_match('/ WHERE /',$sql)) $sql.= " AND ";
