@@ -152,6 +152,7 @@ $arrayfields=array(
 	'p.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
 	'p.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500),
 	'p.fk_statut'=>array('label'=>$langs->trans("Status"), 'checked'=>1, 'position'=>1000),
+    'p.fk_input_reason'=>array('label'=>$langs->trans("Origin"), 'checked'=>1, 'position'=>1001),
 );
 // Extra fields
 if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
@@ -245,7 +246,7 @@ $sql.= " typent.code as typent_code,";
 $sql.= " state.code_departement as state_code, state.nom as state_name,";
 $sql.= ' p.rowid, p.note_private, p.total_ht, p.tva as total_vat, p.total as total_ttc, p.localtax1, p.localtax2, p.ref, p.ref_client, p.fk_statut, p.fk_user_author, p.datep as dp, p.fin_validite as dfv,';
 $sql.= ' p.datec as date_creation, p.tms as date_update,';
-$sql.= " pr.rowid as project_id, pr.ref as project_ref,";
+$sql.= " pr.rowid as project_id, pr.ref as project_ref, p.fk_input_reason,";
 if (! $user->rights->societe->client->voir && ! $socid) $sql .= " sc.fk_soc, sc.fk_user,";
 $sql.= ' u.login';
 // Add fields from extrafields
@@ -554,6 +555,16 @@ if ($resql)
 		print '<input class="flat" type="text" size="5" name="search_montant_ttc" value="'.$search_montant_ttc.'">';
 		print '</td>';
 	}
+	if (! empty($arrayfields['p.fk_input_reason']['checked']))
+	{
+	    // Amount
+	    print '<td class="liste_titre" align="right">';
+	    print '&nbsp;';
+	    print '</td>';
+	}
+	
+	
+	
 	if (! empty($arrayfields['u.login']['checked']))
 	{
 		// Author
@@ -612,6 +623,9 @@ if ($resql)
 	if (! empty($arrayfields['p.total_ht']['checked']))       print_liste_field_titre($arrayfields['p.total_ht']['label'],$_SERVER["PHP_SELF"],'p.total_ht','',$param, 'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['p.total_vat']['checked']))      print_liste_field_titre($arrayfields['p.total_vat']['label'],$_SERVER["PHP_SELF"],'p.tva','',$param, 'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['p.total_ttc']['checked']))      print_liste_field_titre($arrayfields['p.total_ttc']['label'],$_SERVER["PHP_SELF"],'p.total','',$param, 'align="right"',$sortfield,$sortorder);
+	if (! empty($arrayfields['p.fk_input_reason']['checked']))      print_liste_field_titre($arrayfields['p.fk_input_reason']['label'],$_SERVER["PHP_SELF"],'p.fk_input_reason','',$param, 'align="center"',$sortfield,$sortorder);
+	
+	
 	if (! empty($arrayfields['u.login']['checked']))       	  print_liste_field_titre($arrayfields['u.login']['label'],$_SERVER["PHP_SELF"],'u.login','',$param,'align="center"',$sortfield,$sortorder);
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
@@ -799,7 +813,16 @@ if ($resql)
 			if (! $i) $totalarray['totalttcfield']=$totalarray['nbfield'];
 			$totalarray['totalttc'] += $obj->total_ttc;
 		}
-
+		
+		// fk_input_reason
+		if (! empty($arrayfields['p.fk_input_reason']['checked']))
+		{
+		    $form->loadCacheInputReason();
+		    
+		    print '<td align="right">'.$form->cache_demand_reason[$obj->fk_input_reason]['label']."</td>\n";
+		    
+		}
+		
 		$userstatic->id=$obj->fk_user_author;
 		$userstatic->login=$obj->login;
 

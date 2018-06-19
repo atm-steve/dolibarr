@@ -487,7 +487,7 @@ if ($id > 0)
 
 	print "</table>";
 
-	if ($object->client == 2 || $object->client == 3)
+	if ($object->client == 2 || $object->client == 3 || $object->client == 1)
 	{
     	print '<br>';
 
