@@ -1149,9 +1149,7 @@ if (empty($reshook))
 
 										// Extrafields
 										if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED) && method_exists($lines[$i], 'fetch_optionals')) {
-											$targetExtraFields = new ExtraFields($db);
-											$targetExtraFieldLabels = $targetExtraFields->fetch_name_optionals_label($object->table_element_line);
-											$lines[$i]->fetch_optionals($lines[$i]->rowid, $targetExtraFieldLabels);
+											$lines[$i]->fetch_optionals($lines[$i]->rowid);
 											$array_options = $lines[$i]->array_options;
 										}
 
