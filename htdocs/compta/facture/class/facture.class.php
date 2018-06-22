@@ -1814,7 +1814,7 @@ class Facture extends CommonInvoice
 	 */
 	function delete($user, $notrigger=0, $idwarehouse=-1)
 	{
-		global $langs,$conf;
+		global $langs,$conf,$user;
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
 		$rowid=$this->id;
