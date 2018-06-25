@@ -337,6 +337,8 @@ class TExportCompta extends TObjetStd {
 					$codeComptableProduit = $conf->global->COMPTA_EXP_ACCOUNT;
 				}
 				
+				$codeComptableProduit = trim($codeComptableProduit);
+
 				// Code compta TVA
 				$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy']) ? $this->TTVA[$idpays][floatval($ligne->tva_tx)]['buy'] : $conf->global->COMPTA_VAT_ACCOUNT;
 
