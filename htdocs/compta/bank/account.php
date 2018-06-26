@@ -409,6 +409,9 @@ if ($id > 0 || ! empty($ref))
 	print '<td align="right">'.$langs->trans("Debit").'</td>';
 	print '<td align="right">'.$langs->trans("Credit").'</td>';
 	print '<td align="right" width="80">'.$langs->trans("BankBalance").'</td>';
+/** TK7974 **/
+print '<td align="right">Facture d\'origine</td>';
+/**/
 	print '<td align="center" width="60">';
 	if ($object->type != 2 && $object->rappro) print $langs->trans("AccountStatementShort");
 	else print '&nbsp;';
@@ -433,6 +436,9 @@ if ($id > 0 || ! empty($ref))
 	print '<td align="right"><input type="text" class="flat" name="req_debit" value="'.$req_debit.'" size="4"></td>';
 	print '<td align="right"><input type="text" class="flat" name="req_credit" value="'.$req_credit.'" size="4"></td>';
 	print '<td align="center">&nbsp;</td>';
+/** TK7974 **/
+print '<td>&nbsp;</td>';
+/***/
 	print '<td align="center" width="40"><input type="image" class="liste_titre" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'"></td>';
 	print "</tr>\n";
 
@@ -446,6 +452,9 @@ if ($id > 0 || ! empty($ref))
 	$sql = "SELECT b.rowid, b.dateo as do, b.datev as dv,";
 	$sql.= " b.amount, b.label, b.rappro, b.num_releve, b.num_chq, b.fk_type, b.fk_bordereau,";
 	$sql.= " ba.rowid as bankid, ba.ref as bankref, ba.label as banklabel";
+/** TK7974 **/
+$sql.= ' , GROUP_CONCAT(f.facnumber SEPARATOR ",") as TFacRef';
+/***/
 	if ($mode_search)
 	{
 		$sql.= ", s.rowid as socid, s.nom as thirdparty";
@@ -483,12 +492,26 @@ if ($id > 0 || ! empty($ref))
 		//$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_url as bu3 ON bu3.fk_bank = b.rowid AND bu3.type='company'";
 		//$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON bu3.url_id = s.rowid";
 	}
+
+/** TK 7974 **/
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement p ON (p.fk_bank = b.rowid)';
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement_facture pf ON (pf.fk_paiement = p.rowid)';
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facture f ON (f.rowid = pf.fk_facture)';
+/***/
+
+
 	$sql.= " WHERE b.fk_account=".$object->id;
 	$sql.= " AND b.fk_account = ba.rowid";
 	// Si le partage des compte bancaire est activé dans multicompany, on ne limite pas la recherche des comptes à l'entité dans laquelle on se trouve (Ticket 1573)
 	if(!$conf->global->MULTICOMPANY_BANK_ACCOUNT_SHARING_ENABLED)
 	$sql.= " AND ba.entity = ".$conf->entity;
 	$sql.= $sql_rech;
+
+/** TK 7974 **/
+$sql.= ' GROUP BY b.rowid, b.dateo, b.datev,b.amount, b.label, b.rappro, b.num_releve, b.num_chq, b.fk_type, b.fk_bordereau,ba.rowid, ba.ref, ba.label';
+if ($mode_search) $sql.= ', s.rowid, s.nom';
+/***/
+
 	$sql.= $db->order("b.datev, b.datec", "ASC");  // We add date of creation to have correct order when everything is done the same day
 	$sql.= $db->plimit($limitsql, 0);
 
@@ -566,6 +589,11 @@ if ($id > 0 || ! empty($ref))
 				{
 					print dol_trunc($objp->label,60);
 				}
+
+				/** TK7974 **/
+				$show_TFacRef = false;
+				/***/
+
 				// Add links after description
 				$links = $object->get_url($objp->rowid);
 				foreach($links as $key=>$val)
@@ -575,6 +603,9 @@ if ($id > 0 || ! empty($ref))
 						$paymentstatic->id=$links[$key]['url_id'];
 						$paymentstatic->ref=$links[$key]['url_id'];
 						print ' '.$paymentstatic->getNomUrl(2);
+						/** TK7974 **/
+						$show_TFacRef = true;
+						/***/
 					}
 					elseif ($links[$key]['type']=='payment_supplier')
 					{
@@ -735,6 +766,12 @@ if ($id > 0 || ! empty($ref))
 				{
 					print '<td align="right">-</td>';
 				}
+
+/** TK 7974 **/
+print '<td align="right">';
+if ($show_TFacRef) print $objp->TFacRef;
+print '</td>';
+/***/
 
 				// Transaction reconciliated or edit link
 				if ($objp->rappro && $object->canBeConciliated() > 0)  // If line not conciliated and account can be conciliated

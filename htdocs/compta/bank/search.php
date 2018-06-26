@@ -92,12 +92,22 @@ $sql = "SELECT b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappr
 $sql.= " b.fk_account, b.fk_type,";
 $sql.= " ba.rowid as bankid, ba.ref as bankref,";
 $sql.= " bu.label as labelurl, bu.url_id";
+/** TK7974 **/
+$sql.= ' , GROUP_CONCAT(f.facnumber SEPARATOR ",") as TFacRef';
+/***/
 $sql.= " FROM ";
 if ($bid) $sql.= MAIN_DB_PREFIX."bank_class as l,";
 $sql.= " ".MAIN_DB_PREFIX."bank_account as ba,";
 $sql.= " ".MAIN_DB_PREFIX."bank as b";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_url as bu ON bu.fk_bank = b.rowid AND type = 'company'";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON bu.url_id = s.rowid";
+
+/** TK7974 */
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement p ON (p.fk_bank = b.rowid)';
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement_facture pf ON (pf.fk_paiement = p.rowid)';
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facture f ON (f.rowid = pf.fk_facture)';
+/***/
+
 $sql.= " WHERE b.fk_account = ba.rowid";
 $sql.= " AND ba.entity = ".$conf->entity;
 if (GETPOST("req_nb"))
@@ -141,6 +151,11 @@ if (is_numeric($credit)) {
 for ($i = 1 ; $i <= $si; $i++) {
 	$sql .= " AND " . $sqlw[$i];
 }
+
+/** TK7974 **/
+$sql.= ' GROUP BY b.rowid, b.dateo , b.datev , b.amount, b.label, b.rappro, b.num_releve, b.num_chq,b.fk_account, b.fk_type,ba.rowid , ba.ref ,bu.label , bu.url_id ';
+/***/
+
 $sql.= $db->order($sortfield,$sortorder);
 $sql.= $db->plimit($limit+1,$offset);
 //print $sql;
@@ -190,6 +205,7 @@ if ($resql)
 	print '<td class="liste_titre" align="right">'.$langs->trans("Debit").'</td>';
 	print '<td class="liste_titre" align="right">'.$langs->trans("Credit").'</td>';
 	print '<td class="liste_titre" align="left"> &nbsp; '.$langs->trans("Account").'</td>';
+	print print_liste_field_titre('Facture d\'origine'); // Facture d'origine => TK7974
 	print "</tr>\n";
 
 	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
@@ -211,6 +227,7 @@ if ($resql)
 	print '<td class="liste_titre" align="right">';
 	print '<input type="text" class="flat" name="credit" size="4" value="'.$credit.'">';
 	print '</td>';
+	print print_liste_field_titre(''); // Facture d'origine => TK7974
 	print '<td class="liste_titre" align="right">';
 	print '<input type="hidden" name="action" value="search">';
 	if (! empty($_REQUEST['bid'])) print '<input type="hidden" name="bid" value="'.$_REQUEST["bid"].'">';
@@ -305,6 +322,16 @@ if ($resql)
 			$bankaccountstatic->label=$objp->bankref;
 			print $bankaccountstatic->getNomUrl(1);
 			print "</td>\n";
+
+			/** TK7974 **/
+			print '<td>';
+			if ($objp->label == '(CustomerInvoicePayment)')
+			{
+				print $objp->TFacRef;
+			}
+			print '</td>';
+			/***/
+
 			print "</tr>";
 		}
 		$i++;
@@ -315,6 +342,7 @@ if ($resql)
 		print '<td colspan="6"></td>';
 		print '<td  align="right">' . price($total_debit * - 1) . '</td>';
 		print '<td  align="right">' . price($total_credit) . '</td>';
+		print '<td></td>';
 		print '<td></td>';
 		print '</tr>';
 	}
