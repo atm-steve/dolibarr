@@ -56,7 +56,7 @@ $lineid = GETPOST('lineid', 'int');
 $action = GETPOST('action','aZ09');
 if ($user->societe_id)
 	$socid = $user->societe_id;
-$result = restrictedArea($user, 'fournisseur', $id, 'commande_fournisseur', 'commande');
+$result = restrictedArea($user, 'fournisseur', $id, '', 'commande');
 
 if (empty($conf->stock->enabled)) {
 	accessforbidden();

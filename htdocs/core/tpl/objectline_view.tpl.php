@@ -37,14 +37,6 @@
  * $type, $text, $description, $line
  */
 
-// Protection to avoid direct call of template
-if (empty($object) || ! is_object($object))
-{
-	print "Error, template page can't be called as URL";
-	exit;
-}
-
-
 global $forceall, $senderissupplier, $inputalsopricewithtax, $outputalsopricetotalwithtax;
 
 $usemargins=0;

@@ -24,14 +24,6 @@
 // $modulepart = for download
 // $param      = param to add to download links
 
-// Protection to avoid direct call of template
-if (empty($langs) || ! is_object($langs))
-{
-	print "Error, template page can't be called as URL";
-	exit;
-}
-
-
 $langs->load("link");
 if (empty($relativepathwithnofile)) $relativepathwithnofile='';
 if (empty($permtoedit)) $permtoedit=-1;

@@ -19,14 +19,6 @@
  *
  */
 
-// Protection to avoid direct call of template
-if (empty($langs) || ! is_object($langs))
-{
-	print "Error, template page can't be called as URL";
-	exit;
-}
-
-
 $langs->load("main");
 $langs->load("bills");
 $langs->load("cashdesk");
