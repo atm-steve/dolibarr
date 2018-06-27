@@ -51,6 +51,9 @@ $show_files=GETPOST('show_files','int');
 $confirm=GETPOST('confirm','alpha');
 $toselect = GETPOST('toselect', 'array');
 
+$search_clotureyear=GETPOST("search_clotureyear","int");
+$search_cloturemonth=GETPOST("search_cloturemonth","int");
+$search_clotureday=GETPOST("search_clotureday","int");
 $search_orderyear=GETPOST("search_orderyear","int");
 $search_ordermonth=GETPOST("search_ordermonth","int");
 $search_orderday=GETPOST("search_orderday","int");
@@ -124,6 +127,7 @@ $arrayfields=array(
     'state.nom'=>array('label'=>$langs->trans("StateShort"), 'checked'=>0),
     'country.code_iso'=>array('label'=>$langs->trans("Country"), 'checked'=>0),
     'typent.code'=>array('label'=>$langs->trans("ThirdPartyType"), 'checked'=>$checkedtypetiers),
+    'c.date_cloture'=>array('label'=>$langs->trans("DateCloture"), 'checked'=>1),
     'c.date_commande'=>array('label'=>$langs->trans("OrderDateShort"), 'checked'=>1),
     'c.date_delivery'=>array('label'=>$langs->trans("DateDeliveryPlanned"), 'checked'=>1, 'enabled'=>empty($conf->global->ORDER_DISABLE_DELIVERY_DATE)),
     'c.total_ht'=>array('label'=>$langs->trans("AmountHT"), 'checked'=>1),
@@ -180,6 +184,9 @@ if (empty($reshook))
         $search_total_ht='';
         $search_total_vat='';
         $search_total_ttc='';
+        $search_clotureyear='';
+        $search_cloturemonth='';
+    	$search_clotureday='';
         $search_orderyear='';
         $search_ordermonth='';
     	$search_orderday='';
@@ -447,7 +454,7 @@ $sql.= ' s.rowid as socid, s.nom as name, s.town, s.zip, s.fk_pays, s.client, s.
 $sql.= " typent.code as typent_code,";
 $sql.= " state.code_departement as state_code, state.nom as state_name,";
 $sql.= ' c.rowid, c.ref, c.total_ht, c.tva as total_tva, c.total_ttc, c.ref_client,';
-$sql.= ' c.date_valid, c.date_commande, c.note_private, c.date_livraison as date_delivery, c.fk_statut, c.facture as billed,';
+$sql.= ' c.date_valid, c.date_cloture, c.date_commande, c.note_private, c.date_livraison as date_delivery, c.fk_statut, c.facture as billed,';
 $sql.= ' c.date_creation as date_creation, c.tms as date_update';
 // Add fields from extrafields
 foreach ($extrafields->attribute_label as $key => $val) $sql.=($extrafields->attribute_type[$key] != 'separate' ? ",ef.".$key.' as options_'.$key : '');
@@ -501,6 +508,19 @@ if ($viewstatut <> '')
 		//$sql.= ' AND c.facture = 0'; // invoice not created
 		$sql .= ' AND ((c.fk_statut IN (1,2)) OR (c.fk_statut = 3 AND c.facture = 0))'; // validated, in process or closed but not billed
 	}
+}
+if ($search_cloturemonth > 0)
+{
+    if ($search_clotureyear > 0 && empty($search_clotureday))
+    $sql.= " AND c.date_cloture BETWEEN '".$db->idate(dol_get_first_day($search_clotureyear,$search_cloturemonth,false))."' AND '".$db->idate(dol_get_last_day($search_clotureyear,$search_cloturemonth,false))."'";
+    else if ($search_clotureyear > 0 && ! empty($search_clotureday))
+    $sql.= " AND c.date_cloture BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $search_cloturemonth, $search_clotureday, $search_clotureyear))."' AND '".$db->idate(dol_mktime(23, 59, 59, $search_cloturemonth, $search_clotureday, $search_clotureyear))."'";
+    else
+    $sql.= " AND date_format(c.date_cloture, '%m') = '".$search_cloturemonth."'";
+}
+else if ($search_clotureyear > 0)
+{
+    $sql.= " AND c.date_cloture BETWEEN '".$db->idate(dol_get_first_day($search_clotureyear,1,false))."' AND '".$db->idate(dol_get_last_day($search_clotureyear,12,false))."'";
 }
 if ($search_ordermonth > 0)
 {
@@ -610,6 +630,9 @@ if ($resql)
 	if ($sall)					$param.='&sall='.$sall;
 	if ($socid > 0)             $param.='&socid='.$socid;
 	if ($viewstatut != '')      $param.='&viewstatut='.$viewstatut;
+	if ($search_clotureday)      		$param.='&search_clotureday='.$search_clotureday;
+	if ($search_cloturemonth)      		$param.='&search_cloturemonth='.$search_cloturemonth;
+	if ($search_clotureyear)       		$param.='&search_clotureyear='.$search_clotureyear;
 	if ($search_orderday)      		$param.='&search_orderday='.$search_orderday;
 	if ($search_ordermonth)      		$param.='&search_ordermonth='.$search_ordermonth;
 	if ($search_orderyear)       		$param.='&search_orderyear='.$search_orderyear;
@@ -904,6 +927,15 @@ if ($resql)
 	    print '</td>';
 	}
 	// Date order
+	if (! empty($arrayfields['c.date_cloture']['checked']))
+	{
+    	print '<td class="liste_titre" align="center">';
+        if (! empty($conf->global->MAIN_LIST_FILTER_ON_DAY)) print '<input class="flat" type="text" size="1" maxlength="2" name="search_clotureday" value="'.$search_clotureday.'">';
+        print '<input class="flat" type="text" size="1" maxlength="2" name="search_cloturemonth" value="'.$search_cloturemonth.'">&nbsp;';
+        $formother->select_year($search_clotureyear?$search_clotureyear:-1,'search_clotureyear',1, 20, 5);
+    	print '</td>';
+	}
+	// Date order
 	if (! empty($arrayfields['c.date_commande']['checked']))
 	{
     	print '<td class="liste_titre" align="center">';
@@ -1020,6 +1052,7 @@ if ($resql)
 	if (! empty($arrayfields['state.nom']['checked']))        print_liste_field_titre($arrayfields['state.nom']['label'],$_SERVER["PHP_SELF"],"state.nom","",$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['country.code_iso']['checked'])) print_liste_field_titre($arrayfields['country.code_iso']['label'],$_SERVER["PHP_SELF"],"country.code_iso","",$param,'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['typent.code']['checked']))      print_liste_field_titre($arrayfields['typent.code']['label'],$_SERVER["PHP_SELF"],"typent.code","",$param,'align="center"',$sortfield,$sortorder);
+	if (! empty($arrayfields['c.date_cloture']['checked']))	  print_liste_field_titre($arrayfields['c.date_cloture']['label'],$_SERVER["PHP_SELF"],'c.date_cloture','',$param, 'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.date_commande']['checked']))  print_liste_field_titre($arrayfields['c.date_commande']['label'],$_SERVER["PHP_SELF"],'c.date_commande','',$param, 'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.date_delivery']['checked']))  print_liste_field_titre($arrayfields['c.date_delivery']['label'],$_SERVER["PHP_SELF"],'c.date_livraison','',$param, 'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.total_ht']['checked']))       print_liste_field_titre($arrayfields['c.total_ht']['label'],$_SERVER["PHP_SELF"],'c.total_ht','',$param, 'align="right"',$sortfield,$sortorder);
@@ -1078,6 +1111,7 @@ if ($resql)
             $generic_commande->id=$obj->rowid;
             $generic_commande->ref=$obj->ref;
     	    $generic_commande->statut = $obj->fk_statut;
+    	    $generic_commande->date_cloture = $db->jdate($obj->date_cloture);
     	    $generic_commande->date_commande = $db->jdate($obj->date_commande);
     	    $generic_commande->date_livraison = $db->jdate($obj->date_delivery);
             $generic_commande->ref_client = $obj->ref_client;
@@ -1295,6 +1329,14 @@ if ($resql)
 		    if (! $i) $totalarray['nbfield']++;
 		}
 
+		// Cloture date
+		if (! empty($arrayfields['c.date_cloture']['checked']))
+		{
+    		print '<td align="center">';
+    		print dol_print_date($db->jdate($obj->date_cloture), 'day');
+    		print '</td>';
+    		if (! $i) $totalarray['nbfield']++;
+		}
 		// Order date
 		if (! empty($arrayfields['c.date_commande']['checked']))
 		{
