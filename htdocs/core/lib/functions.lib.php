@@ -449,7 +449,7 @@ function GETPOST($paramname, $check='', $method=0, $filter=NULL, $options=NULL, 
 	            if (! is_array($out) || empty($out)) $out=array();
 	            break;
 			case 'nohtml':
-			    $out=dol_string_nohtmltag($out);
+			    $out=dol_string_nohtmltag($out, 0);
 				break;
 			case 'alphanohtml':	// Recommended for search params
 	            $out=trim($out);
@@ -5068,6 +5068,7 @@ function dol_textishtml($msg,$option=0)
 		if (preg_match('/<html/i',$msg))				return true;
 		elseif (preg_match('/<body/i',$msg))			return true;
 		elseif (preg_match('/<(b|em|i|u)>/i',$msg))		return true;
+		elseif (preg_match('/<br\/>/i',$msg))	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)>/i',$msg)) 	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*>/i',$msg)) return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*\/>/i',$msg)) return true;
