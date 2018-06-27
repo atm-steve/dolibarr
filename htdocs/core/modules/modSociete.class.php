@@ -302,10 +302,10 @@ class modSociete extends DolibarrModules
 		$this->export_label[$r]='ExportDataset_company_2';
 		$this->export_icon[$r]='contact';
 		$this->export_permission[$r]=array(array("societe","contact","export"));
-		$this->export_fields_array[$r]=array('c.rowid'=>"IdContact",'c.civility'=>"CivilityCode",'c.lastname'=>'Lastname','c.firstname'=>'Firstname','c.poste'=>'PostOrFunction','c.datec'=>"DateCreation",'c.tms'=>"DateLastModification",'c.priv'=>"ContactPrivate",'c.address'=>"Address",'c.zip'=>"Zip",'c.town'=>"Town",'d.nom'=>'State','co.label'=>"Country",'co.code'=>"CountryCode",'c.phone'=>"Phone",'c.fax'=>"Fax",'c.phone_mobile'=>"Mobile",'c.email'=>"EMail",'s.rowid'=>"IdCompany",'s.nom'=>"CompanyName",'s.status'=>"Status",'s.code_client'=>"CustomerCode",'s.code_fournisseur'=>"SupplierCode", 's.client'=>'Customer','s.fournisseur'=>'Supplier');
-		$this->export_examplevalues_array[$r]=array('s.client'=>'0 (no customer no prospect)/1 (customer)/2 (prospect)/3 (customer and prospect)','s.fournisseur'=>'0 (not a supplier) or 1 (supplier)');
-		$this->export_TypeFields_array[$r]=array('c.civility'=>"List:c_civility:label:code",'c.lastname'=>'Text','c.firstname'=>'Text','c.poste'=>'Text','c.datec'=>"Date",'c.priv'=>"Boolean",'c.address'=>"Text",'c.zip'=>"Text",'c.town'=>"Text",'d.nom'=>'Text','co.label'=>"List:c_country:label:rowid",'co.code'=>"Text",'c.phone'=>"Text",'c.fax'=>"Text",'c.email'=>"Text",'s.rowid'=>"List:societe:nom",'s.nom'=>"Text",'s.status'=>"Status",'s.code_client'=>"Text",'s.code_fournisseur'=>"Text",'s.client'=>"Text",'s.fournisseur'=>"Text");
-		$this->export_entities_array[$r]=array('s.rowid'=>"company",'s.nom'=>"company", 's.status'=>'company', 's.code_client'=>"company",'s.code_fournisseur'=>"company", 's.client'=>"company",  's.fournisseur'=>"company");	// We define here only fields that use another picto
+		$this->export_fields_array[$r]=array('c.rowid'=>"IdContact",'c.civility'=>"CivilityCode",'c.lastname'=>'Lastname','c.firstname'=>'Firstname','c.poste'=>'PostOrFunction','c.datec'=>"DateCreation",'c.tms'=>"DateLastModification",'c.priv'=>"ContactPrivate",'c.address'=>"Address",'c.zip'=>"Zip",'c.town'=>"Town",'d.nom'=>'State','co.label'=>"Country",'co.code'=>"CountryCode",'c.phone'=>"Phone",'c.fax'=>"Fax",'c.phone_mobile'=>"Mobile",'c.email'=>"EMail",'c.no_email'=>"No_Email",'s.rowid'=>"IdCompany",'s.nom'=>"CompanyName",'s.status'=>"Status",'s.code_client'=>"CustomerCode",'s.code_fournisseur'=>"SupplierCode", 's.client'=>'Customer','s.fournisseur'=>'Supplier','GROUP_CONCAT(cat.label)'=>'Category');
+		$this->export_examplevalues_array[$r]=array('s.client'=>'0 (no customer no prospect)/1 (customer)/2 (prospect)/3 (customer and prospect)','s.fournisseur'=>'0 (not a supplier) or 1 (supplier)','c.no_email'=>"0 (no) or 1 (yes)");
+		$this->export_TypeFields_array[$r]=array('c.civility'=>"List:c_civility:label:code",'c.lastname'=>'Text','c.firstname'=>'Text','c.poste'=>'Text','c.datec'=>"Date",'c.priv'=>"Boolean",'c.address'=>"Text",'c.zip'=>"Text",'c.town'=>"Text",'d.nom'=>'Text','co.label'=>"List:c_country:label:rowid",'co.code'=>"Text",'c.phone'=>"Text",'c.fax'=>"Text",'c.email'=>"Text",'c.no_email'=>"Text",'s.rowid'=>"List:societe:nom",'s.nom'=>"Text",'s.status'=>"Status",'s.code_client'=>"Text",'s.code_fournisseur'=>"Text",'s.client'=>"Text",'s.fournisseur'=>"Text",'GROUP_CONCAT(cat.label)'=>"Text");
+		$this->export_entities_array[$r]=array('s.rowid'=>"company",'s.nom'=>"company", 's.status'=>'company', 's.code_client'=>"company",'s.code_fournisseur'=>"company", 's.client'=>"company",  's.fournisseur'=>"company", 'GROUP_CONCAT(cat.label)'=>"company");	// We define here only fields that use another picto
         if (empty($conf->fournisseur->enabled))
         {
             unset($this->export_fields_array[$r]['s.code_fournisseur']);
@@ -323,6 +323,8 @@ class modSociete extends DolibarrModules
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_departements as d ON c.fk_departement = d.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as co ON c.fk_pays = co.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'socpeople_extrafields as extra ON extra.fk_object = c.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_societe as cs ON cs.fk_soc = s.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat ON (cs.fk_categorie = cat.rowid)';
 		$this->export_sql_end[$r] .=' WHERE c.entity IN ('.getEntity('societe').')';
 		if (is_object($user) && empty($user->rights->societe->client->voir)) {
 			$this->export_sql_end[$r] .=' AND (sc.fk_user = '.$user->id.' ';
@@ -331,8 +333,10 @@ class modSociete extends DolibarrModules
 				$this->export_sql_end[$r] .=count($subronidatesids)>0 ? ' OR (sc.fk_user IN ('.implode(',',$subronidatesids).')' : '';
 			}
 			$this->export_sql_end[$r] .=')';
+			
 		}
-
+		
+$this->export_sql_order[$r]= ' GROUP BY c.rowid';
 
 		// Imports
 		//--------
