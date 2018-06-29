@@ -119,7 +119,7 @@ if ($disablenofollow) echo '</a>';
 }
 </style>
 <?php if(!empty($_COOKIE['dol_company_code'])) { ?>
-<div class="login_table" style="background:rgba(200,255,200,0.8); float:right;padding:20px;">
+<div class="login_table" style="background:rgba(200,255,200,0.8); float:right;padding:20px; display:none;">
 <?php echo $langs->trans('OrCreateAnAccountText') ?>
 <p><a href="create-account.php" class="button"><?php echo $langs->trans('OrCreateAnAccount') ?></a></p>
 </div>
