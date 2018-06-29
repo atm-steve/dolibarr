@@ -745,7 +745,7 @@ else
     				if ($objp->fk_product_type != 1)
     				{
    						if ($objp->seuil_stock_alerte != '' && $product_static->stock_reel < (float) $objp->seuil_stock_alerte) print img_warning($langs->trans("StockTooLow")).' ';
-      					print $product_static->stock_reel;
+      					print price2num($product_static->stock_reel);
     				}
     				print '</td>';
     			}
@@ -756,7 +756,7 @@ else
     				if ($objp->fk_product_type != 1)
     				{
    						if ($objp->seuil_stock_alerte != '' && $product_static->stock_theorique < (float) $objp->seuil_stock_alerte) print img_warning($langs->trans("StockTooLow")).' ';
-      					print $product_static->stock_theorique;
+      					print price2num($product_static->stock_theorique);
     				}
     				print '</td>';
     			}
