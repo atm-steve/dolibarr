@@ -409,7 +409,7 @@ if (empty($reshook))
 					$localtax2_tx,
 					$idprod,
 					$productsupplier->product_fourn_price_id,
-					$productsupplier->fourn_ref,
+					$productsupplier->ref_supplier,
 					$remise_percent,
 					'HT',
 					$pu_ttc,
@@ -969,6 +969,7 @@ if (empty($reshook))
 
 					if ($result < 0)
 					{
+						setEventMessages($object->error,$object->errors,'errors');
 						$error++;
 					}
 
