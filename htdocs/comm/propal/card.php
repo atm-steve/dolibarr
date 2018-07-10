@@ -64,6 +64,9 @@ $langs->load('orders');
 $langs->load('products');
 $langs->load("deliveries");
 $langs->load('sendings');
+
+$langs->load('cliatm@cliatm');
+
 if (!empty($conf->incoterm->enabled)) $langs->load('incoterm');
 if (! empty($conf->margin->enabled))
 	$langs->load('margins');
