@@ -128,3 +128,8 @@ EveryMonth=Every month
 DayOfMonth=Day of month
 DayOfWeek=Day of week
 DateStartPlusOne=Date start + 1 hour
+# Massactions
+ReprogramActions=Reprogram actions
+ReprogramActionsByEnteringDate=Reprogram actions by entering date
+PostponeActionsByDaysNumber=Postpone event by day number
+PostponeActionsByEnteringDate=Postpone event by entering date

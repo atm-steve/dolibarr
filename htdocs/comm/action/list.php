@@ -38,6 +38,8 @@ $langs->load("agenda");
 $langs->load("commercial");
 
 $action=GETPOST('action','alpha');
+$massaction=GETPOST('massaction', 'alpha', 2);
+$toselect = GETPOST('toselect', 'array');
 $resourceid=GETPOST("resourceid","int");
 $year=GETPOST("year",'int');
 $month=GETPOST("month",'int');
@@ -160,7 +162,15 @@ if (GETPOST("viewcal") || GETPOST("viewweek") || GETPOST("viewday"))
 	exit;
 }
 
-$parameters=array('id'=>$socid);
+$parameters=array(
+	'id'=>$socid,
+	'massaction' => $massaction,
+	'toselect' => $toselect,
+	'reprogramup' => GETPOST('reprogramup'),
+	'reprogramdate_month' => GETPOST('reprogramdatemonth', 'int'),
+	'reprogramdate_day' => GETPOST('reprogramdateday', 'int'),
+	'reprogramdate_year' => GETPOST('reprogramdateyear', 'int')
+);
 $reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
@@ -175,8 +185,13 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
     $dateend='';
     $status='';
     $search_array_options=array();
+	$toselect = '';
 }
 
+$objectclass = 'ActionComm';
+$uploaddir = $conf->agenda->dir_output;
+include_once DOL_DOCUMENT_ROOT.'/core/actions_massactions.inc.php';
+if (! GETPOST('confirmmassaction') && ! in_array($massaction, array('reprogram', 'reprogramByDate', 'confirm_reprogram'))) $massaction='';
 
 /*
  *  View
@@ -291,8 +306,8 @@ if ($status == '0') { $sql.= " AND a.percent = 0"; }
 if ($status == '-1') { $sql.= " AND a.percent = -1"; }	// Not applicable
 if ($status == '50') { $sql.= " AND (a.percent > 0 AND a.percent < 100)"; }	// Running already started
 if ($status == '100') { $sql.= " AND a.percent = 100"; }
-if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep2 <= '".$db->idate($now)."'))"; }
-if ($status == 'todo') { $sql.= " AND ((a.percent >= 0 AND a.percent < 100) OR (a.percent = -1 AND a.datep2 > '".$db->idate($now)."'))"; }
+if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100)"; }
+if ($status == 'todo') { $sql.= " AND (a.percent >= 0 AND a.percent < 100)"; }
 if ($search_title) $sql.=natural_search("a.label", $search_title);
 // We must filter on assignement table
 if ($filtert > 0 || $usergroup > 0)
@@ -330,6 +345,7 @@ if ($resql)
 	$societestatic=new Societe($db);
 
 	$num = $db->num_rows($resql);
+	$arrayofselected = is_array($toselect) ? $toselect : array();
 
 	/*$title=$langs->trans("DoneAndToDoActions");
 	if ($status == 'done') $title=$langs->trans("DoneActions");
@@ -400,6 +416,15 @@ if ($resql)
     	$s = $hookmanager->resPrint;
     }
 
+	// List of mass actions available
+	$arrayofmassactions = array(
+		'reprogram' => $langs->trans('ReprogramActions'),
+		'reprogramByDate' => $langs->trans('ReprogramActionsByEnteringDate')
+	);
+
+	if (in_array($massaction, array('reprogram', 'reprogramByDate'))) $arrayofmassactions = array();
+	$massactionbutton = $form->selectMassAction('', $arrayofmassactions);
+
     if ($user->rights->agenda->myactions->create || $user->rights->agenda->allactions->create)
     {
         $tmpforcreatebutton=dol_getdate(dol_now(), true);
@@ -413,7 +438,19 @@ if ($resql)
         $link.= '</a>';
     }
 
-    print_barre_liste($s, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, -1 * $nbtotalofrecords, '', 0, $nav.$link, '', $limit);
+	if($massaction == 'reprogram') {
+		$massactionbutton = '<input type="hidden" name="massaction" value="confirm_reprogram" />';
+		$massactionbutton .= '<label for="reprogramup">'.$langs->trans('PostponeActionsByDaysNumber').' </label><input type="string" name="reprogramup" id="reprogramup" size="10" value="'.GETPOST('reprogramup').'" class="flat" />';
+		$massactionbutton .= '<input type="submit" name="reprogram_submit" value="'.$langs->trans('ReprogramActions').'" class="button" />';
+	}
+	else if($massaction == 'reprogramByDate') {
+		$massactionbutton = '<input type="hidden" name="massaction" value="confirm_reprogram" />';
+		$massactionbutton .= '<label for="reprogramdate">'.$langs->trans('PostponeActionsByEnteringDate').' </label>';
+		$massactionbutton .= $form->select_date($datereprogram, 'reprogramdate', 0, 0, 1, '',1, 1, 1);
+		$massactionbutton .= '<input type="submit" name="reprogram_submit" value="'.$langs->trans('ReprogramActions').'" class="button" />';
+	}
+
+    print_barre_liste($s, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, -1 * $nbtotalofrecords, '', 0, $nav.$link, '', $limit);
 
     $moreforfilter='';
 
@@ -648,7 +685,15 @@ if ($resql)
 			$datep=$db->jdate($obj->datep);
 			print '<td align="center" class="nowrap">'.$actionstatic->LibStatut($obj->percent,3,0,$datep).'</td>';
 		}
-		print '<td></td>';
+
+		print '<td align="center" class="nowrap">';
+		if(! empty($massactionbutton) || ! empty($massaction)) {
+			if(in_array($obj->id, $arrayofselected)) $checked = ' checked="checked"';
+			else $checked = '';
+
+			print '<input type="checkbox" id="cb'.$obj->id.'" name="toselect[]" class="flat checkforselect" value="'.$obj->id.'"'.$checked.' />';
+		}
+		print '</td>';
 
 		print "</tr>\n";
 		$i++;
