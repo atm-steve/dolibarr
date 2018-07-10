@@ -2156,6 +2156,7 @@ function pdf_getLineTotalDiscountAmount($object, $i, $outputlangs, $hidedetails=
 	}
 	else
 	{
+		if(! empty($object->lines[$i]->array_options['options_subtotal_nc'])) return 0;
 		if (is_object($hookmanager) && (($object->lines[$i]->product_type == 9 && ! empty($object->lines[$i]->special_code)) || ! empty($object->lines[$i]->fk_parent_line)))
 		{
 			$special_code = $object->lines[$i]->special_code;
