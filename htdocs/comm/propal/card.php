@@ -2183,11 +2183,6 @@ if ($action == 'create')
 		print '</tr>';
 	}
 
-	// Amount HT
-	print '<tr><td class="titlefieldmiddle">' . $langs->trans('AmountHT') . '</td>';
-	print '<td class="nowrap">' . price($object->total_ht, '', $langs, 0, - 1, - 1, $conf->currency) . '</td>';
-	print '</tr>';
-
 	if(! function_exists('pdf_getLineTotalDiscountAmount')) {
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
 	}
@@ -2203,6 +2198,11 @@ if ($action == 'create')
 		print '<tr><td height="10">' . $langs->trans('AmountDiscount') . '</td>';
 		print '<td class="nowrap" colspan="2">'.price($total_line_remise, '', $langs, 0, -1, -1, $conf->currency).'</td>';
 	}
+
+	// Amount HT
+	print '<tr><td class="titlefieldmiddle">' . $langs->trans('AmountHT') . '</td>';
+	print '<td class="nowrap">' . price($object->total_ht, '', $langs, 0, - 1, - 1, $conf->currency) . '</td>';
+	print '</tr>';
 
 	// Amount VAT
 	print '<tr><td>' . $langs->trans('AmountVAT') . '</td>';
