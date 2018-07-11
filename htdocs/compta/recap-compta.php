@@ -41,7 +41,7 @@ $object = new Societe($db);
 if ($id > 0) $object->fetch($id);
 
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
-$hookmanager->initHooks(array('recapcomptacard','globalcard'));
+$hookmanager->initHooks(array('recapcomptacard','supplierbalencelist','globalcard'));
 
 // Load variable for pagination
 $limit = GETPOST('limit','int')?GETPOST('limit','int'):$conf->liste_limit;
@@ -100,7 +100,7 @@ if ($id > 0)
 		// Invoice list
 		print load_fiche_titre($langs->trans("CustomerPreview"));
 
-		print '<table class="noborder" width="100%">';
+		print '<table class="noborder tagtable liste" width="100%">';
 		print '<tr class="liste_titre">';
         if (! empty($arrayfields['f.datef']['checked']))  print_liste_field_titre($arrayfields['f.datef']['label'],$_SERVER["PHP_SELF"],"f.datef","",$param,'align="center" class="nowrap"',$sortfield,$sortorder);
 		print '<td>'.$langs->trans("Element").'</td>';

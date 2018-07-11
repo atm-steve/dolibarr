@@ -282,7 +282,7 @@ class Form
         $out='';
 
         // Check parameters
-        if ($inputType == 'textarea') $value = dol_nl2br($value);
+        if (preg_match('/^text/',$inputType)) $value = dol_nl2br($value);
         else if (preg_match('/^numeric/',$inputType)) $value = price($value);
         else if ($inputType == 'day' || $inputType == 'datepicker') $value = dol_print_date($value, 'day');
 
@@ -2587,7 +2587,7 @@ class Form
         $sql.= " FROM ".MAIN_DB_PREFIX."product as p";
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_fournisseur_price as pfp ON p.rowid = pfp.fk_product";
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON pfp.fk_soc = s.rowid";
-        $sql.= " WHERE p.entity IN (".getEntity('productprice').")";
+        $sql.= " WHERE pfp.entity IN (".getEntity('productprice').")";
         $sql.= " AND p.tobuy = 1";
         $sql.= " AND s.fournisseur = 1";
         $sql.= " AND p.rowid = ".$productid;
