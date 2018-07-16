@@ -955,7 +955,7 @@ if ($action == 'create')
             dol_fiche_head('');
 
             print '<table class="border centpercent">';
-
+            
             // Ref
             print '<tr><td class="titlefieldcreate fieldrequired">';
             if ($origin == 'commande' && ! empty($conf->commande->enabled))
@@ -1084,7 +1084,7 @@ if ($action == 'create')
 		        print $form->select_incoterms((!empty($object->fk_incoterms) ? $object->fk_incoterms : ''), (!empty($object->location_incoterms)?$object->location_incoterms:''));
 				print '</td></tr>';
 			}
-
+			
             // Document model
 			include_once DOL_DOCUMENT_ROOT . '/core/modules/expedition/modules_expedition.php';
 			$liste = ModelePdfExpedition::liste_modeles($db);
@@ -1373,9 +1373,9 @@ if ($action == 'create')
 
 								$detail='';
 								$detail.= $langs->trans("Batch").': '.$dbatch->batch;
-								$detail.= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby,"day");
-								$detail.= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby,"day");
-								$detail.= ' - '.$langs->trans("Qty").': '.$dbatch->dluo_qty;
+								if(!empty($dbatch->sellby)) $detail.= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby,"day");
+								if(!empty($dbatch->eatby)) $detail.= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby,"day");
+								$detail.= ' - '.$langs->trans("Qty").': '.$dbatch->qty;
 								$detail.= '<br>';
 								print $detail;
 
