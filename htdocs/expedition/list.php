@@ -48,6 +48,8 @@ $search_town=GETPOST('search_town','alpha');
 $search_zip=GETPOST('search_zip','alpha');
 $search_state=trim(GETPOST("search_state"));
 $search_country=GETPOST("search_country",'int');
+$search_date_delivery=GETPOST("search_date_delivery");
+
 $search_type_thirdparty=GETPOST("search_type_thirdparty",'int');
 $search_billed=GETPOST("search_billed",'int');
 $sall = trim((GETPOST('search_all', 'alphanohtml')!='')?GETPOST('search_all', 'alphanohtml'):GETPOST('sall', 'alphanohtml'));
@@ -141,6 +143,7 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
 	$search_country='';
 	$search_type_thirdparty='';
 	$search_billed='';
+	$search_date_delivery='';
 	$viewstatut='';
 	$search_array_options=array();
 }
@@ -223,6 +226,7 @@ if ($search_type_thirdparty) $sql .= " AND s.fk_typent IN (".$search_type_thirdp
 if ($search_ref_exp) $sql .= natural_search('e.ref', $search_ref_exp);
 if ($search_ref_liv) $sql .= natural_search('l.ref', $search_ref_liv);
 if ($search_company) $sql .= natural_search('s.nom', $search_company);
+if ($search_date_delivery) $sql .= " AND e.date_delivery = '".date("Y-m-d", strtotime(str_replace('/', '-', $search_date_delivery)))."'";
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
 
 // Add where from extra fields
@@ -354,8 +358,9 @@ if ($resql)
 	// Date delivery planned
 	if (! empty($arrayfields['e.date_delivery']['checked']))
 	{
-		print '<td class="liste_titre">&nbsp;</td>';
+	    print '<td class="liste_titre" align="center">'.$form->select_date(strtotime(str_replace('/', '-', $search_date_delivery)), 'search_date_delivery', 0, 0, 0, '', 1, 1, 1, 0, 1).'</td>';
 	}
+	
 	if (! empty($arrayfields['l.ref']['checked']))
 	{
 		// Delivery ref
