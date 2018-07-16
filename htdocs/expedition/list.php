@@ -358,7 +358,7 @@ if ($resql)
 	// Date delivery planned
 	if (! empty($arrayfields['e.date_delivery']['checked']))
 	{
-	    print '<td class="liste_titre" align="center">'.$form->select_date(strtotime(str_replace('/', '-', $search_date_delivery)), 'search_date_delivery', 0, 0, 0, '', 1, 1, 1, 0, 1).'</td>';
+	    print '<td class="liste_titre" align="center">'.$form->select_date(strtotime(str_replace('/', '-', $search_date_delivery)), 'search_date_delivery', 0, 0, 0, '', 1, 0, 1, 0, 1).'</td>';
 	}
 	
 	if (! empty($arrayfields['l.ref']['checked']))
