@@ -611,7 +611,7 @@ if (empty($reshook))
 			$i = 0;
 			foreach ($object->lines as $line)
 			{
-				if ($line->total_ht!=0)
+				if ($line->product_type < 9 && $line->total_ht != 0) // Remove lines with product_type greater than or equal to 9
 				{ 	// no need to create discount if amount is null
 					$amount_ht[$line->tva_tx] += $line->total_ht;
 					$amount_tva[$line->tva_tx] += $line->total_tva;
@@ -1149,9 +1149,7 @@ if (empty($reshook))
 
 										// Extrafields
 										if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED) && method_exists($lines[$i], 'fetch_optionals')) {
-											$targetExtraFields = new ExtraFields($db);
-											$targetExtraFieldLabels = $targetExtraFields->fetch_name_optionals_label($object->table_element_line);
-											$lines[$i]->fetch_optionals($lines[$i]->rowid, $targetExtraFieldLabels);
+											$lines[$i]->fetch_optionals($lines[$i]->rowid);
 											$array_options = $lines[$i]->array_options;
 										}
 
@@ -1536,7 +1534,8 @@ if (empty($reshook))
 				}
 
 				$type = $prod->type;
-				$fk_unit = $prod->fk_unit;
+				$fk_unit = GETPOST('units');
+				if($fk_unit == 'none') $fk_unit = $prod->fk_unit;
 			} else {
 				$pu_ht = price2num($price_ht, 'MU');
 				$pu_ttc = price2num(GETPOST('price_ttc'), 'MU');
