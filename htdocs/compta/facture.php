@@ -1050,7 +1050,7 @@ if (empty($reshook))
 								}
 							}
 
-							$tva_tx = $lines[$i]->tva_tx;
+							$tva_tx = 20;
 							if (! empty($lines[$i]->vat_src_code) && ! preg_match('/\(/', $tva_tx)) $tva_tx .= ' ('.$lines[$i]->vat_src_code.')';
 
 							$result = $object->addline(
