@@ -3383,7 +3383,7 @@ abstract class CommonObject
 		}
 
 		// Reduction short
-		print '<td class="linecoldiscount" align="right">'.$langs->trans('ReductionShort').'</td>';
+		//print '<td class="linecoldiscount" align="right">'.$langs->trans('ReductionShort').'</td>';
 
 		if ($this->situation_cycle_ref) {
 			print '<td class="linecolcycleref" align="right">' . $langs->trans('Progress') . '</td>';

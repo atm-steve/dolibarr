@@ -283,12 +283,12 @@ else {
 	if($conf->global->PRODUCT_USE_UNITS)
 	{
 		print '<td class="nobottom linecoluseunit" align="left">';
-		print $form->selectUnits($line->fk_unit, "units", 1);
+		print $form->selectUnits($line->fk_unit, "units", 0);
 		print '</td>';
 	}
-	?>
+	/*?>
 	<td class="nobottom nowrap linecoldiscount" align="right"><input type="text" size="1" name="remise_percent" id="remise_percent" class="flat" value="<?php echo (isset($_POST["remise_percent"])?GETPOST("remise_percent",'alpha',2):$buyer->remise_percent); ?>"><span class="hideonsmartphone">%</span></td>
-	<?php
+	<?php*/
 	if ($this->situation_cycle_ref) {
 		$coldisplay++;
 		print '<td class="nobottom nowrap" align="right"><input type="text" size="1" value="0" name="progress">%</td>';

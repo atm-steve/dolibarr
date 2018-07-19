@@ -168,7 +168,7 @@ if (empty($usemargins)) $usemargins=0;
 	}
 	?>
 
-	<?php if (!empty($line->remise_percent) && $line->special_code != 3) { ?>
+	<?php /*if (!empty($line->remise_percent) && $line->special_code != 3) { ?>
 	<td class="linecoldiscount" align="right"><?php
 		$coldisplay++;
 		include_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
@@ -176,7 +176,7 @@ if (empty($usemargins)) $usemargins=0;
 	?></td>
 	<?php } else { ?>
 	<td class="linecoldiscount"><?php $coldisplay++; ?>&nbsp;</td>
-	<?php }
+	<?php }*/
 
 	if ($this->situation_cycle_ref) {
 		$coldisplay++;
