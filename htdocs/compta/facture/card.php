@@ -109,10 +109,6 @@ if ($id > 0 || ! empty($ref)) {
 	$ret = $object->fetch($id, $ref, '', '', $conf->global->INVOICE_USE_SITUATION);
 }
 
-if($ret<=0) {
-	 accessforbidden();
-}
-
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('invoicecard','globalcard'));
 
