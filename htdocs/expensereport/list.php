@@ -41,6 +41,7 @@ $result = restrictedArea($user, 'expensereport','','');
 
 $sall         = GETPOST('sall');
 $search_ref   = GETPOST('search_ref');
+$search_note  = GETPOST('search_note');
 $search_user  = GETPOST('search_user','int');
 $search_amount_ht = GETPOST('search_amount_ht','alpha');
 $search_amount_ttc = GETPOST('search_amount_ttc','alpha');
@@ -88,6 +89,7 @@ include DOL_DOCUMENT_ROOT.'/core/actions_changeselectedfields.inc.php';
 if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter.x") || GETPOST("button_removefilter"))		// Both test must be present to be compatible with all browsers
 {
     $search_ref="";
+    $search_note="";
     $search_user="";
     $search_amount_ht="";
     $search_amount_ttc="";
@@ -129,7 +131,7 @@ $pageprev = $page - 1;
 $pagenext = $page + 1;
 
 $sql = "SELECT d.rowid, d.ref, d.fk_user_author, d.total_ht, d.total_tva, d.total_ttc, d.fk_statut as status,";
-$sql.= " d.date_debut, d.date_fin, d.date_valid,";
+$sql.= " d.date_debut, d.date_fin, d.date_valid, d.note_private,";
 $sql.= " u.rowid as id_user, u.firstname, u.lastname";
 $sql.= " FROM ".MAIN_DB_PREFIX."expensereport as d";
 $sql.= " INNER JOIN ".MAIN_DB_PREFIX."user as u ON d.fk_user_author = u.rowid";
@@ -142,6 +144,10 @@ if (!empty($sall))
 // Ref
 if(!empty($search_ref)){
 	$sql.= natural_search("d.ref", $search_ref);
+}
+// Note private
+if(!empty($search_note)){
+        $sql.= natural_search("d.note_private", $search_note);
 }
 // Date Start
 if ($month_start > 0)
@@ -221,6 +227,7 @@ if ($resql)
 	if ($limit > 0 && $limit != $conf->liste_limit) $param.='&limit='.$limit;
 	if ($sall)					$param.="&sall=".$sall;
 	if ($search_ref)			$param.="&search_ref=".$search_ref;
+	if ($search_note)                        $param.="&search_note=".$search_note;
 	if ($search_user)			$param.="&search_user=".$search_user;
 	if ($search_amount_ht)		$param.="&search_amount_ht=".$search_amount_ht;
 	if ($search_amount_ttc)		$param.="&search_amount_ttc=".$search_amount_ttc;
@@ -251,6 +258,7 @@ if ($resql)
 	print '<table class="noborder" width="100%">';
 	print "<tr class=\"liste_titre\">";
 	print_liste_field_titre($langs->trans("Ref"),$_SERVER["PHP_SELF"],"d.rowid","",$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("NotePrivate"),$_SERVER["PHP_SELF"],"d.note_private","",$param,'',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("DateStart"),$_SERVER["PHP_SELF"],"d.date_debut","",$param,'align="center"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("DateEnd"),$_SERVER["PHP_SELF"],"d.date_fin","",$param,'align="center"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("Person"),$_SERVER["PHP_SELF"],"u.lastname","",$param,'',$sortfield,$sortorder);
@@ -264,7 +272,9 @@ if ($resql)
 	// Filters
 	print '<tr class="liste_titre">';
 	print '<td class="liste_titre" align="left">';
-	print '<input class="flat" size="15" type="text" name="search_ref" value="'.$search_ref.'">';
+	print '<input class="flat" size="15" type="text" name="search_ref" value="'.$search_ref.'"></td>';
+
+	print '<td><input class="flat" size="15" type="text" name="search_note" value="'.$search_note.'"></td>';
 
 	// Date start
 	print '<td class="liste_titre" align="center">';
@@ -336,6 +346,7 @@ if ($resql)
 			if ($expensereportstatic->status == 2 && $expensereportstatic->hasDelay('toappove')) print img_warning($langs->trans("Late"));
 			if ($expensereportstatic->status == 5 && $expensereportstatic->hasDelay('topay')) print img_warning($langs->trans("Late"));
 			print '</td>';
+			print '<td align="left">'.$objp->note_private.'</td>';
 			print '<td align="center">'.($objp->date_debut > 0 ? dol_print_date($objp->date_debut, 'day') : '').'</td>';
 			print '<td align="center">'.($objp->date_fin > 0 ? dol_print_date($objp->date_fin, 'day') : '').'</td>';
 			print '<td align="left"><a href="'.DOL_URL_ROOT.'/user/card.php?id='.$objp->id_user.'">'.img_object($langs->trans("ShowUser"),"user").' '.dolGetFirstLastname($objp->firstname, $objp->lastname).'</a></td>';
@@ -358,7 +369,7 @@ if ($resql)
 		}
 
 		print '<tr class="liste_total">';
-		print '<td colspan="4">'.$langs->trans("Total").'</td>';
+		print '<td colspan="5">'.$langs->trans("Total").'</td>';
 
 		print '<td style="text-align:right;">'.price($total_total_ht).'</td>';
 		print '<td style="text-align:right;">'.price($total_total_tva).'</td>';
