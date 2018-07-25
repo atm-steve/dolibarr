@@ -613,6 +613,7 @@ class CMailFile
 
 					if (! $res)
 					{
+						$langs->load("errors");
 						$this->error="Failed to send mail with php mail";
 						$linuxlike=1;
 						if (preg_match('/^win/i',PHP_OS)) $linuxlike=0;
@@ -1128,7 +1129,7 @@ class CMailFile
 					$out.= "Content-Disposition: attachment; filename=\"".$filename_list[$i]."\"".$this->eol;
 					$out.= "Content-Type: " . $mimetype_list[$i] . "; name=\"".$filename_list[$i]."\"".$this->eol;
 					$out.= "Content-Transfer-Encoding: base64".$this->eol;
-					$out.= "Content-Description: File Attachment".$this->eol;
+					$out.= "Content-Description: ".$filename_list[$i].$this->eol;
 					$out.= $this->eol;
 					$out.= $encoded;
 					$out.= $this->eol;

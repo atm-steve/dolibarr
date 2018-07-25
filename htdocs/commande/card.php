@@ -28,9 +28,9 @@
  */
 
 /**
- * \file htdocs/commande/card.php
+ * \file 	htdocs/commande/card.php
  * \ingroup commande
- * \brief Page to show customer order
+ * \brief 	Page to show customer order
  */
 
 require '../main.inc.php';
@@ -76,6 +76,7 @@ $action = GETPOST('action', 'alpha');
 $cancel = GETPOST('cancel', 'alpha');
 $confirm = GETPOST('confirm', 'alpha');
 $lineid = GETPOST('lineid', 'int');
+$projectid = GETPOST('projectid', 'int');
 $origin = GETPOST('origin', 'alpha');
 $originid = (GETPOST('originid', 'int') ? GETPOST('originid', 'int') : GETPOST('origin_id', 'int')); // For backward compatibility
 
@@ -228,7 +229,7 @@ if (empty($reshook))
 	// Link to a project
 	else if ($action == 'classin' && $user->rights->commande->creer)
 	{
-		$object->setProject(GETPOST('projectid'));
+		$object->setProject(GETPOST('projectid','int'));
 	}
 
 	// Add order
@@ -259,8 +260,8 @@ if (empty($reshook))
 			$object->note_private = GETPOST('note_private','none');
 			$object->note_public = GETPOST('note_public','none');
 			$object->source = GETPOST('source_id');
-			$object->fk_project = GETPOST('projectid');
-			$object->ref_client = GETPOST('ref_client');
+			$object->fk_project = GETPOST('projectid','int');
+			$object->ref_client = GETPOST('ref_client','alpha');
 			$object->modelpdf = GETPOST('model');
 			$object->cond_reglement_id = GETPOST('cond_reglement_id');
 			$object->mode_reglement_id = GETPOST('mode_reglement_id');
@@ -1389,7 +1390,6 @@ if ($action == 'create' && $user->rights->commande->creer)
 	if ($socid > 0)
 		$res = $soc->fetch($socid);
 
-	$projectid = 0;
 	$remise_absolue = 0;
 
 	$currency_code = $conf->currency;
@@ -1486,14 +1486,12 @@ if ($action == 'create' && $user->rights->commande->creer)
 		$remise_percent     = $soc->remise_percent;
 		$remise_absolue     = 0;
 		$dateorder          = empty($conf->global->MAIN_AUTOFILL_DATE_ORDER)?-1:'';
-		$projectid          = 0;
 
 		if (!empty($conf->multicurrency->enabled) && !empty($soc->multicurrency_code)) $currency_code = $soc->multicurrency_code;
 
 		$note_private = $object->getDefaultCreateValueFor('note_private');
 		$note_public = $object->getDefaultCreateValueFor('note_public');
 	}
-
 
 	print '<form name="crea_commande" action="' . $_SERVER["PHP_SELF"] . '" method="POST">';
 	print '<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">';
@@ -1852,13 +1850,14 @@ if ($action == 'create' && $user->rights->commande->creer)
 				$langs->load("stocks");
 				require_once DOL_DOCUMENT_ROOT . '/product/class/html.formproduct.class.php';
 				$formproduct = new FormProduct($db);
+				$forcecombo=0;
+				if ($conf->browser->name == 'ie') $forcecombo = 1;	// There is a bug in IE10 that make combo inside popup crazy
 				$formquestion = array(
-									// 'text' => $langs->trans("ConfirmClone"),
-									// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value'
-									// => 1),
-									// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"),
-									// 'value' => 1),
-									array('type' => 'other','name' => 'idwarehouse','label' => $langs->trans("SelectWarehouseForStockDecrease"),'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1)));
+					// 'text' => $langs->trans("ConfirmClone"),
+					// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value' => 1),
+					// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value' => 1),
+					array('type' => 'other','name' => 'idwarehouse','label' => $langs->trans("SelectWarehouseForStockDecrease"),'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse','int')?GETPOST('idwarehouse','int'):'ifone', 'idwarehouse', '', 1, 0, 0, '', 0, $forcecombo))
+				);
 			}
 
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('ValidateOrder'), $text, 'confirm_validate', $formquestion, 0, 1, 220);
@@ -1884,13 +1883,14 @@ if ($action == 'create' && $user->rights->commande->creer)
 				$langs->load("stocks");
 				require_once DOL_DOCUMENT_ROOT . '/product/class/html.formproduct.class.php';
 				$formproduct = new FormProduct($db);
+				$forcecombo=0;
+				if ($conf->browser->name == 'ie') $forcecombo = 1;	// There is a bug in IE10 that make combo inside popup crazy
 				$formquestion = array(
-									// 'text' => $langs->trans("ConfirmClone"),
-									// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value'
-									// => 1),
-									// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"),
-									// 'value' => 1),
-									array('type' => 'other','name' => 'idwarehouse','label' => $langs->trans("SelectWarehouseForStockIncrease"),'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1)));
+					// 'text' => $langs->trans("ConfirmClone"),
+					// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value' => 1),
+					// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value' => 1),
+					array('type' => 'other','name' => 'idwarehouse','label' => $langs->trans("SelectWarehouseForStockIncrease"),'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1, 0, 0, '', 0, $forcecombo))
+				);
 			}
 
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('UnvalidateOrder'), $text, 'confirm_modif', $formquestion, "yes", 1, 220);
@@ -1925,13 +1925,14 @@ if ($action == 'create' && $user->rights->commande->creer)
 				$langs->load("stocks");
 				require_once DOL_DOCUMENT_ROOT . '/product/class/html.formproduct.class.php';
 				$formproduct = new FormProduct($db);
+				$forcecombo=0;
+				if ($conf->browser->name == 'ie') $forcecombo = 1;	// There is a bug in IE10 that make combo inside popup crazy
 				$formquestion = array(
-									// 'text' => $langs->trans("ConfirmClone"),
-									// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value'
-									// => 1),
-									// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"),
-									// 'value' => 1),
-									array('type' => 'other','name' => 'idwarehouse','label' => $langs->trans("SelectWarehouseForStockIncrease"),'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1)));
+					// 'text' => $langs->trans("ConfirmClone"),
+					// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value' => 1),
+					// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value' => 1),
+					array('type' => 'other','name' => 'idwarehouse','label' => $langs->trans("SelectWarehouseForStockIncrease"),'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1, 0, 0, '', 0, $forcecombo))
+				);
 			}
 
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('Cancel'), $text, 'confirm_cancel', $formquestion, 0, 1);

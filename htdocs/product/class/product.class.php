@@ -1000,7 +1000,7 @@ class Product extends CommonObject
 				if ($this->db->errno() == 'DB_ERROR_RECORD_ALREADY_EXISTS')
 				{
 					$langs->load("errors");
-					if (empty($conf->barcode->enabled)) $this->error=$langs->trans("Error")." : ".$langs->trans("ErrorProductAlreadyExists",$this->ref);
+					if (empty($conf->barcode->enabled) || empty($this->barcode)) $this->error=$langs->trans("Error")." : ".$langs->trans("ErrorProductAlreadyExists",$this->ref);
 					else $this->error=$langs->trans("Error")." : ".$langs->trans("ErrorProductBarCodeAlreadyExists",$this->barcode);
 					$this->errors[]=$this->error;
 					$this->db->rollback();
@@ -1116,7 +1116,7 @@ class Product extends CommonObject
 				//If it is a parent product, then we remove the association with child products
 				$prodcomb = new ProductCombination($this->db);
 
-				if ($prodcomb->deleteByFkProductParent($id) < 0) {
+				if ($prodcomb->deleteByFkProductParent($user, $id) < 0) {
 					$error++;
 					$this->errors[] = 'Error deleting combinations';
 				}
