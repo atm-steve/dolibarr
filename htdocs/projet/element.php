@@ -775,7 +775,7 @@ foreach ($listofreferent as $key => $value)
 
        	if (empty($conf->global->PROJECT_LINK_ON_OVERWIEW_DISABLED) && $idtofilterthirdparty && !in_array($tablename, array('payment_various')))
        	{
-			$selectList=$formproject->select_element($tablename, $idtofilterthirdparty, 'minwidth300');
+			$selectList=$formproject->select_element($tablename, $idtofilterthirdparty, 'minwidth300',!empty($project_field)?$project_field:'fk_projet');
 			if (! $selectList || ($selectList<0))
 			{
 				setEventMessages($formproject->error,$formproject->errors,'errors');
