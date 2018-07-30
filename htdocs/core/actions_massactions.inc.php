@@ -62,6 +62,7 @@ if (! $error && $massaction == 'confirm_presend')
 	$resaction = '';
 	$nbsent = 0;
 	$nbignored = 0;
+	$langs->load("main");
 	$langs->load("mails");
 	include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
@@ -234,7 +235,17 @@ if (! $error && $massaction == 'confirm_presend')
 					else
 					{
 						$objectobj->fetch_thirdparty();
-						$sendto = $objectobj->thirdparty->email;
+
+						// Get invoice contact email if exists
+						$TTab = $objectobj->liste_contact();
+						foreach($TTab as $invoiceContact) {
+							if($invoiceContact['code'] == 'BILLING') {
+								$sendto = $invoiceContact['email'];
+								break;
+							}
+						}
+
+						if(empty($sendto)) $sendto = $objectobj->thirdparty->email;
 					}
 				}
 

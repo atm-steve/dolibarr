@@ -129,3 +129,8 @@ EveryMonth=Chaque mois
 DayOfMonth=Jour du mois
 DayOfWeek=Jour de la semaine
 DateStartPlusOne=Date de début + 1 heure
+# Massactions
+ReprogramActions = Reprogrammer les évènements
+ReprogramActionsByEnteringDate = Reprogrammer les évènements à une date
+PostponeActionsByDaysNumber = Repousser les évènements d'un nombre de jour
+PostponeActionsByEnteringDate = Reprogrammer à une date
