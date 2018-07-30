@@ -529,6 +529,7 @@ class Product extends CommonObject
 					$sql.= ", finished";
 					$sql.= ", tobatch";
 					$sql.= ", fk_unit";
+					$sql.= ", import_key";
 					$sql.= ") VALUES (";
 					$sql.= "'".$this->db->idate($now)."'";
 					$sql.= ", ".$conf->entity;
@@ -552,6 +553,7 @@ class Product extends CommonObject
 					$sql.= ", ".((! isset($this->finished) || $this->finished < 0 || $this->finished == '') ? 'null' : (int) $this->finished);
 					$sql.= ", ".((empty($this->status_batch) || $this->status_batch < 0)? '0':$this->status_batch);
 					$sql.= ", ".(!$this->fk_unit ? 'NULL' : $this->fk_unit);
+					$sql.= ", ".(!$this->import_key ? 'NULL' : "'".$this->import_key."'");
 					$sql.= ")";
 
 					dol_syslog(get_class($this)."::Create", LOG_DEBUG);
