@@ -75,9 +75,11 @@ $(document).ready(function(){
 							//console.log('<?php echo dol_escape_js($_SERVER['QUERY_STRING']); ?>');
 							location.href = '<?php echo dol_escape_js($_SERVER['PHP_SELF']).'?'.dol_escape_js($_SERVER['QUERY_STRING']); ?>';
 						} else {
-							for (var i=TExtrafields.length; i>=0; i--)
-							{
-								$(row).after(TExtrafields[i]);
+							if(TExtradfields.length > 0) {
+								for (var i=TExtrafields.length - 1; i >= 0; i--)
+								{
+									$(row).after(TExtrafields[i]);
+								}
 							}
 							$("#<?php echo $tagidfortablednd; ?> .drag").each(
 									function( intIndex ) {
