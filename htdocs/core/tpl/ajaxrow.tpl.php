@@ -75,7 +75,7 @@ $(document).ready(function(){
 							//console.log('<?php echo dol_escape_js($_SERVER['QUERY_STRING']); ?>');
 							location.href = '<?php echo dol_escape_js($_SERVER['PHP_SELF']).'?'.dol_escape_js($_SERVER['QUERY_STRING']); ?>';
 						} else {
-							if(TExtradfields.length > 0) {
+							if(TExtrafields.length > 0) {
 								for (var i=TExtrafields.length - 1; i >= 0; i--)
 								{
 									$(row).after(TExtrafields[i]);
