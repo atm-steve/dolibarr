@@ -171,9 +171,11 @@ class doc_generic_project_odt extends ModelePDFProjects
 		require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 		$extrafields = new ExtraFields($this->db);
 		$extralabels = $extrafields->fetch_name_optionals_label($task->table_element,true);
-		$object->fetch_optionals($task->id,$extralabels);
+		$task->fetch_optionals($task->id,$extralabels);
 		
 		$resarray = $this->fill_substitutionarray_with_extrafields($task,$resarray,$extrafields,'task',$outputlangs);
+		
+		return $resarray;
 		
 	}
 
