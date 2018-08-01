@@ -17,47 +17,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
  *      \file       scripts/user/sync_users_ldap2dolibarr.php
  *      \ingroup    ldap member
  *      \brief      Script to update users into Dolibarr from LDAP
  */
-
 $sapi_type = php_sapi_name();
 $script_file = basename(__FILE__);
 $path=dirname(__FILE__).'/';
-
 // Test if batch mode
 if (substr($sapi_type, 0, 3) == 'cgi') {
     echo "Error: You are using PHP for CGI. To execute ".$script_file." from command line, you must use PHP for CLI mode.\n";
 	exit(-1);
 }
-
 require_once($path."../../htdocs/master.inc.php");
 require_once(DOL_DOCUMENT_ROOT."/core/lib/date.lib.php");
 require_once(DOL_DOCUMENT_ROOT."/core/class/ldap.class.php");
 require_once(DOL_DOCUMENT_ROOT."/user/class/user.class.php");
-
 $langs->load("main");
 $langs->load("errors");
-
-
 // Global variables
 $version=DOL_VERSION;
 $error=0;
 $forcecommit=0;
 $excludeuser=array();
 $confirmed=0;
-
 /*
  * Main
  */
-
 @set_time_limit(0);
 print "***** ".$script_file." (".$version.") pid=".dol_getmypid()." *****\n";
 dol_syslog($script_file." launched with arg ".join(',',$argv));
-
 // List of fields to get from LDAP
 $required_fields = array(
 	$conf->global->LDAP_KEY_USERS,
@@ -80,15 +70,12 @@ $required_fields = array(
 	$conf->global->LDAP_FIELD_DESCRIPTION,
 	$conf->global->LDAP_FIELD_SID,'memberOf'
 );
-
 // Remove from required_fields all entries not configured in LDAP (empty) and duplicated
 $required_fields=array_unique(array_values(array_filter($required_fields, "dolValidElement")));
-
 if (! isset($argv[1])) {
 	print "Usage:  $script_file (nocommitiferror|commitiferror) [--server=ldapserverhost] [--excludeuser=user1,user2...] [-y]\n";
     exit(-1);
 }
-
 foreach($argv as $key => $val)
 {
 	if ($val == 'commitiferror') $forcecommit=1;
@@ -96,7 +83,6 @@ foreach($argv as $key => $val)
 	if (preg_match('/--excludeuser=([^\s]+)$/',$val,$reg)) $excludeuser=explode(',',$reg[1]);
 	if (preg_match('/-y$/',$val,$reg)) $confirmed=1;
 }
-
 print "Mails sending disabled (useless in batch mode)\n";
 $conf->global->MAIN_DISABLE_ALL_MAILS=1;	// On bloque les mails
 print "\n";
@@ -118,20 +104,16 @@ print "commitiferror=".$forcecommit."\n";
 print "excludeuser=".join(',',$excludeuser)."\n";
 print "Mapped LDAP fields=".join(',',$required_fields)."\n";
 print "\n";
-
 if (! $confirmed)
 {
 	print "Hit Enter to continue or CTRL+C to stop...\n";
 	$input = trim(fgets(STDIN));
 }
-
 if (empty($conf->global->LDAP_USER_DN))
 {
 	print $langs->trans("Error").': '.$langs->trans("LDAP setup for users not defined inside Dolibarr");
 	exit(-1);
 }
-
-
 // Load table of correspondence of countries
 $hashlib2rowid=array();
 $countries=array();
@@ -164,46 +146,34 @@ else
 	dol_print_error($db);
 	exit(-1);
 }
-
-
-
 $ldap = new Ldap();
 $result = $ldap->connect_bind();
 if ($result >= 0)
 {
 	$justthese=array();
-
-
 	// We disable synchro Dolibarr-LDAP
 	$conf->global->LDAP_SYNCHRO_ACTIVE=0;
-
 //$user_db_search = 'CN=inpg-esisar-gf-projets-industriels,OU=Groups,DC=esisar,DC=inpg,DC=fr';
 //$user_db_search = 'CN=chibanek,OU=People,DC=esisar,DC=inpg,DC=fr';
 //$user_db_search = 'OU=Groups,DC=esisar,DC=inpg,DC=fr';//(&(objectCategory=group)(cn=inpg-esisar-gf-projets-industriels))';
-
 //&(objectClass=user)
-
 //	$ldap->filter='memberOf=CN=inpg-esisar-gf-projets-industriels,OU=Groups,DC=esisar,DC=fr';
 	$ldap->filter='&(objectClass=user)
 	(|';
-
 $res = $db->query("SELECT nom FROM llx_usergroup WHERE nom LIKE 'inpg-%'");
 while($obj = $db->fetch_object($res)) {
 	$ldap->filter.='(memberOf=CN='.$obj->nom.',OU=Groups,DC=esisar,DC=inpg,DC=fr)'."\n";
 }
 	$ldap->filter.=')';
-
 /*$ldap->filter='&(objectClass=user)
         (|(memberOf=CN=inpg-esisar-gf-PI-01,OU=Groups,DC=esisar,DC=inpg,DC=fr))';
 */
 	$ldaprecords = $ldap->getRecords('*',$conf->global->LDAP_USER_DN, $conf->global->LDAP_KEY_USERS, $required_fields, 1);
-
-
+	$usersToKeep = array();
 //var_dump($ldaprecords,$conf->global->LDAP_USER_DN,$conf->global->LDAP_FIELD_LOGIN,'nb:'.count($ldaprecords),$ldap->filter);exit;
 	if (is_array($ldaprecords))
 	{
 		$db->begin();
-
 		// Warning $ldapuser has a key in lowercase
 		foreach ($ldaprecords as $key => $ldapuser)
 		{
@@ -213,22 +183,18 @@ while($obj = $db->fetch_object($res)) {
 				print $langs->transnoentities("UserDiscarded").' # '.$key.': login='.$ldapuser[$conf->global->LDAP_FIELD_LOGIN].' --> Discarded'."\n";
 				continue;
 			}
-
 			$fuser = new User($db);
-
 			if($conf->global->LDAP_KEY_USERS == $conf->global->LDAP_FIELD_SID) {
 				$fuser->fetch('','',$ldapuser[$conf->global->LDAP_KEY_USERS]); // Chargement du user concerné par le SID
 			} else if($conf->global->LDAP_KEY_USERS == $conf->global->LDAP_FIELD_LOGIN) {
 				$fuser->fetch('',$ldapuser[$conf->global->LDAP_KEY_USERS]); // Chargement du user concerné par le login
 			}
-
 			// Propriete membre
 			$fuser->firstname=$ldapuser[$conf->global->LDAP_FIELD_FIRSTNAME];
 			$fuser->lastname=$ldapuser[$conf->global->LDAP_FIELD_NAME];
 			$fuser->login=$ldapuser[$conf->global->LDAP_FIELD_LOGIN];
 			$fuser->pass=$ldapuser[$conf->global->LDAP_FIELD_PASSWORD];
 			$fuser->pass_indatabase_crypted=$ldapuser[$conf->global->LDAP_FIELD_PASSWORD_CRYPTED];
-
 			//$user->societe;
 			/*
 			$fuser->address=$ldapuser[$conf->global->LDAP_FIELD_ADDRESS];
@@ -238,11 +204,10 @@ while($obj = $db->fetch_object($res)) {
 			$fuser->country_id=$countries[$hashlib2rowid[strtolower($fuser->country)]]['rowid'];
 			$fuser->country_code=$countries[$hashlib2rowid[strtolower($fuser->country)]]['code'];
 			*/
-
 			$fuser->office_phone=$ldapuser[$conf->global->LDAP_FIELD_PHONE];
 			$fuser->user_mobile=$ldapuser[$conf->global->LDAP_FIELD_MOBILE];
 			$fuser->office_fax=$ldapuser[$conf->global->LDAP_FIELD_FAX];
-			
+		
 			/*
 			 * Demande : remplacer etu par pi après @
 			 */
@@ -251,18 +216,14 @@ while($obj = $db->fetch_object($res)) {
 			if(strpos($mail_ldap, 'etu',$offset) !== false  && !empty($offset)){
 				$ldapuser[$conf->global->LDAP_FIELD_MAIL] =   substr($mail_ldap, 0, $offset) . str_replace('etu','pi',substr($mail_ldap,$offset));
 			}
-			
-			
 			$fuser->email=$ldapuser[$conf->global->LDAP_FIELD_MAIL];
 			$fuser->ldap_sid=$ldapuser[$conf->global->LDAP_FIELD_SID];
-
 			$fuser->job=$ldapuser[$conf->global->LDAP_FIELD_TITLE];
 			$fuser->note=$ldapuser[$conf->global->LDAP_FIELD_DESCRIPTION];
 			$fuser->admin=0;
 			$fuser->societe_id=0;
 			$fuser->contact_id=0;
 			$fuser->fk_member=0;
-
 			$fuser->statut=1;
 			// TODO : revoir la gestion du status
 			/*if (isset($ldapuser[$conf->global->LDAP_FIELD_MEMBER_STATUS]))
@@ -272,13 +233,11 @@ while($obj = $db->fetch_object($res)) {
 				$fuser->statut=$ldapuser[$conf->global->LDAP_FIELD_MEMBER_STATUS];
 			}*/
 			//if ($fuser->statut > 1) $fuser->statut=1;
-
 			//print_r($ldapuser);
-
 			if($fuser->id > 0) { // User update
 				print $langs->transnoentities("UserUpdate").' # '.$key.': login='.$fuser->login.', fullname='.$fuser->getFullName($langs);
 				$res=$fuser->update($user);
-
+				$usersToKeep[] = $fuser->id;
 				if ($res < 0)
 				{
 					$error++;
@@ -291,7 +250,7 @@ while($obj = $db->fetch_object($res)) {
 			} else { // User creation
 				print $langs->transnoentities("UserCreate").' # '.$key.': login='.$fuser->login.', fullname='.$fuser->getFullName($langs);
 				$res=$fuser->create($user);
-
+				$usersToKeep[] = $res;
 				if ($res > 0)
 				{
 					print ' --> Created user id='.$fuser->id.' login='.$fuser->login;
@@ -304,30 +263,36 @@ while($obj = $db->fetch_object($res)) {
 			}
 			print "\n";
 			//print_r($fuser);
-
 			// Gestion des groupes
 			// TODO : revoir la gestion des groupes (ou script de sync groupes)
+			$g=new UserGroup($db);			
+			$allgroups = $g->listGroupsForUser($fuser->id);
+			if(!empty($allgroups) && !$error){
+				foreach($allgroups as $grouptodelete){
+					$fuser->RemoveFromGroup($grouptodelete->id,1);
+				}
+			}
 			if(!$error) {
 				foreach ($ldapuser['memberOfFull'] as $groupdn) {
 					$matches = array();
 					preg_match('/CN=([a-zA-Z-])+\w+/', $groupdn, $matches);
 					$group = substr($matches[0],3);
 //					echo $group."\n";
-
 					$g=new UserGroup($db);
 					$g->fetch(0,$group);
 					if($g->id>0) {
 						echo 'Groupe '.$g->id.' '.$group."\n";
-
 						$fuser->SetInGroup($g->id, 1);
 					}
-
-
 				}
 			}
 //			exit;
 		}
-
+		
+		//disable users
+		$res = $db->query("UPDATE llx_user SET statut = 0 WHERE rowid NOT IN (".implode(',',$usersToKeep).") AND admin = 0");
+		
+		
 		if (! $error || $forcecommit)
 		{
 			if (! $error) print $langs->transnoentities("NoErrorCommitIsDone")."\n";
@@ -352,11 +317,7 @@ else
 	dol_print_error('',$ldap->error);
 	$error++;
 }
-
-
 exit($error);
-
-
 /**
  * Function to say if a value is empty or not
  *
@@ -367,4 +328,3 @@ function dolValidElement($element)
 {
 	return (trim($element) != '');
 }
-
