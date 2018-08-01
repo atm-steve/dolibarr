@@ -265,7 +265,13 @@ if (empty($reshook))
 	        }
 	    }
 
-	    if (! $error)
+		// Spécifique Kress, mode de règlement sans mouvement banque
+		// Compensation, Escompte, Prorata => permet de mettre la facture à 0 sans mouvement banque
+		$addtobank = true;
+		if(in_array(GETPOST('paiementcode'), array('CMP','ESC','PRT'))) {
+			$addtobank = false;
+		}
+	    if (! $error && $addtobank)
 	    {
 	    	$label='(CustomerInvoicePayment)';
 	    	if (GETPOST('type') == 2) $label='(CustomerInvoicePaymentBack)';
