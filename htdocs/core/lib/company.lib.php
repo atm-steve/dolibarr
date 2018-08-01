@@ -48,26 +48,38 @@ function societe_prepare_head(Societe $object)
     $head[$h][2] = 'card';
     $h++;
 
-	if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB))
-	{
-	    //$nbContact = count($object->liste_contact(-1,'internal')) + count($object->liste_contact(-1,'external'));
-		$nbContact = 0;	// TODO
-
-		$sql = "SELECT COUNT(p.rowid) as nb";
-		$sql .= " FROM ".MAIN_DB_PREFIX."socpeople as p";
-		$sql .= " WHERE p.fk_soc = ".$object->id;
-		$resql = $db->query($sql);
-		if ($resql)
+    if (empty($conf->global->MAIN_SUPPORT_SHARED_CONTACT_BETWEEN_THIRDPARTIES))
+    {
+	    if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB))
 		{
-			$obj = $db->fetch_object($resql);
-			if ($obj) $nbContact = $obj->nb;
-		}
+		    //$nbContact = count($object->liste_contact(-1,'internal')) + count($object->liste_contact(-1,'external'));
+			$nbContact = 0;	// TODO
 
-	    $head[$h][0] = DOL_URL_ROOT.'/societe/contact.php?socid='.$object->id;
-	    $head[$h][1] = $langs->trans('ContactsAddresses');
-	    if ($nbContact > 0) $head[$h][1].= ' <span class="badge">'.$nbContact.'</span>';
-	    $head[$h][2] = 'contact';
-	    $h++;
+			$sql = "SELECT COUNT(p.rowid) as nb";
+			$sql .= " FROM ".MAIN_DB_PREFIX."socpeople as p";
+			$sql .= " WHERE p.fk_soc = ".$object->id;
+			$resql = $db->query($sql);
+			if ($resql)
+			{
+				$obj = $db->fetch_object($resql);
+				if ($obj) $nbContact = $obj->nb;
+			}
+
+		    $head[$h][0] = DOL_URL_ROOT.'/societe/contact.php?socid='.$object->id;
+		    $head[$h][1] = $langs->trans('ContactsAddresses');
+		    if ($nbContact > 0) $head[$h][1].= ' <span class="badge">'.$nbContact.'</span>';
+		    $head[$h][2] = 'contact';
+		    $h++;
+		}
+    }
+    else
+	{
+		$head[$h][0] = DOL_URL_ROOT.'/societe/societecontact.php?socid='.$object->id;
+		$nbContact = count($object->liste_contact(-1,'internal')) + count($object->liste_contact(-1,'external'));
+		$head[$h][1] = $langs->trans("ContactsAddresses");
+		if ($nbContact > 0) $head[$h][1].= ' <span class="badge">'.$nbContact.'</span>';
+		$head[$h][2] = 'contact';
+		$h++;
 	}
 
     if ($object->client==1 || $object->client==2 || $object->client==3)
@@ -95,16 +107,6 @@ function societe_prepare_head(Societe $object)
         $head[$h][0] = DOL_URL_ROOT.'/fourn/card.php?socid='.$object->id;
         $head[$h][1] = $langs->trans("Supplier");
         $head[$h][2] = 'supplier';
-        $h++;
-    }
-
-    if (! empty($conf->global->MAIN_SUPPORT_SHARED_CONTACT_BETWEEN_THIRDPARTIES))
-    {
-        $head[$h][0] = DOL_URL_ROOT.'/societe/societecontact.php?socid='.$object->id;
-	    $nbContact = count($object->liste_contact(-1,'internal')) + count($object->liste_contact(-1,'external'));
-        $head[$h][1] = $langs->trans("ContactsAddresses");
-		if ($nbContact > 0) $head[$h][1].= ' <span class="badge">'.$nbContact.'</span>';
-        $head[$h][2] = 'contact';
         $h++;
     }
 
@@ -398,7 +400,7 @@ function societe_admin_prepare_head()
  *    @param      Translate	$outputlangs	Langs object for output translation
  *    @param      int		$entconv       	0=Return value without entities and not converted to output charset, 1=Ready for html output
  *    @param      int		$searchlabel    Label of country to search (warning: searching on label is not reliable)
- *    @return     mixed       				String with country code or translated country name or Array('id','code','label')
+ *    @return     mixed       				Integer with country id or String with country code or translated country name or Array('id','code','label') or 'NotDefined'
  */
 function getCountry($searchkey, $withcode='', $dbtouse=0, $outputlangs='', $entconv=1, $searchlabel='')
 {
@@ -1468,7 +1470,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
 		$out.=getTitleFieldOfList($langs->trans("Label"), 0, $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder);
         $out.=getTitleFieldOfList($langs->trans("Date"), 0, $_SERVER["PHP_SELF"], 'a.datep,a.id', '', $param, 'align="center"', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList('');
-		$out.=getTitleFieldOfList('');
+		$out.=getTitleFieldOfList($langs->trans("ActionOnContact"), 0, $_SERVER["PHP_SELF"], 'a.fk_contact', '', $param, '', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList($langs->trans("Status"), 0, $_SERVER["PHP_SELF"], 'a.percent', '', $param, 'align="center"', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList('', 0, $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder, 'maxwidthsearch ');
 		$out.='</tr>';
@@ -1609,7 +1611,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             $out.='</td>';
 
             // Contact pour cette action
-            if (! empty($objcon->id) && isset($histo[$key]['contact_id']) && $histo[$key]['contact_id'] > 0)
+            if (empty($objcon->id) && isset($histo[$key]['contact_id']) && $histo[$key]['contact_id'] > 0)
             {
                 $contactstatic->lastname=$histo[$key]['lastname'];
                 $contactstatic->firstname=$histo[$key]['firstname'];

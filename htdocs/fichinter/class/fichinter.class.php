@@ -369,8 +369,8 @@ class Fichinter extends CommonObject
 				$this->statut       = $obj->fk_statut;
 				$this->duration     = $obj->duree;
 				$this->datec        = $this->db->jdate($obj->datec);
-				$this->datee        = $this->db->jdate($obj->dateo);
-				$this->dateo        = $this->db->jdate($obj->datee);
+				$this->dateo        = $this->db->jdate($obj->dateo);
+				$this->datee        = $this->db->jdate($obj->datee);
 				$this->datet        = $this->db->jdate($obj->datet);
 				$this->datev        = $this->db->jdate($obj->datev);
 				$this->datem        = $this->db->jdate($obj->datem);
@@ -1395,11 +1395,11 @@ class FichinterLigne extends CommonObjectLine
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
-			$this->rowid=$this->db->last_insert_id(MAIN_DB_PREFIX.'fichinterdet');
+			$this->id=$this->db->last_insert_id(MAIN_DB_PREFIX.'fichinterdet');
+			$this->rowid=$this->id;
 
 			if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
 			{
-				$this->id=$this->id;
 				$result=$this->insertExtraFields();
 				if ($result < 0)
 				{
@@ -1470,7 +1470,6 @@ class FichinterLigne extends CommonObjectLine
 
 			if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
 			{
-				$this->id=$this->id;
 				$result=$this->insertExtraFields();
 				if ($result < 0)
 				{

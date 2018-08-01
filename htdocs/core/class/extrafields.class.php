@@ -241,10 +241,10 @@ class ExtraFields
 				if ($type == 'varchar' && empty($lengthdb)) $lengthdb='255';
 			}
 			$field_desc = array(
-			'type'=>$typedb,
-			'value'=>$lengthdb,
-			'null'=>($required?'NOT NULL':'NULL'),
-			'default' => $default_value
+				'type'=>$typedb,
+				'value'=>$lengthdb,
+				'null'=>($required?'NOT NULL':'NULL'),
+				'default' => $default_value
 			);
 
 			$result=$this->db->DDLAddField(MAIN_DB_PREFIX.$table, $attrname, $field_desc);
@@ -360,8 +360,8 @@ class ExtraFields
 			$sql.= " ".$list.",";
 			$sql.= " ".($default?"'".$this->db->escape($default)."'":"null").",";
 			$sql.= " ".($computed?"'".$this->db->escape($computed)."'":"null").",";
-			$sql .= " " . $user->id . ",";
-			$sql .= " " . $user->id . ",";
+			$sql .= " " . (is_object($user) ? $user->id : 0). ",";
+			$sql .= " " . (is_object($user) ? $user->id : 0). ",";
 			$sql .= "'" . $this->db->idate(dol_now()) . "',";
 			$sql.= " ".($enabled?"'".$this->db->escape($enabled)."'":"1");
 			$sql.=')';
@@ -727,6 +727,7 @@ class ExtraFields
 
 		if ($elementtype == 'thirdparty') $elementtype='societe';
 		if ($elementtype == 'contact') $elementtype='socpeople';
+		if ($elementtype == 'order_supplier') $elementtype='commande_fournisseur';
 
 		$array_name_label=array();
 
@@ -1779,13 +1780,14 @@ class ExtraFields
 				}
 				else if (in_array($key_type,array('price','double')))
 				{
-					$value_arr=GETPOST("options_".$key);
+					$value_arr=GETPOST("options_".$key, 'alpha');
 					$value_key=price2num($value_arr);
 				}
 				else
 				{
 					$value_key=GETPOST("options_".$key);
 				}
+
 				$object->array_options["options_".$key]=$value_key;
 			}
 

@@ -276,7 +276,7 @@ function GETPOSTISSET($paramname)
  *  @param	string	$noreplace	 Force disable of replacement of __xxx__ strings.
  *  @return string|string[]      Value found (string or array), or '' if check fails
  */
-function GETPOST($paramname, $check='none', $method=0, $filter=NULL, $options=NULL, $noreplace=0)
+function GETPOST($paramname, $check='none', $method=0, $filter=null, $options=null, $noreplace=0)
 {
 	global $mysoc,$user,$conf;
 
@@ -481,10 +481,10 @@ function GETPOST($paramname, $check='none', $method=0, $filter=NULL, $options=NU
 				elseif ($reg[1] == 'MONTH')          { $tmp=dol_getdate(dol_now(), true); $newout = $tmp['mon'];  }
 				elseif ($reg[1] == 'YEAR')           { $tmp=dol_getdate(dol_now(), true); $newout = $tmp['year']; }
 				elseif ($reg[1] == 'PREVIOUS_DAY')   { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_prev_day($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['day']; }
-				elseif ($reg[1] == 'PREVIOUS_MONTH') { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_prev_month($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
+				elseif ($reg[1] == 'PREVIOUS_MONTH') { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_prev_month($tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
 				elseif ($reg[1] == 'PREVIOUS_YEAR')  { $tmp=dol_getdate(dol_now(), true); $newout = ($tmp['year'] - 1); }
 				elseif ($reg[1] == 'NEXT_DAY')       { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_next_day($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['day']; }
-				elseif ($reg[1] == 'NEXT_MONTH')     { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_next_month($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
+				elseif ($reg[1] == 'NEXT_MONTH')     { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_next_month($tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
 				elseif ($reg[1] == 'NEXT_YEAR')      { $tmp=dol_getdate(dol_now(), true); $newout = ($tmp['year'] + 1); }
 				elseif ($reg[1] == 'MYCOMPANY_COUNTRY_ID' || $reg[1] == 'MYCOUNTRY_ID' || $reg[1] == 'MYCOUNTRYID')
 				{
@@ -578,12 +578,12 @@ function GETPOST($paramname, $check='none', $method=0, $filter=NULL, $options=NU
 		{
 			//var_dump($paramname.' - '.$out.' '.$user->default_values[$relativepathstring]['filters'][$paramname]);
 
-			// We save search key only if:
-			// - not empty, or
-			// - if value is empty and a default value exists that is not empty (it means we did a filter to an empty value when default was not).
+			// We save search key only if $out not empty that means:
+			// - posted value not empty, or
+			// - if posted value is empty and a default value exists that is not empty (it means we did a filter to an empty value when default was not).
 
 			//if (! empty($out) || ! empty($user->default_values[$relativepathstring]['filters'][$paramname]))
-			if (! empty($out))
+			if ($out != '')		// $out = '0' like 'abc' is a search criteria to keep
 			{
 				$user->lastsearch_values_tmp[$relativepathstring][$paramname]=$out;
 			}
@@ -4090,7 +4090,7 @@ function price($amount, $form=0, $outlangs='', $trunc=1, $rounding=-1, $forcerou
  *									'MT'=Round to Max for totals with Tax (MAIN_MAX_DECIMALS_TOT)
  *									'MS'=Round to Max for stock quantity (MAIN_MAX_DECIMALS_STOCK)
  * 	@param	int		$alreadysqlnb	Put 1 if you know that content is already universal format number
- *	@return	string					Amount with universal numeric format (Example: '99.99999') or unchanged text if conversion fails.
+ *	@return	string					Amount with universal numeric format (Example: '99.99999') or unchanged text if conversion fails. If amount is null or '', it returns ''.
  *
  *	@see    price					Opposite function of price2num
  */
@@ -4261,7 +4261,8 @@ function get_localtax($vatrate, $local, $thirdparty_buyer="", $thirdparty_seller
 
 		if ($local == 2)
 		{
-			if (! $mysoc->localtax2_assuj || (string) $vatratecleaned == "0") return 0;
+			//if (! $mysoc->localtax2_assuj || (string) $vatratecleaned == "0") return 0;
+			if (! $mysoc->localtax2_assuj) return 0;		// If main vat is 0, IRPF may be different than 0.
 			if ($thirdparty_seller->id == $mysoc->id)
 			{
 				if (! $thirdparty_buyer->localtax2_assuj) return 0;
@@ -5013,7 +5014,7 @@ function picto_required()
  *  @param  string	$pagecodeto      	Encoding of input/output string
  *	@return string	    				String cleaned
  *
- * 	@see	dol_escape_htmltag strip_tags
+ * 	@see	dol_escape_htmltag strip_tags dol_string_onlythesehtmltags dol_string_neverthesehtmltags
  */
 function dol_string_nohtmltag($stringtoclean,$removelinefeed=1,$pagecodeto='UTF-8')
 {
@@ -5038,6 +5039,51 @@ function dol_string_nohtmltag($stringtoclean,$removelinefeed=1,$pagecodeto='UTF-
 	}
 
 	return trim($temp);
+}
+
+/**
+ *	Clean a string to keep only desirable HTML tags.
+ *
+ *	@param	string	$stringtoclean		String to clean
+ *	@return string	    				String cleaned
+ *
+ * 	@see	dol_escape_htmltag strip_tags dol_string_nohtmltag dol_string_neverthesehtmltags
+ */
+function dol_string_onlythesehtmltags($stringtoclean)
+{
+	$allowed_tags = array(
+		"html", "head", "meta", "body", "b", "br", "div", "em", "font", "img", "hr", "i", "li", "link",
+		"ol", "p", "s", "section", "span", "strong", "title",
+		"table", "tr", "th", "td", "u", "ul"
+	);
+
+	$allowed_tags_string = join("><", $allowed_tags);
+	$allowed_tags_string = preg_replace('/^>/','',$allowed_tags_string);
+	$allowed_tags_string = preg_replace('/<$/','',$allowed_tags_string);
+
+	$temp = strip_tags($stringtoclean, $allowed_tags_string);
+
+	return $temp;
+}
+
+/**
+ *	Clean a string from some undesirable HTML tags.
+ *
+ *	@param	string	$stringtoclean		String to clean
+ *  @param	array	$disallowed_tags	Array of tags not allowed
+ *	@return string	    				String cleaned
+ *
+ * 	@see	dol_escape_htmltag strip_tags dol_string_nohtmltag dol_string_onlythesehtmltags
+ */
+function dol_string_neverthesehtmltags($stringtoclean, $disallowed_tags=array('textarea'))
+{
+	$temp = $stringtoclean;
+	foreach($disallowed_tags as $tagtoremove)
+	{
+		$temp = preg_replace('/<\/?'.$tagtoremove.'>/', '', $temp);
+		$temp = preg_replace('/<\/?'.$tagtoremove.'\s+[^>]*>/', '', $temp);
+	}
+	return $temp;
 }
 
 
@@ -5333,6 +5379,7 @@ function dol_textishtml($msg,$option=0)
 		if (preg_match('/<html/i',$msg))				return true;
 		elseif (preg_match('/<body/i',$msg))			return true;
 		elseif (preg_match('/<(b|em|i|u)>/i',$msg))		return true;
+		elseif (preg_match('/<br\/>/i',$msg))	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)>/i',$msg)) 	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*>/i',$msg)) return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*\/>/i',$msg)) return true;
@@ -5548,6 +5595,11 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 		$substitutionarray['__AMOUNT_VAT__']      = is_object($object)?($object->total_vat?$object->total_vat:$object->total_tva):'';
  		if ($onlykey != 2 || $mysoc->useLocalTax(1)) $substitutionarray['__AMOUNT_TAX2__']     = is_object($object)?($object->total_localtax1?$object->total_localtax1:$object->total_localtax1):'';
 		if ($onlykey != 2 || $mysoc->useLocalTax(2)) $substitutionarray['__AMOUNT_TAX3__']     = is_object($object)?($object->total_localtax2?$object->total_localtax2:$object->total_localtax2):'';
+		$substitutionarray['__AMOUNT_FORMATED__']          = is_object($object)?price($object->total_ttc, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
+		$substitutionarray['__AMOUNT_EXCL_TAX_FORMATED__'] = is_object($object)?price($object->total_ht, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
+		$substitutionarray['__AMOUNT_VAT_FORMATED__']      = is_object($object)?($object->total_vat?price($object->total_vat, 0, $outputlangs, 0, 0, -1, $conf->currency_code):price($object->total_tva, 0, $outputlangs, 0, 0, -1, $conf->currency_code)):'';
+		if ($onlykey != 2 || $mysoc->useLocalTax(1)) $substitutionarray['__AMOUNT_TAX2_FORMATED__']     = is_object($object)?price($object->total_localtax1, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
+		if ($onlykey != 2 || $mysoc->useLocalTax(2)) $substitutionarray['__AMOUNT_TAX3_FORMATED__']     = is_object($object)?price($object->total_localtax2, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
 
 		/* TODO Add key for multicurrency
     	$substitutionarray['__AMOUNT_FORMATED__']          = is_object($object)?price($object->total_ttc, 0, $outputlangs, 0, 0, -1, $conf->currency_code):'';
@@ -5569,9 +5621,9 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 
 		$tmp=dol_getdate(dol_now(), true);
 		$tmp2=dol_get_prev_day($tmp['mday'], $tmp['mon'], $tmp['year']);
-		$tmp3=dol_get_prev_month($tmp['mday'], $tmp['mon'], $tmp['year']);
+		$tmp3=dol_get_prev_month($tmp['mon'], $tmp['year']);
 		$tmp4=dol_get_next_day($tmp['mday'], $tmp['mon'], $tmp['year']);
-		$tmp5=dol_get_next_month($tmp['mday'], $tmp['mon'], $tmp['year']);
+		$tmp5=dol_get_next_month($tmp['mon'], $tmp['year']);
 
 		$substitutionarray=array_merge($substitutionarray, array(
 			'__DAY__' => (string) $tmp['mday'],
@@ -6096,7 +6148,7 @@ function dol_sort_array(&$array, $index, $order='asc', $natsort=0, $case_sensiti
 		else
 		{
 			($case_sensitive) ? natsort($temp) : natcasesort($temp);
-			if($order!='asc') $temp=array_reverse($temp,TRUE);
+			if($order!='asc') $temp=array_reverse($temp,true);
 		}
 
 		$sorted = array();
@@ -6408,6 +6460,7 @@ function complete_head_from_modules($conf,$langs,$object,&$head,&$h,$type,$mode=
 				foreach($head as $key => $val)
 				{
 					$condition = (! empty($values[3]) ? verifCond($values[3]) : 1);
+					//var_dump($key.' - '.$tabname.' - '.$head[$key][2].' - '.$condition);
 					if ($head[$key][2]==$tabname && $condition)
 					{
 						unset($head[$key]);
