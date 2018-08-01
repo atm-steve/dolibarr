@@ -442,11 +442,6 @@ class Account extends CommonObject
             $this->error="ErrorCashAccountAcceptsOnlyCashMoney";
             return -3;
         }
-		// Spécifique Kress, mode de règlement sans mouvement banque
-		// Compensation, Escompte, Prorata => permet de mettre la facture à 0 sans mouvement banque
-		if(in_array($oper, array('CMP','ESC','PRT'))) {
-			return -4;
-		}
 
         $this->db->begin();
 
