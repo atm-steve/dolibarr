@@ -181,6 +181,13 @@ if ($action == 'presend')
             $substitutionarray['__CONTACT_NAME_'.$contact['code'].'__'] = $contactstatic->getFullName($langs, 1);
 		}
 	}
+    else {
+        // No contact set for this object : filling contact name with empty value
+        $TCodeContact = $object->liste_type_contact('external', 'rowid', 1, 1);
+        foreach($TCodeContact as $contactCode => $dummy) {
+            $substitutionarray['__CONTACT_NAME_'.$contactCode.'__'] = '';
+        }
+    }
 
 	// Tableau des substitutions
 	$formmail->substit = $substitutionarray;
