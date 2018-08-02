@@ -194,20 +194,15 @@ class TExportCompta extends TObjetStd {
 		// Construction du tableau de données
 		$TIdFactures = array();
 		while($obj = $db->fetch_object($resql)) {
-		    if ($conf->agefodd->enabled){
-		        $TIdFactures[] = array(
-		            'rowid' => $obj->rowid
-		            ,'entity' => $obj->entity
-		            ,'id_propal_origin' => $obj->fk_source
-		            ,'type_session' => $obj->type_session
-		        );
-		    } else {
-    			$TIdFactures[] = array(
-    				'rowid' => $obj->rowid
-    				,'entity' => $obj->entity
-    				,'id_propal_origin' => $obj->fk_source
-    			);
-		    }
+		    $tmparray = array(
+		        'rowid' => $obj->rowid
+		        ,'entity' => $obj->entity
+		        ,'id_propal_origin' => $obj->fk_source
+		    );
+		    
+		    if ($conf->agefodd->enabled)  $tmparray['type_session'] = $obj->type_session;
+		    
+            $TIdFactures[] = $tmparray;
 		}
 
 		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))

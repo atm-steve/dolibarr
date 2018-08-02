@@ -24,7 +24,7 @@ class TExportComptaSage1000 extends TExportCompta {
             array('name' => 'numero_piece',			'length' => 35,	'default' => '',	'type' => 'text'),
             array('name' => 'date_echeance',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmy')
         );
-        if ($conf->agefodd->enabled) $this->_format_ecritures_comptables_vente[] = array('name' => 'type_prestation',      'length' => 1,	'default' => '',	'type' => 'text');
+        //if ($conf->agefodd->enabled) $this->_format_ecritures_comptables_vente[] = array('name' => 'type_prestation',      'length' => 1,	'default' => '',	'type' => 'text');
         $this->_format_ecritures_comptables_vente[] = array('name' => 'fixe',                 'length' => 5,	'default' => '1',	'type' => 'text');
         $this->_format_ecritures_comptables_vente[] = array('name' => 'fixe_FC',              'length' => 2,	'default' => 'FC',	'type' => 'text');
         $this->_format_ecritures_comptables_vente[] = array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text');
