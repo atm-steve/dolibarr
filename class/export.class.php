@@ -37,6 +37,7 @@ class TExportCompta extends TObjetStd {
 			'quadratus' => 'Quadratus'
 			,'sage' => 'Sage'
 			,'sage30' => 'Sage 30'
+		    ,'sage1000' => 'Sage 1000'
 			,'ciel' => 'Ciel'
 			,'opensi' => 'Open SI'
 			,'etag' => 'eTag'
@@ -152,8 +153,13 @@ class TExportCompta extends TObjetStd {
 		// Requête de récupération des factures
 		$sql = "SELECT f.rowid, f.entity";
 		if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER)) $sql.= ", ee.fk_source";
+		if ($conf->agefodd->enabled) $sql .= ", agfs.type_session";
 		$sql.= " FROM ".MAIN_DB_PREFIX."facture f LEFT JOIN ".MAIN_DB_PREFIX."facture_extrafields fex ON (fex.fk_object=f.rowid)";
 		if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."element_element ee ON (ee.fk_target = f.rowid AND ee.targettype = 'facture' AND ee.sourcetype = 'propal')";
+		if ($conf->agefodd->enabled) {
+		    $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."agefodd_session_element as agfse ON agfse.fk_element = f.rowid AND agfse.element_type = 'invoice'";
+		    $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."agefodd_session as agfs ON agfse.fk_session_agefodd = agfs.rowid";
+		}
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
@@ -188,11 +194,20 @@ class TExportCompta extends TObjetStd {
 		// Construction du tableau de données
 		$TIdFactures = array();
 		while($obj = $db->fetch_object($resql)) {
-			$TIdFactures[] = array(
-				'rowid' => $obj->rowid
-				,'entity' => $obj->entity
-				,'id_propal_origin' => $obj->fk_source
-			);
+		    if ($conf->agefodd->enabled){
+		        $TIdFactures[] = array(
+		            'rowid' => $obj->rowid
+		            ,'entity' => $obj->entity
+		            ,'id_propal_origin' => $obj->fk_source
+		            ,'type_session' => $obj->type_session
+		        );
+		    } else {
+    			$TIdFactures[] = array(
+    				'rowid' => $obj->rowid
+    				,'entity' => $obj->entity
+    				,'id_propal_origin' => $obj->fk_source
+    			);
+		    }
 		}
 
 		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))
@@ -241,6 +256,7 @@ class TExportCompta extends TObjetStd {
 
 			// Récupération en-tête facture
 			$TFactures[$facture->id]['facture'] = get_object_vars($facture);
+			if ($conf->agefodd->enabled) $TFactures[$facture->id]['facture']['type_session'] = $idFacture['type_session'];
 
 			// Récupération client
 			$facture->fetch_thirdparty();
