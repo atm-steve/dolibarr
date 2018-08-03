@@ -124,6 +124,10 @@ if (is_array($extrafields->attribute_label) && count($extrafields->attribute_lab
  * Actions
  */
 
+$parameters = array('socid' => $socid);
+$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+
 // Set note
 include DOL_DOCUMENT_ROOT.'/core/actions_setnotes.inc.php';	// Must be include, not include_once
 
@@ -892,7 +896,7 @@ if ($action == 'create')
     		$langs->load('projects');
     		print '<tr><td>' . $langs->trans('Project') . '</td><td>';
     		$numprojet = $formproject->select_projects($socid, $projectid, 'projectid', 0);
-    		print ' &nbsp; <a href="'.DOL_URL_ROOT.'/projet/card.php?socid=' . $soc->id . '&action=create&status=1&backtopage='.urlencode($_SERVER["PHP_SELF"].'?action=create&socid='.$soc->id).'">' . $langs->trans("AddProject") . '</a>';
+    		print ' &nbsp; <a href="'.DOL_URL_ROOT.'/projet/card.php?socid=' . $object->thirdparty->id . '&action=create&status=1&backtopage='.urlencode($_SERVER["PHP_SELF"].'?action=create&socid='.$object->thirdparty->id).'">' . $langs->trans("AddProject") . '</a>';
     		print '</td></tr>';
     	}
 
@@ -959,7 +963,7 @@ if ($action == 'create')
 		    $disableedit=1;
 		    $disablemove=1;
 		    $disableremove=1;
-		    $ret = $object->printObjectLines('', $mysoc, $soc, $lineid, 0);      // No date selector for template invoice
+		    $ret = $object->printObjectLines('', $mysoc, $object->thirdparty, $lineid, 0);      // No date selector for template invoice
 		}
 
 		print "</table>\n";
@@ -1303,7 +1307,7 @@ else
 		{
 		    //$disableedit=1;
 		    //$disablemove=1;
-		    $ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 0);      // No date selector for template invoice
+		    $ret = $object->printObjectLines($action, $mysoc, $object->thirdparty, $lineid, 0);      // No date selector for template invoice
 		}
 
 		// Form to add new line
@@ -1314,7 +1318,7 @@ else
     		    $var = true;
 
     		    // Add free products/services
-    		    $object->formAddObjectLine(0, $mysoc, $soc);                          // No date selector for template invoice
+    		    $object->formAddObjectLine(0, $mysoc, $object->thirdparty);                          // No date selector for template invoice
 
     		    $parameters = array();
     		    $reshook = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action); // Note that $action and $object may have been modified by hook

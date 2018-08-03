@@ -2953,24 +2953,31 @@ abstract class CommonObject
      */
     function getTotalWeightVolume()
     {
-        $weightUnit=0;
-        $volumeUnit=0;
-        $totalWeight = '';
-        $totalVolume = '';
-        $totalOrdered = '';     // defined for shipment only
-        $totalToShip = '';      // defined for shipment only
+        $totalWeight = 0;
+        $totalVolume = 0;
+	    // defined for shipment only
+        $totalOrdered = 0;
+	    // defined for shipment only
+        $totalToShip = 0;
 
         foreach ($this->lines as $line)
         {
 
-            $totalOrdered+=$line->qty_asked;    // defined for shipment only
-            $totalToShip+=$line->qty_shipped;   // defined for shipment only
+            $totalOrdered+=($line->qty_asked ? $line->qty_asked : 0);    // defined for shipment only
+            $totalToShip+=($line->qty_shipped ? $line->qty_shipped : 0);   // defined for shipment only
 
-            // Define qty, weight, volume, weight_units, volume_units
-            if ($this->element == 'shipping') $qty=$line->qty_shipped;     // for shipments
-            else $qty=$line->qty;
-            $weight=$line->weight;
-            $volume=$line->volume;
+	        // Define qty, weight, volume, weight_units, volume_units
+	        if ($this->element == 'shipping') {
+		        // for shipments
+		        $qty = $line->qty_shipped ? $line->qty_shipped : 0;
+	        }
+	        else {
+		        $qty = $line->qty ? $line->qty : 0;
+	        }
+
+            $weight = $line->weight ? $line->weight : 0;
+            $volume = $line->volume ? $line->volume : 0;
+
             $weight_units=$line->weight_units;
             $volume_units=$line->volume_units;
 
@@ -4159,6 +4166,13 @@ abstract class CommonObject
             foreach($this->array_options as $key => $value)
             {
                	$attributeKey = substr($key,8);   // Remove 'options_' prefix
+
+				// array_option may contain extrafields from an origin object that doesn't exist in current object, we should not try to insert them
+				if(empty($extrafields->attribute_type[$attributeKey])) {
+					unset($this->array_options[$key]);
+					continue;
+				}
+				
                	$attributeType  = $extrafields->attribute_type[$attributeKey];
                	$attributeLabel = $extrafields->attribute_label[$attributeKey];
                	$attributeParam = $extrafields->attribute_param[$attributeKey];
