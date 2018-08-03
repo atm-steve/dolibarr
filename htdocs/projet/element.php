@@ -753,7 +753,8 @@ foreach ($listofreferent as $key => $value)
 	$buttonnew=$value['buttonnew'];
     $testnew=$value['testnew'];
     $project_field=$value['project_field'];
-
+    $exclude_select_element=array('payment_various',$value['exclude_select_element']);
+	 
 	if ($qualified)
 	{
 		// If we want the project task array to have details of users
@@ -773,7 +774,7 @@ foreach ($listofreferent as $key => $value)
 		    if (! empty($conf->global->PROJECT_OTHER_THIRDPARTY_ID_TO_ADD_ELEMENTS)) $idtofilterthirdparty.=','.$conf->global->PROJECT_OTHER_THIRDPARTY_ID_TO_ADD_ELEMENTS;
 		}
 
-       	if (empty($conf->global->PROJECT_LINK_ON_OVERWIEW_DISABLED) && $idtofilterthirdparty && !in_array($tablename, array('payment_various')))
+       	if (empty($conf->global->PROJECT_LINK_ON_OVERWIEW_DISABLED) && $idtofilterthirdparty && !in_array($tablename, $exclude_select_element))
        	{
 			$selectList=$formproject->select_element($tablename, $idtofilterthirdparty, 'minwidth300',-2,!empty($project_field)?$project_field:'fk_projet');
 			if (! $selectList || ($selectList<0))
