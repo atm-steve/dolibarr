@@ -1070,12 +1070,32 @@ class Form
 		$outarray=array();
 
 		// Clean $filter that may contains sql conditions so sql code
-		if (function_exists('test_sql_and_script_inject')) $filter = test_sql_and_script_inject($filter, 3);
+		// https://github.com/Dolibarr/dolibarr/pull/9202
+		if (function_exists('test_sql_and_script_inject')) {
+			if (test_sql_and_script_inject($filter, 3)>0) {
+				$filter ='';
+			}
+		}
 
 		// On recherche les societes
 		$sql = "SELECT s.rowid, s.nom as name, s.name_alias, s.client, s.fournisseur, s.code_client, s.code_fournisseur";
-		$sql.= " FROM ".MAIN_DB_PREFIX ."societe as s";
+
+		if ($conf->global->MAIN_COMPANY_SHOW_ADDRESS_LIST) {
+			$sql .= " ,s.address, s.zip, s.town";
+			$sql .= " ,extra.ts_maison";
+			$sql .= " , dictp.code as country_code";
+		}
+
+		//Really spécifics can do it without...
+		$sql .= " ,extra.ts_maison";
+
+		$sql.= " FROM (".MAIN_DB_PREFIX ."societe as s";
 		if (!$user->rights->societe->client->voir && !$user->societe_id) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+		$sql.= ")";
+		if ($conf->global->MAIN_COMPANY_SHOW_ADDRESS_LIST) {
+			$sql .= " LEFT OUTER JOIN ".MAIN_DB_PREFIX."c_country as dictp ON dictp.rowid=s.fk_pays";
+		}
+		$sql .= " LEFT OUTER JOIN ".MAIN_DB_PREFIX."societe_extrafields as extra ON extra.fk_object=s.rowid";
 		$sql.= " WHERE s.entity IN (".getEntity('societe').")";
 		if (! empty($user->societe_id)) $sql.= " AND s.rowid = ".$user->societe_id;
 		if ($filter) $sql.= " AND (".$filter.")";
@@ -1137,9 +1157,14 @@ class Form
 				{
 					$obj = $this->db->fetch_object($resql);
 					$label='';
+
+					if (!empty($obj->ts_maison)) {
+						$label = '<font color="red">M</font> ';
+					}
+
 					if ($conf->global->SOCIETE_ADD_REF_IN_LIST) {
 						if (($obj->client) && (!empty($obj->code_client))) {
-							$label = $obj->code_client. ' - ';
+							$label .= $obj->code_client. ' - ';
 						}
 						if (($obj->fournisseur) && (!empty($obj->code_fournisseur))) {
 							$label .= $obj->code_fournisseur. ' - ';
@@ -1148,7 +1173,11 @@ class Form
 					}
 					else
 					{
-						$label=$obj->name;
+						$label.=$obj->name;
+					}
+
+					if ($conf->global->MAIN_SOC_SHOW_ADDRESS_LIST) {
+						$label.=' '.$obj->address.'-'. $obj->zip.' '. $obj->town.' '.$langs->trans('Country'.$obj->country_code);
 					}
 
 					if(!empty($obj->name_alias)) {
