@@ -75,6 +75,7 @@ $search_type_thirdparty=GETPOST("search_type_thirdparty",'int');
 $search_day=GETPOST("search_day","int");
 $search_month=GETPOST("search_month","int");
 $search_year=GETPOST("search_year","int");
+$search_input_reason=GETPOST('search_input_reason');
 
 $viewstatut=GETPOST('viewstatut','alpha');
 $optioncss = GETPOST('optioncss','alpha');
@@ -203,6 +204,7 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
 	$search_year='';
 	$search_month='';
 	$search_day='';
+	$search_input_reason='';
 	$viewstatut='';
 	$object_statut='';
 	$toselect='';
@@ -319,6 +321,14 @@ if ($search_user > 0)
 {
 	$sql.= " AND c.fk_c_type_contact = tc.rowid AND tc.element='propal' AND tc.source='internal' AND c.element_id = p.rowid AND c.fk_socpeople = ".$db->escape($search_user);
 }
+if (is_array($search_input_reason))
+{
+	$sql.= " AND p.fk_input_reason IN (".implode(', ', $search_input_reason).")";
+}
+elseif($search_input_reason)
+{
+	$sql.= " AND p.fk_input_reason = ".$search_input_reason;
+}
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 
@@ -382,6 +392,15 @@ if ($resql)
 	if ($socid > 0)          $param.='&socid='.urlencode($socid);
 	if ($optioncss != '')    $param.='&optioncss='.urlencode($optioncss);
 	if ($search_product_category != '')                     $param.='&search_product_category='.$search_product_category;
+	if ($search_input_reason != '') {
+		if(is_array($search_input_reason)) {
+			foreach($search_input_reason as $reason) {
+				$param.='&search_input_reason[]='.urlencode($reason);
+			}
+		} else {
+			$param.='&search_input_reason='.urlencode($search_input_reason);
+		}
+	}
 
 	// Add $param from extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
@@ -557,10 +576,18 @@ if ($resql)
 	}
 	if (! empty($arrayfields['p.fk_input_reason']['checked']))
 	{
-	    // Amount
-	    print '<td class="liste_titre" align="right">';
-	    print '&nbsp;';
-	    print '</td>';
+		$form->loadCacheInputReason();
+
+		$TOrigins = array();
+
+		foreach($form->cache_demand_reason as $origin) {
+			$TOrigins[$origin['id']] = $origin['label'];
+		}
+
+		// Proposal origin
+		print '<td class="liste_titre" align="right">';
+		print $form->multiselectarray('search_input_reason', $TOrigins, $search_input_reason);
+		print '</td>';
 	}
 	
 	
@@ -817,10 +844,7 @@ if ($resql)
 		// fk_input_reason
 		if (! empty($arrayfields['p.fk_input_reason']['checked']))
 		{
-		    $form->loadCacheInputReason();
-		    
 		    print '<td align="right">'.$form->cache_demand_reason[$obj->fk_input_reason]['label']."</td>\n";
-		    
 		}
 		
 		$userstatic->id=$obj->fk_user_author;
