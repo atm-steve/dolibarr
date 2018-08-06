@@ -144,8 +144,17 @@ if ($action == 'other')
 	$value = GETPOST('activate_usesearchtoselectproduct','alpha');
 	$res = dolibarr_set_const($db, "PRODUIT_USE_SEARCH_TO_SELECT", $value,'chaine',0,'',$conf->entity);
 	
-	$value = GETPOST('activate_useProdFournDesc', 'alpha');
+	$value = GETPOST('activate_useProdFournDesc', 'int');
 	$res = dolibarr_set_const($db, "PRODUIT_FOURN_TEXTS", $value,'chaine',0,'',$conf->entity);
+	if ($value) {
+    	$sql_test = "SELECT count(desc_fourn) as cpt FROM ".MAIN_DB_PREFIX."product_fournisseur_price WHERE 1";
+    	$resql = $db->query($sql_test);
+    	if (!$resql && $db->lasterrno == 'DB_ERROR_NOSUCHFIELD') // if the field does not exist, we create it
+    	{
+    	    $sql_new = "ALTER TABLE ".MAIN_DB_PREFIX."product_fournisseur_price ADD COLUMN desc_fourn text";
+    	    $resql_new = $db->query($sql_new);
+    	}
+	}
 }
 
 if ($action == 'specimen') // For products
