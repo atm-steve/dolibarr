@@ -91,6 +91,7 @@ ALTER TABLE llx_product_customer_price_log ADD COLUMN default_vat_code varchar(1
 ALTER TABLE llx_product_price ADD COLUMN default_vat_code	varchar(10) AFTER tva_tx;
 ALTER TABLE llx_product_customer_price ADD COLUMN default_vat_code	varchar(10) AFTER tva_tx;
 ALTER TABLE llx_product_fournisseur_price ADD COLUMN default_vat_code	varchar(10) AFTER tva_tx;
+ALTER TABLE llx_product_fournisseur_price ADD COLUMN desc_fourn text;
 
 ALTER TABLE llx_website_page ADD COLUMN fk_user_create integer;
 ALTER TABLE llx_website_page ADD COLUMN fk_user_modif integer; 
