@@ -292,6 +292,8 @@ ProductSheet=Fiche produit
 ServiceSheet=Fiche service
 PossibleValues=Valeurs possibles
 GoOnMenuToCreateVairants=Allez sur le menu %s - %s pour ajouter les attributs de variantes (comme les couleurs, tailles, ...)
+UseProductFournDesc=Utiliser les descriptions fournisseurs des produits dans les documents
+ProductSupplierDescription=Description du fournisseur pour le produit
 
 #Attributes
 VariantAttributes=Attributs de variante
