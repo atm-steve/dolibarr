@@ -290,42 +290,42 @@ class TExportCompta extends TObjetStd {
 			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 			//Cas particulier des factures de situation
 			if(!empty($facture->tab_previous_situation_invoice)){
-				foreach ($facture->tab_previous_situation_invoice as $FactureSituation) {
-					$FactureSituation->fetch_lines();
-					$FactureSituation->fetch_thirdparty();
-					foreach ($FactureSituation->lines as $ligneSituation) {
+				// Pas besoin d'itérer sur toutes les factures précédentes : il y a juste à retirer la situation précédente
+				$lastSituationInvoice = &$facture->tab_previous_situation_invoice[count($facture->tab_previous_situation_invoice) - 1];
+				$lastSituationInvoice->fetch_lines();
+				$lastSituationInvoice->fetch_thirdparty();
+				foreach ($lastSituationInvoice->lines as $ligneSituation) {
 
-						if (!empty($ligneSituation->fk_product)){
-							$produit = new Product($db);
-							$produit->fetch($ligneSituation->fk_product);
-							$produit->fetch_optionals($ligneSituation->fk_product);
-						}else {
-							$produit = new stdClass();
-						}
-
-						if(!empty($FactureSituation->thirdparty->array_options['options_code_tva'])) {
-		                    $codeComptableTVA  = $FactureSituation->thirdparty->array_options['options_code_tva'];
-		                }
-		                else if(!empty($produit->array_options['options_code_tva'])) {
-		                    $codeComptableTVA  = $produit->array_options['options_code_tva'];
-		                }
-		                else{
-						    // Code compta TVA
-						    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
-						    if($ligneSituation->fk_product_type == 1) {
-						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service'] : $conf_compte_tva;
-						    }
-						    else{
-						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
-						    }
-		                }
-
-						$codeComptableProduit = $this->_get_code_compta_product($FactureSituation,$produit);
-
-						$TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $ligneSituation->total_ht;
-						$TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $ligneSituation->total_ttc;
-						$TotalTVASituationPrev[$facture->id][$codeComptableTVA] += $ligneSituation->total_tva;
+					if (!empty($ligneSituation->fk_product)){
+						$produit = new Product($db);
+						$produit->fetch($ligneSituation->fk_product);
+						$produit->fetch_optionals($ligneSituation->fk_product);
+					}else {
+						$produit = new stdClass();
 					}
+
+					if(!empty($lastSituationInvoice->thirdparty->array_options['options_code_tva'])) {
+						$codeComptableTVA  = $lastSituationInvoice->thirdparty->array_options['options_code_tva'];
+					}
+					else if(!empty($produit->array_options['options_code_tva'])) {
+						$codeComptableTVA  = $produit->array_options['options_code_tva'];
+					}
+					else{
+						// Code compta TVA
+						$conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
+						if($ligneSituation->fk_product_type == 1) {
+							$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service'] : $conf_compte_tva;
+						}
+						else{
+							$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
+						}
+					}
+
+					$codeComptableProduit = $this->_get_code_compta_product($lastSituationInvoice,$produit);
+
+					$TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $ligneSituation->total_ht;
+					$TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $ligneSituation->total_ttc;
+					$TotalTVASituationPrev[$facture->id][$codeComptableTVA] += $ligneSituation->total_tva;
 				}
 			}
 
