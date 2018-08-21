@@ -145,7 +145,8 @@ class modExportCompta extends DolibarrModules
 		// 'contact'          to add a tab in contact view
 		// 'categories_x'	  to add a tab in category view (replace 'x' by type of category (0=product, 1=supplier, 2=customer, 3=member)
         $this->tabs = array(
-			'categories_2:+exportcompta:Comptabilité:exportcompta@exportcompta:$user->rights->exportcompta->linkcat:/exportcompta/linkcategory.php?id=__ID__&type=customer'
+			'categories_2:+exportcompta:Comptabilité:exportcompta@exportcompta:$user->rights->exportcompta->linkcat:/exportcompta/linkcategory.php?id=__ID__&type=customer',
+			'categories_customer:+exportcompta:Comptabilité:exportcompta@exportcompta:$user->rights->exportcompta->linkcat:/exportcompta/linkcategory.php?id=__ID__&type=customer'
 		);
 
 
@@ -239,11 +240,11 @@ class modExportCompta extends DolibarrModules
 	function init($options = '')
 	{
 		$sql = array();
-		
+
 		define('INC_FROM_DOLIBARR',true);
 		 dol_include_once('/exportcompta/config.php');
         dol_include_once('/exportcompta/script/create-maj-base.php');
-        
+
 		dol_include_once('/core/class/extrafields.class.php');
         $extrafields=new ExtraFields($this->db);
 		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture');
@@ -261,7 +262,7 @@ class modExportCompta extends DolibarrModules
 
         $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_sell_service varchar(32) NULL");
         $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_buy_service varchar(32) NULL");
-		
+
         $result=$this->load_tables();
 
 		return $this->_init($sql);
