@@ -18,9 +18,23 @@
  * or see http://www.gnu.org/
  */
 
+// Following var can be set
+// $permission = permission or not to add a file
+// $permtoedit = permission or not to edit file name, crop file
+// $modulepart = for download
+// $param      = param to add to download links
+
+// Protection to avoid direct call of template
+if (empty($langs) || ! is_object($langs))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
+
 $langs->load("link");
 if (empty($relativepathwithnofile)) $relativepathwithnofile='';
-
+if (empty($permtoedit)) $permtoedit=-1;
 
 /*
  * Confirm form to delete
@@ -48,7 +62,7 @@ $savingdocmask='';
 if (empty($conf->global->MAIN_DISABLE_SUGGEST_REF_AS_PREFIX))
 {
 	//var_dump($modulepart);
-	if (in_array($modulepart,array('facture_fournisseur','commande_fournisseur','facture','commande','propal','supplier_proposal','ficheinter','contract','project','project_task','expensereport')))
+	if (in_array($modulepart,array('facture_fournisseur','commande_fournisseur','facture','commande','propal','supplier_proposal','ficheinter','contract','project','project_task','expensereport','tax')))
 	{
 		$savingdocmask=dol_sanitizeFileName($object->ref).'-__file__';
 	}
@@ -72,6 +86,9 @@ $formfile->form_attach_new_file(
 	$savingdocmask
 );
 
+$disablemove=1;
+if (in_array($modulepart, array('product', 'produit', 'societe', 'user'))) $disablemove=0;		// Drag and drop for up and down allowed on product, thirdparty, ...
+
 // List of document
 $formfile->list_of_documents(
     $filearray,
@@ -79,8 +96,19 @@ $formfile->list_of_documents(
     $modulepart,
     $param,
     0,
-    $relativepathwithnofile,		// relative path with no file. For example "moduledir/0/1"
-    $permission
+    $relativepathwithnofile,		// relative path with no file. For example "0/1"
+    $permission,
+    0,
+    '',
+    0,
+    '',
+    '',
+    0,
+    $permtoedit,
+    $upload_dir,
+    $sortfield,
+    $sortorder,
+    $disablemove
 );
 
 print "<br>";

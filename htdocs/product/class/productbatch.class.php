@@ -154,7 +154,7 @@ class Productbatch extends CommonObject
 		$sql.= " pl.sellby";
 
         $sql.= " FROM ".MAIN_DB_PREFIX."product_batch as t INNER JOIN ".MAIN_DB_PREFIX."product_stock w on t.fk_product_stock = w.rowid";
-        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_lot as pl on pl.fk_product = w.fk_product and pl.batch = t.batch"; 
+        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_lot as pl on pl.fk_product = w.fk_product and pl.batch = t.batch";
         $sql.= " WHERE t.rowid = ".$id;
 
 		dol_syslog(get_class($this)."::fetch", LOG_DEBUG);
@@ -205,9 +205,9 @@ class Productbatch extends CommonObject
 		// TODO Check qty is ok for stock move. Negative may not be allowed.
 		if ($this->qty < 0)
 		{
-			
+
 		}
-		
+
         // Update request
 		$sql = "UPDATE ".MAIN_DB_PREFIX.self::$_table_element." SET";
 		$sql.= " fk_product_stock=".(isset($this->fk_product_stock)?$this->fk_product_stock:"null").",";
@@ -435,7 +435,7 @@ class Productbatch extends CommonObject
 
 		if (! empty($eatby)) array_push($where," eatby = '".$this->db->idate($eatby)."'");            // deprecated
 		if (! empty($sellby)) array_push($where," sellby = '".$this->db->idate($sellby)."'");         // deprecated
-		
+
 		if (! empty($batch_number)) $sql.= " AND batch = '".$this->db->escape($batch_number)."'";
 
 		if (! empty($where)) $sql.= " AND (".implode(" OR ",$where).")";
@@ -469,7 +469,7 @@ class Productbatch extends CommonObject
         }
     }
     /**
-     * Return all batch detail records for given product and warehouse
+     * Return all batch detail records for a given product and warehouse
      *
      *  @param	DoliDB		$db    				database object
      *  @param	int			$fk_product_stock	id product_stock for objet
@@ -493,12 +493,14 @@ class Productbatch extends CommonObject
 		$sql.= " t.import_key";
 		if ($fk_product > 0)
 		{
-		    $sql.= ", pl.eatby as eatby, pl.sellby as sellby";
+		    $sql.= ", pl.rowid as lotid, pl.eatby as eatby, pl.sellby as sellby";
+		    // TODO May add extrafields to ?
 		}
         $sql.= " FROM ".MAIN_DB_PREFIX."product_batch as t";
         if ($fk_product > 0)
         {
             $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_lot as pl ON pl.fk_product = ".$fk_product." AND pl.batch = t.batch";
+            // TODO May add extrafields to ?
         }
 		$sql.= " WHERE fk_product_stock=".$fk_product_stock;
 		if ($with_qty) $sql.= " AND t.qty <> 0";
@@ -515,6 +517,7 @@ class Productbatch extends CommonObject
 
 				$tmp = new Productbatch($db);
 				$tmp->id    = $obj->rowid;
+				$tmp->lotid = $obj->lotid;
 				$tmp->tms = $db->jdate($obj->tms);
 				$tmp->fk_product_stock = $obj->fk_product_stock;
 				$tmp->sellby = $db->jdate($obj->sellby ? $obj->sellby : $obj->oldsellby);
@@ -523,7 +526,7 @@ class Productbatch extends CommonObject
 				$tmp->qty = $obj->qty;
 				$tmp->import_key = $obj->import_key;
 
-				array_push($ret,$tmp);
+				$ret[$tmp->batch] = $tmp;       // $ret is for a $fk_product_stock and unique key is on $fk_product_stock+batch
 				$i++;
             }
             $db->free($resql);

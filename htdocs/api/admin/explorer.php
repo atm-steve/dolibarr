@@ -14,6 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @deprecated      Old explorer. Not using Swagger. See instead explorer in htdocs/api/index.php.
  */
 
 /**
@@ -59,7 +61,7 @@ foreach ($modulesdir as $dir)
     /*
      * Search available module
      */
-    dol_syslog("Scan directory ".$dir." for API modules");
+    //dol_syslog("Scan directory ".$dir." for API modules");
 
     $handle=@opendir(dol_osencode($dir));
     if (is_resource($handle))
@@ -85,7 +87,13 @@ foreach ($modulesdir as $dir)
                     $part = 'compta/facture';
 					$obj = 'facture';
 				}
-                if (empty($conf->$module->enabled)) $enabled=false;
+                if ($module == 'ficheinter') {
+                                       $obj = 'fichinter';
+                                       $part = 'fichinter';
+                                       $module='fichinter';
+                               }
+
+		if (empty($conf->$module->enabled)) $enabled=false;
 
                 if ($enabled)
                 {
@@ -104,17 +112,32 @@ foreach ($modulesdir as $dir)
                     {
                         while (($file_searched = readdir($handle_part))!==false)
                         {
+                            if (is_readable($dir_part.$file_searched) && preg_match("/^api_(.*)\.class\.php$/i",$file_searched,$reg))
+                            {
+                                $classname = ucwords($reg[1]);
+                                require_once $dir_part.$file_searched;
+                                if (class_exists($classname))
+                                {
+                                    dol_syslog("Found API classname=".$classname." into ".$dir);
+                                    $listofapis[] = $classname;
+                                }
+                            }
+
+                            /*
                             if (is_readable($dir_part.$file_searched) && preg_match("/^(api_.*)\.class\.php$/i",$file_searched,$reg))
                             {
                                 $classname=$reg[1];
                                 $classname = str_replace('Api_','',ucwords($reg[1])).'Api';
+                                //$classname = str_replace('Api_','',ucwords($reg[1]));
                                 $classname = ucfirst($classname);
                                 require_once $dir_part.$file_searched;
-                                if (class_exists($classname)) 
+
+                                if (class_exists($classname))
                                 {
-                                    dol_syslog("Found API classname=".$classname);    
+                                    dol_syslog("Found API classname=".$classname);
                                     $api->r->addAPIClass($classname,'');
-                                    
+
+
                                     /*
                                     require_once DOL_DOCUMENT_ROOT.'/includes/restler/framework/Luracast/Restler/Routes.php';
                                     $tmpclass = new ReflectionClass($classname);
@@ -123,10 +146,11 @@ foreach ($modulesdir as $dir)
                                     } catch (Exception $e) {
                                         throw new RestException(500, "Error while parsing comments of `$classname` class. " . $e->getMessage());
                                     }*/
-                                    
+
                                     //$listofapis[]=array('classname'=>$classname, 'fullpath'=>$file_searched);
-                                }
-                            }
+                           /*     }
+
+                            }*/
                         }
                     }
                 }
@@ -135,14 +159,14 @@ foreach ($modulesdir as $dir)
     }
 }
 
-
-$listofapis=Routes::toArray();
+//var_dump($listofapis);
+$listofapis=Routes::toArray();          // TODO api for "status" is lost here
 //var_dump($listofapis);
 
 
 llxHeader();
 
-$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
+$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
 print load_fiche_titre($langs->trans("ApiSetup"),$linkback,'title_setup');
 
 // Define $urlwithroot
@@ -167,7 +191,7 @@ foreach($listofapis['v1'] as $key => $val)
 {
     if ($key == 'login') continue;
     if ($key == 'index') continue;
-    
+
     if ($key)
     {
         foreach($val as $method => $val2)
@@ -175,8 +199,8 @@ foreach($listofapis['v1'] as $key => $val)
             $newclass=$val2['className'];
 
             if (preg_match('/restler/i', $newclass)) continue;
-            
-            if ($oldclass != $newclass) 
+
+            if ($oldclass != $newclass)
             {
                 print "\n<br>\n".$langs->trans("Class").': '.$newclass.'<br>'."\n";
                 $oldclass = $newclass;
@@ -185,7 +209,7 @@ foreach($listofapis['v1'] as $key => $val)
             $url=$urlwithroot.'/api/index.php/'.$key;
             $url.='?api_key=token';
             print img_picto('','object_globe.png').' '.$method.' <a href="'.$url.'" target="_blank">'.$url."</a><br>\n";
-        }        
+        }
     }
 }
 

@@ -83,6 +83,7 @@ class pdf_strato extends ModelePDFContract
 		// Dimension page pour format A4
 		$this->type = 'pdf';
 		$formatarray=pdf_getFormat();
+
 		$this->page_largeur = $formatarray['width'];
 		$this->page_hauteur = $formatarray['height'];
 		$this->format = array($this->page_largeur,$this->page_hauteur);
@@ -214,16 +215,14 @@ class pdf_strato extends ModelePDFContract
 
 				$tab_top = 90;
 				$tab_top_newpage = (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)?42:10);
-				$tab_height = 130;
-				$tab_height_newpage = 150;
 
 				// Affiche notes
 				if (! empty($object->note_public))
 				{
-					$tab_top = 88;
+					$tab_top -= 2;
 
 					$pdf->SetFont('','', $default_font_size - 1);
-					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $tab_top, dol_htmlentitiesbr($object->note_public), 0, 1);
+					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $tab_top-1, dol_htmlentitiesbr($object->note_public), 0, 1);
 					$nexY = $pdf->GetY();
 					$height_note=$nexY-$tab_top;
 
@@ -231,12 +230,7 @@ class pdf_strato extends ModelePDFContract
 					$pdf->SetDrawColor(192,192,192);
 					$pdf->Rect($this->marge_gauche, $tab_top-1, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $height_note+1);
 
-					$tab_height = $tab_height - $height_note;
 					$tab_top = $nexY+6;
-				}
-				else
-				{
-					$height_note=0;
 				}
 
 				$iniY = $tab_top + 7;
@@ -294,22 +288,25 @@ class pdf_strato extends ModelePDFContract
 						} else {
 							$datere = $langs->trans("Unknown");
 						}
-						
+
 						$txtpredefinedservice='';
-                        $txtpredefinedservice = $objectligne->product_ref;
+                        $txtpredefinedservice = $objectligne->product_label;
                         if ($objectligne->product_label)
                         {
                         	$txtpredefinedservice .= ' - ';
                         	$txtpredefinedservice .= $objectligne->product_label;
                         }
 
-						$txt='<strong>'.dol_htmlentitiesbr($outputlangs->transnoentities("DateStartPlannedShort")." : ".$datei." - ".$outputlangs->transnoentities("DateEndPlanned")." : ".$datee,1,$outputlangs->charset_output).'</strong>';
+						$desc=dol_htmlentitiesbr($objectligne->desc,1);   // Desc (not empty for free lines)
+						$txt='';
+						$txt.=$outputlangs->transnoentities("Quantity").' : <strong>'.$objectligne->qty.'</strong> - '.$outputlangs->transnoentities("UnitPrice").' : <strong>'.price($objectligne->subprice).'</strong>';   // Desc (not empty for free lines)
 						$txt.='<br>';
-						$txt.='<strong>'.dol_htmlentitiesbr($outputlangs->transnoentities("DateStartRealShort")." : ".$daters,1,$outputlangs->charset_output);
-						if ($objectligne->date_cloture) $txt.=dol_htmlentitiesbr(" - ".$outputlangs->transnoentities("DateEndRealShort")." : ".$datere,1,$outputlangs->charset_output).'</strong>';
-						$desc=dol_htmlentitiesbr($objectligne->desc,1);
+						$txt.=$outputlangs->transnoentities("DateStartPlannedShort")." : <strong>".$datei."</strong> - ".$outputlangs->transnoentities("DateEndPlanned")." : <strong>".$datee.'</strong>';
+						$txt.='<br>';
+                        $txt.=$outputlangs->transnoentities("DateStartRealShort")." : <strong>".$daters.'</strong>';
+						if ($objectligne->date_cloture) $txt.=" - ".$outputlangs->transnoentities("DateEndRealShort")." : '<strong>'".$datere.'</strong>';
 
-						$pdf->writeHTMLCell(0, 0, $curX, $curY, dol_concatdesc($txt,dol_concatdesc($txtpredefinedservice,$desc)), 0, 1, 0);
+						$pdf->writeHTMLCell(0, 0, $curX, $curY, dol_concatdesc($txtpredefinedservice, dol_concatdesc($txt, $desc)), 0, 1, 0);
 
 						$nexY = $pdf->GetY() + 2;
 						$pageposafter=$pdf->getPage();
@@ -393,6 +390,8 @@ class pdf_strato extends ModelePDFContract
 				if (! empty($conf->global->MAIN_UMASK))
 				@chmod($file, octdec($conf->global->MAIN_UMASK));
 
+				$this->result = array('fullpath'=>$file);
+
 				return 1;
 			}
 			else
@@ -406,8 +405,6 @@ class pdf_strato extends ModelePDFContract
 			$this->error=$langs->trans("ErrorConstantNotDefined","CONTRACT_OUTPUTDIR");
 			return 0;
 		}
-		$this->error=$langs->trans("ErrorUnknown");
-		return 0;   // Erreur par defaut
 	}
 
 	/**
@@ -462,17 +459,20 @@ class pdf_strato extends ModelePDFContract
 
 		if (empty($hidebottom))
 		{
-			$pdf->SetXY(20,230);
-			$pdf->MultiCell(66,5, $outputlangs->transnoentities("ContactNameAndSignature", $this->emetteur->name),0,'L',0);
+			$posmiddle = $this->marge_gauche + round(($this->page_largeur - $this->marge_gauche - $this->marge_droite)/2);
+			$posy = $tab_top + $tab_height + 3 + 3;
 
-			$pdf->SetXY(20,235);
-			$pdf->MultiCell(80,25, '', 1);
+			$pdf->SetXY($this->marge_gauche, $posy);
+			$pdf->MultiCell($posmiddle - $this->marge_gauche - 5, 5, $outputlangs->transnoentities("ContactNameAndSignature", $this->emetteur->name),0,'L',0);
 
-			$pdf->SetXY(110,230);
-			$pdf->MultiCell(80,5, $outputlangs->transnoentities("ContactNameAndSignature", $this->recipient->name),0,'L',0);
+			$pdf->SetXY($this->marge_gauche, $posy + 5);
+			$pdf->MultiCell($posmiddle - $this->marge_gauche - 5, 20, '', 1);
 
-			$pdf->SetXY(110,235);
-			$pdf->MultiCell(80,25, '', 1);
+			$pdf->SetXY($posmiddle + 5, $posy);
+			$pdf->MultiCell($this->page_largeur-$this->marge_droite - $posmiddle - 5, 5, $outputlangs->transnoentities("ContactNameAndSignature", $this->recipient->name),0,'L',0);
+
+			$pdf->SetXY($posmiddle + 5, $posy + 5);
+			$pdf->MultiCell($this->page_largeur-$this->marge_droite - $posmiddle - 5, 20, '', 1);
 		}
 	}
 

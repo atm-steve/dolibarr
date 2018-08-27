@@ -370,7 +370,7 @@ INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, nc
 INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA32', 1204, '', 0, '', 'Province de Driouch', 1);
 INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA33', 1204, '', 0, '', 'Province de Figuig', 1);
 INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA34', 1204, '', 0, '', 'Province de Jerada', 1);
-INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA35', 1204, '', 0, '', 'Province de Nadorgg', 1);
+INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA35', 1204, '', 0, '', 'Province de Nador', 1);
 INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA36', 1204, '', 0, '', 'Province de Taourirt', 1);
 INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA37', 1216, '', 0, '', 'Province d''Aousserd', 1);
 INSERT INTO llx_c_departements ( code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES('MA38', 1216, '', 0, '', 'Province d''Oued Ed-Dahab', 1);
@@ -1492,3 +1492,15 @@ INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc
 INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('PA-8', 17801, '', 0, '', 'Panamá', 1);
 INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('PA-9', 17801, '', 0, '', 'Veraguas', 1);
 INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('PA-13', 17801, '', 0, '', 'Panamá Oeste', 1);
+
+-- Provinces United Arab Emirates (id country=227)
+INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('AE-1', 22701, '', 0, '', 'Abu Dhabi', 1);
+INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('AE-2', 22701, '', 0, '', 'Dubai', 1);
+INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('AE-3', 22701, '', 0, '', 'Ajman', 1);
+INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('AE-4', 22701, '', 0, '', 'Fujairah', 1);
+INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('AE-5', 22701, '', 0, '', 'Ras al-Khaimah', 1);
+INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('AE-6', 22701, '', 0, '', 'Sharjah', 1);
+INSERT INTO llx_c_departements (code_departement, fk_region, cheflieu, tncc, ncc, nom, active) VALUES ('AE-7', 22701, '', 0, '', 'Umm al-Quwain', 1);
+
+
+

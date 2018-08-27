@@ -13,8 +13,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
+
+// Protection to avoid direct call of template
+if (empty($conf) || ! is_object($conf))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
 ?>
 
 <!-- BEGIN PHP TEMPLATE -->
@@ -28,20 +35,24 @@ $linkedObjectBlock = $GLOBALS['linkedObjectBlock'];
 
 $langs->load("interventions");
 
+$ilink=0;
 $var=true;
 foreach($linkedObjectBlock as $key => $objectlink)
 {
-	$var=!$var;
+    $ilink++;
+
+    $trclass=($var?'pair':'impair');
+    if ($ilink == count($linkedObjectBlock) && empty($noMoreLinkedObjectBlockAfter) && count($linkedObjectBlock) <= 1) $trclass.=' liste_sub_total';
 ?>
-<tr <?php echo $GLOBALS['bc'][$var]; ?> >
-	<td><?php echo $langs->trans("Intervention"); ?></td>
-    <td><?php echo $objectlink->getNomUrl(1); ?></td>
-    <td></td>
-	<td align="center"><?php echo dol_print_date($objectlink->datev,'day'); ?></td>
-	<td></td>
-	<td align="right"><?php echo $objectlink->getLibStatut(3); ?></td>
-	<td align="right"><a href="<?php echo $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=dellink&dellinkid='.$key; ?>"><?php echo img_delete($langs->transnoentitiesnoconv("RemoveLink")); ?></a></td>
-</tr>
+    <tr class="<?php echo $trclass; ?>">
+		<td><?php echo $langs->trans("Intervention"); ?></td>
+	    <td><?php echo $objectlink->getNomUrl(1); ?></td>
+	    <td></td>
+		<td align="center"><?php echo dol_print_date($objectlink->datev,'day'); ?></td>
+		<td></td>
+		<td align="right"><?php echo $objectlink->getLibStatut(3); ?></td>
+		<td align="right"><a href="<?php echo $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=dellink&dellinkid='.$key; ?>"><?php echo img_delete($langs->transnoentitiesnoconv("RemoveLink")); ?></a></td>
+	</tr>
 <?php
 }
 ?>

@@ -139,7 +139,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 	 */
 	function write_file($object, $outputlangs='', $srctemplatepath='', $hidedetails=0, $hidedesc=0, $hideref=0)
 	{
-		global $user,$langs,$conf,$mysoc,$hookmanager;
+		global $user,$langs,$conf,$mysoc,$hookmanager,$nblignes;
 
 		// Get source company
 		if (! is_object($object->thirdparty)) $object->fetch_thirdparty();
@@ -157,7 +157,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 		$outputlangs->load("bills");
 		$outputlangs->load("products");
 
-		if ($conf->fournisseur->dir_output.'/facture')
+		if ($conf->fournisseur->facture->dir_output)
 		{
 			$object->fetch_thirdparty();
 
@@ -260,24 +260,21 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 				$pdf->AddPage();
 				if (! empty($tplidx)) $pdf->useTemplate($tplidx);
 				$pagenb++;
-				$this->_pagehead($pdf, $object, 1, $outputlangs);
+				$top_shift = $this->_pagehead($pdf, $object, 1, $outputlangs);
 				$pdf->SetFont('','', $default_font_size - 1);
 				$pdf->MultiCell(0, 3, '');		// Set interline to 3
 				$pdf->SetTextColor(0,0,0);
 
-				$tab_top = 90;
-				$tab_top_newpage = (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)?42:10);
-				$tab_height = 130;
-				$tab_height_newpage = 150;
+				$tab_top = 90+$top_shift;
+				$tab_top_newpage = (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)?42+$top_shift:10);
 
 				// Incoterm
-				$height_incoterms = 0;
 				if ($conf->incoterm->enabled)
 				{
 					$desc_incoterms = $object->getIncotermsForPDF();
 					if ($desc_incoterms)
 					{
-						$tab_top = 88;
+						$tab_top -= 2;
 
 						$pdf->SetFont('','', $default_font_size - 1);
 						$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $tab_top-1, dol_htmlentitiesbr($desc_incoterms), 0, 1);
@@ -289,17 +286,16 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 						$pdf->Rect($this->marge_gauche, $tab_top-1, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $height_incoterms+1);
 
 						$tab_top = $nexY+6;
-						$height_incoterms += 4;
 					}
 				}
 
 				// Affiche notes
 				if (! empty($object->note_public))
 				{
-					$tab_top = 88 + $height_incoterms;
+					$tab_top -= 2;
 
 					$pdf->SetFont('','', $default_font_size - 1);
-					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $tab_top, dol_htmlentitiesbr($object->note_public), 0, 1);
+					$pdf->writeHTMLCell(190, 3, $this->posxdesc-1, $tab_top-1, dol_htmlentitiesbr($object->note_public), 0, 1);
 					$nexY = $pdf->GetY();
 					$height_note=$nexY-$tab_top;
 
@@ -307,12 +303,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 					$pdf->SetDrawColor(192,192,192);
 					$pdf->Rect($this->marge_gauche, $tab_top-1, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $height_note+1);
 
-					$tab_height = $tab_height - $height_note;
 					$tab_top = $nexY+6;
-				}
-				else
-				{
-					$height_note=0;
 				}
 
 				$iniY = $tab_top + 7;
@@ -388,8 +379,9 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
                     }
 
 					// Unit price before discount
+					$up_excl_tax = pdf_getlineupexcltax($object, $i, $outputlangs, $hidedetails);
 					$pdf->SetXY($this->posxup, $curY);
-					$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, price($object->lines[$i]->pu_ht), 0, 'R', 0);
+					$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, $up_excl_tax, 0, 'R', 0);
 
 					// Unit price before discount
 					$up_excl_tax = pdf_getlineupexcltax($object, $i, $outputlangs, $hidedetails);
@@ -397,15 +389,16 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 					$pdf->MultiCell($this->posxqty-$this->posxup-0.8, 3, $up_excl_tax, 0, 'R', 0);
 
 					// Quantity
+					$qty = pdf_getlineqty($object, $i, $outputlangs, $hidedetails);
 					$pdf->SetXY($this->posxqty, $curY);
 					// Enough for 6 chars
 					if($conf->global->PRODUCT_USE_UNITS)
 					{
-						$pdf->MultiCell($this->posxunit-$this->posxqty-0.8, 4, $object->lines[$i]->qty, 0, 'R');
+						$pdf->MultiCell($this->posxunit-$this->posxqty-0.8, 4, $qty, 0, 'R');
 					}
 					else
 					{
-						$pdf->MultiCell($this->posxdiscount-$this->posxqty-0.8, 4, $object->lines[$i]->qty, 0, 'R');
+						$pdf->MultiCell($this->posxdiscount-$this->posxqty-0.8, 4, $qty, 0, 'R');
 					}
 
 					// Unit
@@ -420,7 +413,8 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 					$pdf->SetXY($this->posxdiscount, $curY);
 					if ($object->lines[$i]->remise_percent)
 					{
-						$pdf->MultiCell($this->postotalht-$this->posxdiscount-1, 3, $object->lines[$i]->remise_percent."%", 0, 'R');
+					    $remise_percent = pdf_getlineremisepercent($object, $i, $outputlangs, $hidedetails);
+						$pdf->MultiCell($this->postotalht-$this->posxdiscount-1, 3, $remise_percent."%", 0, 'R');
 					}
 
 					// Total HT line
@@ -429,7 +423,8 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
                     $pdf->MultiCell($this->page_largeur-$this->marge_droite-$this->postotalht, 3, $total_excl_tax, 0, 'R', 0);
 
 					// Collecte des totaux par valeur de tva dans $this->tva["taux"]=total_tva
-					$tvaligne=$object->lines[$i]->total_tva;
+					if ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) $tvaligne=$object->lines[$i]->multicurrency_total_tva;
+					else $tvaligne=$object->lines[$i]->total_tva;
 
 					$localtax1ligne=$object->lines[$i]->total_localtax1;
 					$localtax2ligne=$object->lines[$i]->total_localtax2;
@@ -466,11 +461,11 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 						$pdf->setPage($pagenb);
 						if ($pagenb == 1)
 						{
-							$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1);
+							$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1, $object->multicurrency_code);
 						}
 						else
 						{
-							$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1);
+							$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1, $object->multicurrency_code);
 						}
 						$this->_pagefoot($pdf,$object,$outputlangs,1);
 						$pagenb++;
@@ -482,11 +477,11 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 					{
 						if ($pagenb == 1)
 						{
-							$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1);
+							$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1, $object->multicurrency_code);
 						}
 						else
 						{
-							$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1);
+							$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1, $object->multicurrency_code);
 						}
 						$this->_pagefoot($pdf,$object,$outputlangs,1);
 						// New page
@@ -500,12 +495,12 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 				// Show square
 				if ($pagenb == 1)
 				{
-					$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforinfotot - $heightforfreetext - $heightforfooter, 0, $outputlangs, 0, 0);
+					$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforinfotot - $heightforfreetext - $heightforfooter, 0, $outputlangs, 0, 0, $object->multicurrency_code);
 					$bottomlasttab=$this->page_hauteur - $heightforinfotot - $heightforfreetext - $heightforfooter + 1;
 				}
 				else
 				{
-					$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforinfotot - $heightforfreetext - $heightforfooter, 0, $outputlangs, 1, 0);
+					$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforinfotot - $heightforfreetext - $heightforfooter, 0, $outputlangs, 1, 0, $object->multicurrency_code);
 					$bottomlasttab=$this->page_hauteur - $heightforinfotot - $heightforfreetext - $heightforfooter + 1;
 				}
 
@@ -537,6 +532,8 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 				if (! empty($conf->global->MAIN_UMASK))
 				@chmod($file, octdec($conf->global->MAIN_UMASK));
 
+				$this->result = array('fullpath'=>$file);
+
 				return 1;   // Pas d'erreur
 			}
 			else
@@ -550,8 +547,6 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 			$this->error=$langs->trans("ErrorConstantNotDefined","SUPPLIER_OUTPUTDIR");
 			return 0;
 		}
-		$this->error=$langs->trans("ErrorUnknown");
-		return 0;   // Erreur par defaut
 	}
 
 	/**
@@ -595,8 +590,10 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 		$pdf->SetFillColor(255,255,255);
 		$pdf->SetXY($col1x, $tab2_top + 0);
 		$pdf->MultiCell($col2x-$col1x, $tab2_hl, $outputlangs->transnoentities("TotalHT"), 0, 'L', 1);
+
+		$total_ht = ($conf->multicurrency->enabled && $object->mylticurrency_tx != 1 ? $object->multicurrency_total_ht : $object->total_ht);
 		$pdf->SetXY($col2x, $tab2_top + 0);
-		$pdf->MultiCell($largcol2, $tab2_hl, price($object->total_ht + $object->remise), 0, 'R', 1);
+		$pdf->MultiCell($largcol2, $tab2_hl, price($total_ht + $object->remise), 0, 'R', 1);
 
 		// Show VAT by rates and total
 		$pdf->SetFillColor(248,248,248);
@@ -618,7 +615,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 					$tvacompl = " (".$outputlangs->transnoentities("NonPercuRecuperable").")";
 				}
 
-				$totalvat =$outputlangs->transnoentities("TotalVAT").' ';
+				$totalvat =$outputlangs->transcountrynoentities("TotalVAT",$mysoc->country_code).' ';
 				$totalvat.=vatrate($tvakey,1).$tvacompl;
 				$pdf->MultiCell($col2x-$col1x, $tab2_hl, $totalvat, 0, 'L', 1);
 
@@ -630,7 +627,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 		{
 			$index++;
 			$pdf->SetXY($col1x, $tab2_top + $tab2_hl * $index);
-			$pdf->MultiCell($col2x-$col1x, $tab2_hl, $outputlangs->transnoentities("TotalVAT"), 0, 'L', 1);
+			$pdf->MultiCell($col2x-$col1x, $tab2_hl, $outputlangs->transcountrynoentities("TotalVAT", $mysoc->country_code), 0, 'L', 1);
 			$pdf->SetXY($col2x, $tab2_top + $tab2_hl * $index);
 			$pdf->MultiCell($largcol2, $tab2_hl, price($object->total_tva), 0, 'R', 1);
 
@@ -715,14 +712,24 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 
 		$useborder=0;
 
+		// Total TTC
 		$index++;
 		$pdf->SetXY($col1x, $tab2_top + $tab2_hl * $index);
 		$pdf->SetTextColor(0,0,60);
 		$pdf->SetFillColor(224,224,224);
 		$pdf->MultiCell($col2x-$col1x, $tab2_hl, $outputlangs->transnoentities("TotalTTC"), $useborder, 'L', 1);
 
+		$total_ttc = ($conf->multicurrency->enabled && $object->multicurrency_tx != 1) ? $object->multicurrency_total_ttc : $object->total_ttc;
 		$pdf->SetXY($col2x, $tab2_top + $tab2_hl * $index);
-		$pdf->MultiCell($largcol2, $tab2_hl, price($object->total_ttc), $useborder, 'R', 1);
+		$pdf->MultiCell($largcol2, $tab2_hl, price($total_ttc), $useborder, 'R', 1);
+
+		$creditnoteamount=0;
+		$depositsamount=0;
+		//$creditnoteamount=$object->getSumCreditNotesUsed();
+		//$depositsamount=$object->getSumDepositsUsed();
+		//print "x".$creditnoteamount."-".$depositsamount;exit;
+		$resteapayer = price2num($total_ttc - $deja_regle - $creditnoteamount - $depositsamount, 'MT');
+		if (! empty($object->paye)) $resteapayer=0;
 
 		if ($deja_regle > 0)
 		{
@@ -740,7 +747,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 			$pdf->MultiCell($col2x-$col1x, $tab2_hl, $outputlangs->transnoentities("RemainderToPay"), $useborder, 'L', 1);
 
 			$pdf->SetXY($col2x, $tab2_top + $tab2_hl * $index);
-			$pdf->MultiCell($largcol2, $tab2_hl, price($object->total_ttc - $deja_regle), $useborder, 'R', 1);
+			$pdf->MultiCell($largcol2, $tab2_hl, price($resteapayer), $useborder, 'R', 1);
 			$pdf->SetFont('','', $default_font_size - 1);
 			$pdf->SetTextColor(0,0,0);
 		}
@@ -759,9 +766,10 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 	 *   @param		Translate	$outputlangs	Langs object
 	 *   @param		int			$hidetop		Hide top bar of array
 	 *   @param		int			$hidebottom		Hide bottom bar of array
+	 *   @param		string		$currency		Currency code
 	 *   @return	void
 	 */
-	function _tableau(&$pdf, $tab_top, $tab_height, $nexY, $outputlangs, $hidetop=0, $hidebottom=0)
+	function _tableau(&$pdf, $tab_top, $tab_height, $nexY, $outputlangs, $hidetop=0, $hidebottom=0, $currency='')
 	{
 		global $conf;
 
@@ -769,6 +777,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 		$hidebottom=0;
 		if ($hidetop) $hidetop=-1;
 
+		$currency = !empty($currency) ? $currency : $conf->currency;
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 
         // Amount in (at tab_top - 1)
@@ -777,7 +786,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 
 		if (empty($hidetop))
 		{
-			$titre = $outputlangs->transnoentities("AmountInCurrency",$outputlangs->transnoentitiesnoconv("Currency".$conf->currency));
+			$titre = $outputlangs->transnoentities("AmountInCurrency",$outputlangs->transnoentitiesnoconv("Currency".$currency));
 			$pdf->SetXY($this->page_largeur - $this->marge_droite - ($pdf->GetStringWidth($titre) + 3), $tab_top-4);
 			$pdf->MultiCell(($pdf->GetStringWidth($titre) + 3), 2, $titre);
 
@@ -872,6 +881,11 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 	 */
 	function _tableau_versements(&$pdf, $object, $posy, $outputlangs)
 	{
+		global $conf;
+
+		$sign=1;
+		if ($object->type == 2 && ! empty($conf->global->INVOICE_POSITIVE_CREDIT_NOTE)) $sign=-1;
+
 		$tab3_posx = 120;
 		$tab3_top = $posy + 8;
 		$tab3_width = 80;
@@ -905,11 +919,14 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 
 		$pdf->SetFont('','', $default_font_size - 4);
 
+		// Loop on each deposits and credit notes included
+		//
+
 		// Loop on each payment
-		$sql = "SELECT p.datep as date, p.fk_paiement as type, p.num_paiement as num, pf.amount as amount,";
+		$sql = "SELECT p.datep as date, p.fk_paiement as type, p.num_paiement as num, pf.amount as amount, pf.multicurrency_amount,";
 		$sql.= " cp.code";
 		$sql.= " FROM ".MAIN_DB_PREFIX."paiementfourn_facturefourn as pf, ".MAIN_DB_PREFIX."paiementfourn as p";
-		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as cp ON p.fk_paiement = cp.id";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as cp ON p.fk_paiement = cp.id AND cp.entity IN (".getEntity('c_paiement').")";
 		$sql.= " WHERE pf.fk_paiementfourn = p.rowid and pf.fk_facturefourn = ".$object->id;
 		$sql.= " ORDER BY p.datep";
 		$resql=$this->db->query($sql);
@@ -924,7 +941,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 				$pdf->SetXY($tab3_posx, $tab3_top+$y);
 				$pdf->MultiCell(20, 3, dol_print_date($this->db->jdate($row->date),'day',false,$outputlangs,true), 0, 'L', 0);
 				$pdf->SetXY($tab3_posx+21, $tab3_top+$y);
-				$pdf->MultiCell(20, 3, price($row->amount), 0, 'L', 0);
+				$pdf->MultiCell(20, 3, price($sign * (($conf->multicurrency->enabled && $object->multicurrency_tx != 1) ? $row->multicurrency_amount : $row->amount)), 0, 'L', 0);
 				$pdf->SetXY($tab3_posx+40, $tab3_top+$y);
 				$oper = $outputlangs->transnoentitiesnoconv("PaymentTypeShort" . $row->code);
 
@@ -1056,16 +1073,31 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 		$posy+=1;
 		$pdf->SetTextColor(0,0,60);
 
+		$top_shift = 0;
 		// Show list of linked objects
+		$current_y = $pdf->getY();
 		$posy = pdf_writeLinkedObjects($pdf, $object, $outputlangs, $posx, $posy, 100, 3, 'R', $default_font_size);
+		if ($current_y < $pdf->getY())
+		{
+			$top_shift = $pdf->getY() - $current_y;
+		}
 
 		if ($showaddress)
 		{
 			// Sender properties
-			$carac_emetteur = pdf_build_address($outputlangs, $this->emetteur, $object->thirdparty);
+		    $carac_emetteur='';
+		    // Add internal contact of proposal if defined
+		    $arrayidcontact=$object->getIdContact('internal','SALESREPFOLL');
+		    if (count($arrayidcontact) > 0)
+		    {
+		        $object->fetch_user($arrayidcontact[0]);
+		        $carac_emetteur .= ($carac_emetteur ? "\n" : '' ).$outputlangs->convToOutputCharset($object->user->getFullName($outputlangs))."\n";
+		    }
+		    
+		    $carac_emetteur .= pdf_build_address($outputlangs, $this->emetteur, $object->thirdparty);
 
 			// Show sender
-			$posy=42;
+			$posy=42+$top_shift;
 			$posx=$this->marge_gauche;
 			if (! empty($conf->global->MAIN_INVERT_SENDER_RECIPIENT)) $posx=$this->page_largeur-$this->marge_droite-80;
 			$hautcadre=40;
@@ -1117,7 +1149,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 			// Show recipient
 			$widthrecbox=100;
 			if ($this->page_largeur < 210) $widthrecbox=84;	// To work with US executive format
-			$posy=42;
+			$posy=42+$top_shift;
 			$posx=$this->page_largeur-$this->marge_droite-$widthrecbox;
 			if (! empty($conf->global->MAIN_INVERT_SENDER_RECIPIENT)) $posx=$this->marge_gauche;
 
@@ -1140,6 +1172,8 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 			$pdf->SetXY($posx+2,$posy);
 			$pdf->MultiCell($widthrecbox, 4, $carac_client, 0, 'L');
 		}
+
+		return $top_shift;
 	}
 
 	/**

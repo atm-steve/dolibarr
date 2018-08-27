@@ -17,7 +17,7 @@
  */
 
 /**
- *      \file       htdocs/core/modules/oauth/getoauthcallback.php
+ *      \file       htdocs/core/modules/oauth/google_oauthcallback.php
  *      \ingroup    oauth
  *      \brief      Page to get oauth callback
  */
@@ -83,8 +83,11 @@ if ($action != 'delete' && empty($requestedpermissionsarray))
 /** @var $apiService Service */
 $apiService = $serviceFactory->createService('Google', $credentials, $storage, $requestedpermissionsarray);
 
-// access type needed for google refresh token
+// access type needed to have oauth provider refreshing token
+// alos note that a refresh token is sent only after a prompt
 $apiService->setAccessType('offline');
+
+$apiService->setApprouvalPrompt('force');
 
 $langs->load("oauth");
 
@@ -94,21 +97,22 @@ $langs->load("oauth");
  */
 
 
-if ($action == 'delete') 
+if ($action == 'delete')
 {
     $storage->clearToken('Google');
-    
+
     setEventMessages($langs->trans('TokenDeleted'), null, 'mesgs');
-    
+
     header('Location: ' . $backtourl);
     exit();
-} 
+}
 
-if (! empty($_GET['code']))     // We are coming from Google oauth page
+if (! empty($_GET['code']))     // We are coming from oauth provider page
 {
-    //llxHeader('',$langs->trans("OAuthSetup"));
+	dol_syslog("We are coming fr mthe oauth provider page");
+	//llxHeader('',$langs->trans("OAuthSetup"));
 
-    //$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
+    //$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
     //print load_fiche_titre($langs->trans("OAuthSetup"),$linkback,'title_setup');
 
     //dol_fiche_head();
@@ -121,23 +125,26 @@ if (! empty($_GET['code']))     // We are coming from Google oauth page
         //var_dump($_GET['code']);
         //var_dump($state);
         //var_dump($apiService);      // OAuth\OAuth2\Service\Google
+
         $token = $apiService->requestAccessToken($_GET['code'], $state);
-        
-        setEventMessages($langs->trans('NewTokenStored'), null, 'mesgs');
+
+        setEventMessages($langs->trans('NewTokenStored'), null, 'mesgs');   // Stored into object managed by class DoliStorage so into table oauth_token
+
+        $backtourl = $_SESSION["backtourlsavedbeforeoauthjump"];
+        unset($_SESSION["backtourlsavedbeforeoauthjump"]);
+
+        header('Location: ' . $backtourl);
+        exit();
     } catch (Exception $e) {
         print $e->getMessage();
     }
-
-    $backtourl = $_SESSION["backtourlsavedbeforeoauthjump"];
-    unset($_SESSION["backtourlsavedbeforeoauthjump"]);
-    
-    header('Location: ' . $backtourl);
-    exit();
 }
 else // If entry on page with no parameter, we arrive here
 {
     $_SESSION["backtourlsavedbeforeoauthjump"]=$backtourl;
-    
+
+    // This may create record into oauth_state before the header redirect.
+    // Creation of record with state in this tables depend on the Provider used (see its constructor).
     if (GETPOST('state'))
     {
         $url = $apiService->getAuthorizationUri(array('state'=>GETPOST('state')));
@@ -146,7 +153,8 @@ else // If entry on page with no parameter, we arrive here
     {
         $url = $apiService->getAuthorizationUri();      // Parameter state will be randomly generated
     }
-    // we go on google authorization page
+
+    // we go on oauth provider authorization page
     header('Location: ' . $url);
     exit();
 }

@@ -35,6 +35,7 @@ class RemiseCheque extends CommonObject
 {
 	public $element='chequereceipt';
 	public $table_element='bordereau_cheque';
+	public $picto = 'payment';
 
 	var $num;
 	var $intitule;
@@ -307,7 +308,7 @@ class RemiseCheque extends CommonObject
 			if ( $this->errno === 0) {
 			    $sql = "UPDATE ".MAIN_DB_PREFIX."bank";
 			    $sql.= " SET fk_bordereau = 0";
-			    $sql.= " WHERE fk_bordereau = '".$this->id."'";
+			    $sql.= " WHERE fk_bordereau = ".$this->id;
 
 			    $resql = $this->db->query($sql);
 			    if (!$resql)
@@ -344,7 +345,7 @@ class RemiseCheque extends CommonObject
 		$this->errno = 0;
 
 		$this->db->begin();
-		
+
 		$numref = $this->getNextNumRef();
 
 		if ($this->errno == 0 && $numref)
@@ -480,10 +481,10 @@ class RemiseCheque extends CommonObject
 
 
 	/**
-     *      Load indicators for dashboard (this->nbtodo and this->nbtodolate)
-     *
-     *      @param      User	$user       Objet user
-     *      @return WorkboardResponse|int <0 if KO, WorkboardResponse if OK
+	 *      Load indicators for dashboard (this->nbtodo and this->nbtodolate)
+	 *
+	 *      @param      User	$user       Objet user
+	 *      @return WorkboardResponse|int <0 if KO, WorkboardResponse if OK
 	 */
 	function load_board($user)
 	{
@@ -495,7 +496,7 @@ class RemiseCheque extends CommonObject
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank as b";
 		$sql.= ", ".MAIN_DB_PREFIX."bank_account as ba";
 		$sql.= " WHERE b.fk_account = ba.rowid";
-		$sql.= " AND ba.entity IN (".getEntity('bank_account', 1).")";
+		$sql.= " AND ba.entity IN (".getEntity('bank_account').")";
 		$sql.= " AND b.fk_type = 'CHQ'";
 		$sql.= " AND b.fk_bordereau = 0";
 		$sql.= " AND b.amount > 0";
@@ -510,7 +511,7 @@ class RemiseCheque extends CommonObject
 			$response->warning_delay=$conf->bank->cheque->warning_delay/60/60/24;
 			$response->label=$langs->trans("BankChecksToReceipt");
 			$response->url=DOL_URL_ROOT.'/compta/paiement/cheque/index.php?leftmenu=checks&amp;mainmenu=bank';
-			$response->img=img_object($langs->trans("BankChecksToReceipt"),"payment");
+			$response->img=img_object('',"payment");
 
 			while ($obj=$this->db->fetch_object($resql))
 			{
@@ -522,6 +523,45 @@ class RemiseCheque extends CommonObject
 			}
 
 			return $response;
+		}
+		else
+		{
+			dol_print_error($this->db);
+			$this->error=$this->db->error();
+			return -1;
+		}
+	}
+
+
+	/**
+	 *      Charge indicateurs this->nb de tableau de bord
+	 *
+	 *      @return     int         <0 if ko, >0 if ok
+	 */
+	function load_state_board()
+	{
+		global $user;
+
+		if ($user->societe_id) return -1;   // protection pour eviter appel par utilisateur externe
+
+		$sql = "SELECT count(b.rowid) as nb";
+		$sql.= " FROM ".MAIN_DB_PREFIX."bank as b";
+		$sql.= ", ".MAIN_DB_PREFIX."bank_account as ba";
+		$sql.= " WHERE b.fk_account = ba.rowid";
+		$sql.= " AND ba.entity IN (".getEntity('bank_account').")";
+		$sql.= " AND b.fk_type = 'CHQ'";
+		$sql.= " AND b.amount > 0";
+
+		$resql=$this->db->query($sql);
+		if ($resql)
+		{
+
+			while ($obj=$this->db->fetch_object($resql))
+			{
+				$this->nb["cheques"]=$obj->nb;
+			}
+			$this->db->free($resql);
+			return 1;
 		}
 		else
 		{
@@ -597,7 +637,7 @@ class RemiseCheque extends CommonObject
 			// We save charset_output to restore it because write_file can change it if needed for
 			// output format that does not support UTF8.
 			$sav_charseSupprimert_output=$outputlangs->charset_output;
-			$result=$docmodel->write_file($this, $conf->banque->dir_output.'/bordereau', $this->ref, $outputlangs);
+			$result=$docmodel->write_file($this, $conf->bank->dir_output.'/checkdeposits', $this->ref, $outputlangs);
 			if ($result > 0)
 			{
 				//$outputlangs->charset_output=$sav_charset_output;
@@ -715,7 +755,7 @@ class RemiseCheque extends CommonObject
 	 *
 	 *	@param	int		$bank_id 		   Id of bank transaction line concerned
 	 *	@param	date	$rejection_date    Date to use on the negative payment
-	 * 	@return	int                        Id of negative payment line created 
+	 * 	@return	int                        Id of negative payment line created
 	 */
 	function rejectCheck($bank_id, $rejection_date)
 	{
@@ -726,19 +766,19 @@ class RemiseCheque extends CommonObject
 
 		$bankline = new AccountLine($db);
 		$bankline->fetch($bank_id);
-		
+
 		/* Conciliation is allowed because when check is returned, a new line is created onto bank transaction log.
 		if ($bankline->rappro)
 		{
             $this->error='ActionRefusedLineAlreadyConciliated';
 		    return -1;
 		}*/
-		
+
 		$this->db->begin();
-		
+
 		// Not conciliated, we can delete it
-		//$bankline->delete($user);    // We delete 
-			    
+		//$bankline->delete($user);    // We delete
+
 		$bankaccount = $payment->fk_account;
 
 		// Get invoices list to reopen them
@@ -752,7 +792,7 @@ class RemiseCheque extends CommonObject
 			$rejectedPayment = new Paiement($db);
 			$rejectedPayment->amounts = array();
 			$rejectedPayment->datepaye = $rejection_date;
-			$rejectedPayment->paiementid = dol_getIdFromCode($this->db, 'CHQ', 'c_paiement');
+			$rejectedPayment->paiementid = dol_getIdFromCode($this->db, 'CHQ', 'c_paiement','code','id',1);
 			$rejectedPayment->num_paiement = $payment->numero;
 
 			while($obj = $db->fetch_object($resql))
@@ -860,7 +900,7 @@ class RemiseCheque extends CommonObject
         if ($user->rights->banque->cheque)
         {
             $sql = "UPDATE ".MAIN_DB_PREFIX."bordereau_cheque";
-            $sql.= " SET date_bordereau = ".($date ? $this->db->idate($date) : 'null');
+            $sql.= " SET date_bordereau = ".($date ? "'".$this->db->idate($date)."'" : 'null');
             $sql.= " WHERE rowid = ".$this->id;
 
             dol_syslog("RemiseCheque::set_date", LOG_DEBUG);
@@ -939,25 +979,56 @@ class RemiseCheque extends CommonObject
 	}
 
 	/**
-	 *    	Return clicable name (with picto eventually)
+	 *	Return clicable name (with picto eventually)
 	 *
-	 *		@param	int		$withpicto		0=No picto, 1=Include picto into link, 2=Only picto
-	 *		@param	string	$option			Sur quoi pointe le lien
-	 *		@return	string					Chaine avec URL
+	 *	@param	int		$withpicto					0=No picto, 1=Include picto into link, 2=Only picto
+	 *	@param	string	$option						Sur quoi pointe le lien
+     *  @param	int  	$notooltip					1=Disable tooltip
+     *  @param  string  $morecss            		Add more css on link
+     *  @param  int     $save_lastsearch_value    	-1=Auto, 0=No save of lastsearch_values when clicking, 1=Save lastsearch_values whenclicking
+	 *	@return	string								Chaine avec URL
 	 */
-	function getNomUrl($withpicto=0,$option='')
+	function getNomUrl($withpicto=0, $option='', $notooltip=0, $morecss='', $save_lastsearch_value=-1)
 	{
-		global $langs;
+		global $conf, $langs;
 
 		$result='';
-        $label = $langs->trans("ShowCheckReceipt").': '.$this->ref;
 
-        $link = '<a href="'.DOL_URL_ROOT.'/compta/paiement/cheque/card.php?id='.$this->id.'" title="'.dol_escape_htmltag($label, 1).'" class="classfortooltip">';
+		$label = '<u>'.$langs->trans("ShowCheckReceipt").'</u>';
+		$label.= '<br>';
+		$label.= '<b>' . $langs->trans('Ref') . ':</b> ' . $this->ref;
+
+        $url = DOL_URL_ROOT.'/compta/paiement/cheque/card.php?id='.$this->id;
+
+        if ($option != 'nolink')
+        {
+        	// Add param to save lastsearch_values or not
+        	$add_save_lastsearch_values=($save_lastsearch_value == 1 ? 1 : 0);
+        	if ($save_lastsearch_value == -1 && preg_match('/list\.php/',$_SERVER["PHP_SELF"])) $add_save_lastsearch_values=1;
+        	if ($add_save_lastsearch_values) $url.='&save_lastsearch_values=1';
+        }
+
+        $linkclose='';
+        if (empty($notooltip))
+        {
+        	if (! empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER))
+        	{
+        		$label=$langs->trans("ShowCheckReceipt");
+        		$linkclose.=' alt="'.dol_escape_htmltag($label, 1).'"';
+        	}
+        	$linkclose.=' title="'.dol_escape_htmltag($label, 1).'"';
+        	$linkclose.=' class="classfortooltip'.($morecss?' '.$morecss:'').'"';
+        }
+        else $linkclose = ($morecss?' class="'.$morecss.'"':'');
+
+		$linkstart = '<a href="'.$url.'"';
+		$linkstart.=$linkclose.'>';
 		$linkend='</a>';
 
-        if ($withpicto) $result.=($link.img_object($label, 'payment', 'class="classfortooltip"').$linkend);
-		if ($withpicto && $withpicto != 2) $result.=' ';
-		if ($withpicto != 2) $result.=$link.$this->ref.$linkend;
+		$result .= $linkstart;
+		if ($withpicto) $result.=img_object(($notooltip?'':$label), ($this->picto?$this->picto:'generic'), ($notooltip?(($withpicto != 2) ? 'class="paddingright"' : ''):'class="'.(($withpicto != 2) ? 'paddingright ' : '').'classfortooltip"'), 0, 0, $notooltip?0:1);
+		if ($withpicto != 2) $result.= $this->ref;
+		$result .= $linkend;
 
 		return $result;
 	}
@@ -977,7 +1048,7 @@ class RemiseCheque extends CommonObject
 	 *  Return label of a status
 	 *
 	 *  @param	int		$status     Statut
-	 *	@param  int		$mode       0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
+	 *  @param  int		$mode		0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=short label + picto, 6=Long label + picto
 	 *  @return string      		Libelle du statut
 	 */
 	function LibStatut($status,$mode=0)
@@ -1010,6 +1081,11 @@ class RemiseCheque extends CommonObject
 			if ($status == 1) return img_picto($langs->trans('Validated'),'statut4').' '.$langs->trans('Validated');
 		}
 		if ($mode == 5)
+		{
+			if ($status == 0) return $langs->trans('ToValidate').' '.img_picto($langs->trans('ToValidate'),'statut0');
+			if ($status == 1) return $langs->trans('Validated').' '.img_picto($langs->trans('Validated'),'statut4');
+		}
+		if ($mode == 6)
 		{
 			if ($status == 0) return $langs->trans('ToValidate').' '.img_picto($langs->trans('ToValidate'),'statut0');
 			if ($status == 1) return $langs->trans('Validated').' '.img_picto($langs->trans('Validated'),'statut4');

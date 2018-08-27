@@ -167,7 +167,7 @@ class doc_generic_proposal_odt extends ModelePDFPropales
                 $texte.=$file['name'].'<br>';
    			}
    			$texte.='<div id="div_'.get_class($this).'">';
-    			
+
 			if ($conf->global->MAIN_PROPAL_CHOOSE_ODT_DOCUMENT > 0)
 			{
 				// Model for creation
@@ -252,7 +252,7 @@ class doc_generic_proposal_odt extends ModelePDFPropales
 			if (! is_object($object))
 			{
 				$id = $object;
-				$object = new Propale($this->db);
+				$object = new Propal($this->db);
 				$result=$object->fetch($id);
 				if ($result < 0)
 				{
@@ -421,30 +421,42 @@ class doc_generic_proposal_odt extends ModelePDFPropales
 				// Replace tags of lines
 				try
 				{
-					$listlines = $odfHandler->setSegment('lines');
-					foreach ($object->lines as $line)
-					{
-						$tmparray=$this->get_substitutionarray_lines($line,$outputlangs);
-						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
-						// Call the ODTSubstitutionLine hook
-						$parameters=array('odfHandler'=>&$odfHandler,'file'=>$file,'object'=>$object,'outputlangs'=>$outputlangs,'substitutionarray'=>&$tmparray,'line'=>$line);
-						$reshook=$hookmanager->executeHooks('ODTSubstitutionLine',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
-						foreach($tmparray as $key => $val)
-						{
-							try
-							{
-								$listlines->setVars($key, $val, true, 'UTF-8');
-							}
-							catch(OdfException $e)
-							{
-							}
-							catch(SegmentException $e)
-							{
-							}
-						}
-						$listlines->merge();
+					$foundtagforlines = 1;
+					try {
+						$listlines = $odfHandler->setSegment('lines');
 					}
-					$odfHandler->mergeSegment($listlines);
+					catch(OdfException $e)
+					{
+						// We may arrive here if tags for lines not present into template
+						$foundtagforlines = 0;
+						dol_syslog($e->getMessage(), LOG_INFO);
+					}
+					if ($foundtagforlines)
+					{
+						foreach ($object->lines as $line)
+						{
+							$tmparray=$this->get_substitutionarray_lines($line,$outputlangs);
+							complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+							// Call the ODTSubstitutionLine hook
+							$parameters=array('odfHandler'=>&$odfHandler,'file'=>$file,'object'=>$object,'outputlangs'=>$outputlangs,'substitutionarray'=>&$tmparray,'line'=>$line);
+							$reshook=$hookmanager->executeHooks('ODTSubstitutionLine',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
+							foreach($tmparray as $key => $val)
+							{
+								try
+								{
+									$listlines->setVars($key, $val, true, 'UTF-8');
+								}
+								catch(OdfException $e)
+								{
+								}
+								catch(SegmentException $e)
+								{
+								}
+							}
+							$listlines->merge();
+						}
+						$odfHandler->mergeSegment($listlines);
+					}
 				}
 				catch(OdfException $e)
 				{
@@ -493,6 +505,8 @@ class doc_generic_proposal_odt extends ModelePDFPropales
 					@chmod($file, octdec($conf->global->MAIN_UMASK));
 
 				$odfHandler=null;	// Destroy object
+
+				$this->result = array('fullpath'=>$file);
 
 				return 1;   // Success
 			}

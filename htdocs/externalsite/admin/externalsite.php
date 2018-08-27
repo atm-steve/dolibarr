@@ -54,7 +54,6 @@ if ($action == 'update')
 
     $i+=dolibarr_set_const($db,'EXTERNALSITE_LABEL',trim($label),'chaine',0,'',$conf->entity);
     $i+=dolibarr_set_const($db,'EXTERNALSITE_URL',trim($exturl),'chaine',0,'',$conf->entity);
-    //$i+=dolibarr_set_const($db,'EXTERNALSITE_LABEL',trim($_POST["EXTERNALSITE_LABEL"]),'chaine',0,'',$conf->entity);
 
     if ($i >= 2)
     {
@@ -75,7 +74,7 @@ if ($action == 'update')
 
 llxHeader();
 
-$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
+$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
 print load_fiche_titre($langs->trans("ExternalSiteSetup"),$linkback,'title_setup');
 print '<br>';
 
@@ -95,15 +94,15 @@ print "</tr>";
 
 $var=true;
 
-$var=!$var;
-print "<tr ".$bc[$var].">";
+
+print '<tr class="oddeven">';
 print '<td class="fieldrequired">'.$langs->trans("Label")."</td>";
 print "<td><input type=\"text\" class=\"flat\" name=\"EXTERNALSITE_LABEL\" value=\"". (GETPOST('EXTERNALSITE_LABEL','alpha')?GETPOST('EXTERNALSITE_LABEL','alpha'):((empty($conf->global->EXTERNALSITE_LABEL) || $conf->global->EXTERNALSITE_LABEL=='ExternalSite')?'':$conf->global->EXTERNALSITE_LABEL)) . "\" size=\"12\"></td>";
 print "<td>".$langs->trans("ExampleMyMenuEntry")."</td>";
 print "</tr>";
 
-$var=!$var;
-print "<tr ".$bc[$var].">";
+
+print '<tr class="oddeven">';
 print '<td class="fieldrequired">'.$langs->trans("ExternalSiteURL")."</td>";
 print "<td><input type=\"text\" class=\"flat\" name=\"EXTERNALSITE_URL\" value=\"". (GETPOST('EXTERNALSITE_URL','alpha')?GETPOST('EXTERNALSITE_URL','alpha'):(empty($conf->global->EXTERNALSITE_URL)?'':$conf->global->EXTERNALSITE_URL)) . "\" size=\"40\"></td>";
 print "<td>http://localhost/myurl/";

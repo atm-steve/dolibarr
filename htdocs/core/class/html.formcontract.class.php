@@ -66,6 +66,7 @@ class FormContract
 		//if ($contratListId) $sql.= " AND c.rowid IN (".$contratListId.")";
 		if ($socid == 0) $sql.= " AND (c.fk_soc = 0 OR c.fk_soc IS NULL)";
 		if ($socid > 0)  $sql.= " AND (c.fk_soc=".$socid." OR c.fk_soc IS NULL)";
+		$sql.= " ORDER BY c.ref ";
 
 		dol_syslog(get_class($this)."::select_contract", LOG_DEBUG);
 		$resql=$db->query($sql);
@@ -129,6 +130,14 @@ class FormContract
 			}
 			print '</select>';
 			$db->free($resql);
+			
+			if (!empty($conf->use_javascript_ajax))
+			{
+				// Make select dynamic
+				include_once DOL_DOCUMENT_ROOT . '/core/lib/ajax.lib.php';
+				print ajax_combobox($htmlname);
+			}
+			
 			return $num;
 		}
 		else
@@ -157,12 +166,9 @@ class FormContract
         print '<form method="post" action="'.$page.'">';
         print '<input type="hidden" name="action" value="setcontract">';
         print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-        print '<table class="nobordernopadding" cellpadding="0" cellspacing="0">';
-        print '<tr><td>';
         $this->select_contract($socid, $selected, $htmlname, $maxlength, $showempty);
-        print '</td>';
-        print '<td align="left"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></td>';
-        print '</tr></table></form>';
+        print '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
+        print '</form>';
 	}	
 	
 }

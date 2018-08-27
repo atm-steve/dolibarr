@@ -88,7 +88,7 @@ class modTax extends DolibarrModules
 		$this->rights[$r][0] = 91;
 		$this->rights[$r][1] = 'Lire les charges';
 		$this->rights[$r][2] = 'r';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'charges';
 		$this->rights[$r][5] = 'lire';
 
@@ -117,6 +117,12 @@ class modTax extends DolibarrModules
 		$this->rights[$r][5] = 'export';
 
 
+		// Menus
+		//-------
+		
+		$this->menu = 1;        // This module add menu entries. They are coded into menu manager.
+		
+		
 		// Exports
 		//--------
 		$r=0;
@@ -133,7 +139,7 @@ class modTax extends DolibarrModules
 		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'c_chargesociales as cc, '.MAIN_DB_PREFIX.'chargesociales as c';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'paiementcharge as p ON p.fk_charge = c.rowid';
 		$this->export_sql_end[$r] .=' WHERE c.fk_type = cc.id';
-		$this->export_sql_end[$r] .=' AND c.entity IN ('.getEntity('tax',1).')';
+		$this->export_sql_end[$r] .=' AND c.entity IN ('.getEntity('tax').')';
 		
 		// Import social contributions
 		$r++;

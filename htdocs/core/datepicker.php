@@ -40,8 +40,10 @@ require_once '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
 if (GETPOST('lang', 'aZ09')) $langs->setDefaultLang(GETPOST('lang', 'aZ09'));	// If language was forced on URL by the main.inc.php
+
 $langs->load("main");
 $langs->load("agenda");
+
 $right=($langs->trans("DIRECTION")=='rtl'?'left':'right');
 $left=($langs->trans("DIRECTION")=='rtl'?'right':'left');
 
@@ -108,7 +110,7 @@ if (isset($_GET["m"]) && isset($_GET["y"]))
 if ($qualified)
 {
 	//print $_GET["cm"].",".$_GET["sd"].",".$_GET["m"].",".$_GET["y"];exit;
-	displayBox($_GET["sd"],$_GET["m"],$_GET["y"]);
+	displayBox(GETPOST("sd",'alpha'),GETPOST("m",'int'),GETPOST("y",'int'));
 }
 else
 {
