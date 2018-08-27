@@ -825,6 +825,8 @@ if ($action == 'set_paid' && $id > 0 && $user->rights->expensereport->to_paid)
 
 if ($action == "addline" && $user->rights->expensereport->creer)
 {
+    $object = new ExpenseReport($db);
+	$object->fetch($id);
 	$error = 0;
 
 	$db->begin();
@@ -907,6 +909,25 @@ if ($action == "addline" && $user->rights->expensereport->creer)
 		if ($result > 0)
 		{
 			$db->commit();
+            $object->fetch_lines(); // This will refresh the $object->lines array with the recently inserted line
+
+            $object->update_totaux_add($object_ligne->total_ht,$object_ligne->total_tva);
+
+            // Define output language
+			if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+			{
+				$outputlangs = $langs;
+				$newlang = '';
+				if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id')) $newlang = GETPOST('lang_id','alpha');
+				if ($conf->global->MAIN_MULTILANGS && empty($newlang))	$newlang = $object->thirdparty->default_lang;
+				if (! empty($newlang)) {
+					$outputlangs = new Translate("", $conf);
+					$outputlangs->setDefaultLang($newlang);
+				}
+				$model=$object->modelpdf;
+
+				$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+			}
 			header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
 			exit;
 		}
