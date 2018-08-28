@@ -93,6 +93,8 @@ $year	= GETPOST('year','int');
 $day_lim	= GETPOST('day_lim','int');
 $month_lim	= GETPOST('month_lim','int');
 $year_lim	= GETPOST('year_lim','int');
+$search_btn=GETPOST('button_search','alpha');
+$search_remove_btn=GETPOST('button_removefilter','alpha');
 
 $option = GETPOST('option');
 if ($option == 'late') {
@@ -104,7 +106,7 @@ $limit = GETPOST('limit')?GETPOST('limit','int'):$conf->liste_limit;
 $sortfield = GETPOST("sortfield",'alpha');
 $sortorder = GETPOST("sortorder",'alpha');
 $page = GETPOST("page",'int');
-if (empty($page) || $page == -1) { $page = 0; }     // If $page is not defined, or '' or -1
+if (empty($page) || $page == -1 || !empty($search_btn) || !empty($search_remove_btn) || (empty($toselect) && $massaction === '0')) { $page = 0; }     // If $page is not defined, or '' or -1
 $offset = $limit * $page;
 if (! $sortorder && ! empty($conf->global->INVOICE_DEFAULT_UNPAYED_SORT_ORDER) && $search_status == 1) $sortorder=$conf->global->INVOICE_DEFAULT_UNPAYED_SORT_ORDER;
 if (! $sortorder) $sortorder='DESC';
@@ -552,17 +554,20 @@ if ($resql)
     if ($search_societe)     $param.='&search_societe=' .urlencode($search_societe);
     if ($search_sale > 0)    $param.='&search_sale=' .urlencode($search_sale);
     if ($search_user > 0)    $param.='&search_user=' .urlencode($search_user);
-    if ($search_product_category > 0)   $param.='$search_product_category=' .urlencode($search_product_category);
+    if ($search_product_category > 0)   $param.='&search_product_category=' .urlencode($search_product_category);
     if ($search_montant_ht != '')  $param.='&search_montant_ht='.urlencode($search_montant_ht);
     if ($search_montant_vat != '')  $param.='&search_montant_vat='.urlencode($search_montant_vat);
     if ($search_montant_localtax1 != '')  $param.='&search_montant_localtax1='.urlencode($search_montant_localtax1);
     if ($search_montant_localtax2 != '')  $param.='&search_montant_localtax2='.urlencode($search_montant_localtax2);
     if ($search_montant_ttc != '') $param.='&search_montant_ttc='.urlencode($search_montant_ttc);
 	if ($search_status != '') $param.='&search_status='.urlencode($search_status);
-	if ($search_paymentmode > 0) $param.='search_paymentmode='.urlencode($search_paymentmode);
+	if ($search_paymentmode > 0) $param.='&search_paymentmode='.urlencode($search_paymentmode);
     if ($show_files)         $param.='&show_files=' .$show_files;
 	if ($option)             $param.="&option=".$option;
 	if ($optioncss != '')    $param.='&optioncss='.$optioncss;
+	if ($search_town)$param .= '&search_town='.urlencode($search_town);
+	if ($search_zip)$param .= '&search_zip='.urlencode($search_zip);
+
 	// Add $param from extra fields
 	foreach ($search_array_options as $key => $val)
 	{
@@ -785,7 +790,8 @@ if ($resql)
 		    Facture::TYPE_STANDARD=>$langs->trans("InvoiceStandard"),
 		    Facture::TYPE_REPLACEMENT=>$langs->trans("InvoiceReplacement"),
 		    Facture::TYPE_CREDIT_NOTE=>$langs->trans("InvoiceAvoir"),
-		    Facture::TYPE_DEPOSIT=>$langs->trans("InvoiceDeposit"),
+			Facture::TYPE_DEPOSIT=>$langs->trans("InvoiceDeposit"),
+			Facture::TYPE_SITUATION=>$langs->trans("InvoiceSituation"),
         );
 		//$listtype[Facture::TYPE_PROFORMA]=$langs->trans("InvoiceProForma");     // A proformat invoice is not an invoice but must be an order.
 		print $form->selectarray('search_type', $listtype, $search_type, 1, 0, 0, '', 0, 0, 0, 'ASC', 'maxwidth100');

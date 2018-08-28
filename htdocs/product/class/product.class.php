@@ -745,12 +745,12 @@ class Product extends CommonObject
 		if (empty($this->surface) && !empty($this->length) && !empty($this->width) && $this->length_units == $this->width_units)
 		{
 			$this->surface = $this->length * $this->width;
-			$this->surface_units = $this->length_units + $this->width_units;
+			$this->surface_units = measuring_units_squared($this->length_units);
 		}
 		if (empty($this->volume) && !empty($this->surface_units) && !empty($this->height) && $this->length_units == $this->height_units)
 		{
 			$this->volume =  $this->surface * $this->height;
-			$this->volume_units = $this->surface_units + $this->height_units;
+			$this->volume_units = measuring_units_cubed($this->height_units);
 		}
 
 		$this->surface = price2num($this->surface);
@@ -4003,8 +4003,8 @@ class Product extends CommonObject
 
 		if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))
 		{
-			$dirold .= get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
-			$pdirold .= get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
+			$dir = $sdir . '/'. get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
+			$pdir = '/' . get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
 		}
 
 		// Defined relative dir to DOL_DATA_ROOT
@@ -4024,11 +4024,11 @@ class Product extends CommonObject
 
 		$filearray=dol_dir_list($dir,"files",0,'','(\.meta|_preview.*\.png)$',$sortfield,(strtolower($sortorder)=='desc'?SORT_DESC:SORT_ASC),1);
 
-		if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))    // For backward compatiblity, we scan also old dirs
+		/*if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))    // For backward compatiblity, we scan also old dirs
 		{
 		    $filearrayold=dol_dir_list($dirold,"files",0,'','(\.meta|_preview.*\.png)$',$sortfield,(strtolower($sortorder)=='desc'?SORT_DESC:SORT_ASC),1);
 		    $filearray=array_merge($filearray, $filearrayold);
-		}
+		}*/
 
         $filearrayindatabase = dol_dir_list_in_database($relativedir, '', null, 'name', SORT_ASC);
 

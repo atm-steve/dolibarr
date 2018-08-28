@@ -189,13 +189,17 @@ if (empty($reshook))
 			$qualified_for_stock_change = $object->hasProductsOrServices(1);
 		}
 
-		$result = $object->delete($user, 0, $idwarehouse);
-		if ($result > 0) {
-			header('Location: ' . DOL_URL_ROOT . '/compta/facture/list.php');
-			exit();
-		} else {
-			setEventMessages($object->error, $object->errors, 'errors');
-			$action='';
+		if ($object->is_erasable()) {
+		
+			$result = $object->delete($user, 0, $idwarehouse);
+			if ($result > 0) {
+				header('Location: ' . DOL_URL_ROOT . '/compta/facture/list.php');
+				exit();
+			} else {
+				setEventMessages($object->error, $object->errors, 'errors');
+				$action='';
+			}
+			
 		}
 	}
 
@@ -217,6 +221,7 @@ if (empty($reshook))
 			if (! empty($newlang)) {
 				$outputlangs = new Translate("", $conf);
 				$outputlangs->setDefaultLang($newlang);
+				$outputlangs->load('products');
 			}
 			if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
 				$ret = $object->fetch($id); // Reload to get new records
@@ -404,7 +409,7 @@ if (empty($reshook))
 
 			//var_dump($object->getRemainToPay(0));
 			//var_dump($discount->amount_ttc);exit;
-			if ($discount->amount_ttc > $object->getRemainToPay(0))
+			if (price2num($discount->amount_ttc) > price2num($object->getRemainToPay(0)))
 			{
 				// TODO Split the discount in 2 automatically
 				$error++;
@@ -488,6 +493,7 @@ if (empty($reshook))
 					if (! empty($newlang)) {
 						$outputlangs = new Translate("", $conf);
 						$outputlangs->setDefaultLang($newlang);
+						$outputlangs->load('products');
 					}
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
@@ -574,6 +580,7 @@ if (empty($reshook))
 					if (! empty($newlang)) {
 						$outputlangs = new Translate("", $conf);
 						$outputlangs->setDefaultLang($newlang);
+						$outputlangs->load('products');
 					}
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
@@ -639,7 +646,7 @@ if (empty($reshook))
 			$i = 0;
 			foreach ($object->lines as $line)
 			{
-				if ($line->total_ht!=0)
+				if ($line->product_type < 9 && $line->total_ht != 0) // Remove lines with product_type greater than or equal to 9
 				{ 	// no need to create discount if amount is null
 					$amount_ht[$line->tva_tx] += $line->total_ht;
 					$amount_tva[$line->tva_tx] += $line->total_tva;
@@ -852,6 +859,12 @@ if (empty($reshook))
 
 	                    foreach($facture_source->lines as $line)
 	                    {
+	                        // Extrafields
+	                        if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED) && method_exists($line, 'fetch_optionals')) {
+	                            // load extrafields
+	                            $line->fetch_optionals();
+	                        }
+	                        
 	                    	// Reset fk_parent_line for no child products and special product
 	                    	if (($line->product_type != 9 && empty($line->fk_parent_line)) || $line->product_type == 9) {
 	                    		$fk_parent_line = 0;
@@ -1356,11 +1369,26 @@ if (empty($reshook))
 					$object->origin = $origin;
 					$object->origin_id = $originid;
 
-					foreach ($object->lines as &$line)
+					foreach ($object->lines as $i => &$line)
 					{
 						$line->origin = $object->origin;
 						$line->origin_id = $line->id;
 						$line->fetch_optionals($line->id);
+						
+						// Si fk_remise_except defini on vérifie si la réduction à déjà été appliquée
+						if ($line->fk_remise_except)
+						{
+						    $discount=new DiscountAbsolute($line->db);
+						    $result=$discount->fetch($line->fk_remise_except);
+						    if ($result > 0)
+						    {
+						        // Check if discount not already affected to another invoice
+						        if ($discount->fk_facture_line > 0)
+						        {
+						            $line->fk_remise_except = 0;
+						        }
+						    }
+						}
 					}
 				}
 
@@ -1415,6 +1443,7 @@ if (empty($reshook))
 				if (! empty($newlang)) {
 					$outputlangs = new Translate("", $conf);
 					$outputlangs->setDefaultLang($newlang);
+					$outputlangs->load('products');
 				}
 				$model=$object->modelpdf;
 				$ret = $object->fetch($id); // Reload to get new records
@@ -1635,6 +1664,7 @@ if (empty($reshook))
 					if (! empty($newlang)) {
 						$outputlangs = new Translate("", $conf);
 						$outputlangs->setDefaultLang($newlang);
+						$outputlangs->load('products');
 					}
 
 					$desc = (! empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["description"] : $prod->description;
@@ -1647,12 +1677,33 @@ if (empty($reshook))
 				// Add custom code and origin country into description
 				if (empty($conf->global->MAIN_PRODUCT_DISABLE_CUSTOMCOUNTRYCODE) && (! empty($prod->customcode) || ! empty($prod->country_code))) {
 					$tmptxt = '(';
-					if (! empty($prod->customcode))
-						$tmptxt .= $langs->transnoentitiesnoconv("CustomCode") . ': ' . $prod->customcode;
-					if (! empty($prod->customcode) && ! empty($prod->country_code))
-						$tmptxt .= ' - ';
-					if (! empty($prod->country_code))
-						$tmptxt .= $langs->transnoentitiesnoconv("CountryOrigin") . ': ' . getCountry($prod->country_code, 0, $db, $langs, 0);
+					// Define output language
+					if (! empty($conf->global->MAIN_MULTILANGS) && ! empty($conf->global->PRODUIT_TEXTS_IN_THIRDPARTY_LANGUAGE)) {
+						$outputlangs = $langs;
+						$newlang = '';
+						if (empty($newlang) && GETPOST('lang_id','alpha'))
+							$newlang = GETPOST('lang_id','alpha');
+						if (empty($newlang))
+							$newlang = $object->thirdparty->default_lang;
+						if (! empty($newlang)) {
+							$outputlangs = new Translate("", $conf);
+							$outputlangs->setDefaultLang($newlang);
+							$outputlangs->load('products');
+						}
+						if (! empty($prod->customcode))
+							$tmptxt .= $outputlangs->transnoentitiesnoconv("CustomCode") . ': ' . $prod->customcode;
+						if (! empty($prod->customcode) && ! empty($prod->country_code))
+							$tmptxt .= ' - ';
+						if (! empty($prod->country_code))
+							$tmptxt .= $outputlangs->transnoentitiesnoconv("CountryOrigin") . ': ' . getCountry($prod->country_code, 0, $db, $outputlangs, 0);
+					} else {
+						if (! empty($prod->customcode))
+							$tmptxt .= $langs->transnoentitiesnoconv("CustomCode") . ': ' . $prod->customcode;
+						if (! empty($prod->customcode) && ! empty($prod->country_code))
+							$tmptxt .= ' - ';
+						if (! empty($prod->country_code))
+							$tmptxt .= $langs->transnoentitiesnoconv("CountryOrigin") . ': ' . getCountry($prod->country_code, 0, $db, $langs, 0);
+					}
 					$tmptxt .= ')';
 					$desc = dol_concatdesc($desc, $tmptxt);
 				}
@@ -1703,6 +1754,7 @@ if (empty($reshook))
 						if (! empty($newlang)) {
 							$outputlangs = new Translate("", $conf);
 							$outputlangs->setDefaultLang($newlang);
+							$outputlangs->load('products');
 						}
 						$model=$object->modelpdf;
 						$ret = $object->fetch($id); // Reload to get new records
@@ -1881,6 +1933,7 @@ if (empty($reshook))
 					if (! empty($newlang)) {
 						$outputlangs = new Translate("", $conf);
 						$outputlangs->setDefaultLang($newlang);
+						$outputlangs->load('products');
 					}
 
 					$ret = $object->fetch($id); // Reload to get new records
@@ -2517,10 +2570,10 @@ if ($action == 'create')
     			$desc = $form->textwithpicto($text, $langs->transnoentities("InvoiceAvoirDesc"), 1, 'help', '', 0, 3);
     			print $desc;
 
-    			print '<div id="credit_note_options" class="clearboth">';
-    	        print '&nbsp;&nbsp;&nbsp; <input data-role="none" type="checkbox" name="invoiceAvoirWithLines" id="invoiceAvoirWithLines" value="1" onclick="if($(this).is(\':checked\') ) { $(\'#radio_creditnote\').prop(\'checked\', true); $(\'#invoiceAvoirWithPaymentRestAmount\').removeAttr(\'checked\');   }" '.(GETPOST('invoiceAvoirWithLines','int')>0 ? 'checked':'').' /> <label for="invoiceAvoirWithLines">'.$langs->trans('invoiceAvoirWithLines')."</label>";
-    	        print '<br>&nbsp;&nbsp;&nbsp; <input data-role="none" type="checkbox" name="invoiceAvoirWithPaymentRestAmount" id="invoiceAvoirWithPaymentRestAmount" value="1" onclick="if($(this).is(\':checked\') ) { $(\'#radio_creditnote\').prop(\'checked\', true);  $(\'#invoiceAvoirWithLines\').removeAttr(\'checked\');   }" '.(GETPOST('invoiceAvoirWithPaymentRestAmount','int')>0 ? 'checked':'').' /> <label for="invoiceAvoirWithPaymentRestAmount">'.$langs->trans('invoiceAvoirWithPaymentRestAmount')."</label>";
-    			print '</div>';
+				print '<div id="credit_note_options" class="clearboth">';
+				print '&nbsp;&nbsp;&nbsp; <input data-role="none" type="checkbox" name="invoiceAvoirWithLines" id="invoiceAvoirWithLines" value="1" onclick="$(\'#credit_note_options input[type=checkbox]\').not(this).prop(\'checked\', false);" '.(GETPOST('invoiceAvoirWithLines','int')>0 ? 'checked':'').' /> <label for="invoiceAvoirWithLines">'.$langs->trans('invoiceAvoirWithLines')."</label>";
+				print '<br>&nbsp;&nbsp;&nbsp; <input data-role="none" type="checkbox" name="invoiceAvoirWithPaymentRestAmount" id="invoiceAvoirWithPaymentRestAmount" value="1" onclick="$(\'#credit_note_options input[type=checkbox]\').not(this).prop(\'checked\', false);" '.(GETPOST('invoiceAvoirWithPaymentRestAmount','int')>0 ? 'checked':'').' /> <label for="invoiceAvoirWithPaymentRestAmount">'.$langs->trans('invoiceAvoirWithPaymentRestAmount')."</label>";
+				print '</div>';
 
     			print '</div></div>';
     		}
@@ -4369,6 +4422,7 @@ else if ($id > 0 || ! empty($ref))
 			$outputlangs = new Translate('', $conf);
 			$outputlangs->setDefaultLang($newlang);
 			$outputlangs->load('bills');
+			$outputlangs->load('products');
 		}
 
 		// Build document if it not exists

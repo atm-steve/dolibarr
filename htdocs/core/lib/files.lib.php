@@ -46,7 +46,7 @@ function dol_basename($pathfile)
  *  @param	int			$recursive		Determines whether subdirectories are searched
  *  @param	string		$filter        	Regex filter to restrict list. This regex value must be escaped for '/' by doing preg_quote($var,'/'), since this char is used for preg_match function,
  *                                      but must not contains the start and end '/'. Filter is checked into basename only.
- *  @param	array		$excludefilter  Array of Regex for exclude filter (example: array('(\.meta|_preview.*\.png)$','^\.')). Exclude is checked into fullpath.
+ *  @param	array		$excludefilter  Array of Regex for exclude filter (example: array('(\.meta|_preview.*\.png)$','^\.')). Exclude is checked both into fullpath and into basename (So '^xxx' may exclude 'xxx/dirscanned/...' and dirscanned/xxx').
  *  @param	string		$sortcriteria	Sort criteria ("","fullname","relativename","name","date","size")
  *  @param	string		$sortorder		Sort order (SORT_ASC, SORT_DESC)
  *	@param	int			$mode			0=Return array minimum keys loaded (faster), 1=Force all keys like date and size to be loaded (slower), 2=Force load of date only, 3=Force load of size only
@@ -107,6 +107,7 @@ function dol_dir_list($path, $types="all", $recursive=0, $filter="", $excludefil
 			while (false !== ($file = readdir($dir)))        // $file is always a basename (into directory $newpath)
 			{
 				if (! utf8_check($file)) $file=utf8_encode($file);	// To be sure data is stored in utf8 in memory
+				$fullpathfile=($newpath?$newpath.'/':'').$file;
 
 				$qualified=1;
 
@@ -120,10 +121,11 @@ function dol_dir_list($path, $types="all", $recursive=0, $filter="", $excludefil
 				// Check if file is qualified
 				foreach($excludefilterarray as $filt)
 				{
-					if (preg_match('/'.$filt.'/i',$file)) {
+					if (preg_match('/'.$filt.'/i', $file) || preg_match('/'.$filt.'/i', $fullpathfile)) {
 						$qualified=0; break;
 					}
 				}
+				//print $fullpathfile.' '.$file.' '.$qualified.'<br>';
 
 				if ($qualified)
 				{
@@ -1029,7 +1031,7 @@ function dol_delete_file($file,$disableglob=0,$nophperrors=0,$nohook=0,$object=n
 	if (preg_match('/\.\./',$file) || preg_match('/[<>|]/',$file))
 	{
         dol_syslog("Refused to delete file ".$file, LOG_WARNING);
-	    return False;
+		return false;
 	}
 
 	if (empty($nohook))
@@ -1078,18 +1080,21 @@ function dol_delete_file($file,$disableglob=0,$nophperrors=0,$nohook=0,$object=n
     				    {
     				        $rel_filetodelete = preg_replace('/^[\\/]/', '', $rel_filetodelete);
 
-    				        dol_syslog("Try to remove also entries in database for full relative path = ".$rel_filetodelete, LOG_DEBUG);
-        				    include_once DOL_DOCUMENT_ROOT.'/ecm/class/ecmfiles.class.php';
-        				    $ecmfile=new EcmFiles($db);
-        				    $result = $ecmfile->fetch(0, '', $rel_filetodelete);
-        				    if ($result >= 0 && $ecmfile->id > 0)
-        				    {
-        				        $result = $ecmfile->delete($user);
-        				    }
-        				    if ($result < 0)
-        				    {
-        				        setEventMessages($ecmfile->error, $ecmfile->errors, 'warnings');
-        				    }
+							if (is_object($db))		// $db may not be defined when lib is in a context with define('NOREQUIREDB',1)
+							{
+								dol_syslog("Try to remove also entries in database for full relative path = ".$rel_filetodelete, LOG_DEBUG);
+								include_once DOL_DOCUMENT_ROOT.'/ecm/class/ecmfiles.class.php';
+								$ecmfile=new EcmFiles($db);
+								$result = $ecmfile->fetch(0, '', $rel_filetodelete);
+								if ($result >= 0 && $ecmfile->id > 0)
+								{
+									$result = $ecmfile->delete($user);
+								}
+								if ($result < 0)
+								{
+									setEventMessages($ecmfile->error, $ecmfile->errors, 'warnings');
+								}
+							}
     				    }
 					}
 					else dol_syslog("Failed to remove file ".$filename, LOG_WARNING);
@@ -1128,7 +1133,7 @@ function dol_delete_dir($dir,$nophperrors=0)
 	if (preg_match('/\.\./',$dir) || preg_match('/[<>|]/',$dir))
 	{
         dol_syslog("Refused to delete dir ".$dir, LOG_WARNING);
-	    return False;
+	    return false;
 	}
 
     $dir_osencoded=dol_osencode($dir);
@@ -1709,7 +1714,7 @@ function dol_uncompress($inputfile,$outputdir)
     	dol_syslog("Class ZipArchive is set so we unzip using ZipArchive to unzip into ".$outputdir);
     	$zip = new ZipArchive;
         $res = $zip->open($inputfile);
-        if ($res === TRUE)
+        if ($res === true)
         {
             $zip->extractTo($outputdir.'/');
             $zip->close();

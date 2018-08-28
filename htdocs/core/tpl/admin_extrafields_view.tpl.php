@@ -22,6 +22,14 @@
  * $extrafield
  * $elementtype
  */
+
+// Protection to avoid direct call of template
+if (empty($langs) || ! is_object($langs))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
 ?>
 
 <!-- BEGIN PHP TEMPLATE admin_extrafields_view.tpl.php -->
@@ -52,11 +60,11 @@ if (! empty($conf->global->MAIN_CAN_HIDE_EXTRAFIELDS)) print '<td align="center"
 print '<td width="80">&nbsp;</td>';
 print "</tr>\n";
 
-if (count($extrafields->attribute_type))
+if (is_array($extrafields->attribute_type) && count($extrafields->attribute_type))
 {
     foreach($extrafields->attribute_type as $key => $value)
     {
-        
+
         print '<tr class="oddeven">';
         print "<td>".$extrafields->attribute_pos[$key]."</td>\n";
         print "<td>".$extrafields->attribute_label[$key]."</td>\n";
@@ -77,7 +85,7 @@ else
 {
     $colspan=9;
     if (! empty($conf->global->MAIN_CAN_HIDE_EXTRAFIELDS)) $colspan++;
-    
+
     print '<tr class="oddeven">';
     print '<td class="opacitymedium" colspan="'.$colspan.'">';
     print $langs->trans("None");

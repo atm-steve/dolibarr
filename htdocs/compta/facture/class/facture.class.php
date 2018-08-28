@@ -539,6 +539,15 @@ class Facture extends CommonInvoice
 						}
 
 						$newinvoiceline->fk_parent_line=$fk_parent_line;
+
+						if($this->type === Facture::TYPE_REPLACEMENT && $newinvoiceline->fk_remise_except){
+                            $discount = new DiscountAbsolute($this->db);
+                            $discount->fetch($newinvoiceline->fk_remise_except);
+
+						    $discountId = $soc->set_remise_except($discount->amount_ht, $user, $discount->description, $discount->tva_tx);
+						    $newinvoiceline->fk_remise_except = $discountId;
+                        }
+
 						$result=$newinvoiceline->insert();
 
 						// Defined the new fk_parent_line
@@ -2197,6 +2206,7 @@ class Facture extends CommonInvoice
 							else $result=$mouvP->livraison($user, $this->lines[$i]->fk_product, $idwarehouse, $this->lines[$i]->qty, $this->lines[$i]->subprice, $langs->trans("InvoiceValidatedInDolibarr",$num));
 							if ($result < 0) {
 								$error++;
+								$this->error = $mouvP->error;
 							}
 						}
 					}
@@ -2273,9 +2283,12 @@ class Facture extends CommonInvoice
     					$final = ($this->lines[$i]->situation_percent == 100);
     					$i++;
     				}
-    				if ($final) {
-    					$this->setFinal($user);
-    				}
+
+    				if (empty($final)) $this->situation_final = 0;
+    				else $this->situation_final = 1;
+
+				$this->setFinal($user);
+
                 }
 			}
 		}
@@ -2499,6 +2512,7 @@ class Facture extends CommonInvoice
 		$remise_percent=price2num($remise_percent);
 		$qty=price2num($qty);
 		$pu_ht=price2num($pu_ht);
+        $pu_ht_devise=price2num($pu_ht_devise);
 		$pu_ttc=price2num($pu_ttc);
 		$pa_ht=price2num($pa_ht);
 		$txtva=price2num($txtva);
@@ -2722,6 +2736,7 @@ class Facture extends CommonInvoice
 			$remise_percent	= price2num($remise_percent);
 			$qty			= price2num($qty);
 			$pu 			= price2num($pu);
+        	$pu_ht_devise	= price2num($pu_ht_devise);
 			$pa_ht			= price2num($pa_ht);
 			$txtva			= price2num($txtva);
 			$txlocaltax1	= price2num($txlocaltax1);
@@ -2918,6 +2933,9 @@ class Facture extends CommonInvoice
 		$line->total_ttc = $tabprice[2];
 		$line->total_localtax1 = $tabprice[9];
 		$line->total_localtax2 = $tabprice[10];
+		$line->multicurrency_total_ht  = $tabprice[16];
+		$line->multicurrency_total_tva = $tabprice[17];
+		$line->multicurrency_total_ttc = $tabprice[18];
 		$line->update($user);
 		$this->update_price(1);
 		$this->db->commit();
@@ -4093,7 +4111,6 @@ class Facture extends CommonInvoice
 
 		$this->db->begin();
 
-		$this->situation_final = 1;
 		$sql = 'UPDATE ' . MAIN_DB_PREFIX . 'facture SET situation_final = ' . $this->situation_final . ' where rowid = ' . $this->id;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
@@ -4817,7 +4834,7 @@ class FactureLigne extends CommonInvoiceLine
 			$resql = $this->db->query($sql);
 			if ($resql && $resql->num_rows > 0) {
 				$res = $this->db->fetch_array($resql);
-				return $res['situation_percent'];
+				return floatval($res['situation_percent']);
 			} else {
 				$this->error = $this->db->error();
 				dol_syslog(get_class($this) . "::select Error " . $this->error, LOG_ERR);
