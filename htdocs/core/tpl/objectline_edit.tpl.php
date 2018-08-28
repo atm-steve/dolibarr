@@ -95,21 +95,15 @@ $coldisplay=-1; // We remove first td
 	    $reshook=$hookmanager->executeHooks('formEditProductOptions',$parameters,$this,$action);
 	}
 
-	// Do not allow editing during a situation cycle
-	if (empty($this->situation_cycle_ref) || $this->situation_counter == 1)
-	{
-		// editeur wysiwyg
-		require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
-		$nbrows=ROWS_2;
-		if (! empty($conf->global->MAIN_INPUT_DESC_HEIGHT)) $nbrows=$conf->global->MAIN_INPUT_DESC_HEIGHT;
-		$enable=(isset($conf->global->FCKEDITOR_ENABLE_DETAILS)?$conf->global->FCKEDITOR_ENABLE_DETAILS:0);
-		$toolbarname='dolibarr_details';
-		if (! empty($conf->global->FCKEDITOR_ENABLE_DETAILS_FULL)) $toolbarname='dolibarr_notes';
-		$doleditor=new DolEditor('product_desc',$line->description,'',164,$toolbarname,'',false,true,$enable,$nbrows,'98%');
-		$doleditor->Create();
-	} else {
-		print '<textarea id="product_desc" class="flat" name="product_desc" readonly style="width: 200px; height:80px;">' . $line->description . '</textarea>';
-	}
+    // editeur wysiwyg
+    require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
+    $nbrows=ROWS_2;
+    if (! empty($conf->global->MAIN_INPUT_DESC_HEIGHT)) $nbrows=$conf->global->MAIN_INPUT_DESC_HEIGHT;
+    $enable=(isset($conf->global->FCKEDITOR_ENABLE_DETAILS)?$conf->global->FCKEDITOR_ENABLE_DETAILS:0);
+    $toolbarname='dolibarr_details';
+    if (! empty($conf->global->FCKEDITOR_ENABLE_DETAILS_FULL)) $toolbarname='dolibarr_notes';
+    $doleditor=new DolEditor('product_desc',$line->description,'',164,$toolbarname,'',false,true,$enable,$nbrows,'98%');
+    $doleditor->Create();
 	?>
 	</td>
 
@@ -122,15 +116,10 @@ $coldisplay=-1; // We remove first td
 	}
 
 	$coldisplay++;
-	if ($this->situation_counter == 1 || !$this->situation_cycle_ref) {
-		print '<td align="right">' . $form->load_tva('tva_tx', $line->tva_tx.($line->vat_src_code?(' ('.$line->vat_src_code.')'):''), $seller, $buyer, 0, $line->info_bits, $line->product_type, false, 1) . '</td>';
-	} else {
-		print '<td align="right"><input size="1" type="text" class="flat right" name="tva_tx" value="' . price($line->tva_tx) . '" readonly />%</td>';
-	}
+	print '<td align="right">' . $form->load_tva('tva_tx', $line->tva_tx.($line->vat_src_code?(' ('.$line->vat_src_code.')'):''), $seller, $buyer, 0, $line->info_bits, $line->product_type, false, 1) . '</td>';
 
 	$coldisplay++;
 	print '<td align="right"><input type="text" class="flat right" size="5" id="price_ht" name="price_ht" value="' . (isset($line->pu_ht)?price($line->pu_ht,0,'',0):price($line->subprice,0,'',0)) . '"';
-	//if ($this->situation_counter > 1) print ' readonly';
 	print '></td>';
 
 	if (!empty($conf->multicurrency->enabled)) {
@@ -141,7 +130,6 @@ $coldisplay=-1; // We remove first td
 	{
 		$coldisplay++;
 		print '<td align="right"><input type="text" class="flat right" size="5" id="price_ttc" name="price_ttc" value="'.(isset($line->pu_ttc)?price($line->pu_ttc,0,'',0):'').'"';
-		if ($this->situation_counter > 1) print ' readonly';
 		print '></td>';
 	}
 	?>
@@ -152,7 +140,6 @@ $coldisplay=-1; // We remove first td
 		// must also not be output for most entities (proposal, intervention, ...)
 		//if($line->qty > $line->stock) print img_picto($langs->trans("StockTooLow"),"warning", 'style="vertical-align: bottom;"')." ";
 		print '<input size="3" type="text" class="flat right" name="qty" id="qty" value="' . $line->qty . '"';
-		if ($this->situation_counter > 1) print ' readonly';
 		print '>';
 	} else { ?>
 		&nbsp;
@@ -171,7 +158,6 @@ $coldisplay=-1; // We remove first td
 	<td align="right" class="nowrap"><?php $coldisplay++; ?>
 	<?php if (($line->info_bits & 2) != 2) {
 		print '<input size="1" type="text" class="flat right" name="remise_percent" id="remise_percent" value="' . $line->remise_percent . '"';
-		if ($this->situation_counter > 1) print ' readonly';
 		print '>%';
 	} else { ?>
 		&nbsp;
