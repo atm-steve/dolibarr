@@ -2902,7 +2902,7 @@ if ($action == 'create')
 			if ($opt == ('<option value ="0" selected>' . $langs->trans('NoSituations') . '</option>') || (GETPOST('origin') && GETPOST('origin') != 'facture' && GETPOST('origin') != 'commande')) $tmp.=' disabled';
 			$tmp.= '> ';
 			$text = $tmp.$langs->trans("InvoiceSituationAsk") . ' ';
-			$text .= '<select class="flat" id="situations" name="situations">';
+			$text .= '<select class="flat minwidth100" id="situations" name="situations">';
 			$text .= $opt;
 			$text .= '</select>';
 			$desc = $form->textwithpicto($text, $langs->transnoentities("InvoiceSituationDesc"), 1, 'help', '', 0, 3);
@@ -2926,7 +2926,7 @@ if ($action == 'create')
     		});
     		</script>';
 			$text = $tmp.$langs->trans("InvoiceReplacementAsk") . ' ';
-			$text .= '<select class="flat" name="fac_replacement" id="fac_replacement"';
+			$text .= '<select class="flat minwidth100" name="fac_replacement" id="fac_replacement"';
 			if (! $options)
 				$text .= ' disabled';
 			$text .= '>';
