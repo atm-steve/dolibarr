@@ -2981,7 +2981,7 @@ if ($action == 'create')
     			</script>';
 				$text = $tmp.$langs->transnoentities("InvoiceAvoirAsk") . ' ';
 				// $text.='<input type="text" value="">';
-				$text .= '<select class="flat valignmiddle" name="fac_avoir" id="fac_avoir"';
+				$text .= '<select class="flat valignmiddle minwidth100" name="fac_avoir" id="fac_avoir"';
 				if (! $optionsav)
 					$text .= ' disabled';
 				$text .= '>';

@@ -133,7 +133,7 @@ class pdf_crabe extends ModelePDFFactures
 			$this->posxqty=145;
 		}
 		$this->posxdiscount=162;
-		$this->posxprogress=126; // Only displayed for situation invoices
+		$this->posxprogress=120; // Only displayed for situation invoices
 		$this->postotalht=174;
 		if (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT) || ! empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_VAT_COLUMN)) $this->posxtva=$this->posxup;
 		$this->posxpicture=$this->posxtva - (empty($conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH)?20:$conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH);	// width of images
@@ -309,7 +309,8 @@ class pdf_crabe extends ModelePDFFactures
 					$this->posxtva+=($this->postotalht - $this->posxdiscount);
 					$this->posxup+=($this->postotalht - $this->posxdiscount);
 					$this->posxqty+=($this->postotalht - $this->posxdiscount);
-					$this->posxdiscount+=($this->postotalht - $this->posxdiscount);
+					$this->posxprogress+=($this->postotalht - $this->posxdiscount);
+//					$this->posxdiscount+=($this->postotalht - $this->posxdiscount);
 					//$this->postotalht;
 				}
 
@@ -1467,30 +1468,18 @@ class pdf_crabe extends ModelePDFFactures
 			}
 		}
 
-		$pdf->line($this->posxdiscount-1, $tab_top, $this->posxdiscount-1, $tab_top + $tab_height);
 		if (empty($hidetop))
 		{
 			if ($this->atleastonediscount)
 			{
+                $pdf->line($this->posxdiscount-1, $tab_top, $this->posxdiscount-1, $tab_top + $tab_height);
+
 				$pdf->SetXY($this->posxdiscount-1, $tab_top+1);
 				$pdf->MultiCell($this->postotalht-$this->posxdiscount+1,2, $outputlangs->transnoentities("ReductionShort"),'','C');
 			}
 		}
 
-		if ($this->situationinvoice)
-		{
-			$pdf->line($this->postotalht+4, $tab_top, $this->postotalht+4, $tab_top + $tab_height);
-			if (empty($hidetop))
-			{
-				$pdf->SetXY($this->postotalht-19, $tab_top+1);
-				$pdf->MultiCell(30,2, $outputlangs->transnoentities("Situation"),'','C');
-			}
-		}
-
-		if ($this->atleastonediscount)
-		{
-			$pdf->line($this->postotalht, $tab_top, $this->postotalht, $tab_top + $tab_height);
-		}
+		$pdf->line($this->postotalht, $tab_top, $this->postotalht, $tab_top + $tab_height);
 		if (empty($hidetop))
 		{
 			$pdf->SetXY($this->postotalht-1, $tab_top+1);
