@@ -4622,9 +4622,10 @@ else if ($id > 0 || ! empty($ref))
 
 			$discount = new DiscountAbsolute($db);
 			$result = $discount->fetch(0, $object->id);
+            if(empty($result)) $result = $discount->fetch(0, 0, $object->id);
 
 			// Reopen a standard paid invoice
-			if ((($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_REPLACEMENT)
+			if ((($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_REPLACEMENT || ($object->type == Facture::TYPE_SITUATION && empty($result)))
 				|| ($object->type == Facture::TYPE_CREDIT_NOTE && empty($discount->id))
 				|| ($object->type == Facture::TYPE_DEPOSIT && empty($discount->id)))
 				&& ($object->statut == 2 || $object->statut == 3 || ($object->statut == 1 && $object->paye == 1))   // Condition ($object->statut == 1 && $object->paye == 1) should not happened but can be found due to corrupted data
