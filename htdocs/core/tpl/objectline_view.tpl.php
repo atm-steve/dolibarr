@@ -45,7 +45,7 @@ if (empty($object) || ! is_object($object))
 }
 
 
-global $forceall, $senderissupplier, $inputalsopricewithtax, $outputalsopricetotalwithtax;
+global $forceall, $senderissupplier, $inputalsopricewithtax, $outputalsopricetotalwithtax, $TLinePrice;
 
 $usemargins=0;
 if (! empty($conf->margin->enabled) && ! empty($object->element) && in_array($object->element,array('facture','propal','commande'))) $usemargins=1;
@@ -57,7 +57,34 @@ if (empty($inputalsopricewithtax)) $inputalsopricewithtax=0;
 if (empty($outputalsopricetotalwithtax)) $outputalsopricetotalwithtax=0;
 
 ?>
-<?php $coldisplay=0; ?>
+<?php $coldisplay=0;
+ // Spé Ceribois
+if($object->element == 'facture' && $object->type == Facture::TYPE_SITUATION && !isset($TLinePrice)) {
+    $TLinePrice = array();
+    foreach($object->lines as $l) {
+        $TLinePrice[$l->fk_product] = array('amount' => $l->subprice * $l->qty * $l->situation_percent/100, 'progress' => 0);
+    }
+
+    // Déduction des anciennes situations
+    foreach($object->tab_previous_situation_invoice as $prev_invoice) {
+        foreach($prev_invoice->lines as $prev_line) {
+            if(! empty($TLinePrice[$prev_line->fk_product])) {
+                if($prev_invoice->type == Facture::TYPE_SITUATION) {
+                    $progress = $TLinePrice[$prev_line->fk_product]['progress'];
+
+                    $TLinePrice[$prev_line->fk_product]['amount'] -= $prev_line->subprice * $prev_line->qty * (empty($progress) ? $prev_line->situation_percent : $prev_line->situation_percent-$progress)/100;
+                    $TLinePrice[$prev_line->fk_product]['progress'] = $prev_line->situation_percent;
+                }
+                else if($prev_invoice->type == Facture::TYPE_CREDIT_NOTE) {
+                    $TLinePrice[$prev_line->fk_product]['amount'] += $prev_line->subprice * $prev_line->qty * $prev_line->situation_percent/100;
+                    $TLinePrice[$prev_line->fk_product]['progress'] += $prev_line->situation_percent;
+                }
+            }
+        }
+    }
+}
+?>
+
 <!-- BEGIN PHP TEMPLATE objectline_view.tpl.php -->
 <tr <?php echo 'id="row-'.$line->id.'" '.$bcdd[$var]; ?>>
 	<?php if (! empty($conf->global->MAIN_VIEW_LINE_NUMBER)) { ?>
@@ -233,7 +260,7 @@ if (empty($outputalsopricetotalwithtax)) $outputalsopricetotalwithtax=0;
 	<?php if ($line->special_code == 3)	{ ?>
 	<td align="right" class="linecoloption nowrap"><?php $coldisplay++; ?><?php echo $langs->trans('Option'); ?></td>
 	<?php } else { ?>
-	<td align="right" class="liencolht nowrap"><?php $coldisplay++; ?><?php echo price($line->total_ht); ?></td>
+    <td align="right" class="liencolht nowrap"><?php $coldisplay++; ?><?php echo empty($TLinePrice[$line->fk_product]['amount']) ? price($line->total_ht) : price($TLinePrice[$line->fk_product]['amount']); ?></td>
 		<?php if (!empty($conf->multicurrency->enabled)) { ?>
 		<td align="right" class="linecolutotalht_currency nowrap"><?php $coldisplay++; ?><?php echo price($line->multicurrency_total_ht); ?></td>
 		<?php } ?>

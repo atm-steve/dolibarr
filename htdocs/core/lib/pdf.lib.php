@@ -1898,14 +1898,38 @@ function pdf_getlinetotalexcltax($object,$i,$outputlangs,$hidedetails=0)
         	$total_ht = ($conf->multicurrency->enabled && $object->multicurrency_tx != 1 ? $object->lines[$i]->multicurrency_total_ht : $object->lines[$i]->total_ht);
         	if ($object->lines[$i]->situation_percent > 0)
         	{
-        		$prev_progress = 0;
-        		$progress = 1;
-        		if (method_exists($object->lines[$i], 'get_prev_progress'))
-        		{
-					$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
-					$progress = ($object->lines[$i]->situation_percent - $prev_progress) / 100;
-        		}
-				$result.=price($sign * ($total_ht/($object->lines[$i]->situation_percent/100)) * $progress, 0, $outputlangs);
+//        		$prev_progress = 0;
+//        		$progress = 1;
+//        		if (method_exists($object->lines[$i], 'get_prev_progress'))
+//        		{
+//					$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
+//					$progress = ($object->lines[$i]->situation_percent - $prev_progress) / 100;
+//        		}
+//				$result.=price($sign * ($total_ht/($object->lines[$i]->situation_percent/100)) * $progress, 0, $outputlangs);
+                $TLinePrice = array();
+                foreach($object->lines as $l) {
+                    $TLinePrice[$l->fk_product] = array('amount' => $l->subprice * $l->qty * $l->situation_percent/100, 'progress' => 0);
+                }
+
+                // Déduction des anciennes situations
+                if(empty($object->tab_previous_situation_invoice)) $object->fetchPreviousNextSituationInvoice();
+                foreach($object->tab_previous_situation_invoice as $prev_invoice) {
+                    foreach($prev_invoice->lines as $prev_line) {
+                        if(! empty($TLinePrice[$prev_line->fk_product])) {
+                            if($prev_invoice->type == Facture::TYPE_SITUATION) {
+                                $progress = $TLinePrice[$prev_line->fk_product]['progress'];
+
+                                $TLinePrice[$prev_line->fk_product]['amount'] -= $prev_line->subprice * $prev_line->qty * (empty($progress) ? $prev_line->situation_percent : $prev_line->situation_percent-$progress)/100;
+                                $TLinePrice[$prev_line->fk_product]['progress'] = $prev_line->situation_percent;
+                            }
+                            else if($prev_invoice->type == Facture::TYPE_CREDIT_NOTE) {
+                                $TLinePrice[$prev_line->fk_product]['amount'] += $prev_line->subprice * $prev_line->qty * $prev_line->situation_percent/100;
+                                $TLinePrice[$prev_line->fk_product]['progress'] += $prev_line->situation_percent;
+                            }
+                        }
+                    }
+                }
+                $result.=price($sign * $TLinePrice[$object->lines[$i]->fk_product]['amount'], 0, $outputlangs);
         	}
         	else
 			$result.=price($sign * $total_ht, 0, $outputlangs);
