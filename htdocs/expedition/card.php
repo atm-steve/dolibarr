@@ -2040,7 +2040,7 @@ else if ($id || $ref)
 		print '<br>';
 
         print '<div class="div-table-responsive-no-min">';
-		print '<table class="noborder" width="100%">';
+		print '<table class="noborder shipping_lines" width="100%" >';
 		print '<tr class="liste_titre">';
 		// #
 		if (! empty($conf->global->MAIN_VIEW_LINE_NUMBER))
@@ -2408,7 +2408,7 @@ else if ($id || $ref)
 			}
 
 			// Weight
-			print '<td align="center">';
+			print '<td align="center" class="shipping_line_weight">';
 			if ($lines[$i]->fk_product_type == Product::TYPE_PRODUCT) print $lines[$i]->weight*$lines[$i]->qty_shipped.' '.measuring_units_string($lines[$i]->weight_units,"weight");
 			else print '&nbsp;';
 			print '</td>';
