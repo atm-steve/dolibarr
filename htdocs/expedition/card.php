@@ -1136,7 +1136,6 @@ if ($action == 'create')
 
             // Load shipments already done for same order
             $object->loadExpeditions();
-
             if ($numAsked)
             {
                 print '<tr class="liste_titre">';
@@ -1371,12 +1370,11 @@ if ($action == 'create')
 								print $staticwarehouse->getNomUrl(0).' / ';
 
 								print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$dbatch->id.'">';
-
 								$detail='';
 								$detail.= $langs->trans("Batch").': '.$dbatch->batch;
 								$detail.= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby,"day");
 								$detail.= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby,"day");
-								$detail.= ' - '.$langs->trans("Qty").': '.$dbatch->dluo_qty;
+								$detail.= ' - '.$langs->trans("Qty").': '.$dbatch->qty;
 								$detail.= '<br>';
 								print $detail;
 
