@@ -159,7 +159,8 @@ class TExportComptaCegid extends TExportCompta {
 					'sens'					=> ($montant > 0 ? 'C' : 'D'),
 					'montant'				=> number_format(abs($montant),2,',',''),
 					'libelle'				=> $label,
-					'numero_piece'			=> $facture['ref']
+					'numero_piece'			=> $facture['ref'],
+					'ref_supplier'			=> $facture['ref_supplier']
 				);
 
 				// Ecriture générale
@@ -176,7 +177,8 @@ class TExportComptaCegid extends TExportCompta {
 					'sens'					=> ($montant > 0 ? 'D' : 'C'),
 					'montant'				=> number_format(abs($montant),2,',',''),
 					'libelle'				=> $label,
-					'numero_piece'			=> $facture['ref']
+					'numero_piece'			=> $facture['ref'],
+					'ref_supplier'			=> $facture['ref_supplier']
 				);
 
 				// Ecriture générale
@@ -196,7 +198,8 @@ class TExportComptaCegid extends TExportCompta {
 							'sens'							=> ($montant > 0 ? 'D' : 'C'),
 							'montant'						=> number_format(abs($montant),2,',',''),
 							'libelle'						=> $label,
-							'numero_piece'					=> $facture['ref']
+							'numero_piece'					=> $facture['ref'],
+							'ref_supplier'					=> $facture['ref_supplier']
 						);
 
 					// Ecriture générale
