@@ -3543,7 +3543,7 @@ abstract class CommonObject
 
 			if ($this->element == 'supplier_proposal' || $this->element == 'order_supplier' || $this->element == 'invoice_supplier')
 			{
-				print '<td class="linerefsupplier"><span id="title_fourn_ref">'.$langs->trans("SupplierRef").'</span></td>';
+				//print '<td class="linerefsupplier"><span id="title_fourn_ref">'.$langs->trans("SupplierRef").'</span></td>';
 			}
 
 		if (! empty($conf->clisms->enabled) && ($this->element == 'commande' || $this->element == 'propal'))
