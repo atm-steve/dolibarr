@@ -128,11 +128,12 @@ if ($id > 0 || ! empty($ref))
 		{
 			$sql = "SELECT DISTINCT s.nom as name, s.rowid as socid, s.code_client, c.rowid, d.total_ht as total_ht, c.ref,";
 			$sql.= " c.ref_client,";
-			$sql.= " c.date_commande, c.fk_statut as statut, c.facture, c.rowid as commandeid, d.rowid, d.qty";
+			$sql.= " c.date_commande, c.fk_statut as statut, c.facture, c.rowid as commandeid, d.rowid, d.qty, cde.date_de_livraison";
 			if (!$user->rights->societe->client->voir && !$socid) $sql.= ", sc.fk_soc, sc.fk_user ";
 			$sql.= " FROM ".MAIN_DB_PREFIX."societe as s";
 			$sql.= ", ".MAIN_DB_PREFIX."commande as c";
 			$sql.= ", ".MAIN_DB_PREFIX."commandedet as d";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."commandedet_extrafields as cde  ON (cde.fk_object = d.rowid)";
 			if (!$user->rights->societe->client->voir && !$socid) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 			$sql.= " WHERE c.fk_soc = s.rowid";
 			$sql.= " AND c.entity IN (".getEntity('commande').")";
@@ -145,7 +146,7 @@ if ($id > 0 || ! empty($ref))
 			if (!$user->rights->societe->client->voir && !$socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
 			if ($socid) $sql.= " AND c.fk_soc = ".$socid;
 			$sql.= $db->order($sortfield, $sortorder);
-			
+
 	        //Calcul total qty and amount for global if full scan list
 	        $total_ht=0;
 	        $total_qty=0;
@@ -205,6 +206,7 @@ if ($id > 0 || ! empty($ref))
 				print_liste_field_titre("CustomerCode",$_SERVER["PHP_SELF"],"s.code_client","",$option,'',$sortfield,$sortorder);
 				print_liste_field_titre("OrderDate",$_SERVER["PHP_SELF"],"c.date_commande","",$option,'align="center"',$sortfield,$sortorder);
 				print_liste_field_titre("Qty",$_SERVER["PHP_SELF"],"d.qty","",$option,'align="center"',$sortfield,$sortorder);
+				print_liste_field_titre("Date de livraison",$_SERVER["PHP_SELF"],"cde.date_de_livraison","",$option,'align="center"',$sortfield,$sortorder);
 				print_liste_field_titre("AmountHT",$_SERVER["PHP_SELF"],"c.total_ht","",$option,'align="right"',$sortfield,$sortorder);
 				print_liste_field_titre("Status",$_SERVER["PHP_SELF"],"c.fk_statut","",$option,'align="right"',$sortfield,$sortorder);
 				print "</tr>\n";
@@ -232,6 +234,8 @@ if ($id > 0 || ! empty($ref))
 						print '<td align="center">';
 						print dol_print_date($db->jdate($objp->date_commande), 'dayhour')."</td>";
 						print  '<td align="center">'.$objp->qty."</td>\n";
+						print '<td align="center">';
+						print dol_print_date($db->jdate($objp->date_de_livraison), 'dayhour')."</td>";
 	                    print '<td align="right">'.price($objp->total_ht)."</td>\n";
 						print '<td align="right">'.$orderstatic->LibStatut($objp->statut,$objp->facture,5).'</td>';
 						print "</tr>\n";
@@ -243,6 +247,7 @@ if ($id > 0 || ! empty($ref))
                 else print '<td align="left">'.$langs->trans("Totalforthispage").'</td>';
                 print '<td colspan="3"></td>';
                 print '<td align="center">'.$total_qty.'</td>';
+                print '<td></td>';
                 print '<td align="right">'.price($total_ht).'</td>';
                 print '<td></td>';
                 print "</table>";
