@@ -148,7 +148,6 @@ class modTcpdfbarcode extends ModeleBarCode
 		global $conf,$_GET;
 
 		dol_mkdir($conf->barcode->dir_temp);
-		$file=$conf->barcode->dir_temp.'/barcode_'.$code.'_'.$encoding.'.png';
 
 		$tcpdfEncoding = $this->getTcpdfEncodingType($encoding);
 		if (empty($tcpdfEncoding)) return -1;
@@ -173,6 +172,9 @@ class modTcpdfbarcode extends ModeleBarCode
 				require_once TCPDF_PATH.'tcpdf_barcodes_1d.php';
 				$barcodeobj = new TCPDFBarcode($code, $tcpdfEncoding);
 			}		
+			
+			$code = dol_sanitizeFileName($code);
+			$file=$conf->barcode->dir_temp.'/barcode_'.$code.'_'.$encoding.'.png';
 			
 			dol_syslog("writeBarCode::TCPDF.getBarcodePngData");
 			if ($imageData = $barcodeobj->getBarcodePngData($width, $height, $color)) {
