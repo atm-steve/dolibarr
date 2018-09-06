@@ -2134,6 +2134,7 @@ class Contrat extends CommonObject
 		$sql = "SELECT count(c.rowid) as nb";
 		$sql.= " FROM ".MAIN_DB_PREFIX."contrat as c";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON c.fk_soc = s.rowid";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."contrat_extrafields as ef ON c.rowid = ef.fk_object";
 		if (!$user->rights->societe->client->voir && !$user->societe_id)
 		{
 			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_commerciaux as sc ON s.rowid = sc.fk_soc";
@@ -2141,7 +2142,9 @@ class Contrat extends CommonObject
 			$clause = "AND";
 		}
 		$sql.= " ".$clause." c.entity = ".$conf->entity;
-
+        $sql.= " AND ef.concurrent = 0";
+        $sql.= " AND c.rowid IN (SELECT DISTINCT c.rowid FROM ".MAIN_DB_PREFIX."contrat as c LEFT JOIN ".MAIN_DB_PREFIX."contratdet as cd ON c.rowid = cd.fk_contrat WHERE cd.statut=4 AND (cd.date_fin_validite IS NULL OR cd.date_fin_validite >= '".$this->db->idate(dol_now())."'))";
+        
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
