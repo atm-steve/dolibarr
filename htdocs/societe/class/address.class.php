@@ -33,7 +33,11 @@ class Address
 {
 	protected $db;
 
+	/**
+	 * @var int ID
+	 */
 	public $id;
+
 	public $type;
 	public $label;
 	public $socid;
@@ -228,7 +232,6 @@ class Address
 				return $result;
 			}
 		}
-
 	}
 
 	/**
@@ -238,6 +241,7 @@ class Address
 	 *  @param  User	$user        Objet de l'utilisateur
 	 *  @return int 			     >0 si ok, <0 si ko
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function fetch_lines($socid, $user=null)
 	{
 		global $langs, $conf;
@@ -331,6 +335,7 @@ class Address
 	 *  @param  User	$user       Objet de l'utilisateur
 	 *  @return int 				>0 si ok, <0 si ko
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function fetch_address($id, $user=null)
 	{
 		global $langs;
@@ -486,7 +491,6 @@ class Address
 			dol_print_error($this->db);
 		}
 	}
-
 }
 
 
@@ -496,7 +500,12 @@ class Address
 class AddressLine
 {
 	protected $db;
+
+	/**
+	 * @var int ID
+	 */
 	public $id;
+
 	public $date_creation;
 	public $date_modification;
 	public $label;

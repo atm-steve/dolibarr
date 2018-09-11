@@ -33,20 +33,36 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/commonobject.class.php';
  */
 class Tva extends CommonObject
 {
-	public $element='tva';			//!< Id that identify managed objects
-	public $table_element='tva';	//!< Name of table without prefix where object is stored
+	/**
+	 * @var string ID to identify managed object
+	 */
+	public $element='tva';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element='tva';
+
+	/**
+	 * @var string String with name of icon for myobject. Must be the part after the 'object_' into object_myobject.png
+	 */
 	public $picto='payment';
 
-	var $tms;
-	var $datep;
-	var $datev;
-	var $amount;
-	var $type_payment;
-	var $num_payment;
-	var $label;
-	var $fk_bank;
-	var $fk_user_creat;
-	var $fk_user_modif;
+	public $tms;
+	public $datep;
+	public $datev;
+	public $amount;
+	public $type_payment;
+	public $num_payment;
+
+	/**
+     * @var string label
+     */
+    public $label;
+
+	public $fk_bank;
+	public $fk_user_creat;
+	public $fk_user_modif;
 
     /**
 	 *	Constructor
@@ -354,8 +370,9 @@ class Tva extends CommonObject
      * 	Total of the VAT from invoices emitted by the thirdparty.
      *
      *	@param	int		$year		Year
-     *	@return	double				Amount
+     *  @return	double				Amount
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function tva_sum_collectee($year = 0)
     {
 
@@ -395,6 +412,7 @@ class Tva extends CommonObject
      *	@param	int		$year		Year
      *	@return	double				Amount
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function tva_sum_payee($year = 0)
     {
 
@@ -435,6 +453,7 @@ class Tva extends CommonObject
      *	@param	int		$year		Year
      *	@return	double				Amount
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function tva_sum_reglee($year = 0)
     {
 
@@ -626,6 +645,7 @@ class Tva extends CommonObject
      *  @param	int		$id_bank    Id bank account
 	 *	@return	int					<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function update_fk_bank($id_bank)
 	{
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.'tva SET fk_bank = '.$id_bank;
@@ -790,10 +810,11 @@ class Tva extends CommonObject
 	 * @param   int		$mode       0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
 	 * @return	string  		    Libelle du statut
 	 */
-	function LibStatut($status,$mode=0)
-	{
-	    global $langs;	// TODO Renvoyer le libelle anglais et faire traduction a affichage
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    function LibStatut($status,$mode=0)
+    {
+        global $langs;	// TODO Renvoyer le libelle anglais et faire traduction a affichage
 
-	    return '';
-	}
+        return '';
+    }
 }

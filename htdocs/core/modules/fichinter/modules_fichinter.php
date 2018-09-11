@@ -34,7 +34,10 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/commondocgenerator.class.php';
  */
 abstract class ModelePDFFicheinter extends CommonDocGenerator
 {
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
 	/**
@@ -44,6 +47,7 @@ abstract class ModelePDFFicheinter extends CommonDocGenerator
      *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of templates
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	static function liste_modeles($db,$maxfilenamelength=0)
 	{
 		global $conf;
@@ -64,7 +68,10 @@ abstract class ModelePDFFicheinter extends CommonDocGenerator
  */
 abstract class ModeleNumRefFicheinter
 {
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 	/**
 	 * 	Return if a module can be used or not
@@ -153,6 +160,7 @@ abstract class ModeleNumRefFicheinter
  *  @param  int			$hideref        Hide ref
  *  @return int         				0 if KO, 1 if OK
  */
+// phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 function fichinter_create($db, $object, $modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0)
 {
 	global $conf,$langs,$user;
@@ -238,4 +246,3 @@ function fichinter_create($db, $object, $modele, $outputlangs, $hidedetails=0, $
 		return 0;
 	}
 }
-

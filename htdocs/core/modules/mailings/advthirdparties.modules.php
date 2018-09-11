@@ -32,7 +32,11 @@ class mailing_advthirdparties extends MailingTargets
 
 	var $require_module=array("none");	// This module should not be displayed as Selector in mailling
 	var $picto='company';
-	var $db;
+	
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
 
 	/**
@@ -57,6 +61,7 @@ class mailing_advthirdparties extends MailingTargets
 	 *    @param	array	$contactid 		Array of contact id to add
 	 *    @return   int 					<0 if error, number of emails added if ok
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function add_to_target_spec($mailing_id,$socid,$type_of_target, $contactid)
 	{
 		global $conf, $langs;
@@ -273,7 +278,6 @@ class mailing_advthirdparties extends MailingTargets
 
 		$s.='</select>';
 		return $s;
-
 	}
 
 
@@ -296,5 +300,4 @@ class mailing_advthirdparties extends MailingTargets
 			return $contactstatic->getNomUrl(0, '', 0, '', -1, 1);
 		}
 	}
-
 }

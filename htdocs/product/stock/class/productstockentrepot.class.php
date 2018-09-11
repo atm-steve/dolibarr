@@ -44,13 +44,11 @@ class ProductStockEntrepot extends CommonObject
 	 * @var string Id to identify managed objects
 	 */
 	public $element = 'ProductStockEntrepot';
+	
 	/**
 	 * @var string Name of table without prefix where object is stored
 	 */
 	public $table_element = 'product_warehouse_properties';
-
-	/**
-	 */
 
 	public $tms = '';
 	public $fk_product;
@@ -58,9 +56,6 @@ class ProductStockEntrepot extends CommonObject
 	public $seuil_stock_alerte;
 	public $desiredstock;
 	public $import_key;
-
-	/**
-	 */
 
 
 	/**
@@ -523,6 +518,7 @@ class ProductStockEntrepot extends CommonObject
 	 *  @param  int		$mode          	0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
 	 *  @return string 			       	Label of status
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($status,$mode=0)
 	{
 		global $langs;
@@ -577,8 +573,5 @@ class ProductStockEntrepot extends CommonObject
 		$this->seuil_stock_alerte = '';
 		$this->desiredstock = '';
 		$this->import_key = '';
-
-
 	}
-
 }

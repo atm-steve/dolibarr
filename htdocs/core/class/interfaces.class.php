@@ -31,9 +31,17 @@ require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
  */
 class Interfaces
 {
-    var $db;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+    
 	var $dir;				// Directory with all core and external triggers files
-    var $errors	= array();	// Array for errors
+	
+    /**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
 
     /**
      *	Constructor
@@ -56,6 +64,7 @@ class Interfaces
      *   @param     Conf		$conf       Objet conf
      *   @return    int         			Nb of triggers ran if no error, -Nb of triggers with errors otherwise.
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function run_triggers($action,$object,$user,$langs,$conf)
     {
         // Check parameters
@@ -360,5 +369,4 @@ class Interfaces
         }
         return $triggers;
     }
-
 }

@@ -33,7 +33,10 @@
  */
 abstract class ModelePDFProduct extends CommonDocGenerator
 {
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
 	/**
@@ -42,7 +45,8 @@ abstract class ModelePDFProduct extends CommonDocGenerator
      *  @param	DoliDB	$db     			Database handler
      *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of templates
-	 */
+     */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	static function liste_modeles($db,$maxfilenamelength=0)
 	{
 		global $conf;
@@ -58,7 +62,10 @@ abstract class ModelePDFProduct extends CommonDocGenerator
 
 abstract class ModeleProductCode
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
     /**     Renvoi la description par defaut du modele de numerotation
      *
@@ -140,6 +147,7 @@ abstract class ModeleProductCode
      *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of numbers
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     static function liste_modeles($db,$maxfilenamelength=0)
     {
         $liste=array();
@@ -236,10 +244,9 @@ abstract class ModeleProductCode
 	 *
 	 *   @return	int		0=no, 1=yes
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function verif_prefixIsUsed()
     {
         return 0;
     }
-
 }
-

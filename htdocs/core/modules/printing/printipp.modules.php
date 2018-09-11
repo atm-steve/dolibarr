@@ -40,9 +40,21 @@ class printing_printipp extends PrintingDriver
     var $userid;    /* user login */
     var $user;
     var $password;
-    var $error;
-    var $errors = array();
-    var $db;
+    
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+	
+    /**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
+	
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
 
     /**
@@ -75,6 +87,7 @@ class printing_printipp extends PrintingDriver
      *
      * @return  int                     0 if OK, >0 if KO
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function print_file($file, $module, $subdir='')
     {
         global $conf, $user;
@@ -197,6 +210,7 @@ class printing_printipp extends PrintingDriver
      *
      *  @return array                list of printers
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function getlist_available_printers()
     {
         global $conf,$db;
@@ -217,6 +231,7 @@ class printing_printipp extends PrintingDriver
      *  @param  string  $uri    URI
      *  @return array           List of attributes
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function get_printer_detail($uri)
     {
         global $conf,$db;
@@ -240,6 +255,7 @@ class printing_printipp extends PrintingDriver
      *
      *  @return  int                     0 if OK, >0 if KO
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function list_jobs($module)
     {
         global $conf, $db, $bc;
@@ -302,5 +318,4 @@ class printing_printipp extends PrintingDriver
         $this->resprint = $html;
         return $error;
     }
-
 }

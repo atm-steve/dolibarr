@@ -36,6 +36,7 @@ class Ctyperesource
 	 * @var string Id to identify managed objects
 	 */
 	public $element = 'ctyperesource';
+
 	/**
 	 * @var string Name of table without prefix where object is stored
 	 */
@@ -46,15 +47,14 @@ class Ctyperesource
 	 */
 	public $lines = array();
 
-	/**
-	 */
-
 	public $code;
-	public $label;
-	public $active;
 
 	/**
-	 */
+     * @var string Type resource label
+     */
+    public $label;
+
+	public $active;
 
 
 	/**
@@ -468,7 +468,6 @@ class Ctyperesource
 		$this->label = '';
 		$this->active = '';
 	}
-
 }
 
 /**
@@ -480,16 +479,20 @@ class CtyperesourceLine
 	 * @var int ID
 	 */
 	public $id;
+
 	/**
 	 * @var mixed Sample line property 1
 	 */
-
 	public $code;
-	public $label;
+
+	/**
+     * @var string Type resource line label
+     */
+    public $label;
+
 	public $active;
 
 	/**
 	 * @var mixed Sample line property 2
 	 */
-
 }

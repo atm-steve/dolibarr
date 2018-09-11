@@ -34,6 +34,7 @@ class MouvementStock extends CommonObject
 	 * @var string Id to identify managed objects
 	 */
 	public $element = 'stockmouvement';
+	
 	/**
 	 * @var string Name of table without prefix where object is stored
 	 */
@@ -777,8 +778,8 @@ class MouvementStock extends CommonObject
 	 * Create or update batch record (update table llx_product_batch). No check is done here, done by parent.
 	 *
 	 * @param	array|int	$dluo	      Could be either
-	 *                                     - int if row id of product_batch table
-	 *                                     - or complete array('fk_product_stock'=>, 'batchnumber'=>)
+	 *                                    - int if row id of product_batch table
+	 *                                    - or complete array('fk_product_stock'=>, 'batchnumber'=>)
 	 * @param	int			$qty	      Quantity of product with batch number. May be a negative amount.
 	 * @return 	int   				      <0 if KO, else return productbatch id
 	 */
@@ -864,6 +865,7 @@ class MouvementStock extends CommonObject
 	 * @param  int     $origintype     Type origin
 	 * @return string
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function get_origin($fk_origin, $origintype)
 	{
 	    $origin='';
@@ -1016,6 +1018,7 @@ class MouvementStock extends CommonObject
 	 *  @param  int		$mode          	0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
 	 *  @return string 			       	Label of status
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($mode=0)
 	{
 		global $langs;
@@ -1059,7 +1062,7 @@ class MouvementStock extends CommonObject
 	public function generateDocument($modele, $outputlangs='',$hidedetails=0,$hidedesc=0,$hideref=0)
 	{
 		global $conf,$user,$langs;
-	
+
 		$langs->load("stocks");
 
 		if (! dol_strlen($modele)) {

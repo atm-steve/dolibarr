@@ -27,32 +27,66 @@
  */
 class EcmDirectory // extends CommonObject
 {
-	public $element='ecm_directories';			//!< Id that identify managed objects
-	//public $table_element='ecm_directories';	//!< Name of table without prefix where object is stored
-	var $picto = 'dir';
+	/**
+	 * @var string ID to identify managed object
+	 */
+	public $element='ecm_directories';
 
-	var $id;
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	//public $table_element='ecm_directories';
 
-	var $label;
-	var $fk_parent;
-	var $description;
-	var $cachenbofdoc=-1;	// By default cache initialized with value 'not calculated'
-	var $date_c;
-	var $date_m;
+	/**
+	 * @var string String with name of icon for myobject. Must be the part after the 'object_' into object_myobject.png
+	 */
+	public $picto = 'dir';
+
+	/**
+	 * @var int ID
+	 */
+	public $id;
+
+	/**
+     * @var string ECM directories label
+     */
+    public $label;
+
+	public $fk_parent;
+
+	/**
+	 * @var string description
+	 */
+	public $description;
+
+	public $cachenbofdoc=-1;	// By default cache initialized with value 'not calculated'
+	public $date_c;
+	public $date_m;
 	public $fk_user_m;
 	public $fk_user_c;
+
+	/**
+	 * @var string Ref
+	 */
 	public $ref;
 
-	var $cats=array();
-	var $motherof=array();
+	public $cats=array();
+	public $motherof=array();
 
-	var $forbiddenchars = array('<','>',':','/','\\','?','*','|','"');
-	var $forbiddencharsdir = array('<','>',':','?','*','|','"');
+	public $forbiddenchars = array('<','>',':','/','\\','?','*','|','"');
+	public $forbiddencharsdir = array('<','>',':','?','*','|','"');
 
 	public $full_arbo_loaded;
 
+	/**
+	 * @var string Error code (or message)
+	 */
 	public $error;
-	public $errors;
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
 
 
 	/**
@@ -495,6 +529,7 @@ class EcmDirectory // extends CommonObject
 	 *
 	 *	@return		int		<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function load_motherof()
 	{
 		global $conf;
@@ -544,6 +579,7 @@ class EcmDirectory // extends CommonObject
 	 *  @param  int		$mode          	0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto, 5=Long label + Picto
 	 *  @return string 			       	Label of status
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	static function LibStatut($status,$mode=0)
 	{
 		global $langs;
@@ -570,6 +606,7 @@ class EcmDirectory // extends CommonObject
 	 *  @param	int		$force	        Force reload of full arbo even if already loaded in cache $this->cats
 	 *	@return	array			        Tableau de array
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function get_full_arbo($force=0)
 	{
 		global $conf;
@@ -659,6 +696,7 @@ class EcmDirectory // extends CommonObject
 	 * 	@param	int		$protection		Deep counter to avoid infinite loop
 	 * 	@return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function build_path_from_id_categ($id_categ,$protection=0)
 	{
 		// Define fullpath
@@ -746,6 +784,7 @@ class EcmDirectory // extends CommonObject
      * @param   User      $user           Object user
      * @return  int                       Result of run_triggers
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function call_trigger($trigger_name, $user)
     {
         global $langs,$conf;
@@ -764,8 +803,5 @@ class EcmDirectory // extends CommonObject
             }
         }
         return $result;
-
     }
-
-
 }

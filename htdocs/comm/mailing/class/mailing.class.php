@@ -31,35 +31,46 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/commonobject.class.php';
  */
 class Mailing extends CommonObject
 {
+	/**
+	 * @var string ID to identify managed object
+	 */
 	public $element='mailing';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
 	public $table_element='mailing';
+
+	/**
+	 * @var string String with name of icon for myobject. Must be the part after the 'object_' into object_myobject.png
+	 */
 	public $picto='email';
 
-	var $titre;
-	var $sujet;
-	var $body;
-	var $nbemail;
-	var $bgcolor;
-	var $bgimage;
+	public $titre;
+	public $sujet;
+	public $body;
+	public $nbemail;
+	public $bgcolor;
+	public $bgimage;
 
-	var $statut;       // Status 0=Draft, 1=Validated, 2=Sent partially, 3=Sent completely
+	public $statut;       // Status 0=Draft, 1=Validated, 2=Sent partially, 3=Sent completely
 
-	var $email_from;
-	var $email_replyto;
-	var $email_errorsto;
+	public $email_from;
+	public $email_replyto;
+	public $email_errorsto;
 
-	var $joined_file1;
-	var $joined_file2;
-	var $joined_file3;
-	var $joined_file4;
+	public $joined_file1;
+	public $joined_file2;
+	public $joined_file3;
+	public $joined_file4;
 
-	var $user_creat;
-	var $user_valid;
+	public $user_creat;
+	public $user_valid;
 
-	var $date_creat;
-	var $date_valid;
+	public $date_creat;
+	public $date_valid;
 
-	var $extraparams=array();
+	public $extraparams=array();
 
 	public $statut_dest=array();
 	public $statuts=array();
@@ -85,7 +96,6 @@ class Mailing extends CommonObject
 		$this->statut_dest[1] = 'MailingStatusSent';
 		$this->statut_dest[2] = 'MailingStatusRead';
 		$this->statut_dest[3] = 'MailingStatusReadAndUnsubscribe';    // Read but ask to not be contacted anymore
-
 	}
 
 	/**
@@ -437,6 +447,7 @@ class Mailing extends CommonObject
 	 *
 	 *  @return int       1 if OK, 0 if error
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function delete_targets()
 	{
 		$sql = "DELETE FROM ".MAIN_DB_PREFIX."mailing_cibles";
@@ -462,6 +473,7 @@ class Mailing extends CommonObject
 	 *	@param	User	$user      	Objet user qui valide
 	 *  @return int         		<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function reset_targets_status($user)
 	{
 		$sql = "UPDATE ".MAIN_DB_PREFIX."mailing_cibles";
@@ -534,6 +546,7 @@ class Mailing extends CommonObject
 	 *  @param  int		$mode          	0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
 	 *  @return string        			Label
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($statut,$mode=0)
 	{
 		global $langs;
@@ -636,6 +649,4 @@ class Mailing extends CommonObject
 		    if ($statut==3) return $langs->trans("MailingStatusNotContact").' '.img_picto($langs->trans("MailingStatusNotContact"),'statut3');
 		}
 	}
-
 }
-

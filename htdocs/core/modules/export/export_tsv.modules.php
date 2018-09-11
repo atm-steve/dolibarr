@@ -31,17 +31,25 @@ require_once DOL_DOCUMENT_ROOT .'/core/modules/export/modules_export.php';
  */
 class ExportTsv extends ModeleExports
 {
-    var $id;
-    var $label;
-    var $extension;
-    var $version;
+    /**
+	 * @var int ID
+	 */
+	public $id;
 
-    var $label_lib;
-    var $version_lib;
+    /**
+     * @var string label
+     */
+    public $label;
 
-    var $separator="\t";
+    public $extension;
+    public $version;
 
-    var $handle;    // Handle fichier
+    public $label_lib;
+    public $version_lib;
+
+    public $separator="\t";
+
+    public $handle;    // Handle fichier
 
 
     /**
@@ -143,7 +151,8 @@ class ExportTsv extends ModeleExports
 	 *	@param		string		$file			Path of filename to generate
 	*	@param		Translate	$outputlangs	Output language object
 	*	@return		int							<0 if KO, >=0 if OK
-	*/
+    */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function open_file($file,$outputlangs)
     {
         global $langs;
@@ -170,6 +179,7 @@ class ExportTsv extends ModeleExports
 	 * 	@param		Translate	$outputlangs		Output language object
 	 * 	@return		int								<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function write_header($outputlangs)
     {
         return 0;
@@ -185,6 +195,7 @@ class ExportTsv extends ModeleExports
      *  @param		array		$array_types					Array with types of fields
 	 * 	@return		int											<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function write_title($array_export_fields_label,$array_selected_sorted,$outputlangs,$array_types)
     {
         foreach($array_selected_sorted as $code => $value)
@@ -208,6 +219,7 @@ class ExportTsv extends ModeleExports
      *  @param		array		$array_types				Array with types of fields
 	 * 	@return		int										<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function write_record($array_selected_sorted,$objp,$outputlangs,$array_types)
     {
     	global $conf;
@@ -226,14 +238,14 @@ class ExportTsv extends ModeleExports
 			if (preg_match('/^\((.*)\)$/i',$newvalue,$reg)) $newvalue=$outputlangs->transnoentities($reg[1]);
 
 			$newvalue=$this->tsv_clean($newvalue,$outputlangs->charset_output);
-			
+
 			if (preg_match('/^Select:/i', $typefield, $reg) && $typefield = substr($typefield, 7))
 			{
 				$array = unserialize($typefield);
 				$array = $array['options'];
 				$newvalue = $array[$newvalue];
 			}
-			
+
 			fwrite($this->handle,$newvalue.$this->separator);
             $this->col++;
 		}
@@ -247,6 +259,7 @@ class ExportTsv extends ModeleExports
 	 * 	@param		Translate	$outputlangs		Output language object
 	 * 	@return		int								<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function write_footer($outputlangs)
     {
 		return 0;
@@ -257,6 +270,7 @@ class ExportTsv extends ModeleExports
 	 *
 	 * 	@return		int							<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function close_file()
     {
         fclose($this->handle);
@@ -270,6 +284,7 @@ class ExportTsv extends ModeleExports
 	 * @param	string	$charset	Input AND Output character set
      * @return 	string				Value cleaned
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function tsv_clean($newvalue, $charset)
     {
 		// Rule Dolibarr: No HTML
@@ -287,6 +302,4 @@ class ExportTsv extends ModeleExports
 
     	return $newvalue;
     }
-
 }
-

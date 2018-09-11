@@ -33,7 +33,10 @@ class mod_task_simple extends ModeleNumRefTask
 {
 	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
 	var $prefix='TK';
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 	var $nom = "Simple";
 	var $name = "Simple";
 
@@ -147,9 +150,9 @@ class mod_task_simple extends ModeleNumRefTask
      *  @param  Task	$object		Object task
      *  @return string      		Next not used reference
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function task_get_num($objsoc=0,$object='')
     {
         return $this->getNextValue($objsoc,$object);
     }
 }
-

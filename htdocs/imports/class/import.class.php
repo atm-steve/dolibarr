@@ -43,8 +43,15 @@ class Import
 	var $array_import_convertvalue;
 	var $array_import_run_sql_after;
 
-	var $error;
-	var $errors;
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
 
 
 	/**
@@ -65,6 +72,7 @@ class Import
 	 *  @param  	string	$filter		Load a particular dataset only. Index will start to 0.
  	 *  @return		int					<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function load_arrays($user,$filter='')
 	{
 		global $langs,$conf;
@@ -186,6 +194,7 @@ class Import
 	 *  @param		string	$datatoimport		Dataset to import
 	 *  @return		string						<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function build_example_file($model, $headerlinefields, $contentlinevalues,$datatoimport)
 	{
 		global $conf,$langs;
@@ -349,5 +358,4 @@ class Import
 			return 1;
 		}
 	}
-
 }

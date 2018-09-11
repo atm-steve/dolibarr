@@ -29,8 +29,15 @@
  */
 class FormActions
 {
-    var $db;
-    var $error;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+    
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
     /**
@@ -57,6 +64,7 @@ class FormActions
      *  @param  string  $morecss        More css on select field
      * 	@return	void
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function form_select_status_action($formname, $selected, $canedit=1, $htmlname='complete', $showempty=0, $onlyselect=0, $morecss='maxwidth100')
     {
         global $langs,$conf;
@@ -318,6 +326,7 @@ class FormActions
      *  @param  int             $nooutput       1=No output
      * 	@return	string
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function select_type_actions($selected='', $htmlname='actioncode', $excludetype='', $onlyautoornot=0, $hideinfohelp=0, $multiselect=0, $nooutput=0)
     {
         global $langs,$user,$form,$conf;
@@ -359,5 +368,4 @@ class FormActions
         else print $out;
         return '';
     }
-
 }

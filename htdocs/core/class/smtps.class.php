@@ -349,6 +349,7 @@ class SMTPs
 	 *
 	 * @return mixed  $_retVal   Boolean indicating success or failure on connection
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _server_connect()
 	{
 		// Default return value
@@ -411,6 +412,7 @@ class SMTPs
 	 *
 	 * @return boolean|null  $_retVal   Boolean indicating success or failure of authentication
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _server_authenticate()
 	{
 		global $conf;
@@ -656,7 +658,7 @@ class SMTPs
 		{
 			// If the path is not valid, this will NOT generate an error,
 			// it will simply return false.
-			if ( ! @include ( $_strConfigPath ) )
+			if ( ! @include $_strConfigPath)
 			{
 				$this->_setErr(110, '"' . $_strConfigPath . '" is not a valid path.');
 				$_retVal = false;
@@ -1052,6 +1054,7 @@ class SMTPs
 	 *	@param		string		$_strAddr		Email address
 	 * 	@return 	array	 					An array of the various parts of an email address
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _strip_email($_strAddr)
 	{
 		// Keep the orginal
@@ -1094,6 +1097,7 @@ class SMTPs
 	 *
 	 * @return 		array		Returns an array of bares addresses
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function get_RCPT_list()
 	{
 		/**
@@ -1123,6 +1127,7 @@ class SMTPs
 	 * @param 		string 	       $_which 	    Which collection of addresses to return ('to', 'cc', 'bcc')
 	 * @return 		string|false 				Array of emaill address
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function get_email_list($_which = null)
 	{
 		// We need to know which address segment to pull
@@ -1165,7 +1170,6 @@ class SMTPs
 			$this->_setErr(102, 'eMail type not defined.');
 			return false;
 		}
-
 	}
 
 	/**
@@ -1650,7 +1654,7 @@ class SMTPs
 	 * @param 	integer 	$_value 	Message Priority
 	 * @return 	void
 	 */
-	function setPriority ( $_value = 3 )
+	function setPriority( $_value = 3 )
 	{
 		if ( ( is_numeric($_value) ) &&
 		( ( $_value >= 0 ) && ( $_value <= 5 ) ) )
@@ -1754,6 +1758,7 @@ class SMTPs
 	 * @param	string		$response		Response. Example: "550 5.7.1  https://support.google.com/a/answer/6140680#invalidcred j21sm814390wre.3"
 	 * @return	boolean						True or false
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function server_parse($socket, $response)
 	{
 		/**
@@ -1795,6 +1800,7 @@ class SMTPs
 	 * @param 	string		$CRLF			CRLF
 	 * @return 	boolean|null						True or false
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function socket_send_str( $_strSend, $_returnCode = null, $CRLF = "\r\n" )
 	{
 		if ($this->_debug) $this->log.=$_strSend;	// @CHANGE LDR for log
@@ -1814,12 +1820,14 @@ class SMTPs
 	 * @param  int    $_errNum  Error Code Number
 	 * @param  string $_errMsg  Error Message
 	 * @return void
-	 */
-	function _setErr ( $_errNum, $_errMsg )
-	{
-		$this->_smtpsErrors[] = array( 'num' => $_errNum,
-                                       'msg' => $_errMsg );
-	}
+     */
+    function _setErr( $_errNum, $_errMsg )
+    {
+        $this->_smtpsErrors[] = array(
+            'num' => $_errNum,
+            'msg' => $_errMsg,
+        );
+    }
 
 	/**
 	 * Returns errors codes and messages for Class
@@ -1840,8 +1848,6 @@ class SMTPs
 
 		return implode("\n", $_errMsg);
 	}
-
-
 }
 
 
@@ -2049,4 +2055,3 @@ class SMTPs
  *  - basic shell with some commets
  *
  */
-

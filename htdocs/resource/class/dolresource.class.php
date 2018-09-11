@@ -19,19 +19,26 @@
  *  \file      	resource/class/resource.class.php
  *  \ingroup    resource
  *  \brief      Class file for resource object
-
  */
 
 require_once DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php";
 require_once DOL_DOCUMENT_ROOT."/core/lib/functions2.lib.php";
 
 /**
- *	DAO Resource object
+ *  DAO Resource object
  */
 class Dolresource extends CommonObject
 {
-	public $element='dolresource';			//!< Id that identify managed objects
-	public $table_element='resource';	//!< Name of table without prefix where object is stored
+	/**
+	 * @var string ID to identify managed object
+	 */
+	public $element='dolresource';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element='resource';
+
     public $picto = 'resource';
 
 	public $resource_id;
@@ -60,14 +67,14 @@ class Dolresource extends CommonObject
     /**
      *  Create object into database
      *
-     *  @param	User	$user        User that creates
+     *  @param	User    $user        User that creates
      *  @param  int		$notrigger   0=launch triggers after, 1=disable triggers
      *  @return int      		   	 <0 if KO, Id of created object if OK
      */
     function create($user, $notrigger=0)
     {
-    	global $conf, $langs, $hookmanager;
-    	$error=0;
+        global $conf, $langs, $hookmanager;
+        $error=0;
 
     	// Clean parameters
 
@@ -332,6 +339,7 @@ class Dolresource extends CommonObject
      *    @param      int	$id          id object
      *    @return     int         <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_element_resource($id)
     {
     	global $langs;
@@ -480,6 +488,7 @@ class Dolresource extends CommonObject
      *  @param	array		$filter    	  filter output
      *  @return int          	<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_all($sortorder, $sortfield, $limit, $offset, $filter='')
     {
     	global $conf;
@@ -491,7 +500,7 @@ class Dolresource extends CommonObject
     	$sql.= " t.fk_code_type_resource,";
     	$sql.= " t.tms,";
 
-    	require_once(DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php');
+    	require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
     	$extrafields=new ExtraFields($this->db);
     	$extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
     	if (is_array($extralabels) && count($extralabels)>0) {
@@ -563,7 +572,6 @@ class Dolresource extends CommonObject
     		$this->error = $this->db->lasterror();
     		return -1;
     	}
-
     }
 
      /**
@@ -576,6 +584,7 @@ class Dolresource extends CommonObject
 	 *  @param	array		$filter    	  filter output
 	 *  @return int          	<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_all_resources($sortorder, $sortfield, $limit, $offset, $filter='')
     {
    		global $conf;
@@ -641,7 +650,6 @@ class Dolresource extends CommonObject
    			$this->error = $this->db->lasterror();
    			return -1;
    		}
-
     }
 
     /**
@@ -654,6 +662,7 @@ class Dolresource extends CommonObject
      *  @param	array		$filter    	  filter output
      *  @return int          	<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_all_used($sortorder, $sortfield, $limit, $offset=1, $filter='')
     {
     	global $conf;
@@ -719,7 +728,6 @@ class Dolresource extends CommonObject
     		$this->error = $this->db->lasterror();
     		return -1;
     	}
-
     }
 
     /**
@@ -730,7 +738,9 @@ class Dolresource extends CommonObject
      * @deprecated, remplaced by hook getElementResources
      * @see getElementResources()
      */
-    function fetch_all_available() {
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    function fetch_all_available()
+    {
     	global $conf;
 
     	if (! empty($conf->modules_parts['resources']))
@@ -749,6 +759,7 @@ class Dolresource extends CommonObject
      *  @param  int		$notrigger	 0=launch triggers after, 1=disable triggers
      *  @return int     		   	 <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function update_element_resource($user=null, $notrigger=0)
     {
     	global $conf, $langs;
@@ -866,7 +877,6 @@ class Dolresource extends CommonObject
             $i++;
         }
         return $i;
-
     }
 
 
@@ -875,6 +885,7 @@ class Dolresource extends CommonObject
      *
      *      @return     int             Nb lignes chargees, 0 si deja chargees, <0 si ko
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function load_cache_code_type_resource()
     {
     	global $langs;
@@ -963,6 +974,7 @@ class Dolresource extends CommonObject
      *  @param  int		$mode          	0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto, 5=Long label + Picto
      *  @return string 			       	Label of status
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     static function LibStatut($status,$mode=0)
     {
         global $langs;

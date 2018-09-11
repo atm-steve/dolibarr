@@ -22,7 +22,7 @@
  *  \brief      This file is an CRUD class file (Create/Read/Update/Delete)
  */
 
-require_once(DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php");
+require_once DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php";
 
 
 
@@ -31,8 +31,15 @@ require_once(DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php");
  */
 class Propalmergepdfproduct extends CommonObject
 {
-	var $element='propal_merge_pdf_product';			//!< Id that identify managed objects
-	var $table_element='propal_merge_pdf_product';		//!< Name of table without prefix where object is stored
+	/**
+	 * @var string ID to identify managed object
+	 */
+	public $element='propal_merge_pdf_product';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element='propal_merge_pdf_product';
 
 	var $fk_product;
 	var $file_name;
@@ -223,6 +230,7 @@ class Propalmergepdfproduct extends CommonObject
      *  @param	string	$lang  			Lang string code
      *  @return int          	<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_by_product($product_id, $lang='')
     {
     	global $langs,$conf;
@@ -312,9 +320,6 @@ class Propalmergepdfproduct extends CommonObject
 		if (isset($this->file_name)) $this->file_name=trim($this->file_name);
 		if (isset($this->fk_user_mod)) $this->fk_user_mod=trim($this->fk_user_mod);
 		if (isset($this->lang)) $this->lang=trim($this->lang);
-
-
-
 
 		// Check parameters
 		// Put here code to add a control on parameters values
@@ -440,6 +445,7 @@ class Propalmergepdfproduct extends CommonObject
 	 *  @param  int		$notrigger	 0=launch triggers after, 1=disable triggers
 	 *  @return	int					 <0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function delete_by_product($user, $product_id, $lang_id='',  $notrigger=0)
 	{
 		global $conf, $langs;
@@ -501,6 +507,7 @@ class Propalmergepdfproduct extends CommonObject
 	 *	@param  User	$user        User that deletes
 	 *  @return	int					 <0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function delete_by_file($user)
 	{
 		global $conf, $langs;
@@ -625,10 +632,7 @@ class Propalmergepdfproduct extends CommonObject
 		$this->datec='';
 		$this->tms='';
 		$this->import_key='';
-
-
 	}
-
 }
 
 /**
@@ -636,18 +640,25 @@ class Propalmergepdfproduct extends CommonObject
  */
 class PropalmergepdfproductLine
 {
-	var $id;
+	/**
+	 * @var int ID
+	 */
+	public $id;
 
-	var $fk_product;
-	var $file_name;
-	var $lang;
-	var $fk_user_author;
-	var $fk_user_mod;
-	var $datec='';
-	var $tms='';
-	var $import_key;
+	public $fk_product;
+	public $file_name;
+	public $lang;
+	public $fk_user_author;
+	public $fk_user_mod;
+	public $datec='';
+	public $tms='';
+	public $import_key;
 
-	function __construct() {
-		return 1;
-	}
+    /**
+     *  Constructor
+     */
+    function __construct()
+    {
+        return 1;
+    }
 }

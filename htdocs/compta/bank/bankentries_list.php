@@ -29,7 +29,7 @@
  *	\brief      List of bank transactions
  */
 
-require('../../main.inc.php');
+require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/bank.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
@@ -1423,14 +1423,14 @@ if ($resql)
 
         if (! empty($arrayfields['b.conciliated']['checked']))
     	{
-            print '<td class="nowrap" align="center">';
+            print '<td class="nowraponall" align="center">';
             print $objp->conciliated?$langs->trans("Yes"):$langs->trans("No");
         	print '</td>';
             if (! $i) $totalarray['nbfield']++;
     	}
 
     	// Action edit/delete
-    	print '<td class="nowrap" align="center">';
+    	print '<td class="nowraponall" align="center">';
     	// Transaction reconciliated or edit link
     	if ($objp->conciliated && $bankaccount->canBeConciliated() > 0)  // If line not conciliated and account can be conciliated
     	{
@@ -1529,6 +1529,6 @@ if ($_POST["action"] == "search" && ! $num)
 	print '<div class="opacitymedium">'.$langs->trans("NoRecordFound").'</div>';
 }
 
+// End of page
 llxFooter();
-
 $db->close();

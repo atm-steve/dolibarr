@@ -7,7 +7,7 @@
  * Copyright (C) 2012		Cédric Salvador		<csalvador@gpcsolutions.fr>
  * Copyright (C) 2012-2014	Raphaël Doursenaud	<rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2015		Marcos García		<marcosgdf@gmail.com>
- * Copyright (C) 2017		Ferran Marcet		<fmarcet@2byte.es>
+ * Copyright (C) 2017-2018	Ferran Marcet		<fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,9 +69,9 @@ class pdf_crabe extends ModelePDFFactures
 
 	/**
      * @var array() Minimum version of PHP required by module.
-	 * e.g.: PHP ≥ 5.3 = array(5, 3)
+	 * e.g.: PHP ≥ 5.4 = array(5, 4)
      */
-	public $phpmin = array(5, 2);
+	public $phpmin = array(5, 4);
 
 	/**
      * Dolibarr version of the loaded document
@@ -79,14 +79,45 @@ class pdf_crabe extends ModelePDFFactures
      */
 	public $version = 'dolibarr';
 
+	/**
+     * @var int page_largeur
+     */
     public $page_largeur;
+
+	/**
+     * @var int page_hauteur
+     */
     public $page_hauteur;
+
+	/**
+     * @var array format
+     */
     public $format;
+
+	/**
+     * @var int marge_gauche
+     */
 	public $marge_gauche;
+
+	/**
+     * @var int marge_droite
+     */
 	public $marge_droite;
+
+	/**
+     * @var int marge_haute
+     */
 	public $marge_haute;
+
+	/**
+     * @var int marge_basse
+     */
 	public $marge_basse;
 
+	/**
+	 * Issuer
+	 * @var Societe
+	 */
 	public $emetteur;	// Objet societe qui emet
 
 	/**
@@ -197,6 +228,7 @@ class pdf_crabe extends ModelePDFFactures
      *  @param		int			$hideref			Do not show ref
      *  @return     int         	    			1=OK, 0=KO
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function write_file($object,$outputlangs,$srctemplatepath='',$hidedetails=0,$hidedesc=0,$hideref=0)
 	{
 		global $user,$langs,$conf,$mysoc,$db,$hookmanager,$nblignes;
@@ -405,7 +437,7 @@ class pdf_crabe extends ModelePDFFactures
 				{
 					$tab_top -= 2;
 
-          $substitutionarray=pdf_getSubstitutionArray($outputlangs, null, $object);
+					$substitutionarray=pdf_getSubstitutionArray($outputlangs, null, $object);
 					complete_substitutions_array($substitutionarray, $outputlangs, $object);
 					$notetoshow = make_substitutions($notetoshow, $substitutionarray, $outputlangs);
 
@@ -751,6 +783,7 @@ class pdf_crabe extends ModelePDFFactures
      *  @param  Translate	$outputlangs    Object langs for output
      *  @return int             			<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _tableau_versements(&$pdf, $object, $posy, $outputlangs)
 	{
 		global $conf;
@@ -879,7 +912,6 @@ class pdf_crabe extends ModelePDFFactures
 			$this->error=$this->db->lasterror();
 			return -1;
 		}
-
 	}
 
 
@@ -892,6 +924,7 @@ class pdf_crabe extends ModelePDFFactures
 	 *   @param		Translate	$outputlangs	Langs object
 	 *   @return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _tableau_info(&$pdf, $object, $posy, $outputlangs)
 	{
 		global $conf;
@@ -1050,6 +1083,7 @@ class pdf_crabe extends ModelePDFFactures
 	 *	@param	Translate	$outputlangs	Objet langs
 	 *	@return int							Position pour suite
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _tableau_tot(&$pdf, $object, $deja_regle, $posy, $outputlangs)
 	{
 		global $conf,$mysoc;
@@ -1079,7 +1113,7 @@ class pdf_crabe extends ModelePDFFactures
 		$pdf->SetXY($col1x, $tab2_top + 0);
 		$pdf->MultiCell($col2x-$col1x, $tab2_hl, $outputlangs->transnoentities("TotalHT"), 0, 'L', 1);
 
-		$total_ht = ($conf->multicurrency->enabled && $object->mylticurrency_tx != 1 ? $object->multicurrency_total_ht : $object->total_ht);
+		$total_ht = (($conf->multicurrency->enabled && isset($object->mylticurrency_tx) && $object->mylticurrency_tx != 1) ? $object->multicurrency_total_ht : $object->total_ht);
 		$pdf->SetXY($col2x, $tab2_top + 0);
 		$pdf->MultiCell($largcol2, $tab2_hl, price($sign * ($total_ht + (! empty($object->remise)?$object->remise:0)), 0, $outputlangs), 0, 'R', 1);
 
@@ -1304,7 +1338,6 @@ class pdf_crabe extends ModelePDFFactures
 		}
 
 		$pdf->SetTextColor(0,0,0);
-
 		$creditnoteamount=$object->getSumCreditNotesUsed(($conf->multicurrency->enabled && $object->multicurrency_tx != 1) ? 1 : 0);	// Warning, this also include excess received
 		$depositsamount=$object->getSumDepositsUsed(($conf->multicurrency->enabled && $object->multicurrency_tx != 1) ? 1 : 0);
 		//print "x".$creditnoteamount."-".$depositsamount;exit;
@@ -1810,6 +1843,4 @@ class pdf_crabe extends ModelePDFFactures
 		$showdetails=$conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS;
 		return pdf_pagefoot($pdf,$outputlangs,'INVOICE_FREE_TEXT',$this->emetteur,$this->marge_basse,$this->marge_gauche,$this->page_hauteur,$object,$showdetails,$hidefreetext);
 	}
-
 }
-

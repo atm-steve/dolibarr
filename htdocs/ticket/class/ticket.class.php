@@ -25,8 +25,8 @@
 // Put here all includes required by your class file
 require_once DOL_DOCUMENT_ROOT . "/core/class/commonobject.class.php";
 require_once DOL_DOCUMENT_ROOT . '/fichinter/class/fichinter.class.php';
-//require_once(DOL_DOCUMENT_ROOT."/societe/class/societe.class.php");
-//require_once(DOL_DOCUMENT_ROOT."/product/class/product.class.php");
+//require_once DOL_DOCUMENT_ROOT."/societe/class/societe.class.php";
+//require_once DOL_DOCUMENT_ROOT."/product/class/product.class.php";
 
 
 /**
@@ -38,22 +38,27 @@ class Ticket extends CommonObject
      * @var string ID to identify managed object
      */
     public $element = 'ticket';
+
     /**
      * @var string Name of table without prefix where object is stored
      */
     public $table_element = 'ticket';
+
     /**
      * @var string Name of field for link to tickets
      */
     public $fk_element='fk_ticket';
+
     /**
      * @var int  Does ticketcore support multicompany module ? 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
      */
-    public $ismultientitymanaged = 0;
+    public $ismultientitymanaged = 1;
+
     /**
      * @var int  Does ticketcore support extrafields ? 0=No, 1=Yes
      */
     public $isextrafieldmanaged = 1;
+
     /**
      * @var string String with name of icon for ticketcore. Must be the part after the 'object_' into object_ticketcore.png
      */
@@ -555,7 +560,7 @@ class Ticket extends CommonObject
      * @param  int    $offset    Offset for query
      * @param  int    $arch      archive or not (not used)
      * @param  array  $filter    Filter for query
-     *            output
+     *                           output
      * @return int <0 if KO, >0 if OK
      */
     public function fetchAll($user, $sortorder = 'ASC', $sortfield = 't.datec', $limit = '', $offset = 0, $arch = '', $filter = '')
@@ -1020,7 +1025,12 @@ class Ticket extends CommonObject
         $this->tms = '';
     }
 
-
+    /**
+     * print selected status
+     *
+     * @param string    $selected   selected status
+     * @return void
+     */
     public function printSelectStatus($selected = "")
     {
         print Form::selectarray('search_fk_statut', $this->statuts_short, $selected, $show_empty = 1, $key_in_label = 0, $value_as_key = 0, $option = '', $translate = 1, $maxlen = 0, $disabled = 0, $sort = '', $morecss = '');
@@ -1166,6 +1176,7 @@ class Ticket extends CommonObject
      *    @param      int		$mode        0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto
      *    @return     string     			 Label
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function LibStatut($statut, $mode = 0)
     {
         global $langs;
@@ -1478,8 +1489,6 @@ class Ticket extends CommonObject
 			dol_syslog(get_class($this) . "::assignUser " . $this->error, LOG_ERR);
 			return - 1;
 		}
-
-		return 0;
 	}
 
     /**
@@ -1614,8 +1623,8 @@ class Ticket extends CommonObject
                 }
                 include_once DOL_DOCUMENT_ROOT . '/core/class/CMailFile.class.php';
                 $mailfile = new CMailFile($subject, $info_sendto['email'], $from, $message, $filepath, $mimetype, $filename, $sendtocc, '', $deliveryreceipt, 0);
-                if ($mailfile->error) {
-                    setEventMessage($mailfile->error, 'errors');
+                if ($mailfile->error || $mailfile->errors) {
+                    setEventMessages($mailfile->error, $mailfile->errors, 'errors');
                 } else {
                     $result = $mailfile->sendfile();
                     if ($result > 0) {
@@ -1627,7 +1636,7 @@ class Ticket extends CommonObject
                 }
             }
 
-            setEventMessage($langs->trans('TicketNotificationNumberEmailSent', $nb_sent));
+            setEventMessages($langs->trans('TicketNotificationNumberEmailSent', $nb_sent), null, 'mesgs');
         }
 
         return $nb_sent;
@@ -2442,6 +2451,7 @@ class Ticket extends CommonObject
 	 *  @param      string		$sdir       Directory to scan
 	 *  @return     boolean     			True if at least one photo is available, False if not
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function is_photo_available($sdir)
     {
         include_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
@@ -2468,7 +2478,6 @@ class Ticket extends CommonObject
         }
         return false;
     }
-
 }
 
 
@@ -2477,7 +2486,10 @@ class Ticket extends CommonObject
  */
 class TicketsLine
 {
-    public $id;
+    /**
+	 * @var int ID
+	 */
+	public $id;
 
     /**
      * @var string  $ref    Ticket reference
@@ -2490,8 +2502,8 @@ class TicketsLine
     public $track_id;
 
     /**
-	 * Thirdparty ID
-	*/
+	 * @var int Thirdparty ID
+	 */
     public $fk_soc;
 
     /**
@@ -2588,5 +2600,4 @@ class TicketsLine
  	 * Close ticket date
 	 */
     public $date_close = '';
-
 }

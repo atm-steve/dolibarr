@@ -33,7 +33,10 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/commondocgenerator.class.php';
  */
 abstract class ModeleThirdPartyDoc extends CommonDocGenerator
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
     /**
      *  Return list of active generation modules
@@ -42,6 +45,7 @@ abstract class ModeleThirdPartyDoc extends CommonDocGenerator
      *  @param	integer		$maxfilenamelength  Max length of value to show
      * 	@return	array							List of templates
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     static function liste_modeles($db,$maxfilenamelength=0)
     {
         global $conf;
@@ -54,7 +58,6 @@ abstract class ModeleThirdPartyDoc extends CommonDocGenerator
 
         return $liste;
     }
-
 }
 
 /**
@@ -63,7 +66,10 @@ abstract class ModeleThirdPartyDoc extends CommonDocGenerator
  */
 abstract class ModeleThirdPartyCode
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
     /**     Renvoi la description par defaut du modele de numerotation
      *
@@ -139,12 +145,13 @@ abstract class ModeleThirdPartyCode
     }
 
     /**
-     *  Renvoi la liste des modeles de numéroation
+     *  Renvoie la liste des modeles de numérotation
      *
      *  @param	DoliDB	$db     			Database handler
      *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of numbers
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     static function liste_modeles($db,$maxfilenamelength=0)
     {
         $liste=array();
@@ -239,13 +246,13 @@ abstract class ModeleThirdPartyCode
 	/**
 	 *   Check if mask/numbering use prefix
 	 *
-	 *   @return	int		0=no, 1=yes
-	 */
+	 *   @return    int	    0=no, 1=yes
+     */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function verif_prefixIsUsed()
     {
         return 0;
     }
-
 }
 
 
@@ -255,7 +262,10 @@ abstract class ModeleThirdPartyCode
  */
 abstract class ModeleAccountancyCode
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
     /**		Return description of module
@@ -353,6 +363,7 @@ abstract class ModeleAccountancyCode
      *  @param  int		$type			'customer' or 'supplier'
      *  @return	int						>=0 if OK, <0 if KO
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function get_code($db, $societe, $type='')
     {
 	    global $langs;
@@ -378,6 +389,7 @@ abstract class ModeleAccountancyCode
  *  @deprecated Use the new function generateDocument of Facture class
  *  @see Societe::generateDocument()
  */
+// phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 function thirdparty_doc_create(DoliDB $db, Societe $object, $message, $modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0)
 {
 	dol_syslog(__METHOD__ . " is deprecated", LOG_WARNING);

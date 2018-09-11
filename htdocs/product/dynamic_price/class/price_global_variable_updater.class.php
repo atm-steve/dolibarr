@@ -29,20 +29,46 @@
  */
 class PriceGlobalVariableUpdater
 {
-    var $db;							//!< To store db handler
-    var $error;							//!< To return error code (or message)
-    var $errors=array();				//!< To return several error codes (or messages)
-    var $types=array(0, 1);				//!< Updater types
-    var $update_min = 5;				//!< Minimal update rate
-    var $id;
-    var $type;
-    var $description;
-    var $parameters;
-    var $fk_variable;
-    var $update_interval;				//!< Interval in mins
-    var $next_update;					//!< Next update timestamp
-    var $last_status;
-    public $table_element = "c_price_global_variable_updater";
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+    /**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
+
+    public $types=array(0, 1);				//!< Updater types
+    public $update_min = 5;				//!< Minimal update rate
+
+    /**
+	 * @var int ID
+	 */
+	public $id;
+
+    public $type;
+
+    /**
+	 * @var string description
+	 */
+	public $description;
+
+    public $parameters;
+    public $fk_variable;
+    public $update_interval;				//!< Interval in mins
+    public $next_update;					//!< Next update timestamp
+    public $last_status;
+
+    /**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element = "c_price_global_variable_updater";
 
     /**
      *  Constructor
@@ -538,6 +564,7 @@ class PriceGlobalVariableUpdater
      *  @param  int		$notrigger	 0=launch triggers after, 1=disable triggers
      *  @return int     		   	 <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function update_next_update($next_update, $user=0, $notrigger=0)
     {
         $error=0;
@@ -582,6 +609,7 @@ class PriceGlobalVariableUpdater
      *  @param  int		$notrigger	 0=launch triggers after, 1=disable triggers
      *  @return int     		   	 <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function update_status($last_status, $user=0, $notrigger=0)
     {
         $error=0;

@@ -31,7 +31,10 @@ class mod_commande_marbre extends ModeleNumRefCommandes
 {
 	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
 	var $prefix='CO';
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 	var $nom='Marbre';
 
 
@@ -142,9 +145,9 @@ class mod_commande_marbre extends ModeleNumRefCommandes
 	 * 	@param	string		$objforref	Object for number to search
 	 *  @return string      			Next free value
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function commande_get_num($objsoc,$objforref)
 	{
 		return $this->getNextValue($objsoc,$objforref);
 	}
-
 }

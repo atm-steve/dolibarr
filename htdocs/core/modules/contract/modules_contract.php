@@ -37,7 +37,10 @@
  */
 abstract class ModelePDFContract extends CommonDocGenerator
 {
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
 	/**
@@ -47,6 +50,7 @@ abstract class ModelePDFContract extends CommonDocGenerator
      *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of templates
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	static function liste_modeles($db,$maxfilenamelength=0)
 	{
 		global $conf;
@@ -67,7 +71,10 @@ abstract class ModelePDFContract extends CommonDocGenerator
  */
 class ModelNumRefContracts
 {
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 	/**
 	 *	Return if a module can be used or not

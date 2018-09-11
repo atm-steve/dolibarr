@@ -35,19 +35,25 @@ class BookKeeping extends CommonObject
 	 * @var string Error code (or message)
 	 */
 	public $error;
+
 	/**
 	 * @var string[] Error codes (or messages)
 	 */
-	public $errors = array ();
+	public $errors = array();
+
 	/**
 	 * @var string Id to identify managed objects
 	 */
 	public $element = 'accountingbookkeeping';
+
 	/**
 	 * @var string Name of table without prefix where object is stored
 	 */
 	public $table_element = 'accounting_bookkeeping';
 
+	/**
+	 * @var int Entity
+	 */
 	public $entity;
 
 	/**
@@ -59,8 +65,7 @@ class BookKeeping extends CommonObject
 	 * @var int ID
 	 */
 	public $id;
-	/**
-	 */
+
 	public $doc_date;
 	public $date_lim_reglement;
 	public $doc_type;
@@ -88,7 +93,8 @@ class BookKeeping extends CommonObject
 	 *
 	 * @param DoliDb $db Database handler
 	 */
-	public function __construct(DoliDB $db) {
+    public function __construct(DoliDB $db)
+    {
 		$this->db = $db;
 	}
 
@@ -99,7 +105,8 @@ class BookKeeping extends CommonObject
 	 * @param  bool	$notrigger	false=launch triggers after, true=disable triggers
 	 * @return int				<0 if KO, Id of created object if OK
 	 */
-	public function create(User $user, $notrigger = false) {
+    public function create(User $user, $notrigger = false)
+    {
 		global $conf, $langs;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
@@ -420,7 +427,8 @@ class BookKeeping extends CommonObject
 	 * @param  string  $mode 	   Mode
 	 * @return int				 <0 if KO, Id of created object if OK
 	 */
-	public function createStd(User $user, $notrigger = false, $mode='') {
+    public function createStd(User $user, $notrigger = false, $mode='')
+    {
 		global $conf;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
@@ -590,7 +598,8 @@ class BookKeeping extends CommonObject
 	 *
 	 * @return int <0 if KO, 0 if not found, >0 if OK
 	 */
-	public function fetch($id, $ref = null, $mode='') {
+    public function fetch($id, $ref = null, $mode='')
+    {
 		global $conf;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
@@ -687,7 +696,8 @@ class BookKeeping extends CommonObject
 	 *
 	 * @return int <0 if KO, >=0 if OK
 	 */
-	public function fetchAllByAccount($sortorder = '', $sortfield = '', $limit = 0, $offset = 0, array $filter = array(), $filtermode = 'AND') {
+    public function fetchAllByAccount($sortorder = '', $sortfield = '', $limit = 0, $offset = 0, array $filter = array(), $filtermode = 'AND')
+    {
 		global $conf;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
@@ -811,7 +821,8 @@ class BookKeeping extends CommonObject
 	 *
 	 * @return int <0 if KO, >0 if OK
 	 */
-	public function fetchAll($sortorder = '', $sortfield = '', $limit = 0, $offset = 0, array $filter = array(), $filtermode = 'AND') {
+    public function fetchAll($sortorder = '', $sortfield = '', $limit = 0, $offset = 0, array $filter = array(), $filtermode = 'AND')
+    {
 		global $conf;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
@@ -1016,7 +1027,8 @@ class BookKeeping extends CommonObject
 	 * @param  string  $mode       Mode
 	 * @return int                 <0 if KO, >0 if OK
 	 */
-	public function update(User $user, $notrigger = false, $mode='') {
+    public function update(User $user, $notrigger = false, $mode='')
+    {
 		$error = 0;
 
 		dol_syslog(__METHOD__, LOG_DEBUG);
@@ -1185,7 +1197,8 @@ class BookKeeping extends CommonObject
 	 * @param string $mode Mode
 	 * @return int <0 if KO, >0 if OK
 	 */
-	public function delete(User $user, $notrigger = false, $mode='') {
+    public function delete(User $user, $notrigger = false, $mode='')
+    {
 		dol_syslog(__METHOD__, LOG_DEBUG);
 
 		$error = 0;
@@ -1234,7 +1247,8 @@ class BookKeeping extends CommonObject
 	 * @param  string		$importkey		Import key
 	 * @return int Result
 	 */
-	function deleteByImportkey($importkey) {
+    function deleteByImportkey($importkey)
+    {
 		$this->db->begin();
 
 		// first check if line not yet in bookkeeping
@@ -1263,7 +1277,8 @@ class BookKeeping extends CommonObject
 	 * @param  string $mode 		Mode
 	 * @return int					<0 if KO, >0 if OK
 	 */
-	function deleteByYearAndJournal($delyear='', $journal='', $mode='') {
+    function deleteByYearAndJournal($delyear='', $journal='', $mode='')
+    {
 		global $conf;
 
 		if (empty($delyear) && empty($journal))
@@ -1302,7 +1317,8 @@ class BookKeeping extends CommonObject
 	 * @param 	int 	$piecenum 	Piecenum to delete
 	 * @return 	int 				Result
 	 */
-	function deleteMvtNum($piecenum) {
+    function deleteMvtNum($piecenum)
+    {
 		global $conf;
 
 		$this->db->begin();
@@ -1336,7 +1352,8 @@ class BookKeeping extends CommonObject
 	 *
 	 * @return int New id of clone
 	 */
-	public function createFromClone($fromid) {
+    public function createFromClone($fromid)
+    {
 		dol_syslog(__METHOD__, LOG_DEBUG);
 
 		global $user;
@@ -1381,7 +1398,8 @@ class BookKeeping extends CommonObject
 	 *
 	 * @return void
 	 */
-	public function initAsSpecimen() {
+    public function initAsSpecimen()
+    {
 		global $user;
 
 		$now=dol_now();
@@ -1417,7 +1435,8 @@ class BookKeeping extends CommonObject
 	 * @param string $mode Mode
 	 * @return int <0 if KO, >0 if OK
 	 */
-	public function fetchPerMvt($piecenum, $mode='') {
+    public function fetchPerMvt($piecenum, $mode='')
+    {
 		global $conf;
 
 		$sql = "SELECT piece_num,doc_date,code_journal,journal_label,doc_ref,doc_type,date_creation";
@@ -1481,7 +1500,8 @@ class BookKeeping extends CommonObject
 	 * @param  string  $mode       Mode
 	 * @return int                 <0 if KO, >0 if OK
 	 */
-	function fetchAllPerMvt($piecenum, $mode='') {
+    function fetchAllPerMvt($piecenum, $mode='')
+    {
 		global $conf;
 
 		$sql = "SELECT rowid, doc_date, doc_type,";
@@ -1539,7 +1559,9 @@ class BookKeeping extends CommonObject
 	 * @param	string	$model	Model
 	 * @return	int				Result
 	 */
-	function export_bookkeping($model = 'ebp') {
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    function export_bookkeping($model = 'ebp')
+    {
 		global $conf;
 
 		$sql = "SELECT rowid, doc_date, doc_type,";
@@ -1695,8 +1717,10 @@ class BookKeeping extends CommonObject
 	* @param int		$select_out	Set value returned by select 0=rowid (default), 1=account_number
 	* @param int		$aabase		Set accounting_account base class to display empty=all or from 1 to 8 will display only account beginning by this number
 	* @return string	String with HTML select
-	*/
-	function select_account($selectid, $htmlname = 'account', $showempty = 0, $event = array(), $select_in = 0, $select_out = 0, $aabase = '') {
+    */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    function select_account($selectid, $htmlname = 'account', $showempty = 0, $event = array(), $select_in = 0, $select_out = 0, $aabase = '')
+    {
 		global $conf;
 
 		require_once DOL_DOCUMENT_ROOT . '/core/lib/accounting.lib.php';
@@ -1759,6 +1783,7 @@ class BookKeeping extends CommonObject
 	 * @param 	string 	$account	Accounting account
 	 * @return 	string 				Root account
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function get_compte_racine($account = null)
 	{
 		global $conf;
@@ -1799,6 +1824,7 @@ class BookKeeping extends CommonObject
 	 * @param	string	$account	Accounting account
 	 * @return	string				Account desc
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function get_compte_desc($account = null)
 	{
 		global $conf;
@@ -1838,7 +1864,11 @@ class BookKeeping extends CommonObject
  */
 class BookKeepingLine
 {
+	/**
+	 * @var int ID
+	 */
 	public $id;
+
 	public $doc_date = '';
 	public $doc_type;
 	public $doc_ref;

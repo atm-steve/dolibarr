@@ -30,13 +30,33 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/CMailFile.class.php';
  */
 class Notify
 {
-	var $id;
-	var $db;
-	var $error;
-	var $errors=array();
+	/**
+	 * @var int ID
+	 */
+	public $id;
+
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
 
 	var $author;
-	var $ref;
+
+	/**
+	 * @var string Ref
+	 */
+	public $ref;
+
 	var $date;
 	var $duree;
 	var $note;
@@ -574,13 +594,13 @@ class Notify
 						$mesg = $langs->transnoentitiesnoconv("EMailTextOrderValidated",$link);
 						break;
 					case 'PROPAL_VALIDATE':
-						$link='/comm/propal/card.php?id='.$object->id;
+						$link='<a href="' . $urlwithroot . '/comm/propal/card.php?id='.$object->id . '">' . $newref . '</a>';
 						$dir_output = $conf->propal->multidir_output[$object->entity];
 						$object_type = 'propal';
 						$mesg = $langs->transnoentitiesnoconv("EMailTextProposalValidated",$link);
 						break;
 					case 'PROPAL_CLOSE_SIGNED':
-						$link='/comm/propal/card.php?id='.$object->id;
+						$link='<a href="' . $urlwithroot . '/comm/propal/card.php?id='.$object->id . '">' . $newref . '</a>';
 						$dir_output = $conf->propal->multidir_output[$object->entity];
 						$object_type = 'propal';
 						$mesg = $langs->transnoentitiesnoconv("EMailTextProposalClosedSigned",$link);
@@ -714,6 +734,5 @@ class Notify
 		if (! $error) return $num;
 		else return -1 * $error;
 	}
-
 }
 

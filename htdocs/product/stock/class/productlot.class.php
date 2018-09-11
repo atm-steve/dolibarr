@@ -39,6 +39,7 @@ class Productlot extends CommonObject
 	 * @var string Id to identify managed objects
 	 */
 	public $element = 'productlot';
+
 	/**
 	 * @var string Name of table without prefix where object is stored
 	 */
@@ -54,9 +55,10 @@ class Productlot extends CommonObject
 	public $lines = array();
 
 	/**
+	 * @var int Entity
 	 */
-
 	public $entity;
+
 	public $fk_product;
 	public $batch;
 	public $eatby = '';
@@ -66,9 +68,6 @@ class Productlot extends CommonObject
 	public $fk_user_creat;
 	public $fk_user_modif;
 	public $import_key;
-
-	/**
-	 */
 
 
 	/**
@@ -166,7 +165,7 @@ class Productlot extends CommonObject
 					$error++;
 				}
 			}
-			
+
 			if (! $error && ! $notrigger) {
 				// Uncomment this and change MYOBJECT to your own tag if you
 				// want this action to call a trigger.
@@ -234,7 +233,7 @@ class Productlot extends CommonObject
 				//$this->ref = $obj->fk_product.'_'.$obj->batch;
 
 				$this->batch = $obj->batch;
-				$this->entity = (!empty($obj->entity)?$obj->entity:$conf->entity); // Prevent "null" entity 
+				$this->entity = (!empty($obj->entity)?$obj->entity:$conf->entity); // Prevent "null" entity
 				$this->fk_product = $obj->fk_product;
 				$this->eatby = $this->db->jdate($obj->eatby);
 				$this->sellby = $this->db->jdate($obj->sellby);
@@ -300,7 +299,7 @@ class Productlot extends CommonObject
 
 		// Check parameters
 		// Put here code to add a control on parameters values
-		
+
 		if (empty($this->oldcopy))
 		{
 			$org=new self($this->db);
@@ -340,7 +339,7 @@ class Productlot extends CommonObject
 				$error++;
 			}
 		}
-		
+
 		if (!$error && !$notrigger) {
 			// Uncomment this and change MYOBJECT to your own tag if you
 			// want this action calls a trigger.
@@ -481,6 +480,7 @@ class Productlot extends CommonObject
 	 *	@param  int		$mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto
 	 *	@return string      		Label of status
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($statut,$mode=0)
 	{
 	    global $langs;
@@ -580,6 +580,4 @@ class Productlot extends CommonObject
 		$this->fk_user_modif = '';
 		$this->import_key = '';
 	}
-
 }
-

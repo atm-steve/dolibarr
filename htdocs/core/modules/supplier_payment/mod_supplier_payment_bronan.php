@@ -31,7 +31,10 @@ class mod_supplier_payment_bronan extends ModeleNumRefSupplierPayments
 {
 	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
 	var $prefix='SPAY';
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 	var $nom='Bronan';
 
 
@@ -142,9 +145,9 @@ class mod_supplier_payment_bronan extends ModeleNumRefSupplierPayments
 	 * 	@param	string		$objforref	Object for number to search
 	 *  @return string      			Next free value
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function payment_get_num($objsoc,$objforref)
 	{
 		return $this->getNextValue($objsoc,$objforref);
 	}
-
 }

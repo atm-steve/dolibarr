@@ -30,17 +30,25 @@ require_once DOL_DOCUMENT_ROOT .'/core/modules/export/modules_export.php';
  */
 class ExportCsv extends ModeleExports
 {
-	var $id;
-	var $label;
-	var $extension;
-	var $version;
+	/**
+	 * @var int ID
+	 */
+	public $id;
 
-	var $label_lib;
-	var $version_lib;
+	/**
+     * @var string export files label
+     */
+    public $label;
 
-	var $separator;
+	public $extension;
+	public $version;
 
-	var $handle;    // Handle fichier
+	public $label_lib;
+	public $version_lib;
+
+	public $separator;
+
+	public $handle;    // Handle fichier
 
 
 	/**
@@ -68,7 +76,6 @@ class ExportCsv extends ModeleExports
 		// If driver use an external library, put its name here
 		$this->label_lib='Dolibarr';
 		$this->version_lib=DOL_VERSION;
-
 	}
 
 	/**
@@ -149,6 +156,7 @@ class ExportCsv extends ModeleExports
 	 * 	@param		Translate	$outputlangs	Output language object
 	 *	@return		int							<0 if KO, >=0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function open_file($file,$outputlangs)
 	{
 		global $langs;
@@ -175,6 +183,7 @@ class ExportCsv extends ModeleExports
 	 * 	@param		Translate	$outputlangs	Output language object
 	 * 	@return		int							<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function write_header($outputlangs)
 	{
 		return 0;
@@ -190,6 +199,7 @@ class ExportCsv extends ModeleExports
      *  @param		array		$array_types					Array with types of fields
 	 * 	@return		int											<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function write_title($array_export_fields_label,$array_selected_sorted,$outputlangs,$array_types)
 	{
 		global $conf;
@@ -224,6 +234,7 @@ class ExportCsv extends ModeleExports
      *  @param		array		$array_types				Array with types of fields
 	 * 	@return		int										<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function write_record($array_selected_sorted,$objp,$outputlangs,$array_types)
 	{
 		global $conf;
@@ -258,7 +269,7 @@ class ExportCsv extends ModeleExports
 				$array = $array['options'];
 				$newvalue = $array[$newvalue];
 			}
-			
+
 			fwrite($this->handle,$newvalue.$this->separator);
 			$this->col++;
 		}
@@ -273,6 +284,7 @@ class ExportCsv extends ModeleExports
 	 * 	@param		Translate	$outputlangs	Output language object
 	 * 	@return		int							<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function write_footer($outputlangs)
 	{
 		return 0;
@@ -283,6 +295,7 @@ class ExportCsv extends ModeleExports
 	 *
 	 * 	@return		int							<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function close_file()
 	{
 		fclose($this->handle);
@@ -303,14 +316,14 @@ class ExportCsv extends ModeleExports
 	{
 		global $conf;
 		$addquote=0;
-		
+
 
 		// Rule Dolibarr: No HTML
    		//print $charset.' '.$newvalue."\n";
    		//$newvalue=dol_string_nohtmltag($newvalue,0,$charset);
    		$newvalue=dol_htmlcleanlastbr($newvalue);
    		//print $charset.' '.$newvalue."\n";
-		
+
 		// Rule 1 CSV: No CR, LF in cells (except if USE_STRICT_CSV_RULES is on, we can keep record as it is but we must add quotes)
 		$oldvalue=$newvalue;
 		$newvalue=str_replace("\r",'',$newvalue);
@@ -321,7 +334,7 @@ class ExportCsv extends ModeleExports
 			$newvalue=$oldvalue;
 			$addquote=1;
 		}
-		
+
 		// Rule 2 CSV: If value contains ", we must escape with ", and add "
 		if (preg_match('/"/',$newvalue))
 		{
@@ -337,6 +350,4 @@ class ExportCsv extends ModeleExports
 
 		return ($addquote?'"':'').$newvalue.($addquote?'"':'');
 	}
-
 }
-

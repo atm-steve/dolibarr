@@ -62,7 +62,9 @@ class CoreTest extends PHPUnit_Framework_TestCase
      */
     function __construct()
     {
-        //$this->sharedFixture
+    	parent::__construct();
+
+    	//$this->sharedFixture
         global $conf,$user,$langs,$db;
         $this->savconf=$conf;
         $this->savuser=$user;
@@ -257,20 +259,21 @@ class CoreTest extends PHPUnit_Framework_TestCase
          * @param       string $type    1=GET, 0=POST, 2=PHP_SELF
          * @return      int             >0 if there is an injection
          */
+        // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
         function test_sql_and_script_inject($val, $type)
         {
 		    $inj = 0;
 		    // For SQL Injection (only GET and POST are used to be included into bad escaped SQL requests)
 		    if ($type != 2)
 		    {
-		        $inj += preg_match('/delete\s+from/i',	 $val);
-		        $inj += preg_match('/create\s+table/i',	 $val);
-		        $inj += preg_match('/update.+set.+=/i',  $val);
-		        $inj += preg_match('/insert\s+into/i', 	 $val);
-		        $inj += preg_match('/select.+from/i', 	 $val);
-		        $inj += preg_match('/union.+select/i', 	 $val);
-		        $inj += preg_match('/into\s+(outfile|dumpfile)/i',  $val);
-		        $inj += preg_match('/(\.\.%2f)+/i',		 $val);
+		        $inj += preg_match('/delete\s+from/i', $val);
+		        $inj += preg_match('/create\s+table/i', $val);
+		        $inj += preg_match('/update.+set.+=/i', $val);
+		        $inj += preg_match('/insert\s+into/i', $val);
+		        $inj += preg_match('/select.+from/i', $val);
+		        $inj += preg_match('/union.+select/i', $val);
+		        $inj += preg_match('/into\s+(outfile|dumpfile)/i', $val);
+		        $inj += preg_match('/(\.\.%2f)+/i', $val);
 		    }
 		    // For XSS Injection done by adding javascript with script
 		    // This is all cases a browser consider text is javascript:

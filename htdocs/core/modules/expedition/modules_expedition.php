@@ -36,7 +36,10 @@
  */
 abstract class ModelePdfExpedition extends CommonDocGenerator
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
 	/**
@@ -46,6 +49,7 @@ abstract class ModelePdfExpedition extends CommonDocGenerator
      *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of templates
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	static function liste_modeles($db,$maxfilenamelength=0)
 	{
 		global $conf;
@@ -66,7 +70,10 @@ abstract class ModelePdfExpedition extends CommonDocGenerator
  */
 abstract class ModelNumRefExpedition
 {
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 	/** Return if a model can be used or not
 	 *

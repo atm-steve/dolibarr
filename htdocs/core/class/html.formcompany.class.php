@@ -31,10 +31,15 @@
  */
 class FormCompany
 {
-	var $db;
-	var $error;
-
-
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+	
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 	/**
 	 *	Constructor
@@ -56,6 +61,7 @@ class FormCompany
 	 *      @param  string	$filter     Add a SQL filter to select
 	 *    	@return array      			Array of types
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function typent_array($mode=0, $filter='')
 	{
 		global $langs,$mysoc;
@@ -97,6 +103,7 @@ class FormCompany
 	 *	@param  string	$filter     Add a SQL filter to select
 	 *  @return array				Array of types d'effectifs
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function effectif_array($mode=0, $filter='')
 	{
 		$effs = array();
@@ -137,6 +144,7 @@ class FormCompany
 	 *	@param	int		$empty			Add empty value in list
 	 *	@return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function form_prospect_level($page, $selected='', $htmlname='prospect_level_id', $empty=0)
 	{
 		global $user, $langs;
@@ -189,6 +197,7 @@ class FormCompany
 	 *   @param     string	$htmlname			Id of department
 	 *   @return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_departement($selected='',$country_codeid=0, $htmlname='state_id')
 	{
 		print $this->select_state($selected,$country_codeid, $htmlname);
@@ -203,10 +212,11 @@ class FormCompany
 	 *
 	 *    @param	string	$selected        	Code state preselected (mus be state id)
 	 *    @param    integer	$country_codeid    	Country code or id: 0=list for all countries, otherwise country code or country rowid to show
-	 *    @param    string	$htmlname			Id of department
+	 *    @param    string	$htmlname			Id of department. If '', we want only the string with <option>
 	 * 	  @return	string						String with HTML select
 	 *    @see select_country
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_state($selected='',$country_codeid=0, $htmlname='state_id')
 	{
 		global $conf,$langs,$user;
@@ -217,7 +227,7 @@ class FormCompany
 
 		$out='';
 
-		// On recherche les departements/cantons/province active d'une region et pays actif
+		// Serch departements/cantons/province active d'une region et pays actif
 		$sql = "SELECT d.rowid, d.code_departement as code, d.nom as name, d.active, c.label as country, c.code as country_code, r.nom as region_name FROM";
 		$sql .= " ".MAIN_DB_PREFIX ."c_departements as d, ".MAIN_DB_PREFIX."c_regions as r,".MAIN_DB_PREFIX."c_country as c";
 		$sql .= " WHERE d.fk_region=r.code_region and r.fk_pays=c.rowid";
@@ -226,7 +236,6 @@ class FormCompany
 		if ($country_codeid && ! is_numeric($country_codeid)) $sql .= " AND c.code = '".$this->db->escape($country_codeid)."'";
 		$sql .= " ORDER BY c.code, d.code_departement";
 
-		dol_syslog(get_class($this)."::select_departement", LOG_DEBUG);
 		$result=$this->db->query($sql);
 		if ($result)
 		{
@@ -267,7 +276,7 @@ class FormCompany
 						}
 
 						// Si traduction existe, on l'utilise, sinon on prend le libelle par defaut
-						if(!empty($conf->global->MAIN_SHOW_STATE_CODE) &&
+						if (!empty($conf->global->MAIN_SHOW_STATE_CODE) &&
 						($conf->global->MAIN_SHOW_STATE_CODE == 1 || $conf->global->MAIN_SHOW_STATE_CODE == 2 || $conf->global->MAIN_SHOW_STATE_CODE === 'all')) {
 							if(!empty($conf->global->MAIN_SHOW_REGION_IN_STATE_SELECT) && $conf->global->MAIN_SHOW_REGION_IN_STATE_SELECT == 1) {
 								$out.= $obj->region_name . ' - ' . $obj->code . ' - ' . ($langs->trans($obj->code)!=$obj->code?$langs->trans($obj->code):($obj->name!='-'?$obj->name:''));
@@ -298,9 +307,12 @@ class FormCompany
 			dol_print_error($this->db);
 		}
 
-        // Make select dynamic
-        include_once DOL_DOCUMENT_ROOT . '/core/lib/ajax.lib.php';
-        $out .= ajax_combobox($htmlname);
+		// Make select dynamic
+		if (! empty($htmlname))
+		{
+			include_once DOL_DOCUMENT_ROOT . '/core/lib/ajax.lib.php';
+			$out .= ajax_combobox($htmlname);
+		}
 
 		return $out;
 	}
@@ -316,6 +328,7 @@ class FormCompany
 	 *   @param		string		$htmlname		Name of HTML select field
 	 *   @return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_region($selected='',$htmlname='region_id')
 	{
 		global $conf,$langs;
@@ -380,6 +393,7 @@ class FormCompany
 	 *  @param  string  $morecss        Add more css on SELECT element
 	 *  @return	string					String with HTML select
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_civility($selected='',$htmlname='civility_id',$morecss='maxwidth100')
 	{
 		global $conf,$langs,$user;
@@ -439,6 +453,7 @@ class FormCompany
 	 *    @deprecated Use print xxx->select_juridicalstatus instead
 	 *    @see select_juridicalstatus()
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_forme_juridique($selected='', $country_codeid=0, $filter='')
 	{
 		print $this->select_juridicalstatus($selected, $country_codeid, $filter);
@@ -454,6 +469,7 @@ class FormCompany
      *    @param	string		$htmlname			HTML name of select
      *    @return	string							String with HTML select
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_juridicalstatus($selected='', $country_codeid=0, $filter='', $htmlname='forme_juridique_code')
 	{
 		global $conf,$langs,$user;
@@ -750,6 +766,7 @@ class FormCompany
 	 *    @param    string      $morecss                More css
 	 *    @return	string
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_ziptown($selected='', $htmlname='zipcode', $fields='', $fieldsize=0, $disableautocomplete=0, $moreattrib='',$morecss='')
 	{
 		global $conf;
@@ -779,6 +796,7 @@ class FormCompany
      *  @param  string  $morecss        More css
      *  @return	string					HTML string with prof id
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function get_input_id_prof($idprof,$htmlname,$preselected,$country_code,$morecss='maxwidth100onsmartphone quatrevingtpercent')
     {
         global $conf,$langs;
@@ -827,6 +845,7 @@ class FormCompany
      * @param 	string      $htmlname		HTML select name
      * @return	void
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function select_localtax($local, $selected, $htmlname)
     {
     	$tax=get_localtax_by_third($local);
@@ -859,6 +878,4 @@ class FormCompany
     		}
     	}
     }
-
 }
-

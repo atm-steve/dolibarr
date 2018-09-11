@@ -28,18 +28,47 @@
  */
 class DiscountAbsolute
 {
+    /**
+     * @var DoliDB Database handler.
+     */
     public $db;
-    public $error;
 
-    public $id;					// Id discount
+    /**
+	   * @var string Error code (or message)
+	   */
+	  public $error;
+
+	/**
+	 * @var string[]	Array of error strings
+	 */
+	public $errors=array();
+
+	/**
+	 * @var int ID discount
+	 */
+	public $id;
+
+   /**
+	  * @var int Thirdparty ID
+	  */
     public $fk_soc;
+
     public $discount_type;			// 0 => customer discount, 1 => supplier discount
     public $amount_ht;				//
     public $amount_tva;			//
     public $amount_ttc;			//
     public $tva_tx;				// Vat rate
-    public $fk_user;				// Id utilisateur qui accorde la remise
-    public $description;			// Description libre
+
+    /**
+	   * @var int User ID Id utilisateur qui accorde la remise
+	   */
+	  public $fk_user;
+
+    /**
+	   * @var string description
+	   */
+	  public $description;
+
     public $datec;					// Date creation
     public $fk_facture_line;  		// Id invoice line when a discount is used into an invoice line (for absolute discounts)
     public $fk_facture;			    // Id invoice when a discount line is used into an invoice (for credit note)
@@ -341,6 +370,7 @@ class DiscountAbsolute
      *	@param		int		$rowidinvoice	Invoice id (To use discount as a credit note to reduc payment of invoice)
      *	@return		int						<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function link_to_invoice($rowidline,$rowidinvoice)
     {
         // Check parameters
@@ -392,6 +422,7 @@ class DiscountAbsolute
      *
      *	@return		int							<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function unlink_invoice()
     {
         $sql ="UPDATE ".MAIN_DB_PREFIX."societe_remise_except";
@@ -509,11 +540,11 @@ class DiscountAbsolute
     }
 
     /**
-     *  Return amount (with tax) of all credit notes and deposits invoices used by invoice as a payment
+     *  Return amount (with tax) of all credit notes invoices + excess received used by invoice as a payment
      *
      *	@param		CommonInvoice	  $invoice	    	Object invoice
 	 *	@param		int			      $multicurrency	Return multicurrency_amount instead of amount
-     *	@return		int					        		<0 if KO, Sum of credit notes and deposits amount otherwise
+     *	@return		int					        		<0 if KO, Sum of credit notes and excess received amount otherwise
      */
     function getSumCreditNotesUsed($invoice, $multicurrency=0)
     {

@@ -24,9 +24,9 @@
  */
 
 // Put here all includes required by your class file
-require_once(DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php");
-//require_once(DOL_DOCUMENT_ROOT."/societe/class/societe.class.php");
-//require_once(DOL_DOCUMENT_ROOT."/product/class/product.class.php");
+require_once DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php";
+//require_once DOL_DOCUMENT_ROOT."/societe/class/societe.class.php";
+//require_once DOL_DOCUMENT_ROOT."/product/class/product.class.php";
 
 
 /**
@@ -34,21 +34,48 @@ require_once(DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php");
  */
 class CommandeFournisseurDispatch extends CommonObject
 {
-	public $db;							//!< To store db handler
-	public $error;							//!< To return error code (or message)
-	public $errors=array();				//!< To return several error codes (or messages)
-	public $element='commandefournisseurdispatch';			//!< Id that identify managed objects
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error;
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
+
+	/**
+	 * @var string ID to identify managed object
+	 */
+	public $element='commandefournisseurdispatch';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
 	public $table_element='commande_fournisseur_dispatch';		//!< Name of table without prefix where object is stored
 	public $lines=array();
 
-    public $id;
+    /**
+	 * @var int ID
+	 */
+	public $id;
 
 	public $fk_commande;
 	public $fk_product;
 	public $fk_commandefourndet;
 	public $qty;
 	public $fk_entrepot;
+
+	/**
+	 * @var int User ID
+	 */
 	public $fk_user;
+
 	public $datec='';
 	public $comment;
 	public $status;
@@ -467,6 +494,7 @@ class CommandeFournisseurDispatch extends CommonObject
      *  @param  int		$mode       0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto
      *  @return string				Label of status
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function LibStatut($statut,$mode=0)
     {
         global $langs;
@@ -528,8 +556,6 @@ class CommandeFournisseurDispatch extends CommonObject
 		$this->batch='';
 		$this->eatby='';
 		$this->sellby='';
-
-
 	}
 
 	/**
@@ -627,5 +653,4 @@ class CommandeFournisseurDispatch extends CommonObject
 			return - 1;
 		}
 	}
-
 }

@@ -34,34 +34,50 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/commonobject.class.php';
  */
 class Don extends CommonObject
 {
-    public $element='don'; 					// Id that identify managed objects
-    public $table_element='don';			// Name of table without prefix where object is stored
+    /**
+	 * @var string ID to identify managed object
+	 */
+	public $element='don';
+
+    /**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element='don';
+
+	/**
+	 * @var int Field with ID of parent key if this field has a parent
+	 */
 	public $fk_element = 'fk_donation';
+
 	public $ismultientitymanaged = 1;  	// 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
-    var $picto = 'generic';
 
-    var $date;
-    var $amount;
-    var $societe;
-    var $address;
-    var $zip;
-    var $town;
-    var $email;
-    var $public;
-    var $fk_project;
-    var $fk_typepayment;
-	var $num_payment;
-	var $date_valid;
-	var $modepaymentid = 0;
+    /**
+	 * @var string String with name of icon for myobject. Must be the part after the 'object_' into object_myobject.png
+	 */
+	public $picto = 'generic';
 
-	var $labelstatut;
-	var $labelstatutshort;
+    public $date;
+    public $amount;
+    public $societe;
+    public $address;
+    public $zip;
+    public $town;
+    public $email;
+    public $public;
+    public $fk_project;
+    public $fk_typepayment;
+	public $num_payment;
+	public $date_valid;
+	public $modepaymentid = 0;
+
+	public $labelstatut;
+	public $labelstatutshort;
 
 	/**
 	 * @deprecated
 	 * @see note_private, note_public
 	 */
-	var $commentaire;
+	public $commentaire;
 
 
     /**
@@ -95,6 +111,7 @@ class Don extends CommonObject
      *  @param  int		$mode          	0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
      *  @return string 			       	Libelle du statut
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function LibStatut($statut,$mode=0)
     {
     	if (empty($this->labelstatut) || empty($this->labelstatushort))
@@ -683,7 +700,6 @@ class Don extends CommonObject
             dol_print_error($this->db);
             return -1;
         }
-
     }
 
     /**
@@ -694,6 +710,7 @@ class Don extends CommonObject
      *    @param	int		$notrigger	Disable triggers
      *    @return   int     			<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function valid_promesse($id, $userid, $notrigger=0)
     {
 		global $langs, $user;
@@ -743,6 +760,7 @@ class Don extends CommonObject
      *    @param    int		$modepayment   	    mode of payment
      *    @return   int      					<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function set_paid($id, $modepayment=0)
     {
         $sql = "UPDATE ".MAIN_DB_PREFIX."don SET fk_statut = 2";
@@ -777,6 +795,7 @@ class Don extends CommonObject
      *    @param	int		$id   	    id of donation
      *    @return   int     			<0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function set_cancel($id)
     {
         $sql = "UPDATE ".MAIN_DB_PREFIX."don SET fk_statut = -1 WHERE rowid = ".$id;
@@ -806,6 +825,7 @@ class Don extends CommonObject
      *	@param	string	$param	1=promesses de dons validees , 2=xxx, 3=encaisses
      *	@return	int				Summ of donations
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function sum_donations($param)
     {
         global $conf;
@@ -832,6 +852,7 @@ class Don extends CommonObject
      *
      *	@return     int         <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function load_state_board()
     {
         global $conf;
@@ -1038,5 +1059,4 @@ class Don extends CommonObject
 			return 0;
 		}
 	}
-
 }

@@ -39,7 +39,10 @@ class mailing_contacts1 extends MailingTargets
 	var $require_admin=0;                               // Module mailing actif pour user admin ou non
 	var $picto='contact';
 
-	var $db;
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
 
 	/**
@@ -331,6 +334,7 @@ class mailing_contacts1 extends MailingTargets
 	 *  @param  array	$filtersarray   Optional filter data (deprecated)
 	 *  @return int           			<0 si erreur, nb ajout si ok
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function add_to_target($mailing_id,$filtersarray=array())
 	{
 		global $conf, $langs;
@@ -446,6 +450,4 @@ class mailing_contacts1 extends MailingTargets
 
 		return parent::add_to_target($mailing_id, $cibles);
 	}
-
 }
-

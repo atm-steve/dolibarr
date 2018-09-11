@@ -31,7 +31,10 @@ class mod_chequereceipt_mint extends ModeleNumRefChequeReceipts
 {
 	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
 	var $prefix='CHK';
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 	var $name='Mint';
 
 
@@ -142,9 +145,9 @@ class mod_chequereceipt_mint extends ModeleNumRefChequeReceipts
 	 * 	@param	string		$objforref	Object for number to search
 	 *  @return string      			Next free value
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function chequereceipt_get_num($objsoc,$objforref)
 	{
 		return $this->getNextValue($objsoc,$objforref);
 	}
-
 }

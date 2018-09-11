@@ -22,8 +22,8 @@
  *  \brief      Module to Task activity of the current year
  */
 
-include_once(DOL_DOCUMENT_ROOT."/core/boxes/modules_boxes.php");
-require_once(DOL_DOCUMENT_ROOT."/core/lib/date.lib.php");
+include_once DOL_DOCUMENT_ROOT."/core/boxes/modules_boxes.php";
+require_once DOL_DOCUMENT_ROOT."/core/lib/date.lib.php";
 
 
 /**
@@ -35,7 +35,12 @@ class box_task extends ModeleBoxes
     var $boximg="object_projecttask";
     var $boxlabel;
     //var $depends = array("projet");
-    var $db;
+    
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+    
     var $param;
     var $enabled = 0;		// Disabled because bugged.
 
@@ -75,7 +80,7 @@ class box_task extends ModeleBoxes
 		$totalMnt = 0;
 		$totalnb = 0;
 		$totalDuree=0;
-		include_once(DOL_DOCUMENT_ROOT."/projet/class/task.class.php");
+		include_once DOL_DOCUMENT_ROOT."/projet/class/task.class.php";
 		$taskstatic=new Task($db);
 
 
@@ -132,7 +137,6 @@ class box_task extends ModeleBoxes
 		$this->info_box_contents[$i][] = array('td' => 'align="right" ', 'text' => ConvertSecondToTime($totalplannedtot,'all',25200,5));
 		$this->info_box_contents[$i][] = array('td' => 'align="right" ', 'text' => ConvertSecondToTime($totaldurationtot,'all',25200,5));
 		$this->info_box_contents[$i][] = array('td' => '', 'text' => "");
-
 	}
 
 	/**

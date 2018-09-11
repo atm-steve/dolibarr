@@ -33,7 +33,10 @@ class mod_project_simple extends ModeleNumRefProjects
 {
 	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
 	var $prefix='PJ';
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 	var $nom = "Simple";
 	var $name = "Simple";
 
@@ -147,9 +150,9 @@ class mod_project_simple extends ModeleNumRefProjects
      *  @param  Project	$project	Object project
      *  @return string      		Next not used reference
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function project_get_num($objsoc=0,$project='')
     {
         return $this->getNextValue($objsoc,$project);
     }
 }
-

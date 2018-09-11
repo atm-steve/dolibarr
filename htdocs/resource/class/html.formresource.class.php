@@ -21,8 +21,8 @@
  *       \ingroup    core
  *       \brief      Class file to manage forms into resource module
  */
-require_once(DOL_DOCUMENT_ROOT ."/core/class/html.form.class.php");
-require_once(DOL_DOCUMENT_ROOT ."/resource/class/dolresource.class.php");
+require_once DOL_DOCUMENT_ROOT ."/core/class/html.form.class.php";
+require_once DOL_DOCUMENT_ROOT ."/resource/class/dolresource.class.php";
 
 
 /**
@@ -33,12 +33,18 @@ require_once(DOL_DOCUMENT_ROOT ."/resource/class/dolresource.class.php");
  */
 class FormResource
 {
-    var $db;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
     var $substit=array();
     var $param=array();
 
-    var $error;
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
 	/**
@@ -69,6 +75,7 @@ class FormResource
      *  @param	int		$limit			Limit number of answers
      * 	@return	string					HTML string with
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function select_resource_list($selected='',$htmlname='fk_resource',$filter='',$showempty=0, $showtype=0, $forcecombo=0, $event=array(), $filterkey='', $outputmode=0, $limit=20)
     {
     	global $conf,$user,$langs;
@@ -149,17 +156,18 @@ class FormResource
     }
 
     /**
-     *      Return html list of tickets type
+     *  Return html list of tickets type
      *
-     *      @param	string	$selected       Id du type pre-selectionne
-     *      @param  string	$htmlname       Nom de la zone select
-     *      @param  string	$filtertype     To filter on field type in llx_c_ticket_type (array('code'=>xx,'label'=>zz))
-     *      @param  int		$format         0=id+libelle, 1=code+code, 2=code+libelle, 3=id+code
-     *      @param  int		$empty			1=peut etre vide, 0 sinon
-     * 		@param	int		$noadmininfo	0=Add admin info, 1=Disable admin info
-     *      @param  int		$maxlength      Max length of label
-     * 		@return	void
+     *  @param	string	$selected       Id du type pre-selectionne
+     *  @param  string	$htmlname       Nom de la zone select
+     *  @param  string	$filtertype     To filter on field type in llx_c_ticket_type (array('code'=>xx,'label'=>zz))
+     *  @param  int		$format         0=id+libelle, 1=code+code, 2=code+libelle, 3=id+code
+     *  @param  int		$empty			1=peut etre vide, 0 sinon
+     *  @param	int		$noadmininfo	0=Add admin info, 1=Disable admin info
+     *  @param  int		$maxlength      Max length of label
+     * 	@return	void
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function select_types_resource($selected='',$htmlname='type_resource',$filtertype='',$format=0, $empty=0, $noadmininfo=0,$maxlength=0)
     {
     	global $langs,$user;
@@ -202,8 +210,4 @@ class FormResource
     	print '</select>';
     	if ($user->admin && ! $noadmininfo) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"),1);
     }
-
-
-
 }
-

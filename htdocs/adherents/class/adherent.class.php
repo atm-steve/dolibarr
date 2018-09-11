@@ -41,71 +41,85 @@ require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
  */
 class Adherent extends CommonObject
 {
+	/**
+	 * @var string ID to identify managed object
+	 */
 	public $element='member';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
 	public $table_element='adherent';
+
 	public $ismultientitymanaged = 1;  // 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
 
-	var $mesgs;
+	public $mesgs;
 
-	var $login;
+	public $login;
 
 	//! Clear password in memory
-	var $pass;
+	public $pass;
 	//! Clear password in database (defined if DATABASE_PWD_ENCRYPTED=0)
-	var $pass_indatabase;
+	public $pass_indatabase;
 	//! Encrypted password in database (always defined)
-	var $pass_indatabase_crypted;
+	public $pass_indatabase_crypted;
 
-	var $societe;
-	var $company;
-	var $address;
-	var $zip;
-	var $town;
+	public $societe;
+	public $company;
+	public $address;
+	public $zip;
+	public $town;
 
-	var $state_id;              // Id of department
-	var $state_code;            // Code of department
-	var $state;                 // Label of department
+	public $state_id;              // Id of department
+	public $state_code;            // Code of department
+	public $state;                 // Label of department
 
-	var $email;
-	var $skype;
-	var $phone;
-	var $phone_perso;
-	var $phone_mobile;
+	public $email;
+	public $skype;
+	public $phone;
+	public $phone_perso;
+	public $phone_mobile;
 
-	var $morphy;
-	var $public;
-	var $statut;			// -1:brouillon, 0:resilie, >=1:valide,paye
-	var $photo;
+	public $morphy;
+	public $public;
+	public $statut;			// -1:brouillon, 0:resilie, >=1:valide,paye
+	public $photo;
 
-	var $datec;
-	var $datem;
-	var $datefin;
-	var $datevalid;
-	var $birth;
+	public $datec;
+	public $datem;
+	public $datefin;
+	public $datevalid;
+	public $birth;
 
-	var $note_public;
-	var $note_private;
+	public $note_public;
+	public $note_private;
 
-	var $typeid;			// Id type adherent
-	var $type;				// Libelle type adherent
-	var $need_subscription;
+	public $typeid;			// Id type adherent
+	public $type;				// Libelle type adherent
+	public $need_subscription;
 
-	var $user_id;
-	var $user_login;
+	public $user_id;
+	public $user_login;
 
-	var $fk_soc;
+	/**
+	 * @var int Thirdparty ID
+	 */
+    public $fk_soc;
 
 	// Fields loaded by fetch_subscriptions()
-	var $first_subscription_date;
-	var $first_subscription_amount;
-	var $last_subscription_date;
-	var $last_subscription_date_start;
-	var $last_subscription_date_end;
-	var $last_subscription_amount;
-	var $subscriptions=array();
+	public $first_subscription_date;
+	public $first_subscription_amount;
+	public $last_subscription_date;
+	public $last_subscription_date_start;
+	public $last_subscription_date_end;
+	public $last_subscription_amount;
+	public $subscriptions=array();
 
-	var $oldcopy;		// To contains a clone of this when we need to save old properties of object
+	public $oldcopy;		// To contains a clone of this when we need to save old properties of object
 
+	/**
+	 * @var int Entity
+	 */
 	public $entity;
 
 	/**
@@ -139,6 +153,7 @@ class Adherent extends CommonObject
 	 *  @param	string	$errors_to			erros to
 	 *  @return	int							<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function send_an_email($text, $subject, $filename_list=array(), $mimetype_list=array(), $mimefilename_list=array(), $addr_cc="", $addr_bcc="", $deliveryreceipt=0, $msgishtml=-1, $errors_to='')
 	{
 		global $conf,$langs;
@@ -464,7 +479,7 @@ class Adherent extends CommonObject
 			$action='update';
 
 			// Actions on extra fields
-			if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
+			if (! $error && empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
 			{
 				$result=$this->insertExtraFields();
 				if ($result < 0)
@@ -530,6 +545,13 @@ class Adherent extends CommonObject
 						$luser->lastname=$this->lastname;
 						$luser->pass=$this->pass;
 						$luser->societe_id=$this->societe;
+
+						$luser->birth=$this->birth;
+                                                $luser->address=$this->address;
+                                                $luser->zip=$this->zip;
+                                                $luser->town=$this->town;
+                                                $luser->country_id=$this->country_id;
+                                                $luser->state_id=$this->state_id;
 
 						$luser->email=$this->email;
 						$luser->skype=$this->skype;
@@ -629,6 +651,7 @@ class Adherent extends CommonObject
 	 *	@param	User	$user			User making change
 	 *	@return	int						<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function update_end_date($user)
 	{
 		$this->db->begin();
@@ -675,7 +698,6 @@ class Adherent extends CommonObject
 			$this->db->rollback();
 			return -1;
 		}
-
 	}
 
 	/**
@@ -983,6 +1005,7 @@ class Adherent extends CommonObject
 	 *	@param	string	$login		login of member
 	 *	@return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function fetch_login($login)
 	{
 		global $conf;
@@ -1013,6 +1036,7 @@ class Adherent extends CommonObject
 	 *	@param	string	$lastname	Lastname
 	 *	@return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function fetch_name($firstname,$lastname)
 	{
 		global $conf;
@@ -1186,6 +1210,7 @@ class Adherent extends CommonObject
 	 *
 	 *	@return		int			<0 si KO, >0 si OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function fetch_subscriptions()
 	{
 		global $langs;
@@ -1340,7 +1365,7 @@ class Adherent extends CommonObject
 	 *	@param	string		$num_chq				Numero cheque (if Id bank account provided)
 	 *	@param	string		$emetteur_nom			Name of cheque writer
 	 *	@param	string		$emetteur_banque		Name of bank of cheque
-	 *  @param	string		$autocreatethirdparty	Auto create new thirdparty if member not linked to a thirdparty and we request an option that generate invoice.
+	 *  @param	string		$autocreatethirdparty	Auto create new thirdparty if member not yet linked to a thirdparty and we request an option that generate invoice.
 	 *	@return int									<0 if KO, >0 if OK
 	 */
 	function subscriptionComplementaryActions($subscriptionid, $option, $accountid, $datesubscription, $paymentdate, $operation, $label, $amount, $num_chq, $emetteur_nom='', $emetteur_banque='', $autocreatethirdparty=0)
@@ -1736,6 +1761,7 @@ class Adherent extends CommonObject
 	 *
 	 *  @return		int		<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function add_to_abo()
 	{
 		global $conf,$langs;
@@ -1793,6 +1819,7 @@ class Adherent extends CommonObject
 	 *
 	 *  @return     int     <0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function del_to_abo()
 	{
 		global $conf,$langs;
@@ -1976,6 +2003,7 @@ class Adherent extends CommonObject
 	 *  @param  int			$mode        			0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
 	 *  @return string      						Label
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($statut,$need_subscription,$date_end_subscription,$mode=0)
 	{
 		global $langs;
@@ -2065,6 +2093,7 @@ class Adherent extends CommonObject
 	 *
 	 *      @return     int         <0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function load_state_board()
 	{
 		global $conf;
@@ -2092,7 +2121,6 @@ class Adherent extends CommonObject
 			$this->error=$this->db->error();
 			return -1;
 		}
-
 	}
 
 	/**
@@ -2101,6 +2129,7 @@ class Adherent extends CommonObject
 	 *      @param	User	$user   		Objet user
 	 *      @return WorkboardResponse|int 	<0 if KO, WorkboardResponse if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function load_board($user)
 	{
 		global $conf, $langs;
@@ -2246,6 +2275,7 @@ class Adherent extends CommonObject
 	 *								2=Return key only (uid=qqq)
 	 *	@return	string				DN
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _load_ldap_dn($info,$mode=0)
 	{
 		global $conf;
@@ -2262,6 +2292,7 @@ class Adherent extends CommonObject
 	 *
 	 *	@return		array		Tableau info des attributs
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function _load_ldap_info()
 	{
 		global $conf,$langs;
@@ -2454,6 +2485,7 @@ class Adherent extends CommonObject
 	 * Existing categories are left untouch.
 	 *
 	 * @param int[]|int $categories Category or categories IDs
+     * @return void
 	 */
 	public function setCategories($categories)
 	{
@@ -2655,5 +2687,4 @@ class Adherent extends CommonObject
 
 		return 0;
 	}
-
 }

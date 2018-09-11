@@ -31,23 +31,44 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/commonobject.class.php';
  */
 class Deplacement extends CommonObject
 {
+	/**
+	 * @var string ID to identify managed object
+	 */
 	public $element='deplacement';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
 	public $table_element='deplacement';
+
+	/**
+	 * @var int    Name of subtable line
+	 */
 	public $table_element_line = '';
+
+	/**
+	 * @var int Field with ID of parent key if this field has a parent
+	 */
 	public $fk_element = '';
+
 	public $ismultientitymanaged = 0;	// 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
 
-	var $datec;         // Creation date
-	var $dated;
-	var $fk_user_author;
-	var $fk_user;
-	var $km;
-	var $socid;
-	var $statut;		// 0=draft, 1=validated
-	var $extraparams=array();
+	public $datec;         // Creation date
+	public $dated;
+	public $fk_user_author;
 
-	var $statuts=array();
-	var $statuts_short=array();
+	/**
+	 * @var int User ID
+	 */
+	public $fk_user;
+
+	public $km;
+	public $socid;
+	public $statut;		// 0=draft, 1=validated
+	public $extraparams=array();
+
+	public $statuts=array();
+	public $statuts_short=array();
 
    /**
 	* Constructor
@@ -146,7 +167,6 @@ class Deplacement extends CommonObject
 			$this->db->rollback();
 			return -1;
 		}
-
 	}
 
 	/**
@@ -300,6 +320,7 @@ class Deplacement extends CommonObject
 	 *  @param  int		$mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto
 	 *  @return string      		Libelle
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($statut,$mode=0)
 	{
 		global $langs;
@@ -445,6 +466,4 @@ class Deplacement extends CommonObject
 			dol_print_error($this->db);
 		}
 	}
-
 }
-

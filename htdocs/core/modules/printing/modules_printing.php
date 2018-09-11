@@ -31,8 +31,15 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
  */
 class PrintingDriver
 {
-    var $db;
-    var $error;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+    
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
     /**
@@ -81,6 +88,4 @@ class PrintingDriver
         if ($langs->trans($transstring) != $transstring) return $langs->trans($transstring);
         else return $this->desc;
     }
-
 }
-

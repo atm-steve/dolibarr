@@ -28,27 +28,97 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/accounting.lib.php';
 /**
  * Class to manage categories of an accounting account
  */
-class AccountancyCategory 	// extends CommonObject
+class AccountancyCategory // extends CommonObject
 {
-	public $db;							//!< To store db handler
-	public $error;							//!< To return error code (or message)
-	public $errors=array();				//!< To return several error codes (or messages)
-	public $element='c_accounting_category';			//!< Id that identify managed objects
-	public $table_element='c_accounting_category';	//!< Name of table without prefix where object is stored
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
-	public $id;
+	/**
+	 * @var string 		Error string
+	 * @see             errors
+	 */
+	public $error;
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
+
+	/**
+	 * @var string ID to identify managed object
+	 */
+	public $element='c_accounting_category';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element='c_accounting_category';
+
+	/**
+     * @var int ID
+     */
+    public $id;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $code;
-	public $label;
+
+	/**
+     * @var string Accountancy Category label
+     */
+    public $label;
+
+    /**
+	 * @var mixed Sample property 1
+	 */
 	public $range_account;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $sens;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $category_type;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $formula;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $position;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $fk_country;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $active;
 
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $lines_cptbk;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $lines_display;
+
+	/**
+	 * @var mixed Sample property 1
+	 */
 	public $sdc;
 
 
@@ -359,7 +429,8 @@ class AccountancyCategory 	// extends CommonObject
 	 * @param int $id Id
 	 * @return int <0 if KO, 0 if not found, >0 if OK
 	 */
-	public function display($id) {
+    public function display($id)
+    {
 		global $conf;
 		$sql = "SELECT t.rowid, t.account_number, t.label";
 		$sql .= " FROM " . MAIN_DB_PREFIX . "accounting_account as t";
@@ -394,7 +465,8 @@ class AccountancyCategory 	// extends CommonObject
 	 *
 	 * @return int <0 if KO, 0 if not found, >0 if OK
 	 */
-	public function getCptBK($id) {
+    public function getCptBK($id)
+    {
 		global $conf;
 
 		$sql = "SELECT t.numero_compte, t.label_operation, t.doc_ref";
@@ -442,8 +514,9 @@ class AccountancyCategory 	// extends CommonObject
 	 *
 	 * @return int <0 if KO, 0 if not found, >0 if OK
 	 */
-	public function getAccountsWithNoCategory($id) {
-	    global $conf;
+    public function getAccountsWithNoCategory($id)
+    {
+        global $conf;
 
 	    $sql = "SELECT aa.account_number as numero_compte, aa.label as label_compte";
 	    $sql .= " FROM " . MAIN_DB_PREFIX . "accounting_account as aa";
@@ -485,7 +558,8 @@ class AccountancyCategory 	// extends CommonObject
 	 *
 	 * @return int <0 if KO, >0 if OK
 	 */
-	public function updateAccAcc($id_cat, $cpts = array()) {
+    public function updateAccAcc($id_cat, $cpts = array())
+    {
 		global $conf;
 		$error = 0;
 
@@ -548,7 +622,8 @@ class AccountancyCategory 	// extends CommonObject
 	 *
 	 * @return int <0 if KO, >0 if OK
 	 */
-	public function deleteCptCat($cpt_id) {
+    public function deleteCptCat($cpt_id)
+    {
 		$error = 0;
 
 		$sql = "UPDATE " . MAIN_DB_PREFIX . "accounting_account as aa";
@@ -799,5 +874,4 @@ class AccountancyCategory 	// extends CommonObject
 			return -1;
 		}
 	}
-
 }

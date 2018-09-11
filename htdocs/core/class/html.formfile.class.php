@@ -36,7 +36,11 @@ class FormFile
 {
 	private $db;
 
+	/**
+	 * @var string Error code (or message)
+	 */
 	public $error;
+
 	public $numoffiles;
 	public $infofiles;			// Used to return informations by function getDocumentsLink
 
@@ -73,6 +77,7 @@ class FormFile
 	 *	@param	string		$sectiondir		If upload must be done inside a particular directory (is sectiondir defined, sectionid must not be)
 	 * 	@return	int							<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function form_attach_new_file($url, $title='', $addcancel=0, $sectionid=0, $perm=1, $size=50, $object='', $options='', $useajax=1, $savingdocmask='', $linkfiles=1, $htmlname='formuserfile', $accept='', $sectiondir='')
 	{
 		global $conf,$langs, $hookmanager;
@@ -248,6 +253,7 @@ class FormFile
 	 * 		@return		int										<0 if KO, number of shown files if OK
 	 *      @deprecated                                         Use print xxx->showdocuments() instead.
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function show_documents($modulepart,$modulesubdir,$filedir,$urlsource,$genallowed,$delallowed=0,$modelselected='',$allowgenifempty=1,$forcenomultilang=0,$iconPDF=0,$notused=0,$noform=0,$param='',$title='',$buttonlabel='',$codelang='')
 	{
 		$this->numoffiles=0;
@@ -672,7 +678,7 @@ class FormFile
 				$formadmin=new FormAdmin($this->db);
 				$defaultlang=$codelang?$codelang:$langs->getDefaultLang();
 				$morecss='maxwidth150';
-				if (! empty($conf->browser->phone)) $morecss='maxwidth100';
+				if ($conf->browser->layout == 'phone') $morecss='maxwidth100';
 				$out.= $formadmin->select_language($defaultlang, 'lang_id', 0, 0, 0, 0, 0, $morecss);
 			}
 			else
@@ -778,7 +784,8 @@ class FormFile
 						$out.= '<td class="right nowraponall">';
 						if ($delallowed)
 						{
-							$out.= '<a href="'.$urlsource.(strpos($urlsource,'?')?'&amp;':'?').'action=remove_file&amp;file='.urlencode($relativepath);
+							$tmpurlsource = preg_replace('/#[a-zA-Z0-9_]*$/', '', $urlsource);
+							$out.= '<a href="'.$tmpurlsource.(strpos($tmpurlsource,'?')?'&amp;':'?').'action=remove_file&amp;file='.urlencode($relativepath);
 							$out.= ($param?'&amp;'.$param:'');
 							//$out.= '&modulepart='.$modulepart; // TODO obsolete ?
 							//$out.= '&urlsource='.urlencode($urlsource); // TODO obsolete ?
@@ -814,7 +821,7 @@ class FormFile
 
 				$this->numoffiles++;
 			}
-			// Loop on each file found
+			// Loop on each link found
 			if (is_array($link_list))
 			{
 				$colspan=2;
@@ -1003,6 +1010,7 @@ class FormFile
 	 * 	@return	 int						<0 if KO, nb of files shown if OK
 	 *  @see list_of_autoecmfiles
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function list_of_documents($filearray,$object,$modulepart,$param='',$forcedownload=0,$relativepath='',$permonobject=1,$useinecm=0,$textifempty='',$maxlength=0,$title='',$url='', $showrelpart=0, $permtoeditline=-1,$upload_dir='',$sortfield='',$sortorder='ASC', $disablemove=1, $addfilterfields=0)
 	{
 		global $user, $conf, $langs, $hookmanager;
@@ -1304,14 +1312,13 @@ class FormFile
 							if (! empty($conf->dol_use_jmobile)) $useajax=0;
 							if (empty($conf->use_javascript_ajax)) $useajax=0;
 							if (! empty($conf->global->MAIN_ECM_DISABLE_JS)) $useajax=0;
-
-							print '<a href="'.(($useinecm && $useajax)?'#':$url.'?action=delete&urlfile='.urlencode($filepath).$param).'" class="deletefilelink" rel="'.$filepath.'">'.img_delete().'</a>';
+							print '<a href="'.(($useinecm && $useajax)?'#':($url.'?action=delete&urlfile='.urlencode($filepath).$param)).'" class="deletefilelink" rel="'.$filepath.'">'.img_delete().'</a>';
 						}
 						print "</td>";
 
 						if (empty($disablemove))
 						{
-							if ($nboffiles > 1 && empty($conf->browser->phone)) {
+							if ($nboffiles > 1 && $conf->browser->layout != 'phone') {
 								print '<td align="center" class="linecolmove tdlineupdown">';
 								if ($i > 0) {
 									print '<a class="lineupdown" href="'.$_SERVER["PHP_SELF"].'?id='.$this->id.'&amp;action=up&amp;rowid='.$line->id.'">'.img_up('default',0,'imgupforline').'</a>';
@@ -1322,7 +1329,7 @@ class FormFile
 								print '</td>';
 							}
 							else {
-							   	print '<td align="center"'.((empty($conf->browser->phone) && empty($disablemove)) ?' class="linecolmove tdlineupdown"':' class="linecolmove"').'>';
+							   	print '<td align="center"'.(($conf->browser->layout != 'phone' && empty($disablemove)) ?' class="linecolmove tdlineupdown"':' class="linecolmove"').'>';
 							   	print '</td>';
 							}
 					   }
@@ -1390,6 +1397,7 @@ class FormFile
 	 *  @return int                 		<0 if KO, nb of files shown if OK
 	 *  @see list_of_documents
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function list_of_autoecmfiles($upload_dir, $filearray, $modulepart, $param, $forcedownload=0, $relativepath='', $permtodelete=1, $useinecm=0, $textifempty='', $maxlength=0, $url='', $addfilterfields=0)
 	{
 		global $user, $conf, $langs, $form;
@@ -1654,7 +1662,6 @@ class FormFile
 
 		// Include template
 		include DOL_DOCUMENT_ROOT.'/core/tpl/ajax/fileupload_view.tpl.php';
-
 	}
 
 	/**
@@ -1826,6 +1833,4 @@ class FormFile
 		}
 		return $out;
 	}
-
 }
-

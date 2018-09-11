@@ -33,8 +33,16 @@ require_once DOL_DOCUMENT_ROOT .'/expensereport/class/expensereport_rule.class.p
  */
 class ExpenseReport extends CommonObject
 {
-    var $element='expensereport';
-    var $table_element='expensereport';
+    /**
+	 * @var string ID to identify managed object
+	 */
+	public $element='expensereport';
+
+    /**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element='expensereport';
+
     var $table_element_line = 'expensereport_det';
     var $fk_element = 'fk_expensereport';
     var $picto = 'trip';
@@ -139,7 +147,7 @@ class ExpenseReport extends CommonObject
         // List of language codes for status
         $this->statuts_short = array(0 => 'Draft', 2 => 'Validated', 4 => 'Canceled', 5 => 'Approved', 6 => 'Paid', 99 => 'Refused');
         $this->statuts = array(0 => 'Draft', 2 => 'ValidatedWaitingApproval', 4 => 'Canceled', 5 => 'Approved', 6 => 'Paid', 99 => 'Refused');
-        $this->statuts_logo = array(0 => 'statut0', 2 => 'statut1', 4 => 'statut5', 5 => 'statut3', 6 => 'statut6', 99 => 'statut8');
+        $this->statuts_logo = array(0 => 'statut0', 2 => 'statut1', 4 => 'statut5', 5 => 'statut3', 6 => 'statut6', 99 => 'statut5');
 
         return 1;
     }
@@ -547,6 +555,7 @@ class ExpenseReport extends CommonObject
 	 *    @param    int     $notrigger          Disable triggers
      *    @return   int                         <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function set_paid($id, $fuser, $notrigger = 0)
     {
 		$error = 0;
@@ -617,6 +626,7 @@ class ExpenseReport extends CommonObject
      *  @param      int     $mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto, 6=Long label + Picto
      *  @return     string              Label
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function LibStatut($status,$mode=0)
     {
         global $langs;
@@ -791,6 +801,7 @@ class ExpenseReport extends CommonObject
      * @param   User    $user           User
      * @return  int                     <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_line_by_project($projectid,$user='')
     {
         global $conf,$db,$langs;
@@ -887,7 +898,6 @@ class ExpenseReport extends CommonObject
                 return -1;
             }
         }
-
     }
 
     /**
@@ -946,6 +956,7 @@ class ExpenseReport extends CommonObject
      *
      * @return  int     <0 if OK, >0 if KO
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_lines()
     {
         $this->lines=array();
@@ -1190,6 +1201,7 @@ class ExpenseReport extends CommonObject
      * @param   User    $fuser      User
      * @return  int                 <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function set_save_from_refuse($fuser)
     {
         global $conf,$langs;
@@ -1297,6 +1309,7 @@ class ExpenseReport extends CommonObject
      * @param User      $fuser      User
      * @param Details   $details    Details
 	 * @param int       $notrigger  Disable triggers
+     * @return int
      */
     function setDeny($fuser,$details,$notrigger=0)
     {
@@ -1362,6 +1375,7 @@ class ExpenseReport extends CommonObject
 	 * @param   int     $notrigger  Disable triggers
      * @return  int                 <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function set_unpaid($fuser, $notrigger = 0)
     {
 		$error = 0;
@@ -1422,6 +1436,7 @@ class ExpenseReport extends CommonObject
 	 * @param   int     $notrigger  Disable triggers
      * @return  int                 <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function set_cancel($fuser,$detail, $notrigger=0)
     {
 		$error = 0;
@@ -1605,6 +1620,7 @@ class ExpenseReport extends CommonObject
      *  @param    string    $ligne_total_tva    Amount of all taxes
      *  @return    void
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function update_totaux_add($ligne_total_ht,$ligne_total_tva)
     {
         $this->total_ht = $this->total_ht + $ligne_total_ht;
@@ -1633,6 +1649,7 @@ class ExpenseReport extends CommonObject
      *  @param    string    $ligne_total_tva    Amount of all taxes
      *  @return    void
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function update_totaux_del($ligne_total_ht,$ligne_total_tva)
     {
         $this->total_ht = $this->total_ht - $ligne_total_ht;
@@ -1747,8 +1764,6 @@ class ExpenseReport extends CommonObject
 			$this->error = 'ErrorExpenseNotDraft';
             return -3;
         }
-
-
 	}
 
 	/**
@@ -2051,6 +2066,7 @@ class ExpenseReport extends CommonObject
      * @param   Date    $date_fin       End date
      * @return  int                     <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function periode_existe($fuser, $date_debut, $date_fin)
     {
         $sql = "SELECT rowid, date_debut, date_fin";
@@ -2105,6 +2121,7 @@ class ExpenseReport extends CommonObject
      *
      * @return  array       Array of user ids
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function fetch_users_approver_expensereport()
     {
         $users_validator=array();
@@ -2210,6 +2227,7 @@ class ExpenseReport extends CommonObject
      *
      *      @return     int         <0 if KO, >0 if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function load_state_board()
     {
         global $conf;
@@ -2246,6 +2264,7 @@ class ExpenseReport extends CommonObject
      *      @param  string  $option         'topay' or 'toapprove'
      *      @return WorkboardResponse|int 	<0 if KO, WorkboardResponse if OK
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function load_board($user, $option='topay')
     {
         global $conf, $langs;
@@ -2368,7 +2387,6 @@ class ExpenseReport extends CommonObject
     	}
     	return 0;
     }
-
 }
 
 
@@ -2377,8 +2395,15 @@ class ExpenseReport extends CommonObject
  */
 class ExpenseReportLine
 {
-    var $db;
-    var $error;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
     var $rowid;
     var $comments;
@@ -2681,6 +2706,7 @@ class ExpenseReportLine
  *    @param    int     $useshortlabel  Use short labels
  *    @return   string                  HTML select with status
  */
+// phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 function select_expensereport_statut($selected='',$htmlname='fk_statut',$useempty=1, $useshortlabel=0)
 {
     global $db, $langs;
@@ -2716,6 +2742,7 @@ function select_expensereport_statut($selected='',$htmlname='fk_statut',$useempt
  *  @param      int     $active         1=Active only, 0=Unactive only, -1=All
  *  @return     string                  Select html
  */
+// phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 function select_type_fees_id($selected='',$htmlname='type',$showempty=0, $active=1)
 {
     global $db,$langs,$user;

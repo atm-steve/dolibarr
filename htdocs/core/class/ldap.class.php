@@ -29,12 +29,21 @@
  */
 class Ldap
 {
-	var $error;
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
+	/**
+	 * @var string[]	Array of error strings
+	 */
+	public $errors = array();
+	
 	/**
 	 * Tableau des serveurs (IP addresses ou nom d'hotes)
 	 */
 	var $server=array();
+
 	/**
 	 * Base DN (e.g. "dc=foo,dc=com")
 	 */
@@ -147,6 +156,7 @@ class Ldap
 	 *
 	 *	@return		int		<0 if KO, 1 if bind anonymous, 2 if bind auth
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function connect_bind()
 	{
 		global $langs, $conf;
@@ -370,7 +380,8 @@ class Ldap
 	 *
 	 * @return	boolean					version
 	 */
-	function setVersion() {
+    function setVersion()
+    {
 		// LDAP_OPT_PROTOCOL_VERSION est une constante qui vaut 17
 		$ldapsetversion = ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, $this->ldapProtocolVersion);
 		return $ldapsetversion;
@@ -381,7 +392,8 @@ class Ldap
 	 *
 	 * @return	boolean					referrals
 	 */
-	function setReferrals() {
+    function setReferrals()
+    {
 		// LDAP_OPT_REFERRALS est une constante qui vaut ?
 		$ldapreferrals = ldap_set_option($this->connection, LDAP_OPT_REFERRALS, 0);
 		return $ldapreferrals;
@@ -650,6 +662,7 @@ class Ldap
 	 *	@param	array		$info		Attributes array
 	 *	@return	string					Content of file
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function dump_content($dn, $info)
 	{
 		$content='';
@@ -1429,6 +1442,7 @@ class Ldap
 	 *	@param	string	$value		AD time to convert
 	 *	@return	integer				Unix timestamp
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function convert_time($value)
 	{
 		$dateLargeInt=$value; // nano secondes depuis 1601 !!!!

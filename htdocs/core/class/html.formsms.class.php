@@ -32,7 +32,10 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/html.form.class.php';
  */
 class FormSms
 {
-    var $db;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
     var $fromname;
     var $fromsms;
@@ -56,7 +59,10 @@ class FormSms
     var $substit=array();
     var $param=array();
 
-    var $error;
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
     /**
@@ -89,6 +95,7 @@ class FormSms
      *  @param  int     $showform       Show form tags and submit button (recommanded is to use with value 0)
      *	@return	void
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function show_form($morecss='titlefield', $showform=1)
     {
         global $conf, $langs, $user, $form;
@@ -354,6 +361,4 @@ function limitChars(textarea, limit, infodiv)
 
         print "<!-- End form SMS -->\n";
     }
-
 }
-

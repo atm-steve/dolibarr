@@ -35,10 +35,17 @@ class FormAccounting extends Form
 
 	private $options_cache = array();
 
-	var $db;
-	var $error;
-
 	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+	
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+   /**
 	* Constructor
 	*
 	* @param		DoliDB		$db      Database handler
@@ -62,6 +69,7 @@ class FormAccounting extends Form
 	 * @param   int     $disabledajaxcombo Disable ajax combo box.
 	 * @return	string				String with HTML select
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_journal($selectid, $htmlname = 'journal', $nature=0, $showempty = 0, $select_in = 0, $select_out = 0, $morecss='maxwidth300 maxwidthonsmartphone', $usecache='', $disabledajaxcombo=0)
 	{
 		global $conf,$langs;
@@ -141,6 +149,7 @@ class FormAccounting extends Form
      *  @param  int     $allcountries   All countries
      * 	@return	void
      */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     function select_accounting_category($selected='',$htmlname='account_category', $useempty=0, $maxlen=0, $help=1, $allcountries=0)
     {
         global $db,$langs,$user,$mysoc;
@@ -216,7 +225,9 @@ class FormAccounting extends Form
 	 * @param string $selectedkey Value
 	 * @return string HTML edit field
 	 */
-	function select_bookkeeping_importkey($htmlname = 'importkey', $selectedkey = '') {
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    function select_bookkeeping_importkey($htmlname = 'importkey', $selectedkey = '')
+    {
 		$options = array();
 
 		$sql = 'SELECT DISTINCT import_key from ' . MAIN_DB_PREFIX . 'accounting_bookkeeping';
@@ -252,6 +263,7 @@ class FormAccounting extends Form
 	 * @param string   $usecache           Key to use to store result into a cache. Next call with same key will reuse the cache.
 	 * @return string                      String with HTML select
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_account($selectid, $htmlname = 'account', $showempty = 0, $event = array(), $select_in = 0, $select_out = 0, $morecss='maxwidth300 maxwidthonsmartphone', $usecache='')
 	{
 		global $conf, $langs;
@@ -339,7 +351,9 @@ class FormAccounting extends Form
 	 * @param string   $morecss        More css
 	 * @return string                  String with HTML select
 	 */
-	function select_auxaccount($selectid, $htmlname='account_num_aux', $showempty=0, $morecss='maxwidth200') {
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    function select_auxaccount($selectid, $htmlname='account_num_aux', $showempty=0, $morecss='maxwidth200')
+    {
 
 		$aux_account = array();
 
@@ -398,6 +412,7 @@ class FormAccounting extends Form
 	 * @param string $output_format (html/opton (for option html only)/array (to return options arrays
 	 * @return string/array
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function selectyear_accountancy_bookkepping($selected = '', $htmlname = 'yearid', $useempty = 0, $output_format = 'html')
 	{
 	    global $conf;
@@ -428,4 +443,3 @@ class FormAccounting extends Form
 		}
 	}
 }
-

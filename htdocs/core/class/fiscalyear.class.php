@@ -16,7 +16,7 @@
  */
 
 /**
- *      \file       htdocs/core/class/fiscalyear.php
+ *      \file       htdocs/core/class/fiscalyear.class.php
  *		\ingroup    fiscal year
  *		\brief      File of class to manage fiscal years
  */
@@ -28,23 +28,46 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/commonobject.class.php';
  */
 class Fiscalyear extends CommonObject
 {
+	/**
+	 * @var string ID to identify managed object
+	 */
 	public $element='fiscalyear';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
 	public $table_element='accounting_fiscalyear';
+
+	/**
+	 * @var int    Name of subtable line
+	 */
 	public $table_element_line = '';
+
+	/**
+	 * @var int Field with ID of parent key if this field has a parent
+	 */
 	public $fk_element = '';
+
 	public $ismultientitymanaged = 1;	// 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
 
-	var $rowid;
+	/**
+	 * @var int ID
+	 */
+	public $rowid;
 
-	var $label;
-	var $date_start;
-	var $date_end;
-	var $datec;
-	var $statut;		// 0=open, 1=closed
-	var $entity;
+	/**
+     * @var string fiscal year label
+     */
+    public $label;
 
-	var $statuts=array();
-	var $statuts_short=array();
+	public $date_start;
+	public $date_end;
+	public $datec;
+	public $statut;		// 0=open, 1=closed
+	public $entity;
+
+	public $statuts=array();
+	public $statuts_short=array();
 
 	/**
 	 * Constructor
@@ -245,6 +268,7 @@ class Fiscalyear extends CommonObject
 	 *  @param  int		$mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto
 	 *  @return string      		Label
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($statut,$mode=0)
 	{
 		global $langs;
@@ -323,5 +347,4 @@ class Fiscalyear extends CommonObject
 			dol_print_error($this->db);
 		}
 	}
-
 }

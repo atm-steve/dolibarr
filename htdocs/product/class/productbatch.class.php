@@ -22,7 +22,7 @@
  *  \brief      Manage record and specific data for batch number management
  */
 
-require_once(DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php");
+require_once DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php";
 
 
 /**
@@ -30,7 +30,11 @@ require_once(DOL_DOCUMENT_ROOT."/core/class/commonobject.class.php");
  */
 class Productbatch extends CommonObject
 {
-	var $element='productbatch';			//!< Id that identify managed objects
+	/**
+	 * @var string ID to identify managed object
+	 */
+	public $element='productbatch';
+
 	private static $_table_element='product_batch';		//!< Name of table without prefix where object is stored
 
 	var $tms='';
@@ -391,15 +395,14 @@ class Productbatch extends CommonObject
 		$this->eatby='';
 		$this->batch='';
 		$this->import_key='';
-
-
 	}
 
 	/**
 	 *  Clean fields (triming)
 	 *
-	 *	@return	void
+	 *  @return	void
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
 	private function clean_param()
 	{
 		if (isset($this->fk_product_stock)) $this->fk_product_stock=(int) trim($this->fk_product_stock);
@@ -539,5 +542,4 @@ class Productbatch extends CommonObject
             return -1;
         }
     }
-
 }

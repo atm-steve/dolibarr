@@ -27,8 +27,15 @@
  */
 class FormIntervention
 {
-    var $db;
-    var $error;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+    
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
     /**
@@ -52,6 +59,7 @@ class FormIntervention
 	 *	@param	int		$showempty	Show empty line
 	 *	@return int         		Nbre of project if OK, <0 if KO
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function select_interventions($socid=-1, $selected='', $htmlname='interventionid', $maxlength=16, $showempty=1)
 	{
 		global $db,$user,$conf,$langs;

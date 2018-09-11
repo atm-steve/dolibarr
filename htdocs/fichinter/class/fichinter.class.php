@@ -35,10 +35,29 @@ require_once DOL_DOCUMENT_ROOT .'/core/class/commonobjectline.class.php';
  */
 class Fichinter extends CommonObject
 {
+	/**
+	 * @var string ID to identify managed object
+	 */
 	public $element='fichinter';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
 	public $table_element='fichinter';
+
+	/**
+	 * @var int Field with ID of parent key if this field has a parent
+	 */
 	public $fk_element='fk_fichinter';
+
+	/**
+	 * @var int    Name of subtable line
+	 */
 	public $table_element_line='fichinterdet';
+
+	/**
+	 * @var string String with name of icon for myobject. Must be the part after the 'object_' into object_myobject.png
+	 */
 	public $picto = 'intervention';
 
 	/**
@@ -46,36 +65,44 @@ class Fichinter extends CommonObject
 	 */
 	protected $table_ref_field = 'ref';
 
-	var $socid;		// Id client
+	public $socid;		// Id client
 
-	var $author;
-	var $datec;
-	var $datev;
-	var $dateo;
-	var $datee;
-	var $datet;
-	var $datem;
-	var $duration;
-	var $statut = 0;		// 0=draft, 1=validated, 2=invoiced, 3=Terminate
-	var $description;
-	var $fk_contrat = 0;
-	var $fk_project = 0;
-	var $extraparams=array();
+	public $author;
+	public $datec;
+	public $datev;
+	public $dateo;
+	public $datee;
+	public $datet;
+	public $datem;
+	public $duration;
+	public $statut = 0;		// 0=draft, 1=validated, 2=invoiced, 3=Terminate
 
-	var $lines = array();
+	/**
+	 * @var string description
+	 */
+	public $description;
+
+	public $fk_contrat = 0;
+	public $fk_project = 0;
+	public $extraparams=array();
+
+	public $lines = array();
 
 	/**
 	 * Draft status
 	 */
 	const STATUS_DRAFT = 0;
+
 	/**
 	 * Validated status
 	 */
 	const STATUS_VALIDATED = 1;
+
 	/**
 	 * Billed
 	 */
 	const STATUS_BILLED = 2;
+
 	/**
 	 * Closed
 	 */
@@ -98,6 +125,7 @@ class Fichinter extends CommonObject
 	 *
 	 *  @return     int         <0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function load_state_board()
 	{
 		global $user;
@@ -222,7 +250,7 @@ class Fichinter extends CommonObject
 				if (! $resql) $error++;
 			}
 
-			if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
+			if (! $error && empty($conf->global->MAIN_EXTRAFIELDS_DISABLED))
 			{
 				$result=$this->insertExtraFields();
 				if ($result < 0)
@@ -266,7 +294,6 @@ class Fichinter extends CommonObject
 			$this->db->rollback();
 			return -1;
 		}
-
 	}
 
 	/**
@@ -278,12 +305,15 @@ class Fichinter extends CommonObject
 	 */
 	function update($user, $notrigger=0)
 	{
+		global $conf;
 	 	if (! is_numeric($this->duration)) {
 	 		$this->duration = 0;
 	 	}
 	 	if (! dol_strlen($this->fk_project)) {
 	 		$this->fk_project = 0;
 	 	}
+
+	 	$error = 0;
 
 		$this->db->begin();
 
@@ -299,8 +329,16 @@ class Fichinter extends CommonObject
 		dol_syslog(get_class($this)."::update", LOG_DEBUG);
 		if ($this->db->query($sql))
 		{
+			if (! $error && empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
+			{
+				$result=$this->insertExtraFields();
+				if ($result < 0)
+				{
+					$error++;
+				}
+			}
 
-			if (! $notrigger)
+			if (! $error && ! $notrigger)
 			{
 				// Call trigger
 				$result=$this->call_trigger('FICHINTER_MODIFY',$user);
@@ -372,8 +410,7 @@ class Fichinter extends CommonObject
 
 				if ($this->statut == 0) $this->brouillon = 1;
 
-				// Retreive all extrafield
-				// fetch optionals attributes and labels
+				// Retreive extrafields
 				$this->fetch_optionals();
 
 				/*
@@ -619,6 +656,7 @@ class Fichinter extends CommonObject
 	 *	@param      int		$mode       0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=Short label + Picto, 6=Long label + Picto
 	 *	@return     string      		Label
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($statut,$mode=0)
 	{
 		// Init/load array of translation of status
@@ -961,6 +999,7 @@ class Fichinter extends CommonObject
 	 *	@param      date	$date_delivery   	date of delivery
 	 *	@return     int							<0 if ko, >0 if ok
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function set_date_delivery($user, $date_delivery)
 	{
 		global $conf;
@@ -993,6 +1032,7 @@ class Fichinter extends CommonObject
 	 *	@param      string	$description    description
 	 *	@return     int						<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function set_description($user, $description)
 	{
 		global $conf;
@@ -1026,6 +1066,7 @@ class Fichinter extends CommonObject
 	 *	@param      int		$contractid		Description
 	 *	@return     int						<0 if ko, >0 if ok
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function set_contrat($user, $contractid)
 	{
 		global $conf;
@@ -1232,6 +1273,7 @@ class Fichinter extends CommonObject
 	 *
 	 *	@return		int		<0 if KO, >0 if OK
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function fetch_lines()
 	{
 		$this->lines = array();
@@ -1299,18 +1341,36 @@ class Fichinter extends CommonObject
  */
 class FichinterLigne extends CommonObjectLine
 {
-	var $db;
-	var $error;
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 	// From llx_fichinterdet
-	var $fk_fichinter;
-	var $desc;          	// Description ligne
-	var $datei;           // Date intervention
-	var $duration;        // Duree de l'intervention
-	var $rang = 0;
+	public $fk_fichinter;
+	public $desc;          	// Description ligne
+	public $datei;           // Date intervention
+	public $duration;        // Duree de l'intervention
+	public $rang = 0;
 
+	/**
+	 * @var string ID to identify managed object
+	 */
 	public $element='fichinterdet';
+
+	/**
+	 * @var string Name of table without prefix where object is stored
+	 */
 	public $table_element='fichinterdet';
+
+	/**
+	 * @var int Field with ID of parent key if this field has a parent
+	 */
 	public $fk_element='fk_fichinter';
 
 	/**
@@ -1528,6 +1588,7 @@ class FichinterLigne extends CommonObjectLine
 	 *
 	 *	@return		int		<0 si ko, >0 si ok
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function update_total()
 	{
 		global $conf;
@@ -1629,6 +1690,4 @@ class FichinterLigne extends CommonObjectLine
 			return -2;
 		}
 	}
-
 }
-

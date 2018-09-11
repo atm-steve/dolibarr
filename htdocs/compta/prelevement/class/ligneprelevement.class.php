@@ -31,8 +31,15 @@
  */
 class LignePrelevement
 {
-	var $id;
-	var $db;
+	/**
+	 * @var int ID
+	 */
+	public $id;
+	
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
 	var $statuts = array();
 
@@ -128,6 +135,7 @@ class LignePrelevement
 	 *    @param    int		$mode       0=Label, 1=Picto + label, 2=Picto, 3=Label + Picto
 	 * 	  @return   string      		Label
 	 */
+    // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	function LibStatut($statut,$mode=0)
 	{
 		global $langs;
@@ -173,4 +181,3 @@ class LignePrelevement
 		return CommonObject::commonReplaceThirdparty($db, $origin_id, $dest_id, $tables);
 	}
 }
-
