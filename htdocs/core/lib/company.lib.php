@@ -797,10 +797,11 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
     $extralabels=$extrafields->fetch_name_optionals_label($contactstatic->table_element);
 
     $contactstatic->fields=array(
-    'name'      =>array('type'=>'varchar(128)', 'label'=>'Name',             'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>10, 'searchall'=>1),
-    'poste'     =>array('type'=>'varchar(128)', 'label'=>'PostOfFunction',   'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>20),
-    'address'   =>array('type'=>'varchar(128)', 'label'=>'Address',          'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>30),
-    'statut'    =>array('type'=>'integer',      'label'=>'Status',           'enabled'=>1, 'visible'=>1,  'notnull'=>1, 'default'=>0, 'index'=>1,  'position'=>40, 'arrayofkeyval'=>array(0=>$contactstatic->LibStatut(0,1), 1=>$contactstatic->LibStatut(1,1))),
+    'name'      	=>array('type'=>'varchar(128)', 'label'=>'Name',             'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>10, 'searchall'=>1),
+    'poste'     	=>array('type'=>'varchar(128)', 'label'=>'PostOfFunction',   'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>20),
+    'address'   	=>array('type'=>'varchar(128)', 'label'=>'Address',          'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>30),
+    'datec'	        =>array('type'=>'date',         'label'=>'DateCreation',     'enabled'=>1, 'visible'=>1,  'notnull'=>1, 'default'=>1, 'index'=>1,  'position'=>40),
+    'statut'    	=>array('type'=>'integer',      'label'=>'Status',           'enabled'=>1, 'visible'=>1,  'notnull'=>1, 'default'=>0, 'index'=>1,  'position'=>50, 'arrayofkeyval'=>array(0=>$contactstatic->LibStatut(0,1), 1=>$contactstatic->LibStatut(1,1))),
     );
 
     // Definition of fields for list
@@ -809,7 +810,8 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
     't.name'=>array('label'=>"Name", 'checked'=>1, 'position'=>10),
     't.poste'=>array('label'=>"PostOrFunction", 'checked'=>1, 'position'=>20),
     't.address'=>array('label'=>(empty($conf->dol_optimize_smallscreen) ? $langs->trans("Address").' / '.$langs->trans("Phone").' / '.$langs->trans("Email") : $langs->trans("Address")), 'checked'=>1, 'position'=>30),
-    't.statut'=>array('label'=>"Status", 'checked'=>1, 'position'=>40, 'align'=>'center'),
+    't.datec'=>array('label'=>"DateCreation", 'checked'=>1, 'position'=>40, 'align'=>'center'),
+    't.statut'=>array('label'=>"Status", 'checked'=>1, 'position'=>50, 'align'=>'center'),
     );
     // Extra fields
     if (is_array($extrafields->attributes[$contactstatic->table_element]['label']) && count($extrafields->attributes[$contactstatic->table_element]['label']))
@@ -881,7 +883,7 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
     $sql = "SELECT t.rowid, t.lastname, t.firstname, t.fk_pays as country_id, t.civility, t.poste, t.phone as phone_pro, t.phone_mobile, t.phone_perso, t.fax, t.email, t.skype, t.statut, t.photo,";
-    $sql .= " t.civility as civility_id, t.address, t.zip, t.town";
+    $sql .= " t.civility as civility_id, t.address, t.zip, t.town, t.datec";
     $sql .= " FROM ".MAIN_DB_PREFIX."socpeople as t";
     $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."socpeople_extrafields as ef on (t.rowid = ef.fk_object)";
     $sql .= " WHERE t.fk_soc = ".$object->id;
@@ -978,6 +980,7 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
             $contactstatic->web = $obj->web;
             $contactstatic->skype = $obj->skype;
             $contactstatic->photo = $obj->photo;
+            $contactstatic->datec = $obj->datec;
 
             $country_code = getCountry($obj->country_id, 2);
             $contactstatic->country_code = $country_code;
@@ -1026,6 +1029,14 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
             	print '<td>';
 	            print $contactstatic->getBannerAddress('contact', $object);
     	        print '</td>';
+            }
+
+            // Date création
+            if (! empty($arrayfields['t.datec']['checked']))
+            {
+                print '<td>';
+                print dol_print_date($contactstatic->datec, '%d %B %Y');
+                print '</td>';
             }
 
             // Status
