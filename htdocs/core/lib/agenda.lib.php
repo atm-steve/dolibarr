@@ -69,10 +69,10 @@ function print_actions_filter($form, $canedit, $status, $year, $month, $day, $sh
 	else print '<table class="nobordernopadding" width="100%"><tr><td class="borderright">';
 
 	print '<table class="nobordernopadding centpercent">';
-
+	
+	print '<tr>';
 	if ($canedit)
 	{
-		print '<tr>';
 		print '<td class="nowrap" style="padding-bottom: 2px; padding-right: 4px;">';
 		print $langs->trans("ActionsToDoBy").' &nbsp; ';
 		print '</td><td style="padding-bottom: 2px; padding-right: 4px;">';
@@ -95,23 +95,25 @@ function print_actions_filter($form, $canedit, $status, $year, $month, $day, $sh
     		print '</td></tr>';
 		}
 
-		include_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
-		$formactions=new FormActions($db);
-
-		// Type
-		print '<tr>';
-		print '<td class="nowrap" style="padding-bottom: 2px; padding-right: 4px;">';
-		print $langs->trans("Type");
-		print ' &nbsp;</td><td class="nowrap" style="padding-bottom: 2px; padding-right: 4px;">';
-		$multiselect=0;
-		if (! empty($conf->global->MAIN_ENABLE_MULTISELECT_TYPE))     // We use an option here because it adds bugs when used on agenda page "peruser" and "list"
-		{
-            $multiselect=(!empty($conf->global->AGENDA_USE_EVENT_TYPE));
-		}
-        print $formactions->select_type_actions($actioncode, "actioncode", $excludetype, (empty($conf->global->AGENDA_USE_EVENT_TYPE)?1:-1), 0, $multiselect);
-		print '</td></tr>';
 	}
 
+	
+	
+	include_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
+	$formactions=new FormActions($db);
+	// Type
+	print '<tr>';
+	print '<td class="nowrap" style="padding-bottom: 2px; padding-right: 4px;">';
+	print $langs->trans("Type");
+	print ' &nbsp;</td><td class="nowrap" style="padding-bottom: 2px; padding-right: 4px;">';
+	$multiselect=0;
+	if (! empty($conf->global->MAIN_ENABLE_MULTISELECT_TYPE))     // We use an option here because it adds bugs when used on agenda page "peruser" and "list"
+	{
+	    $multiselect=(!empty($conf->global->AGENDA_USE_EVENT_TYPE));
+	}
+	print $formactions->select_type_actions($actioncode, "actioncode", $excludetype, (empty($conf->global->AGENDA_USE_EVENT_TYPE)?1:-1), 0, $multiselect);
+	print '</td></tr>';
+	
 	if (! empty($conf->societe->enabled) && $user->rights->societe->lire)
 	{
 		print '<tr>';
