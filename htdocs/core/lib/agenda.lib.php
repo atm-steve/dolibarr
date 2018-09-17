@@ -70,9 +70,9 @@ function print_actions_filter($form, $canedit, $status, $year, $month, $day, $sh
 
 	print '<table class="nobordernopadding centpercent">';
 	
-	print '<tr>';
 	if ($canedit)
 	{
+	    print '<tr>';
 		print '<td class="nowrap" style="padding-bottom: 2px; padding-right: 4px;">';
 		print $langs->trans("ActionsToDoBy").' &nbsp; ';
 		print '</td><td style="padding-bottom: 2px; padding-right: 4px;">';
