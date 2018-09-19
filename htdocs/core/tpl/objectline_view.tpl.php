@@ -283,7 +283,7 @@ if($object->element == 'facture' && $object->type == Facture::TYPE_SITUATION && 
 
 	<td class="linecoldelete" align="center"><?php $coldisplay++; ?>
 		<?php
-		if (empty($disableremove)) {
+		if (($this->situation_counter == 1 || !$this->situation_cycle_ref) && empty($disableremove)) {
 			print '<a href="' . $_SERVER["PHP_SELF"] . '?id=' . $this->id . '&amp;action=ask_deleteline&amp;lineid=' . $line->id . '">';
 			print img_delete();
 			print '</a>';
