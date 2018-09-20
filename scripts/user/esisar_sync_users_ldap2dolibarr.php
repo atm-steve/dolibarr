@@ -306,6 +306,13 @@ while($obj = $db->fetch_object($res)) {
 
 			// Gestion des groupes
 			// TODO : revoir la gestion des groupes (ou script de sync groupes)
+			$g=new UserGroup($db);			
+			$allgroups = $g->listGroupsForUser($fuser->id);
+			if(!empty($allgroups) && !$error){
+				foreach($allgroups as $grouptodelete){
+					$fuser->RemoveFromGroup($grouptodelete->id,1);
+				}
+			}
 			if(!$error) {
 				foreach ($ldapuser['memberOfFull'] as $groupdn) {
 					$matches = array();
