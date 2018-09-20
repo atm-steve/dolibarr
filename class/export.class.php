@@ -765,6 +765,13 @@ class TExportCompta extends TObjetStd {
 				if($ligne->total_tva != 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
 			}
 
+			// Arrondis à 2 décimales : tk8339, parfois l'addition en PHP donne trop de décimales
+			if(!empty($conf->global->EXPORTCOMPTA_ROUND_2_DECIMALES)) {
+				$TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = round($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur],2);
+				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = round($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit],2);
+				$TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = round($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA],2);
+			}
+
 			// Déclarer la facture comme exportée
 			if($this->addExportTime) {
 				 $facture->array_options['options_date_compta'] = time();
