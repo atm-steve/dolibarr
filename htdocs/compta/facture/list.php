@@ -1061,6 +1061,13 @@ if ($resql)
 				  if (! $i) $totalarray['totalhtfield']=$totalarray['nbfield'];
 				  $totalarray['totalht'] += $obj->total_ht;
 			}
+			//Marge
+			$facture = new Facture($db);
+			$facture->fetch($obj->id);
+			
+			$formmargin = new FormMargin($db);
+			$marginInfo = $formmargin->getMarginInfosArray($facture);
+			print '<td align="right" class="nowrap">'.price($marginInfo['total_margin']).'</td>';
 			// Amount VAT
 			if (! empty($arrayfields['f.total_vat']['checked']))
 			{
@@ -1132,13 +1139,8 @@ if ($resql)
 				print '</td>';
 				if (! $i) $totalarray['nbfield']++;
 			}
-//Marge
-			$facture = new Facture($db);
-			$facture->fetch($obj->id);
+
 			
-			$formmargin = new FormMargin($db);
-			$marginInfo = $formmargin->getMarginInfosArray($facture);
-			print '<td align="right" class="nowrap">'.price($marginInfo['total_margin']).'</td>';
 
 			
 // Status
@@ -1186,7 +1188,7 @@ if ($resql)
 					if ($num < $limit && empty($offset)) print '<td align="left">'.$langs->trans("Total").'</td>';
 					else print '<td align="left">'.$langs->trans("Totalforthispage").'</td>';
 			   }
-			   elseif ($totalarray['totalhtfield'] == $i)  print '<td align="right">'.price($totalarray['totalht']).'</td>';
+			   elseif ($totalarray['totalhtfield'] == $i)  print '<td align="right">'.price($totalarray['totalht']).'</td><td></td>';
 			   elseif ($totalarray['totalvatfield'] == $i) print '<td align="right">'.price($totalarray['totalvat']).'</td>';
 			   elseif ($totalarray['totallocaltax1field'] == $i) print '<td align="right">'.price($totalarray['totallocaltax1']).'</td>';
 			   elseif ($totalarray['totallocaltax2field'] == $i) print '<td align="right">'.price($totalarray['totallocaltax2']).'</td>';
