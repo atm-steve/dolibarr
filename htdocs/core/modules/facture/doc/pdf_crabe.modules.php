@@ -538,6 +538,15 @@ class pdf_crabe extends ModelePDFFactures
 						{
 							$pdf->MultiCell($this->postotalht-$this->posxprogress-1, 3, $progress, 0, 'R');
 						}
+
+						// display curent situation
+						if($object->lines[$i]->product_type <= 3){
+						  $prev_progress = $object->lines[$i]->get_prev_progress($object->id);
+						  $lineprogress = ($object->lines[$i]->situation_percent - $prev_progress) . '%';
+						  $pdf->SetXY($this->postotalht-19,$curY);
+						  $pdf->MultiCell(30,2, $lineprogress,'','C');
+						}
+ 
 					}
 
 					// Unit
