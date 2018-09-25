@@ -4137,13 +4137,13 @@ function print_fiche_titre($title, $mesg='', $picto='title_generic.png', $pictoi
  *	@param	string	$morehtmlright		Added message to show on right
  *	@param	string	$picto				Icon to use before title (should be a 32x32 transparent png file)
  *	@param	int		$pictoisfullpath	1=Icon name is a full absolute url of image
- * 	@param	int		$id					To force an id on html objects
+ * 	@param	string	$id					To force an id on html objects
  *  @param  string  $morecssontable     More css on table
  *	@param	string	$morehtmlcenter		Added message to show on center
  * 	@return	string
  *  @see print_barre_liste
  */
-function load_fiche_titre($titre, $morehtmlright='', $picto='title_generic.png', $pictoisfullpath=0, $id=0, $morecssontable='', $morehtmlcenter='')
+function load_fiche_titre($titre, $morehtmlright='', $picto='title_generic.png', $pictoisfullpath=0, $id='', $morecssontable='', $morehtmlcenter='')
 {
 	global $conf;
 
@@ -4153,7 +4153,7 @@ function load_fiche_titre($titre, $morehtmlright='', $picto='title_generic.png',
 
 	$return.= "\n";
 	$return.= '<table '.($id?'id="'.$id.'" ':'').'summary="" class="centpercent notopnoleftnoright'.($morecssontable?' '.$morecssontable:'').'" style="margin-bottom: 2px;"><tr>';
-	if ($picto) $return.= '<td class="nobordernopadding widthpictotitle opacityhigh" valign="middle">'.img_picto('',$picto, 'class="valignmiddle widthpictotitle" id="pictotitle"', $pictoisfullpath).'</td>';
+	if ($picto) $return.= '<td class="nobordernopadding widthpictotitle opacityhigh" valign="middle">'.img_picto('',$picto, 'class="valignmiddle widthpictotitle pictotitle"', $pictoisfullpath).'</td>';
 	$return.= '<td class="nobordernopadding" valign="middle">';
 	$return.= '<div class="titre">'.$titre.'</div>';
 	$return.= '</td>';
@@ -6064,7 +6064,7 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 			{
 				// Set the online payment url link into __ONLINE_PAYMENT_URL__ key
 				require_once DOL_DOCUMENT_ROOT.'/core/lib/payments.lib.php';
-				$outputlangs->load('paypal');
+				$outputlangs->loadLangs(array('paypal','other'));
 				$typeforonlinepayment='free';
 				if (is_object($object) && $object->element == 'commande') $typeforonlinepayment='order';
 				if (is_object($object) && $object->element == 'facture')  $typeforonlinepayment='invoice';
@@ -6073,7 +6073,7 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 				$paymenturl=$url;
 			}
 
-			$substitutionarray['__ONLINE_PAYMENT_TEXT_AND_URL__']=($paymenturl?$outputlangs->trans("PredefinedMailContentLink", $paymenturl):'');
+			$substitutionarray['__ONLINE_PAYMENT_TEXT_AND_URL__']=($paymenturl?str_replace('\n', "\n", $outputlangs->trans("PredefinedMailContentLink", $paymenturl)):'');
 			$substitutionarray['__ONLINE_PAYMENT_URL__']=$paymenturl;
 		}
 	}
