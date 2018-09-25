@@ -133,6 +133,7 @@ $arrayfields=array(
 	'c.total_ht'=>array('label'=>$langs->trans("AmountHT"), 'checked'=>1),
 	'c.total_vat'=>array('label'=>$langs->trans("AmountVAT"), 'checked'=>0),
 	'c.total_ttc'=>array('label'=>$langs->trans("AmountTTC"), 'checked'=>0),
+	'margin'=>array('label'=>$langs->trans("Margin"), 'checked'=>0),
 	'c.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
 	'c.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500),
 	'c.fk_statut'=>array('label'=>$langs->trans("Status"), 'checked'=>1, 'position'=>1000),
@@ -629,9 +630,7 @@ if ($resql)
 		print '<input class="flat" type="text" size="4" name="search_total_ht" value="'.$search_total_ht.'">';
 		print '</td>';
 	}
-	if(!empty($conf->margin->enabled)){
-		print '<td></td>';
-	}
+	
 	if (! empty($arrayfields['c.total_vat']['checked']))
 	{
 		// Amount
@@ -645,6 +644,9 @@ if ($resql)
 		print '<td class="liste_titre" align="right">';
 		print '<input class="flat" type="text" size="5" name="search_total_ttc" value="'.$search_total_ttc.'">';
 		print '</td>';
+	}
+	if(!empty($arrayfields['margin']['checked'])){
+		print '<td></td>';
 	}
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
@@ -709,11 +711,12 @@ if ($resql)
 	if (! empty($arrayfields['c.date_delivery']['checked']))  print_liste_field_titre($arrayfields['c.date_delivery']['label'],$_SERVER["PHP_SELF"],'c.date_livraison','',$param, 'align="center"',$sortfield,$sortorder);
 	
 	if (! empty($arrayfields['c.total_ht']['checked']))       print_liste_field_titre($arrayfields['c.total_ht']['label'],$_SERVER["PHP_SELF"],'c.total_ht','',$param, 'align="right"',$sortfield,$sortorder);
-	if(!empty($conf->margin->enabled)){
-		print_liste_field_titre($langs->trans('Margin'),$_SERVER["PHP_SELF"],'','',$param,'align="right"',$sortfield,$sortorder);
-	}
+	
 	if (! empty($arrayfields['c.total_vat']['checked']))      print_liste_field_titre($arrayfields['c.total_vat']['label'],$_SERVER["PHP_SELF"],'c.tva','',$param, 'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['c.total_ttc']['checked']))      print_liste_field_titre($arrayfields['c.total_ttc']['label'],$_SERVER["PHP_SELF"],'c.total_ttc','',$param, 'align="right"',$sortfield,$sortorder);
+	if(!empty($arrayfields['margin']['checked'])){
+		print_liste_field_titre($langs->trans('Margin'),$_SERVER["PHP_SELF"],'','',$param,'align="right"',$sortfield,$sortorder);
+	}
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
 	// Hook fields
@@ -1011,13 +1014,6 @@ if ($resql)
 			  if (! $i) $totalarray['totalhtfield']=$totalarray['nbfield'];
 			  $totalarray['totalht'] += $obj->total_ht;
 		}
-		//Marge
-		$commande = new Commande($db);
-		$commande->fetch($obj->rowid);
-		$formmargin = new FormMargin($db);
-		
-		$marginInfo = $formmargin->getMarginInfosArray($commande);
-		print '<td align="right" class="nowrap">'.price($marginInfo['total_margin']).'</td>';
 		
 		// Amount VAT
 		if (! empty($arrayfields['c.total_vat']['checked']))
@@ -1034,6 +1030,16 @@ if ($resql)
 			if (! $i) $totalarray['nbfield']++;
 			if (! $i) $totalarray['totalttcfield']=$totalarray['nbfield'];
 			$totalarray['totalttc'] += $obj->total_ttc;
+		}
+		//Marge
+		if (! empty($arrayfields['margin']['checked']))
+		{
+			$commande = new Commande($db);
+			$commande->fetch($obj->rowid);
+			$formmargin = new FormMargin($db);
+
+			$marginInfo = $formmargin->getMarginInfosArray($commande);
+			print '<td align="right" class="nowrap">'.price($marginInfo['total_margin']).'</td>';
 		}
 
 		// Extra fields
