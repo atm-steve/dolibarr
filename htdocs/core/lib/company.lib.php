@@ -668,6 +668,7 @@ function show_projects($conf, $langs, $db, $object, $backtopage='', $nocreatelin
         $sql .= " FROM ".MAIN_DB_PREFIX."projet as p";
         $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_lead_status as cls on p.fk_opp_status = cls.rowid";
         $sql .= " WHERE p.fk_soc = ".$object->id;
+        if(strpos($backtopage,'clisyage') != false)$sql .= " AND p.fk_opp_status IN (6,7)";
         $sql .= " ORDER BY p.dateo DESC";
 
         $result=$db->query($sql);
