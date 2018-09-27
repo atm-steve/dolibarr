@@ -64,12 +64,12 @@ class DiscountAbsolute
      *  @param      int		$fk_facture_source	fk_facture_source
      *	@return		int							<0 if KO, =0 if not found, >0 if OK
      */
-    function fetch($rowid, $fk_facture_source=0)
+    function fetch($rowid, $fk_facture_source=0, $fk_facture = 0)
     {
     	global $conf;
 
         // Check parameters
-        if (! $rowid && ! $fk_facture_source)
+        if (! $rowid && ! $fk_facture_source && ! $fk_facture)
         {
             $this->error='ErrorBadParameters';
             return -1;
@@ -87,6 +87,7 @@ class DiscountAbsolute
         $sql.= " WHERE sr.entity = " . $conf->entity;
         if ($rowid) $sql.= " AND sr.rowid=".$rowid;
         if ($fk_facture_source) $sql.= " AND sr.fk_facture_source=".$fk_facture_source;
+        if ($fk_facture) $sql.= " AND sr.fk_facture=".$fk_facture;
 
         dol_syslog(get_class($this)."::fetch", LOG_DEBUG);
         $resql = $this->db->query($sql);
