@@ -748,6 +748,7 @@ function get_next_value($db,$mask,$table,$field,$where='',$objsoc='',$date='',$m
         $sql.= " FROM ".MAIN_DB_PREFIX."facture";
         $sql.= " WHERE facnumber LIKE '".$maskLike."'";
         $sql.= " AND entity IN (".getEntity($table, 1).")";
+	$sql.= " ORDER BY facnumber DESC";
 
         dol_syslog("functions2::get_next_value sql=".$sql);
         $resql=$db->query($sql);
