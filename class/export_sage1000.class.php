@@ -177,7 +177,7 @@ class TExportComptaSage1000 extends TExportCompta
 						'fixe' => '1',
 
 						'libelle' => $libelle,
-						'mode_reglement' => ($facture['mode_reglement_code'] == "VIR") ? '210' : ($facture['mode_reglement_code'] == "CHQ") ? '110' : '',
+						'mode_reglement' => ($facture['mode_reglement_code'] == "VIR") ? '210' : ($facture['mode_reglement_code'] == "CHQ" ? '110' : ''),
 						'date_echeance' => $facture['date_lim_reglement'],
 						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 						'montant_credit' => ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
@@ -202,7 +202,7 @@ class TExportComptaSage1000 extends TExportCompta
 						'fixe' => '1',
 
 						'libelle' => $libelle,
-						'mode_reglement' => ($facture['mode_reglement_code'] == "VIR") ? '210' : ($facture['mode_reglement_code'] == "CHQ") ? '110' : '',
+						'mode_reglement' => ($facture['mode_reglement_code'] == "VIR") ? '210' : ($facture['mode_reglement_code'] == "CHQ" ? '110' : ''),
 						'date_echeance' => $facture['date_lim_reglement'],
 						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 						'montant_credit' => ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
@@ -227,7 +227,7 @@ class TExportComptaSage1000 extends TExportCompta
 						'fixe' => '999',
 
 						'libelle' => $libelle,
-						'mode_reglement' => ($facture['mode_reglement_code'] == "VIR") ? '210' : ($facture['mode_reglement_code'] == "CHQ") ? '110' : '',
+						'mode_reglement' => ($facture['mode_reglement_code'] == "VIR") ? '210' : ($facture['mode_reglement_code'] == "CHQ" ? '110' : ''),
 						'date_echeance' => $facture['date_lim_reglement'],
 						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 						'montant_credit' => ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
@@ -235,10 +235,10 @@ class TExportComptaSage1000 extends TExportCompta
 				);
 				if ($conf->agefodd->enabled) {
 					if ($facture['type_session'] == '0') {
-						$ligneFichier['type_prestation'] = 'P';
+						$ligneFichier['type_prestation'] = 'F';
 					}
 					elseif ($facture['type_session'] == '1') {
-						$ligneFichier['type_prestation'] = 'F';
+						$ligneFichier['type_prestation'] = 'P';
 					}
 				}
 				//Hack for panthera
@@ -254,9 +254,9 @@ class TExportComptaSage1000 extends TExportCompta
 					{
 						$objp=$this->db->fetch_object($resql);
 						if (!empty($objp->fk_soc==$tiers['ref'])) {
-							$ligneFichier['type_prestation'] = 'P';
-						} else {
 							$ligneFichier['type_prestation'] = 'F';
+						} else {
+							$ligneFichier['type_prestation'] = 'P';
 						}
 					}
 				}
