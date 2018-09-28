@@ -160,6 +160,13 @@ class Facture extends CommonInvoice
 	public $tab_next_situation_invoice=array();
 
 	public $oldcopy;
+	
+	
+	public $retained_warranty;
+	
+	public $retained_warranty_date_limit;
+	
+	public $retained_warranty_fk_cond_reglement;
 
     /**
      * Standard invoice
@@ -426,6 +433,9 @@ class Facture extends CommonInvoice
         $sql.= ", fk_multicurrency";
         $sql.= ", multicurrency_code";
         $sql.= ", multicurrency_tx";
+        $sql.= ", retained_warranty";
+        $sql.= ", retained_warranty_date_limit";
+        $sql.= ", retained_warranty_fk_cond_reglement";
 		$sql.= ")";
 		$sql.= " VALUES (";
 		$sql.= "'(PROV)'";
@@ -458,6 +468,9 @@ class Facture extends CommonInvoice
 		$sql.= ", ".(int) $this->fk_multicurrency;
 		$sql.= ", '".$this->db->escape($this->multicurrency_code)."'";
 		$sql.= ", ".(double) $this->multicurrency_tx;
+		$sql.= ", ".(empty($this->retained_warranty)?"0":$this->db->escape($this->retained_warranty));
+		$sql.= ", ".(!empty($this->retained_warranty_date_limit)?"'".$this->db->idate($this->retained_warranty_date_limit)."'":'NULL');
+		$sql.= ", ".(int) $this->retained_warranty_fk_cond_reglement;
 		$sql.=")";
 
 		$resql=$this->db->query($sql);
@@ -1270,6 +1283,7 @@ class Facture extends CommonInvoice
 		$sql.= ', c.code as cond_reglement_code, c.libelle as cond_reglement_libelle, c.libelle_facture as cond_reglement_libelle_doc';
         $sql.= ', f.fk_incoterms, f.location_incoterms';
         $sql.= ", i.libelle as libelle_incoterms";
+        $sql.= ", f.retained_warranty as retained_warranty, f.retained_warranty_date_limit as retained_warranty_date_limit, f.retained_warranty_fk_cond_reglement as retained_warranty_fk_cond_reglement";
 		$sql.= ' FROM '.MAIN_DB_PREFIX.'facture as f';
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_payment_term as c ON f.fk_cond_reglement = c.rowid';
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_paiement as p ON f.fk_mode_reglement = p.id';
@@ -1337,6 +1351,10 @@ class Facture extends CommonInvoice
 				$this->situation_cycle_ref  = $obj->situation_cycle_ref;
 				$this->situation_counter    = $obj->situation_counter;
 				$this->situation_final      = $obj->situation_final;
+				$this->retained_warranty    = $obj->retained_warranty;
+				$this->retained_warranty_date_limit         = $this->db->jdate($obj->retained_warranty_date_limit);
+				$this->retained_warranty_fk_cond_reglement  = $obj->retained_warranty_fk_cond_reglement;
+				
 				$this->extraparams			= (array) json_decode($obj->extraparams, true);
 
 				//Incoterms
@@ -1565,7 +1583,8 @@ class Facture extends CommonInvoice
 		if (isset($this->note_public)) $this->note_public=trim($this->note_public);
 		if (isset($this->modelpdf)) $this->modelpdf=trim($this->modelpdf);
 		if (isset($this->import_key)) $this->import_key=trim($this->import_key);
-
+		if (isset($this->retained_warranty)) $this->retained_warranty = floatval($this->retained_warranty);
+		
 		// Check parameters
 		// Put here code to add control on parameters values
 
@@ -1605,7 +1624,10 @@ class Facture extends CommonInvoice
 		$sql.= " import_key=".(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null").",";
 		$sql.= " situation_cycle_ref=".(empty($this->situation_cycle_ref)?"null":$this->db->escape($this->situation_cycle_ref)).",";
 		$sql.= " situation_counter=".(empty($this->situation_counter)?"null":$this->db->escape($this->situation_counter)).",";
-		$sql.= " situation_final=".(empty($this->situation_counter)?"0":$this->db->escape($this->situation_counter));
+		$sql.= " situation_final=".(empty($this->situation_counter)?"0":$this->db->escape($this->situation_counter)).",";
+		$sql.= " retained_warranty=".(empty($this->retained_warranty)?"0":$this->db->escape($this->retained_warranty)).",";
+		$sql.= " retained_warranty_date_limit=".(strval($this->retained_warranty_date_limit)!='' ? "'".$this->db->idate($this->retained_warranty_date_limit)."'" : 'null').",";
+		$sql.= " retained_warranty_fk_cond_reglement=".(isset($this->retained_warranty_fk_cond_reglement)?intval($this->retained_warranty_fk_cond_reglement):"null");
 		$sql.= " WHERE rowid=".$this->id;
 
 		$this->db->begin();
@@ -4218,6 +4240,85 @@ class Facture extends CommonInvoice
 		if ($this->statut != Facture::STATUS_VALIDATED) return false;
 
 		return $this->date_lim_reglement < ($now - $conf->facture->client->warning_delay);
+	}
+	
+	
+	/**
+	 *  Change the retained warranty
+	 *
+	 *  @param		float		$value		value of retained warranty
+	 *  @return		int				>0 if OK, <0 if KO
+	 */
+	function setRetainedWarranty($value)
+	{
+	    dol_syslog(get_class($this).'::setRetainedWarranty('.$value.')');
+	    if ($this->statut >= 0)
+	    {
+	        $fieldname = 'retained_warranty';
+	        $sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element;
+	        $sql .= ' SET '.$fieldname.' = '.floatval($value);
+	        $sql .= ' WHERE rowid='.$this->id;
+	        
+	        if ($this->db->query($sql))
+	        {
+	            $this->retained_warranty = floatval($value);
+	            return 1;
+	        }
+	        else
+	        {
+	            dol_syslog(get_class($this).'::setRetainedWarranty Erreur '.$sql.' - '.$this->db->error());
+	            $this->error=$this->db->error();
+	            return -1;
+	        }
+	    }
+	    else
+	    {
+	        dol_syslog(get_class($this).'::setRetainedWarranty, status of the object is incompatible');
+	        $this->error='Status of the object is incompatible '.$this->statut;
+	        return -2;
+	    }
+	}
+	
+	
+	/**
+	 *  Change the retained_warranty_date_limit
+	 *
+	 *  @param		timestamp		$value		value of retained warranty
+	 *  @return		int				>0 if OK, <0 if KO
+	 */
+	function setRetainedWarrantyDateLimit($timestamp,$dateYmd=false)
+	{
+	    if(!$timestamp && $dateYmd){
+	        $timestamp = $this->db->jdate($dateYmd);
+	    }
+	    
+	    
+	    dol_syslog(get_class($this).'::setRetainedWarrantyDateLimit('.$value.')');
+	    if ($this->statut >= 0)
+	    {
+	        $fieldname = 'retained_warranty_date_limit';
+	        $sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element;
+	        $sql .= ' SET '.$fieldname.' = '.(strval($timestamp)!='' ? '\'' .$this->db->idate($timestamp).'\''  : 'null' );
+	        $sql .= ' WHERE rowid='.$this->id;
+	        
+	        if ($this->db->query($sql))
+	        {
+	            $this->retained_warranty_date_limit = $timestamp;
+	            return 1;
+	        }
+	        else
+	        {
+	            dol_syslog(get_class($this).'::setRetainedWarrantyDateLimit Erreur '.$sql.' - '.$this->db->error());
+	            $this->error=$this->db->error();
+	            return -1;
+	        }
+	    }
+	    else
+	    {
+	        dol_syslog(get_class($this).'::setRetainedWarrantyDateLimit, status of the object is incompatible');
+	        $this->error='Status of the object is incompatible '.$this->statut;
+	        return -2;
+	    }
 	}
 }
 

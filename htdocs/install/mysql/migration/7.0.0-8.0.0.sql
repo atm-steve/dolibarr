@@ -567,3 +567,8 @@ ALTER TABLE llx_advtargetemailing ADD COLUMN type_element varchar(180) NOT NULL;
 UPDATE llx_advtargetemailing SET fk_element = fk_mailing, type_element='mailing';
 ALTER TABLE llx_advtargetemailing DROP COLUMN fk_mailing;
 
+ALTER TABLE llx_facture ADD COLUMN retained_warranty real DEFAULT NULL after situation_final;
+ALTER TABLE llx_facture ADD COLUMN retained_warranty_date_limit	date DEFAULT NULL after retained_warranty;
+ALTER TABLE llx_facture ADD COLUMN retained_warranty_fk_cond_reglement	integer  DEFAULT NULL after retained_warranty_date_limit;
+
+
