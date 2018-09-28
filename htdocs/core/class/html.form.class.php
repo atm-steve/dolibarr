@@ -1070,7 +1070,6 @@ class Form
 		$outarray=array();
 
 		// Clean $filter that may contains sql conditions so sql code
-		// https://github.com/Dolibarr/dolibarr/pull/9202
 		if (function_exists('test_sql_and_script_inject')) {
 			if (test_sql_and_script_inject($filter, 3)>0) {
 				$filter ='';
