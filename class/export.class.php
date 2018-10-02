@@ -237,6 +237,7 @@ class TExportCompta extends TObjetStd {
 
 		$i = 0;
 		$TFactures = array();
+        $TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 		foreach($TIdFactures as $idFacture) {
 			$conf->entity = $idFacture['entity'];
 			$facture = new Facture($db);
@@ -298,46 +299,54 @@ class TExportCompta extends TObjetStd {
 				exit('Code compta manquant sur client '.$used_object->thirdparty->nom.', facture '.$facture->ref);
 			}
 
-			//$TotalTHSituationPrev = $TotalTTCSituationPrev = $TotalTVASituationPrev = array();
 			//Cas particulier des factures de situation
-			if(!empty($facture->tab_previous_situation_invoice)){
-				foreach ($facture->tab_previous_situation_invoice as $FactureSituation) {
-					$FactureSituation->fetch_lines();
-					$FactureSituation->fetch_thirdparty();
-					foreach ($FactureSituation->lines as $ligneSituation) {
+			if(in_array($facture->type, array(Facture::TYPE_SITUATION, Facture::TYPE_CREDIT_NOTE))){
+                    foreach($facture->lines as &$ligneSituation) {
 
-						if (!empty($ligneSituation->fk_product)){
-							$produit = new Product($db);
-							$produit->fetch($ligneSituation->fk_product);
-							$produit->fetch_optionals($ligneSituation->fk_product);
-						}else {
-							$produit = new stdClass();
-						}
+                        if(!empty($ligneSituation->fk_product)) {
+                            $produit = new Product($db);
+                            $produit->fetch($ligneSituation->fk_product);
+                            $produit->fetch_optionals($ligneSituation->fk_product);
+                        }
+                        else {
+                            $produit = new stdClass();
+                        }
 
-						if(!empty($FactureSituation->thirdparty->array_options['options_code_tva'])) {
-		                    $codeComptableTVA  = $FactureSituation->thirdparty->array_options['options_code_tva'];
-		                }
-		                else if(!empty($produit->array_options['options_code_tva'])) {
-		                    $codeComptableTVA  = $produit->array_options['options_code_tva'];
-		                }
-		                else{
-						    // Code compta TVA
-						    $conf_compte_tva = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
-						    if($ligneSituation->fk_product_type == 1) {
-						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service'] : $conf_compte_tva;
-						    }
-						    else{
-						    	$codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
-						    }
-		                }
+                        if(!empty($facture->thirdparty->array_options['options_code_tva'])) {
+                            $codeComptableTVA = $facture->thirdparty->array_options['options_code_tva'];
+                        }
+                        else if(!empty($produit->array_options['options_code_tva'])) {
+                            $codeComptableTVA = $produit->array_options['options_code_tva'];
+                        }
+                        else {
+                            // Code compta TVA
+                            $conf_compte_tva = (float) DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT : $conf->global->COMPTA_VAT_ACCOUNT;
+                            if($ligneSituation->fk_product_type == 1) {
+                                $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell_service'] : $conf_compte_tva;
+                            }
+                            else {
+                                $codeComptableTVA = !empty($this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell']) ? $this->TTVA[$idpays][floatval($ligneSituation->tva_tx)]['sell'] : $conf_compte_tva;
+                            }
+                        }
 
-						$codeComptableProduit = $this->_get_code_compta_product($FactureSituation,$produit);
+                        $codeComptableProduit = $this->_get_code_compta_product($facture, $produit);
 
-						$TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $ligneSituation->total_ht;
-						$TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $ligneSituation->total_ttc;
-						$TotalTVASituationPrev[$facture->id][$codeComptableTVA] += $ligneSituation->total_tva;
-					}
-				}
+                        if($facture->type == FACTURE::TYPE_CREDIT_NOTE) {
+                            $TotalTHSituationPrev[$facture->id][$codeComptableProduit] = $ligneSituation->total_ht;
+                            $TotalTTCSituationPrev[$facture->id][$codeComptableClient] = $ligneSituation->total_ttc;
+                            $TotalTVASituationPrev[$facture->id][$codeComptableTVA] = $ligneSituation->total_tva;
+                        }
+                        else {
+                            $previousSituationAmount = self::getPreviousSituationAmount($ligneSituation);
+                            $lineTotalHT = $ligneSituation->total_ht - $previousSituationAmount;
+                            $lineTotalTVA = $lineTotalHT * ($ligneSituation->tva_tx/100);
+
+                            $TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $lineTotalHT;
+                            $TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $lineTotalHT + $lineTotalTVA;
+                            $TotalTVASituationPrev[$facture->id][$codeComptableTVA] += $lineTotalTVA;
+                        }
+                    }
+//                }
 			}
 
 			// Récupération lignes de facture
@@ -446,25 +455,25 @@ class TExportCompta extends TObjetStd {
 		}
 
 
-		foreach($TFactures as $facid => $Tabs){
-			if(!empty($TotalTTCSituationPrev)){
-				foreach($Tabs['ligne_tiers'] as $codeComptableClient => $value){
-					$TFactures[$facid]['ligne_tiers'][$codeComptableClient] -= $TotalTTCSituationPrev[$facid][$codeComptableClient];
-				}
-			}
-			if(!empty($TotalTHSituationPrev)){
-				foreach($Tabs['ligne_produit'] as $codeComptableProduit => $value){
-					$TFactures[$facid]['ligne_produit'][$codeComptableProduit] -= $TotalTHSituationPrev[$facid][$codeComptableProduit];
-				}
-			}
-			if(!empty($TotalTVASituationPrev) && !empty($Tabs['ligne_tva'])){
-				foreach($Tabs['ligne_tva'] as $codeComptableTVA => $value){
-					$TFactures[$facid]['ligne_tva'][$codeComptableTVA] -= $TotalTVASituationPrev[$facid][$codeComptableTVA];
-				}
-			}
-		}
+		foreach($TFactures as $facid => $Tabs) {
+            if(!empty($TotalTTCSituationPrev[$facid])) {
+                foreach($Tabs['ligne_tiers'] as $codeComptableClient => $value) {
+                    $TFactures[$facid]['ligne_tiers'][$codeComptableClient] = $TotalTTCSituationPrev[$facid][$codeComptableClient];
+                }
+            }
+            if(!empty($TotalTHSituationPrev[$facid])) {
+                foreach($Tabs['ligne_produit'] as $codeComptableProduit => $value) {
+                    $TFactures[$facid]['ligne_produit'][$codeComptableProduit] = $TotalTHSituationPrev[$facid][$codeComptableProduit];
+                }
+            }
+            if(!empty($TotalTVASituationPrev[$facid]) && !empty($Tabs['ligne_tva'])) {
+                foreach($Tabs['ligne_tva'] as $codeComptableTVA => $value) {
+                    $TFactures[$facid]['ligne_tva'][$codeComptableTVA] = $TotalTVASituationPrev[$facid][$codeComptableTVA];
+                }
+            }
+        }
 
-		$conf->entity = $trueEntity;
+        $conf->entity = $trueEntity;
 
         TExportCompta::equilibreFacture($TFactures);
 
@@ -774,6 +783,13 @@ class TExportCompta extends TObjetStd {
 				$TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] += $ligne->total_ttc;
 				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+
+			// Arrondis à 2 décimales : tk8339, parfois l'addition en PHP donne trop de décimales
+			if(!empty($conf->global->EXPORTCOMPTA_ROUND_2_DECIMALES)) {
+				$TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur] = round($TFactures[$facture->id]['ligne_tiers'][$codeComptableFournisseur],2);
+				$TFactures[$facture->id]['ligne_produit'][$codeComptableProduit] = round($TFactures[$facture->id]['ligne_produit'][$codeComptableProduit],2);
+				$TFactures[$facture->id]['ligne_tva'][$codeComptableTVA] = round($TFactures[$facture->id]['ligne_tva'][$codeComptableTVA],2);
 			}
 
 			// Déclarer la facture comme exportée
@@ -1596,5 +1612,64 @@ class TExportCompta extends TObjetStd {
 
 		return $str;
 	}
+
+    /**
+     * Permet de retrouver les montants des anciennes situations, à déduire de la situation actuelle
+     * @param FactureLigne $facturedet  Ligne de la facture de situation actuelle
+     * @return int                      Montant à déduire
+     */
+    private static function getPreviousSituationAmount($facturedet) {
+        global $db;
+
+        if(empty($facturedet->id) || (is_object($facturedet) && get_class($facturedet) != 'FactureLigne')) {
+            return;
+        }
+        if(!class_exists('Facture') || !class_exists('FactureLigne')) {
+            include_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+        }
+
+        $currentPrevId = $facturedet->fk_prev_id;
+
+        $TData = array();
+        while(!empty($currentPrevId)) {
+            $currentLine = new FactureLigne($db);
+            $currentLine->fetch($currentPrevId);
+
+            // Fetch facture
+            $facture = new Facture($db);
+            if(!empty($currentLine->fk_facture)) $facture->fetch($currentLine->fk_facture);
+
+            // Fetch Avoir
+            $TCreditNote = $facture->getListIdAvoirFromInvoice();
+            if(!empty($TCreditNote)) {
+                $fk_credit_note = array_shift($TCreditNote);
+
+                $creditNote = new Facture($db);
+                if(!empty($fk_credit_note)) $creditNote->fetch($fk_credit_note);
+
+                foreach($creditNote->lines as &$lineBTW) {
+                    if($currentLine->fk_prev_id == $lineBTW->fk_prev_id) {
+                        $TData[] = array('amount' => $lineBTW->total_ht, 'progress' => $lineBTW->situation_percent);
+                    }
+                }
+            }
+            $TData[] = array('amount' => $currentLine->subprice * $currentLine->qty * ((100 - $currentLine->remise_percent) / 100), 'progress' => $currentLine->situation_percent);
+
+            $currentPrevId = $currentLine->fk_prev_id;
+        }
+
+        // Traitement
+        $TData = array_reverse($TData);
+        $res = 0;
+        foreach($TData as $Tab) {
+            if(is_null($progress)) $progress = $Tab['progress'];
+            else $progress = abs($progress - $Tab['progress']);
+
+            if($Tab['progress'] > 0) $res += $Tab['amount'] * $progress / 100;    // Invoice
+            else $res -= abs($Tab['amount']);    // Credit note
+        }
+
+        return $res;
+    }
 }
 ?>
