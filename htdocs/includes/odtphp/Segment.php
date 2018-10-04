@@ -184,9 +184,10 @@ class Segment implements IteratorAggregate, Countable
                          '/__CURRENTMONTH__/u','/__CURRENTMONTHLONG__/u',
                          '/__NEXTMONTH__/u','/__NEXTMONTHLONG__/u',
                          '/__CURRENTYEAR__/u','/__NEXTYEAR__/u' );
+	$res=monthArray($langs);
         $values=array( $hoy['mday'], $langs->transnoentitiesnoconv($hoy['weekday']),
                        $hoy['mon'], $langs->transnoentitiesnoconv($hoy['month']),
-                       $nextMonth, monthArray($langs)[$nextMonth],
+                       $nextMonth, $res[$nextMonth],
                        $hoy['year'], $hoy['year']+1 );
 
         $text=preg_replace($patterns, $values, $text);
