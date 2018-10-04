@@ -4244,6 +4244,7 @@ class Facture extends CommonInvoice
 		if($hasDelay && !empty($this->retained_warranty) && !empty($this->retained_warranty_date_limit))
 		{
 		    $totalpaye = $this->getSommePaiement();
+		    $totalpaye = floatval($totalpaye);
 		    $RetainedWarrantyAmount = $this->getRetainedWarrantyAmount();
 		    if($totalpaye >= 0 &&  $RetainedWarrantyAmount>= 0)
 		    {
@@ -4283,7 +4284,6 @@ class Facture extends CommonInvoice
 	        $displayWarranty = true;
 	        // Check if this situation invoice is 100% for real
 	        if(!empty($this->lines)){
-	            $displayWarranty = true;
 	            foreach( $this->lines as $i => $line ){
 	                if($line->product_type < 2 && $line->situation_percent < 100){
 	                    $displayWarranty = false;
