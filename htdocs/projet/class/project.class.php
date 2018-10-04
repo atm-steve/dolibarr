@@ -447,18 +447,12 @@ class Project extends CommonObject
                 // Retreive all extrafield for thirdparty
                 $this->fetch_optionals();
 
-                if (!empty($conf->global->PROJECT_ALLOW_COMMENT_ON_PROJECT))
-                {
-                	$this->fetchComments();
-                }
-
                 return 1;
             }
 
             $this->db->free($resql);
 
-            if ($num_rows) return 1;
-            else return 0;
+            return 0;
         }
         else
         {
@@ -516,9 +510,10 @@ class Project extends CommonObject
      * 	@param		string		$datefieldname	name of date field for filter
      *  @param		int			$dates			Start date
      *  @param		int			$datee			End date
+	 *	@param		string		$projectkey		Equivalent key  to fk_projet for actual type
      * 	@return		mixed						Array list of object ids linked to project, < 0 or string if error
      */
-    function get_element_list($type, $tablename, $datefieldname='', $dates='', $datee='')
+    function get_element_list($type, $tablename, $datefieldname='', $dates='', $datee='', $projectkey='fk_projet')
     {
         $elements = array();
 
@@ -548,7 +543,7 @@ class Project extends CommonObject
 		}
         else
 		{
-            $sql = "SELECT rowid FROM " . MAIN_DB_PREFIX . $tablename." WHERE fk_projet IN (". $ids .")";
+            $sql = "SELECT rowid FROM " . MAIN_DB_PREFIX . $tablename." WHERE ".$projectkey." IN (". $ids .")";
 		}
 
 		if ($dates > 0)
@@ -645,9 +640,8 @@ class Project extends CommonObject
 		$this->getLinesArray($user);
 
 		// Delete tasks
-		foreach($this->lines as &$task) {
-			$task->delete($user);
-		}
+		$ret = $this->deleteTasks($user);
+		if ($ret < 0) $error++;
 
         // Delete project
         if (! $error)
@@ -722,6 +716,40 @@ class Project extends CommonObject
             $this->db->rollback();
             return -1;
         }
+    }
+    
+    /**
+     * 		Delete tasks with no children first, then task with children recursively
+     *  
+     *  	@param     	User		$user		User
+     *		@return		int				<0 if KO, 1 if OK
+     */
+    function deleteTasks($user)
+    {
+        $countTasks = count($this->lines);
+        $deleted = false;
+        if ($countTasks)
+        {
+            foreach($this->lines as $task)
+            {
+                if ($task->hasChildren() <= 0) {		// If there is no children (or error to detect them)
+                    $deleted = true;
+                    $ret = $task->delete($user);
+                    if ($ret <= 0)
+                    {
+                        $this->errors[] = $this->db->lasterror();
+                        return -1;
+                    }
+                }
+            }
+        }
+        $this->getLinesArray($user);
+        if ($deleted && count($this->lines) < $countTasks)
+        {
+            if (count($this->lines)) $this->deleteTasks($this->lines);
+        }
+        
+        return 1;
     }
 
     /**
