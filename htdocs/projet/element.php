@@ -1237,9 +1237,10 @@ function _getElementFromOtherEntity($id, &$element) {
 		
 		$element->fetch($id);
 		
-		$element->total_ht = null;
-		$element->total = null;
-		$element->total_ttc = null;
+		// Fait pour le ticket #4980, à défaire à la demande du client ticket #8401
+		//$element->total_ht = null;
+		//$element->total = null;
+		//$element->total_ttc = null;
 
 		$conf = clone $conf_backup;
 		
