@@ -296,6 +296,8 @@ class pdf_crabe extends ModelePDFFactures
 				$pdf->SetMargins($this->marge_gauche, $this->marge_haute, $this->marge_droite);   // Left, Top, Right
 
 				// Positionne $this->atleastonediscount si on a au moins une remise
+				$this->atleastonediscount = 1;
+/*
 				for ($i = 0 ; $i < $nblignes ; $i++)
 				{
 					if ($object->lines[$i]->remise_percent)
@@ -303,6 +305,7 @@ class pdf_crabe extends ModelePDFFactures
 						$this->atleastonediscount++;
 					}
 				}
+*/
 				if (empty($this->atleastonediscount) && empty($conf->global->PRODUCT_USE_UNITS))    // retreive space not used by discount
 				{
 					$this->posxpicture+=($this->postotalht - $this->posxdiscount);
