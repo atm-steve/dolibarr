@@ -1573,18 +1573,21 @@ if (empty($reshook))
 					
 					
 					// retained warranty
-					$retained_warranty = GETPOST('retained_warranty');
-					if(price2num($retained_warranty) > 0)
+					if(!empty($conf->global->INVOICE_USE_SITUATION_RETAINED_WARRANTY))
 					{
-					    $object->retained_warranty  = price2num($retained_warranty);
+					    $retained_warranty = GETPOST('retained_warranty');
+					    if(price2num($retained_warranty) > 0)
+					    {
+					        $object->retained_warranty  = price2num($retained_warranty);
+					    }
+					    
+					    if(GETPOST('retained_warranty_fk_cond_reglement', 'int') > 0)
+					    {
+					        $object->retained_warranty_fk_cond_reglement  = GETPOST('retained_warranty_fk_cond_reglement', 'int');
+					    }
+					    
+					    $object->retained_warranty_date_limit = !empty($object->retained_warranty_date_limit) ? $object->retained_warranty_date_limit : $object->calculate_date_lim_reglement($object->retained_warranty_fk_cond_reglement); 
 					}
-					
-					if(GETPOST('retained_warranty_fk_cond_reglement', 'int') > 0)
-					{
-					   $object->retained_warranty_fk_cond_reglement  = GETPOST('retained_warranty_fk_cond_reglement', 'int');
-					}
-
-					$object->retained_warranty_date_limit = !empty($object->retained_warranty_date_limit) ? $object->retained_warranty_date_limit : $object->calculate_date_lim_reglement($object->retained_warranty_fk_cond_reglement);
 					
 					
 
