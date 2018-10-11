@@ -2084,7 +2084,7 @@ else if ($id || $ref)
 	 *    Boutons actions
 	 */
 
-	if (($user->societe_id == 0) && ($action!='presend'))
+	if (($user->societe_id == 0) && ($action!='presend') && false)
 	{
 		print '<div class="tabsAction">';
 
