@@ -1570,6 +1570,23 @@ if (empty($reshook))
 				{
 					$object->origin = $origin;
 					$object->origin_id = $originid;
+					
+					
+					// retained warranty
+					$retained_warranty = GETPOST('retained_warranty');
+					if(price2num($retained_warranty) > 0)
+					{
+					    $object->retained_warranty  = price2num($retained_warranty);
+					}
+					
+					if(GETPOST('retained_warranty_fk_cond_reglement', 'int') > 0)
+					{
+					   $object->retained_warranty_fk_cond_reglement  = GETPOST('retained_warranty_fk_cond_reglement', 'int');
+					}
+
+					$object->retained_warranty_date_limit = !empty($object->retained_warranty_date_limit) ? $object->retained_warranty_date_limit : $object->calculate_date_lim_reglement($object->retained_warranty_fk_cond_reglement);
+					
+					
 
 					foreach ($object->lines as $i => &$line)
 					{
