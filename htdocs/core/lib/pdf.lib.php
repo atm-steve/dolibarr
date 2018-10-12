@@ -437,9 +437,9 @@ function pdf_build_address($outputlangs,$sourcecompany,$targetcompany='',$target
     			} else {
     				$companytouseforaddress = $targetcompany;
 
-				// Contact on a thirdparty that is a different thirdparty than the thirdparty of object
-				if ($targetcontact->socid > 0 && $targetcontact->socid != $targetcompany->id)
-				{
+					// Contact on a thirdparty that is a different thirdparty than the thirdparty of object
+					if ($targetcontact->socid > 0 && $targetcontact->socid != $targetcompany->id)
+					{
 						$targetcontact->fetch_thirdparty();
 						$companytouseforaddress = $targetcontact->thirdparty;
 					}

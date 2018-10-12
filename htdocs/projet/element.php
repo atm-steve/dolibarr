@@ -291,7 +291,7 @@ $listofreferent=array(
 	'title'=>"ListSupplierProposalsAssociatedProject",
 	'class'=>'SupplierProposal',
 	'table'=>'supplier_proposal',
-	'datefieldname'=>'date',
+	'datefieldname'=>'datec',
     'urlnew'=>DOL_URL_ROOT.'/supplier_proposal/card.php?action=create&projectid='.$id.'&socid='.$socid,
     'lang'=>'supplier_proposal',
     'buttonnew'=>'AddSupplierProposal',
@@ -699,8 +699,8 @@ foreach ($listofreferent as $key => $value)
 	$urlnew=$value['urlnew'];
 	$buttonnew=$value['buttonnew'];
     $testnew=$value['testnew'];
-	$project_field=$value['project_field'];
-	$exclude_select_element=array('payment_various',$value['exclude_select_element']);
+	$exclude_select_element = array('payment_various');
+	if (!empty($value['exclude_select_element'])) $exclude_select_element[] = $value['exclude_select_element'];
 
 	
 	if ($qualified)

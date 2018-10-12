@@ -2806,7 +2806,7 @@ function img_picto($titlealt, $picto, $moreatt = '', $pictoisfullpath = false, $
 			if ($picto == 'off') { $fakey = 'fa-square-o'; $fasize='1.3em'; }
 			if ($picto == 'on')  { $fakey = 'fa-check-square-o'; $fasize='1.3em'; }
 			$enabledisablehtml='';
-			$enabledisablehtml.='<span class="fa '.$fakey.' valignmiddle'.($morecss?' '.$morecss:'').'" style="'.($fasize?('font-size: '.$fasize.';'):'').($facolor?(' color: '.$facolor.';'):'').'" alt="'.dol_escape_htmltag($titlealt).'" title="'.dol_escape_htmltag($titlealt).'"'.($moreatt?' '.$moreatt:'').'">';
+			$enabledisablehtml.='<span class="fa '.$fakey.' valignmiddle'.($morecss?' '.$morecss:'').'" style="'.($fasize?('font-size: '.$fasize.';'):'').($facolor?(' color: '.$facolor.';'):'').'" alt="'.dol_escape_htmltag($titlealt).'" title="'.dol_escape_htmltag($titlealt).'"'.($moreatt?' '.$moreatt:'').'>';
 			if (! empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)) $enabledisablehtml.=$titlealt;
 			$enabledisablehtml.='</span>';
 			return $enabledisablehtml;
@@ -4745,7 +4745,8 @@ function get_default_tva(Societe $thirdparty_seller, Societe $thirdparty_buyer, 
 	}
 
 	// Si (vendeur en France et acheteur hors Communaute europeenne et acheteur particulier) alors TVA par defaut=TVA du produit vendu. Fin de regle
-	if($seller_country_code === 'FR' && empty($buyer_in_cee) && !$thirdparty_buyer->isACompany()) {
+	if (! empty($conf->global->MAIN_USE_VAT_OF_PRODUCT_FOR_INDIVIDUAL_CUSTOMER_OUT_OF_EEC) && empty($buyer_in_cee) && !$thirdparty_buyer->isACompany()) 
+	{
 		return get_product_vat_for_country($idprod,$thirdparty_seller,$idprodfournprice);
 	}
 
