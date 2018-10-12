@@ -1375,6 +1375,18 @@ if ($action == 'create')
 								$detail.= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby,"day");
 								$detail.= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby,"day");
 								$detail.= ' - '.$langs->trans("Qty").': '.$dbatch->qty;
+								
+								
+								if(!empty($dbatch->lotid)){
+									$dbatch_lot = new Productlot($db);
+									$dbatch_lot->fetch($dbatch->lotid);
+									if(!empty($dbatch_lot->array_options['options_bc2s_lot_weight'])){
+										$detail.= ' - '.$langs->trans("Weight").': '.$dbatch_lot->array_options['options_bc2s_lot_weight'];
+									}
+								}
+							
+								
+								
 								$detail.= '<br>';
 								print $detail;
 
@@ -2390,6 +2402,8 @@ else if ($id || $ref)
 								$detail.= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby,"day");
 								$detail.= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby,"day");
 								$detail.= ' - '.$langs->trans("Qty").': '.$dbatch->dluo_qty;
+								if(!empty($dbatch->bc2s_lot_weight))$detail.= ' - '.$langs->trans("Weight").': '.$dbatch->bc2s_lot_weight;
+								
 								$detail.= '<br>';
 							}
 							print $form->textwithtooltip(img_picto('', 'object_barcode').' '.$langs->trans("DetailBatchNumber"),$detail);

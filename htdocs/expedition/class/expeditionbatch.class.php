@@ -190,11 +190,13 @@ class ExpeditionLineBatch extends CommonObject
 		{
 			$sql.= ", pl.sellby";
 			$sql.= ", pl.eatby";
+			$sql.= ", ple.bc2s_lot_weight";
 		}
 		$sql.= " FROM ".MAIN_DB_PREFIX.self::$_table_element." as eb";
 		if ($fk_product > 0)
 		{
 			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_lot as pl ON pl.batch = eb.batch AND pl.fk_product = ".$fk_product;
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_lot_extrafields as ple ON ple.fk_object = pl.rowid ";
 		}
 		$sql.= " WHERE fk_expeditiondet=".(int) $id_line_expdet;
 
@@ -214,6 +216,7 @@ class ExpeditionLineBatch extends CommonObject
 				$tmp->sellby = $db->jdate($obj->sellby ? $obj->sellby : $obj->oldsellby);
 				$tmp->eatby = $db->jdate($obj->eatby ? $obj->eatby : $obj->oldeatby);
 				$tmp->batch = $obj->batch;
+				$tmp->bc2s_lot_weight = $obj->bc2s_lot_weight;
 				$tmp->id = $obj->rowid;
 				$tmp->fk_origin_stock = $obj->fk_origin_stock;
 				$tmp->fk_expeditiondet = $obj->fk_expeditiondet;

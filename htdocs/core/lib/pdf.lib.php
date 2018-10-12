@@ -1339,6 +1339,7 @@ function pdf_getlinedesc($object,$i,$outputlangs,$hideref=0,$hidedesc=0,$issuppl
 			if ($detail->sellby) $dte[]=$outputlangs->transnoentitiesnoconv('printSellby',dol_print_date($detail->sellby, $format, false, $outputlangs));
 			if ($detail->batch) $dte[]=$outputlangs->transnoentitiesnoconv('printBatch',$detail->batch);
 			$dte[]=$outputlangs->transnoentitiesnoconv('printQty',$detail->dluo_qty);
+			if(!empty($detail->bc2s_lot_weight))$dte[]= $outputlangs->transnoentitiesnoconv('printWeight',$detail->bc2s_lot_weight);
 			$libelleproduitservice.= "__N__  ".implode(" - ", $dte);
 		}
 	}
