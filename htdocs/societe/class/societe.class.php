@@ -1838,24 +1838,28 @@ class Societe extends CommonObject
 
     	if (! empty($conf->global->SOCIETE_ADD_REF_IN_LIST) && (!empty($withpicto)))
     	{
+            $code = '';
     		if (($this->client) && (! empty ( $this->code_client ))
     			&& ($conf->global->SOCIETE_ADD_REF_IN_LIST == 1
     			|| $conf->global->SOCIETE_ADD_REF_IN_LIST == 2
     			)
-    		)
-    		$code = $this->code_client . ' - ';
+    		) {
+    		    $code .= $this->code_client . ' - ';
+            }
 
     		if (($this->fournisseur) && (! empty ( $this->code_fournisseur ))
     			&& ($conf->global->SOCIETE_ADD_REF_IN_LIST == 1
     			|| $conf->global->SOCIETE_ADD_REF_IN_LIST == 3
     			)
-    		)
-    		$code .= $this->code_fournisseur . ' - ';
+    		) {
+    		    $code .= $this->code_fournisseur . ' - ';
+            }
 
-    		if ($conf->global->SOCIETE_ADD_REF_IN_LIST == 1)
-    			$name =$code.' '.$name;
-    		else
-    			$name =$code;
+    		if ($conf->global->SOCIETE_ADD_REF_IN_LIST == 1) {
+    			$name = $code.' '.$name;
+            } else {
+    			$name = $code;
+            }
     	}
 
     	if (!empty($this->name_alias)) $name .= ' ('.$this->name_alias.')';
@@ -1920,7 +1924,7 @@ class Societe extends CommonObject
         if (! empty($this->code_fournisseur) && $this->fournisseur)
             $label.= '<br><b>' . $langs->trans('SupplierCode') . ':</b> '. $this->code_fournisseur;
         if (! empty($conf->accounting->enabled) && $this->client)
-            $label.= '<br><b>' . $langs->trans('CustomerAccountancyCode') . ':</b> '. $this->code_compta_client;
+            $label.= '<br><b>' . $langs->trans('CustomerAccountancyCode') . ':</b> '. $this->code_compta;
         if (! empty($conf->accounting->enabled) && $this->fournisseur)
             $label.= '<br><b>' . $langs->trans('SupplierAccountancyCode') . ':</b> '. $this->code_compta_fournisseur;
 
@@ -2512,21 +2516,16 @@ class Societe extends CommonObject
 
         if (! empty($conf->global->SOCIETE_CODECOMPTA_ADDON))
         {
-        	$file='';
+		$res=false;
             $dirsociete=array_merge(array('/core/modules/societe/'), $conf->modules_parts['societe']);
             foreach ($dirsociete as $dirroot)
             {
-            	if (file_exists(DOL_DOCUMENT_ROOT.'/'.$dirroot.$conf->global->SOCIETE_CODECOMPTA_ADDON.".php"))
-            	{
-            		$file=$dirroot.$conf->global->SOCIETE_CODECOMPTA_ADDON.".php";
-            		break;
-            	}
+				$res=dol_include_once($dirroot.$conf->global->SOCIETE_CODECOMPTA_ADDON.'.php');
+				if ($res) break;
             }
 
-            if (! empty($file))
+            if ($res)
             {
-            	dol_include_once($file);
-
             	$classname = $conf->global->SOCIETE_CODECOMPTA_ADDON;
             	$mod = new $classname;
 
