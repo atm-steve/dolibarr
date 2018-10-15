@@ -852,6 +852,10 @@ foreach ($listofreferent as $key => $value)
 				{
 					if (! empty($element->close_code) && $element->close_code == 'replaced') $qualifiedfortotal=false;	// Replacement invoice, do not include into total
 				}
+				if ($key == 'propal')
+				{
+					if($element->statut == 3) $qualifiedfortotal=false;
+				}
 
 				print '<tr class="oddeven">';
 
