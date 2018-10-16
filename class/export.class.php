@@ -685,11 +685,12 @@ class TExportCompta extends TObjetStd {
 			}
 
 			// Définition des codes comptables
-			$codeComptableFournisseur = !empty($facture->thirdparty->code_compta_fournisseur) ? $facture->thirdparty->code_compta_fournisseur : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+			$conf_code_compta_fourn_defaut = (float)DOL_VERSION >= 3.8 ? $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+			$codeComptableFournisseur = !empty($facture->thirdparty->code_compta_fournisseur) ? $facture->thirdparty->code_compta_fournisseur : $conf_code_compta_fourn_defaut;
 
 
 			// Blocage si compte comptable non défini (client)
-			if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && $codeComptableFournisseur == $conf->global->COMPTA_ACCOUNT_SUPPLIER) {
+			if($conf->global->EXPORTCOMPTA_BLOCK_IF_NOACCOUNT && $codeComptableFournisseur == $conf_code_compta_fourn_defaut) {
 				exit('Code compta manquant sur fournisseur '.$facture->thirdparty->nom.', facture '.$facture->ref);
 			}
 
