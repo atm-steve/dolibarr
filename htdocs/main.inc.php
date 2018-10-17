@@ -94,11 +94,12 @@ function get_entity_user($username) {
 		$resql = $db->query($sql);
 		$res = $db->fetch_object($resql);
 		$entity = $res->entity;
+		$fk_usergroup = $res->fk_usergroup;
 		
 		// Ici on cherche le premier groupe appartenant à la conf financement pour connecter l'utilisateur dans la bonne entité.
 		// S'il n'y en a pas, on le conencte dans la première entité trouv"e au dessus"
 		if(!empty($TGroupEntities)) {
-			if(!in_array($entity, $TGroupEntities)) {
+			if(!in_array($fk_usergroup, $TGroupEntities)) {
 				while ($res = $db->fetch_object($resql)) {
 					if(in_array($res->fk_usergroup, $TGroupEntities)) {
 						$entity = $res->entity;
