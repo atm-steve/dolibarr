@@ -1353,10 +1353,12 @@ class Facture extends CommonInvoice
 
 				// Retrieve all extrafield for invoice
 				// fetch optionals attributes and labels
-				require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-				$extrafields=new ExtraFields($this->db);
-				$extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
-				$this->fetch_optionals($this->id,$extralabels);
+//				require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+//				$extrafields=new ExtraFields($this->db);
+//				$extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
+//				$this->fetch_optionals($this->id,$extralabels);
+				$this->fetch_optionals();
+                                
 
 				/*
 				 * Lines
@@ -1477,7 +1479,7 @@ class Facture extends CommonInvoice
 				$line->multicurrency_total_tva 	= $objp->multicurrency_total_tva;
 				$line->multicurrency_total_ttc 	= $objp->multicurrency_total_ttc;
 
-				// TODO Fetch optional like done in fetch line of facture_rec ?
+                                $line->fetch_optionals();
 
 				$this->lines[$i] = $line;
 
@@ -4813,7 +4815,7 @@ class FactureLigne extends CommonInvoiceLine
 			$resql = $this->db->query($sql);
 			if ($resql && $resql->num_rows > 0) {
 				$res = $this->db->fetch_array($resql);
-				return $res['situation_percent'];
+				return floatval($res['situation_percent']);
 			} else {
 				$this->error = $this->db->error();
 				dol_syslog(get_class($this) . "::select Error " . $this->error, LOG_ERR);
