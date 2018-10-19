@@ -128,10 +128,51 @@ class CommandeFournisseur extends CommonOrder
     public $multicurrency_total_tva;
     public $multicurrency_total_ttc;
 
-    /**
-     * Draft status
-     */
-    const STATUS_DRAFT = 0;
+    
+	/**
+	 * Draft status
+	 */
+	const STATUS_DRAFT = 0;
+
+	/**
+	 * Validated status
+	 */
+	const STATUS_VALIDATED = 1;
+
+	/**
+	 * Accepted
+	 */
+	const STATUS_ACCEPTED = 2;
+
+	/**
+	 * Order sent, shipment on process
+	 */
+	const STATUS_ORDERSENT = 3;
+
+	/**
+	 * Received partially
+	 */
+	const STATUS_RECEIVED_PARTIALLY = 4;
+
+	/**
+	 * Received completely
+	 */
+	const STATUS_RECEIVED_COMPLETELY = 5;
+
+	/**
+	 * Order canceled
+	 */
+	const STATUS_CANCELED = 6;
+
+	/**
+	 * Order canceled/never received
+	 */
+	const STATUS_CANCELED_AFTER_ORDER = 7;
+
+	/**
+	 * Refused
+	 */
+	const STATUS_REFUSED = 9;
 
 
 
