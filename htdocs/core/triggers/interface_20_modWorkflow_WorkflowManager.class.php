@@ -254,6 +254,36 @@ class InterfaceWorkflowManager extends DolibarrTriggers
         		}
         	}
         }
+		 // classify billed order & billed propososal
+        if ($action == 'BILL_SUPPLIER_VALIDATE')
+        {
+        	dol_syslog( "Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id );
+
+        	// First classify billed the order to allow the proposal classify process
+        	if (! empty($conf->fournisseur->commande->enabled) && ! empty($conf->global->WORKFLOW_INVOICE_AMOUNT_CLASSIFY_BILLED_SUPPLIER_ORDER))
+        	{
+        		$object->fetchObjectLinked('','order_supplier',$object->id,$object->element);
+        		if (! empty($object->linkedObjects))
+        		{
+        			$totalonlinkedelements=0;
+        			foreach($object->linkedObjects['order_supplier'] as $element)
+        			{
+        				if ($element->statut == CommandeFournisseur::STATUS_ACCEPTED || $element->statut == CommandeFournisseur::STATUS_ORDERSENT || $element->statut == CommandeFournisseur::STATUS_RECEIVED_PARTIALLY || $element->statut == CommandeFournisseur::STATUS_RECEIVED_COMPLETELY) $totalonlinkedelements += $element->total_ht;
+        			}
+        			dol_syslog( "Amount of linked orders = ".$totalonlinkedelements.", of invoice = ".$object->total_ht.", egality is ".($totalonlinkedelements == $object->total_ht) );
+        			if ( ($totalonlinkedelements == $object->total_ht) || (! empty($conf->global->WORKFLOW_CLASSIFY_IF_AMOUNTS_ARE_DIFFERENTS)) )
+        			{
+        				foreach($object->linkedObjects['order_supplier'] as $element)
+        				{
+        					$ret=$element->classifyBilled($user);
+        				}
+        			}
+        		}
+        		return $ret;
+        	}
+
+        	
+        }
 
         return 0;
     }

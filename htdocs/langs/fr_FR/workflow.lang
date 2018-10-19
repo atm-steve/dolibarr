@@ -15,3 +15,4 @@ descWORKFLOW_INVOICE_CLASSIFY_BILLED_ORDER=Classer la/les commande(s) client(s) 
 descWORKFLOW_ORDER_CLASSIFY_SHIPPED_SHIPPING=Classer la commande source expédiée à la validation d'une expédition (si les quantité des documents sont les mêmes)
 AutomaticCreation=Création automatique
 AutomaticClassification=Classification automatique
+descWORKFLOW_INVOICE_AMOUNT_CLASSIFY_BILLED_SUPPLIER_ORDER=Classer la ou les commande(s) fournisseur(s) de source(s) à facturée(s) lorsque la facture fournisseur est validée (et si le montant de la facture est le même que le montant total des commandes liées)
