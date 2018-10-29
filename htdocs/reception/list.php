@@ -60,6 +60,10 @@ $search_state=trim(GETPOST("search_state"));
 $search_country=GETPOST("search_country",'int');
 $search_type_thirdparty=GETPOST("search_type_thirdparty",'int');
 $search_billed=GETPOST("search_billed",'int');
+$search_date_start_delivery = GETPOST('date_start_deliveryyear').'-'.GETPOST('date_start_deliverymonth').'-'.GETPOST('date_start_deliveryday');
+$search_date_end_delivery = GETPOST('date_end_deliveryyear').'-'.GETPOST('date_end_deliverymonth').'-'.GETPOST('date_end_deliveryday');
+if($search_date_start_delivery == '1970-01-01' || $search_date_start_delivery== '--')$search_date_start_delivery='';
+if($search_date_end_delivery == '1970-01-01'|| $search_date_end_delivery== '--')$search_date_end_delivery='';
 $sall = GETPOST('sall', 'alphanohtml');
 $optioncss = GETPOST('optioncss','alpha');
 
@@ -150,6 +154,8 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
 	$search_type_thirdparty='';
 	$search_billed='';
     $viewstatut='';
+	$search_date_start_delivery='';
+	$search_date_end_delivery='';
     $search_array_options=array();
 }
 
@@ -208,7 +214,7 @@ if (empty($reshook))
 				$object->remise_absolue 	= !empty($rcp->thirdparty->remise_absolue)?$rcp->thirdparty->remise_absolue:0;
 
     			$object->fk_project			= $rcp->fk_project;
-    			$object->ref_supplier		= $rcp->ref_supplier;
+    			$object->ref_supplier		= $rcp->ref.' - '.$rcp->ref_supplier;
 
     			$datefacture = dol_mktime(12, 0, 0, GETPOST('remonth'),GETPOST('reday'), GETPOST('reyear'));
     			if (empty($datefacture))
@@ -474,9 +480,12 @@ if ($search_type_thirdparty) $sql .= " AND s.fk_typent IN (".$search_type_thirdp
 if ($search_ref_rcp) $sql .= natural_search('e.ref', $search_ref_rcp);
 if ($search_ref_liv) $sql .= natural_search('l.ref', $search_ref_liv);
 if ($search_company) $sql .= natural_search('s.nom', $search_company);
+
+if (!empty($search_date_start_delivery) && $search_date_end_delivery) $sql .= ' AND e.date_delivery BETWEEN "'.$search_date_start_delivery.'" AND "'.$search_date_end_delivery.'"';
+else if (!empty($search_date_start_delivery)) $sql .= ' AND e.date_delivery >= "'.$search_date_start_delivery .'"';
+else if (!empty($search_date_end_delivery)) $sql .= ' AND e.date_delivery <= "'.$search_date_end_delivery.'"' ;
 if ($search_ref_supplier) $sql .= natural_search('e.ref_supplier', $search_ref_supplier);
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
-
 // Add where from extra fields
 foreach ($search_array_options as $key => $val)
 {
@@ -532,6 +541,8 @@ if ($resql)
 	if ($search_country) $param.= "&amp;search_country=".$search_country; 
 	if ($search_type_thirdparty) $param.= "&amp;search_type_thirdparty=".$search_type_thirdparty;
 	if ($search_ref_supplier) $param.= "&amp;search_ref_supplier=".$search_ref_supplier;
+	if ($search_date_start_delivery) $param.= "&amp;date_start_deliveryday=".GETPOST('date_start_deliveryday')."&amp;date_start_deliverymonth=".GETPOST('date_start_deliverymonth')."&amp;date_start_deliveryyear=".GETPOST('date_start_deliveryyear');
+	if ($search_date_end_delivery) $param.= "&amp;date_end_deliveryday=".GETPOST('date_end_deliveryday')."&amp;date_end_deliverymonth=".GETPOST('date_end_deliverymonth')."&amp;date_end_deliveryyear=".GETPOST('date_end_deliveryyear');
 	// Add $param from extra fields
 	foreach ($search_array_options as $key => $val)
 	{
@@ -687,7 +698,11 @@ if ($resql)
 	// Date delivery planned
 	if (! empty($arrayfields['e.date_delivery']['checked']))
 	{
-    	print '<td class="liste_titre">&nbsp;</td>';
+    	print '<td class="liste_titre" align="center">';
+		print $form->select_date($search_date_start_delivery, 'date_start_delivery', 0, 0, 1);
+		print '</br>';
+		print $form->select_date($search_date_end_delivery, 'date_end_delivery', 0, 0, 1);
+		print '</td>';
 	}
 	if (! empty($arrayfields['l.ref']['checked']))
 	{
