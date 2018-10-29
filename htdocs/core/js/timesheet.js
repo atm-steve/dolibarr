@@ -212,10 +212,14 @@ function updateTotal(days,mode)
         		console.log(total.getMinutes())
             }
         });
-        
-        if (document.getElementById('totalDay['+days+']'))	// May be null if no task records to output (nbline is also 0 in this case)
+
+	$totalday = $('.totalDay'+days+'');
+        if ($totalday.length > 0)	// May be null if no task records to output (nbline is also 0 in this case)
         {
-        	document.getElementById('totalDay['+days+']').innerHTML = pad(total.getHours())+':'+pad(total.getMinutes());
+		$totalday.each(function(){
+			$(this).text(pad(total.getHours())+':'+pad(total.getMinutes()));
+		});
+        	//$('.totalDay'+days+'').innerHTML = pad(total.getHours())+':'+pad(total.getMinutes());
         	//addText(,total.getHours()+':'+total.getMinutes());
         }
     }
