@@ -1677,10 +1677,11 @@ class Commande extends CommonOrder
 
                 // Retrieve all extrafields for invoice
                 // fetch optionals attributes and labels
-                require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-                $extrafields=new ExtraFields($this->db);
-                $extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
-               	$this->fetch_optionals($this->id,$extralabels);
+//                require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+//                $extrafields=new ExtraFields($this->db);
+//                $extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
+//               	$this->fetch_optionals($this->id,$extralabels);
+           	$this->fetch_optionals();
 
                 $this->db->free($result);
 
@@ -1881,6 +1882,9 @@ class Commande extends CommonOrder
 				$line->multicurrency_total_ht 	= $objp->multicurrency_total_ht;
 				$line->multicurrency_total_tva 	= $objp->multicurrency_total_tva;
 				$line->multicurrency_total_ttc 	= $objp->multicurrency_total_ttc;
+
+           	$line->fetch_optionals();
+
 
                 $this->lines[$i] = $line;
 
@@ -3869,6 +3873,7 @@ class OrderLine extends CommonOrderLine
         {
             $objp = $this->db->fetch_object($result);
             $this->rowid            = $objp->rowid;
+            $this->id				= $objp->rowid;
             $this->fk_commande      = $objp->fk_commande;
             $this->fk_parent_line   = $objp->fk_parent_line;
             $this->label            = $objp->custom_label;
@@ -4065,7 +4070,7 @@ class OrderLine extends CommonOrderLine
         $sql.= ' '.(! empty($this->fk_product)?$this->fk_product:"null").',';
         $sql.= " '".$this->db->escape($this->product_type)."',";
         $sql.= " '".price2num($this->remise_percent)."',";
-        $sql.= " ".($this->subprice!=''?"'".price2num($this->subprice)."'":"null").",";
+        $sql.= " ".(price2num($this->subprice)!==''?price2num($this->subprice):"null").",";
         $sql.= " ".($this->price!=''?"'".price2num($this->price)."'":"null").",";
         $sql.= " '".price2num($this->remise)."',";
         $sql.= ' '.(! empty($this->fk_remise_except)?$this->fk_remise_except:"null").',';
@@ -4074,11 +4079,11 @@ class OrderLine extends CommonOrderLine
 		$sql.= ' '.(! empty($this->fk_fournprice)?$this->fk_fournprice:"null").',';
 		$sql.= ' '.price2num($this->pa_ht).',';
         $sql.= " '".$this->db->escape($this->info_bits)."',";
-        $sql.= " '".price2num($this->total_ht)."',";
-        $sql.= " '".price2num($this->total_tva)."',";
-        $sql.= " '".price2num($this->total_localtax1)."',";
-        $sql.= " '".price2num($this->total_localtax2)."',";
-        $sql.= " '".price2num($this->total_ttc)."',";
+        $sql.= " ".price2num($this->total_ht).",";
+        $sql.= " ".price2num($this->total_tva).",";
+        $sql.= " ".price2num($this->total_localtax1).",";
+        $sql.= " ".price2num($this->total_localtax2).",";
+        $sql.= " ".price2num($this->total_ttc).",";
         $sql.= " ".(! empty($this->date_start)?"'".$this->db->idate($this->date_start)."'":"null").',';
         $sql.= " ".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null").',';
 	    $sql.= ' '.(!$this->fk_unit ? 'NULL' : $this->fk_unit);

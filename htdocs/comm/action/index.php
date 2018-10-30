@@ -72,7 +72,7 @@ if ($socid < 0) $socid='';
 
 $canedit=1;
 if (! $user->rights->agenda->myactions->read) accessforbidden();
-if (! $user->rights->agenda->allactions->read) $canedit=0;
+if (! $user->rights->agenda->myactions->read) $canedit=0;
 if (! $user->rights->agenda->allactions->read || $filter =='mine')  // If no permission to see all, we show only affected to me
 {
     $filtert=$user->id;
@@ -1260,7 +1260,7 @@ function show_day_events($db, $day, $month, $year, $monthshown, $style, &$eventa
     $ymd=sprintf("%04d",$year).sprintf("%02d",$month).sprintf("%02d",$day);
 
     $colorindexused[$user->id] = 0;			// Color index for current user (user->id) is always 0
-    $nextindextouse=count($colorindexused);	// At first run this is 0, so first user has 0, next 1, ...
+    $nextindextouse=is_array($colorindexused)?count($colorindexused):0;	// At first run this is 0, so fist user has 0, next 1, ...
 	//var_dump($colorindexused);
 
     foreach ($eventarray as $daykey => $notused)

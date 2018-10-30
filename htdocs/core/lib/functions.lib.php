@@ -13,6 +13,7 @@
  * Copyright (C) 2014		Cédric GROSS					<c.gross@kreiz-it.fr>
  * Copyright (C) 2014-2015	Marcos García				<marcosgdf@gmail.com>
  * Copyright (C) 2015		Jean-François Ferry			<jfefe@aternatik.fr>
+ * Copyright (C) 2018       Frédéric France             <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -276,7 +277,7 @@ function GETPOSTISSET($paramname)
  *  @param	string	$noreplace	 Force disable of replacement of __xxx__ strings.
  *  @return string|string[]      Value found (string or array), or '' if check fails
  */
-function GETPOST($paramname, $check='none', $method=0, $filter=NULL, $options=NULL, $noreplace=0)
+function GETPOST($paramname, $check='none', $method=0, $filter=null, $options=null, $noreplace=0)
 {
 	global $mysoc,$user,$conf;
 
@@ -481,10 +482,10 @@ function GETPOST($paramname, $check='none', $method=0, $filter=NULL, $options=NU
 				elseif ($reg[1] == 'MONTH')          { $tmp=dol_getdate(dol_now(), true); $newout = $tmp['mon'];  }
 				elseif ($reg[1] == 'YEAR')           { $tmp=dol_getdate(dol_now(), true); $newout = $tmp['year']; }
 				elseif ($reg[1] == 'PREVIOUS_DAY')   { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_prev_day($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['day']; }
-				elseif ($reg[1] == 'PREVIOUS_MONTH') { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_prev_month($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
+				elseif ($reg[1] == 'PREVIOUS_MONTH') { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_prev_month($tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
 				elseif ($reg[1] == 'PREVIOUS_YEAR')  { $tmp=dol_getdate(dol_now(), true); $newout = ($tmp['year'] - 1); }
 				elseif ($reg[1] == 'NEXT_DAY')       { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_next_day($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['day']; }
-				elseif ($reg[1] == 'NEXT_MONTH')     { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_next_month($tmp['mday'], $tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
+				elseif ($reg[1] == 'NEXT_MONTH')     { $tmp=dol_getdate(dol_now(), true); $tmp2=dol_get_next_month($tmp['mon'], $tmp['year']); $newout = $tmp2['month']; }
 				elseif ($reg[1] == 'NEXT_YEAR')      { $tmp=dol_getdate(dol_now(), true); $newout = ($tmp['year'] + 1); }
 				elseif ($reg[1] == 'MYCOMPANY_COUNTRY_ID' || $reg[1] == 'MYCOUNTRY_ID' || $reg[1] == 'MYCOUNTRYID')
 				{
@@ -2806,7 +2807,7 @@ function img_picto($titlealt, $picto, $moreatt = '', $pictoisfullpath = false, $
 			if ($picto == 'off') { $fakey = 'fa-square-o'; $fasize='1.3em'; }
 			if ($picto == 'on')  { $fakey = 'fa-check-square-o'; $fasize='1.3em'; }
 			$enabledisablehtml='';
-			$enabledisablehtml.='<span class="fa '.$fakey.' valignmiddle'.($morecss?' '.$morecss:'').'" style="'.($fasize?('font-size: '.$fasize.';'):'').($facolor?(' color: '.$facolor.';'):'').'" alt="'.dol_escape_htmltag($titlealt).'" title="'.dol_escape_htmltag($titlealt).'"'.($moreatt?' '.$moreatt:'').'">';
+			$enabledisablehtml.='<span class="fa '.$fakey.' valignmiddle'.($morecss?' '.$morecss:'').'" style="'.($fasize?('font-size: '.$fasize.';'):'').($facolor?(' color: '.$facolor.';'):'').'" alt="'.dol_escape_htmltag($titlealt).'" title="'.dol_escape_htmltag($titlealt).'"'.($moreatt?' '.$moreatt:'').'>';
 			if (! empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)) $enabledisablehtml.=$titlealt;
 			$enabledisablehtml.='</span>';
 			return $enabledisablehtml;
@@ -4089,8 +4090,9 @@ function price($amount, $form=0, $outlangs='', $trunc=1, $rounding=-1, $forcerou
  * 									'MU'=Round to Max unit price (MAIN_MAX_DECIMALS_UNIT)
  *									'MT'=Round to Max for totals with Tax (MAIN_MAX_DECIMALS_TOT)
  *									'MS'=Round to Max for stock quantity (MAIN_MAX_DECIMALS_STOCK)
+ *									Numeric = Nb of digits for rounding
  * 	@param	int		$alreadysqlnb	Put 1 if you know that content is already universal format number
- *	@return	string					Amount with universal numeric format (Example: '99.99999') or unchanged text if conversion fails.
+ *	@return	string					Amount with universal numeric format (Example: '99.99999') or unchanged text if conversion fails. If amount is null or '', it returns ''.
  *
  *	@see    price					Opposite function of price2num
  */
@@ -4139,7 +4141,7 @@ function price2num($amount,$rounding='',$alreadysqlnb=0)
 		if ($rounding == 'MU')     $nbofdectoround=$conf->global->MAIN_MAX_DECIMALS_UNIT;
 		elseif ($rounding == 'MT') $nbofdectoround=$conf->global->MAIN_MAX_DECIMALS_TOT;
 		elseif ($rounding == 'MS') $nbofdectoround=empty($conf->global->MAIN_MAX_DECIMALS_STOCK)?5:$conf->global->MAIN_MAX_DECIMALS_STOCK;
-		elseif (is_numeric($rounding))  $nbofdectoround=$rounding; 	// For admin info page
+		elseif (is_numeric($rounding))  $nbofdectoround=$rounding;
 		//print "RR".$amount.' - '.$nbofdectoround.'<br>';
 		if (dol_strlen($nbofdectoround)) $amount = round($amount,$nbofdectoround);	// $nbofdectoround can be 0.
 		else return 'ErrorBadParameterProvidedToFunction';
@@ -4744,6 +4746,12 @@ function get_default_tva(Societe $thirdparty_seller, Societe $thirdparty_buyer, 
 		}
 	}
 
+	// Si (vendeur en France et acheteur hors Communaute europeenne et acheteur particulier) alors TVA par defaut=TVA du produit vendu. Fin de regle
+	if (! empty($conf->global->MAIN_USE_VAT_OF_PRODUCT_FOR_INDIVIDUAL_CUSTOMER_OUT_OF_EEC) && empty($buyer_in_cee) && !$thirdparty_buyer->isACompany())
+	{
+		return get_product_vat_for_country($idprod,$thirdparty_seller,$idprodfournprice);
+	}
+
 	// Sinon la TVA proposee par defaut=0. Fin de regle.
 	// Rem: Cela signifie qu'au moins un des 2 est hors Communaute europeenne et que le pays differe
 	//print 'VATRULE 5';
@@ -5014,7 +5022,7 @@ function picto_required()
  *  @param  string	$pagecodeto      	Encoding of input/output string
  *	@return string	    				String cleaned
  *
- * 	@see	dol_escape_htmltag strip_tags
+ * 	@see	dol_escape_htmltag strip_tags dol_string_onlythesehtmltags dol_string_neverthesehtmltags
  */
 function dol_string_nohtmltag($stringtoclean,$removelinefeed=1,$pagecodeto='UTF-8')
 {
@@ -5039,6 +5047,51 @@ function dol_string_nohtmltag($stringtoclean,$removelinefeed=1,$pagecodeto='UTF-
 	}
 
 	return trim($temp);
+}
+
+/**
+ *	Clean a string to keep only desirable HTML tags.
+ *
+ *	@param	string	$stringtoclean		String to clean
+ *	@return string	    				String cleaned
+ *
+ * 	@see	dol_escape_htmltag strip_tags dol_string_nohtmltag dol_string_neverthesehtmltags
+ */
+function dol_string_onlythesehtmltags($stringtoclean)
+{
+	$allowed_tags = array(
+		"html", "head", "meta", "body", "b", "br", "div", "em", "font", "img", "hr", "i", "li", "link",
+		"ol", "p", "s", "section", "span", "strong", "title",
+		"table", "tr", "th", "td", "u", "ul"
+	);
+
+	$allowed_tags_string = join("><", $allowed_tags);
+	$allowed_tags_string = preg_replace('/^>/','',$allowed_tags_string);
+	$allowed_tags_string = preg_replace('/<$/','',$allowed_tags_string);
+
+	$temp = strip_tags($stringtoclean, $allowed_tags_string);
+
+	return $temp;
+}
+
+/**
+ *	Clean a string from some undesirable HTML tags.
+ *
+ *	@param	string	$stringtoclean		String to clean
+ *  @param	array	$disallowed_tags	Array of tags not allowed
+ *	@return string	    				String cleaned
+ *
+ * 	@see	dol_escape_htmltag strip_tags dol_string_nohtmltag dol_string_onlythesehtmltags
+ */
+function dol_string_neverthesehtmltags($stringtoclean, $disallowed_tags=array('textarea'))
+{
+	$temp = $stringtoclean;
+	foreach($disallowed_tags as $tagtoremove)
+	{
+		$temp = preg_replace('/<\/?'.$tagtoremove.'>/', '', $temp);
+		$temp = preg_replace('/<\/?'.$tagtoremove.'\s+[^>]*>/', '', $temp);
+	}
+	return $temp;
 }
 
 
@@ -5334,6 +5387,7 @@ function dol_textishtml($msg,$option=0)
 		if (preg_match('/<html/i',$msg))				return true;
 		elseif (preg_match('/<body/i',$msg))			return true;
 		elseif (preg_match('/<(b|em|i|u)>/i',$msg))		return true;
+		elseif (preg_match('/<br\/>/i',$msg))	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)>/i',$msg)) 	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*>/i',$msg)) return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*\/>/i',$msg)) return true;
@@ -5575,9 +5629,9 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 
 		$tmp=dol_getdate(dol_now(), true);
 		$tmp2=dol_get_prev_day($tmp['mday'], $tmp['mon'], $tmp['year']);
-		$tmp3=dol_get_prev_month($tmp['mday'], $tmp['mon'], $tmp['year']);
+		$tmp3=dol_get_prev_month($tmp['mon'], $tmp['year']);
 		$tmp4=dol_get_next_day($tmp['mday'], $tmp['mon'], $tmp['year']);
-		$tmp5=dol_get_next_month($tmp['mday'], $tmp['mon'], $tmp['year']);
+		$tmp5=dol_get_next_month($tmp['mon'], $tmp['year']);
 
 		$substitutionarray=array_merge($substitutionarray, array(
 			'__DAY__' => (string) $tmp['mday'],
@@ -5809,7 +5863,7 @@ function dolGetFirstLastname($firstname,$lastname,$nameorder=-1)
 
 	$ret='';
 	// If order not defined, we use the setup
-	if ($nameorder < 0) $nameorder=$conf->global->MAIN_FIRSTNAME_NAME_POSITION;
+	if ($nameorder < 0) $nameorder=(empty($conf->global->MAIN_FIRSTNAME_NAME_POSITION)?1:0);
 	if ($nameorder && ((string) $nameorder != '2'))
 	{
 		$ret.=$firstname;
@@ -6102,7 +6156,7 @@ function dol_sort_array(&$array, $index, $order='asc', $natsort=0, $case_sensiti
 		else
 		{
 			($case_sensitive) ? natsort($temp) : natcasesort($temp);
-			if($order!='asc') $temp=array_reverse($temp,TRUE);
+			if($order!='asc') $temp=array_reverse($temp,true);
 		}
 
 		$sorted = array();
@@ -6414,6 +6468,7 @@ function complete_head_from_modules($conf,$langs,$object,&$head,&$h,$type,$mode=
 				foreach($head as $key => $val)
 				{
 					$condition = (! empty($values[3]) ? verifCond($values[3]) : 1);
+					//var_dump($key.' - '.$tabname.' - '.$head[$key][2].' - '.$condition);
 					if ($head[$key][2]==$tabname && $condition)
 					{
 						unset($head[$key]);
@@ -6427,11 +6482,12 @@ function complete_head_from_modules($conf,$langs,$object,&$head,&$h,$type,$mode=
 	// No need to make a return $head. Var is modified as a reference
 	if (! empty($hookmanager))
 	{
-		$parameters=array('object' => $object, 'mode' => $mode, 'head'=>$head);
-		$reshook=$hookmanager->executeHooks('completeTabsHead',$parameters);
+		$parameters=array('object' => $object, 'mode' => $mode, 'head' => $head);
+		$reshook=$hookmanager->executeHooks('completeTabsHead', $parameters);
 		if ($reshook > 0)
 		{
 			$head = $hookmanager->resArray;
+            $h = count($head);
 		}
 	}
 }

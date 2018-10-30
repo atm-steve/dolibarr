@@ -185,6 +185,7 @@ if ($action == 'order' && isset($_POST['valid']))
             $sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."commande_fournisseur";
             $sql.= " WHERE fk_soc = ".$suppliersid[$i];
             $sql.= " AND source = 42 AND fk_statut = 0";
+            $sql.= " AND entity IN (".getEntity('commande_fournisseur').")";
             $sql.= " ORDER BY date_creation DESC";
             $resql = $db->query($sql);
             if($resql && $db->num_rows($resql) > 0) {
@@ -294,7 +295,7 @@ $sql.= ' ,'.$sqldesiredtock.' as desiredstock, '.$sqlalertstock.' as alertstock,
 $sql.= ' SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").') as stock_physique';
 $sql.= ' FROM ' . MAIN_DB_PREFIX . 'product as p';
 $sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'product_stock as s';
-$sql.= ' ON p.rowid = s.fk_product';
+$sql.= ' ON (p.rowid = s.fk_product AND s.fk_entrepot IN (SELECT ent.rowid FROM '.MAIN_DB_PREFIX.'entrepot AS ent WHERE ent.entity IN('.getEntity('stock').')))';
 if($fk_supplier > 0) {
 	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'product_fournisseur_price pfp ON (pfp.fk_product = p.rowid AND pfp.fk_soc = '.$fk_supplier.')';
 }

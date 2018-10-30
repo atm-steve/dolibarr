@@ -416,25 +416,25 @@ if (! $error && $massaction == 'confirm_presend')
 								if ($triggername == 'SOCIETE_SENTBYMAIL')    $triggername = 'COMPANY_SENTBYEMAIL';
 								if ($triggername == 'CONTRAT_SENTBYMAIL')    $triggername = 'CONTRACT_SENTBYEMAIL';
 								if ($triggername == 'COMMANDE_SENTBYMAIL')   $triggername = 'ORDER_SENTBYEMAIL';
-								if ($triggername == 'FACTURE_SENTBYMAIL')    $triggername = 'BILL_SENTBYEMAIL';
+								if ($triggername == 'FACTURE_SENTBYMAIL')    $triggername = 'BILL_SENTBYMAIL';
 								if ($triggername == 'EXPEDITION_SENTBYMAIL') $triggername = 'SHIPPING_SENTBYEMAIL';
 								if ($triggername == 'COMMANDEFOURNISSEUR_SENTBYMAIL') $triggername = 'ORDER_SUPPLIER_SENTBYMAIL';
 								if ($triggername == 'FACTUREFOURNISSEUR_SENTBYMAIL') $triggername = 'BILL_SUPPLIER_SENTBYEMAIL';
 								if ($triggername == 'SUPPLIERPROPOSAL_SENTBYMAIL') $triggername = 'PROPOSAL_SUPPLIER_SENTBYEMAIL';
 
-								if (! empty($trigger_name))
+								if (! empty($triggername))
 								{
 									// Appel des triggers
 									include_once(DOL_DOCUMENT_ROOT . "/core/class/interfaces.class.php");
 									$interface=new Interfaces($db);
-									$result=$interface->run_triggers($trigger_name, $objectobj, $user, $langs, $conf);
+									$result=$interface->run_triggers($triggername, $objectobj, $user, $langs, $conf);
 									if ($result < 0) { $error++; $errors=$interface->errors; }
 									// Fin appel triggers
 
 									if ($error)
 									{
 										setEventMessages($db->lasterror(), $errors, 'errors');
-										dol_syslog("Error in trigger ".$trigger_name.' '.$db->lasterror(), LOG_ERR);
+										dol_syslog("Error in trigger ".$triggername.' '.$db->lasterror(), LOG_ERR);
 									}
 								}
 
@@ -1005,6 +1005,18 @@ if (! $error && ($massaction == 'delete' || ($action == 'delete' && $confirm == 
        			$resaction.='<div class="error">'.$langs->trans('ErrorOnlyDraftStatusCanBeDeletedInMassAction',$objecttmp->ref).'</div><br>';
        			continue;
        		}*/
+
+			if ($objectclass == "Task" && $objecttmp->hasChildren() > 0)
+			{
+				$sql = "UPDATE ".MAIN_DB_PREFIX."projet_task SET fk_task_parent = 0 WHERE fk_task_parent = ".$objecttmp->id;
+				$res = $db->query($sql);
+
+				if (!$res)
+				{
+					setEventMessage('ErrorRecordParentingNotModified', 'errors');
+					$error++;
+				}
+			}
 
 			if (in_array($objecttmp->element, array('societe','member'))) $result = $objecttmp->delete($objecttmp->id, $user, 1);
 			else $result = $objecttmp->delete($user);

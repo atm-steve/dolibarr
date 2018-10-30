@@ -1064,7 +1064,7 @@ abstract class CommonObject
 		$sql.= " ".MAIN_DB_PREFIX."c_type_contact as tc";
 		$sql.= " WHERE ec.element_id = ".$id;
 		$sql.= " AND ec.fk_socpeople = c.rowid";
-		if ($source == 'internal') $sql.= " AND c.entity IN (0,".$conf->entity.")";
+		if ($source == 'internal') $sql.= " AND c.entity IN (".getEntity('user').")";
 		if ($source == 'external') $sql.= " AND c.entity IN (".getEntity('societe').")";
 		$sql.= " AND ec.fk_c_type_contact = tc.rowid";
 		$sql.= " AND tc.element = '".$element."'";
@@ -2375,7 +2375,7 @@ abstract class CommonObject
 	 */
 	function update_price($exclspec=0,$roundingadjust='none',$nodatabaseupdate=0,$seller=null)
 	{
-		global $conf;
+		global $conf, $hookmanager, $action;
 
 		// Some external module want no update price after a trigger because they have another method to calculate the total (ex: with an extrafield)
 		$MODULE = "";
@@ -2466,7 +2466,10 @@ abstract class CommonObject
 				$obj = $this->db->fetch_object($resql);
 
 				// Note: There is no check on detail line and no check on total, if $forcedroundingmode = 'none'
-				if ($forcedroundingmode == '0')	// Check if data on line are consistent. This may solve lines that were not consistent because set with $forcedroundingmode='auto'
+				$parameters=array('fk_element' => $obj->rowid);
+				$reshook = $hookmanager->executeHooks('changeRoundingMode', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
+
+				if (empty($reshook) && $forcedroundingmode == '0')	// Check if data on line are consistent. This may solve lines that were not consistent because set with $forcedroundingmode='auto'
 				{
 					$localtax_array=array($obj->localtax1_type,$obj->localtax1_tx,$obj->localtax2_type,$obj->localtax2_tx);
 					$tmpcal=calcul_price_total($obj->qty, $obj->up, $obj->remise_percent, $obj->vatrate, $obj->localtax1_tx, $obj->localtax2_tx, 0, 'HT', $obj->info_bits, $obj->product_type, $seller, $localtax_array, (isset($obj->situation_percent) ? $obj->situation_percent : 100), $multicurrency_tx);
@@ -4459,6 +4462,7 @@ abstract class CommonObject
 			$resql=$this->db->query($sql);
 			if ($resql)
 			{
+				$this->array_options = array();
 				$numrows=$this->db->num_rows($resql);
 				if ($numrows)
 				{
@@ -6291,7 +6295,7 @@ abstract class CommonObject
 			if (! empty($this->fields[$key]['foreignkey']) && $values[$key] == '-1') $values[$key]='';
 
 			//var_dump($key.'-'.$values[$key].'-'.($this->fields[$key]['notnull'] == 1));
-			if ($this->fields[$key]['notnull'] == 1 && ! isset($values[$key]) && is_null($val['default']))
+			if (isset($this->fields[$key]['notnull']) && $this->fields[$key]['notnull'] == 1 && ! isset($values[$key]) && is_null($val['default']))
 			{
 				$error++;
 				$this->errors[]=$langs->trans("ErrorFieldRequired", $this->fields[$key]['label']);
