@@ -23,6 +23,9 @@
  *      \brief      List of security events
  */
 
+header("HTTP/1.1 401 Unauthorized");
+exit;
+
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/events.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';

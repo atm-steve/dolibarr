@@ -22,6 +22,9 @@
  *      \brief      List of PHP sessions
  */
 
+header("HTTP/1.1 401 Unauthorized");
+exit;
+
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
