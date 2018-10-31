@@ -21,6 +21,9 @@
  *		\brief      Page to purge files (temporary or not)
  */
 
+header("HTTP/1.1 401 Unauthorized");
+exit;
+
 require '../../main.inc.php';
 include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 

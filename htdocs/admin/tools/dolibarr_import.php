@@ -21,6 +21,8 @@
  *		\ingroup	core
  * 		\brief      Page to import database
  */
+header("HTTP/1.1 401 Unauthorized");
+exit;
 
 require '../../main.inc.php';
 
