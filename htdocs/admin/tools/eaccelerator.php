@@ -19,6 +19,8 @@
  *     \file       htdocs/admin/tools/eaccelerator.php
  *     \brief      Page administration de eaccelerator
  */
+header("HTTP/1.1 401 Unauthorized");
+exit;
 
 require '../../main.inc.php';
 

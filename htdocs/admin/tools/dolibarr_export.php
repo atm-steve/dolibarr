@@ -22,6 +22,9 @@
  *		\brief      Page to export database
  */
 
+header("HTTP/1.1 401 Unauthorized");
+exit;
+
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
