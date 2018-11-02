@@ -1778,7 +1778,7 @@ abstract class CommonObject
 				$this->multicurrency_code = $code;
 
 				list($fk_multicurrency, $rate) = MultiCurrency::getIdAndTxFromCode($this->db, $code);
-				if ($rate) $this->setMulticurrencyRate($rate);
+				if ($rate) $this->setMulticurrencyRate($rate,2);
 
 				return 1;
 			}
@@ -4727,6 +4727,7 @@ abstract class CommonObject
 			$resql=$this->db->query($sql);
 			if ($resql)
 			{
+				$this->array_options = array();
 				$numrows=$this->db->num_rows($resql);
 				if ($numrows)
 				{

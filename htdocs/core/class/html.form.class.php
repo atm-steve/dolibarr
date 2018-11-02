@@ -2971,7 +2971,10 @@ class Form
 				$obj = $this->db->fetch_object($resql);
 
 				// Si traduction existe, on l'utilise, sinon on prend le libelle par defaut
-				$label=($langs->trans("DemandReasonType".$obj->code)!=("DemandReasonType".$obj->code)?$langs->trans("DemandReasonType".$obj->code):($obj->label!='-'?$obj->label:''));
+				$label=($obj->label!='-'?$obj->label:'');
+				if ($langs->trans("DemandReasonType".$obj->code) != ("DemandReasonType".$obj->code)) $label = $langs->trans("DemandReasonType".$obj->code); // So translation key DemandReasonTypeSRC_XXX will work
+				if ($langs->trans($obj->code) != $obj->code) $label=$langs->trans($obj->code);																// So translation key SRC_XXX will work
+
 				$tmparray[$obj->rowid]['id']   =$obj->rowid;
 				$tmparray[$obj->rowid]['code'] =$obj->code;
 				$tmparray[$obj->rowid]['label']=$label;
@@ -3020,7 +3023,8 @@ class Form
 			{
 				print '<option value="'.$arraydemandreason['id'].'">';
 			}
-			print $arraydemandreason['label'];
+			$label=$arraydemandreason['label'];	// Translation of label was already done into the ->loadCacheInputReason
+			print $langs->trans($label);
 			print '</option>';
 		}
 		print '</select>';
@@ -3384,13 +3388,19 @@ class Form
 
 			while($res = $this->db->fetch_object($resql))
 			{
+			    $unitLabel = $res->label;
+			    if (! empty($langs->tab_translate['unit'.$res->code]))	// check if Translation is available before
+			    {
+			        $unitLabel = $langs->trans('unit'.$res->code)!=$res->label?$langs->trans('unit'.$res->code):$res->label;
+			    }
+			    
 				if ($selected == $res->rowid)
 				{
-					$return.='<option value="'.$res->rowid.'" selected>'.($langs->trans('unit'.$res->code)!=$res->label?$langs->trans('unit'.$res->code):$res->label).'</option>';
+				    $return.='<option value="'.$res->rowid.'" selected>'.$unitLabel.'</option>';
 				}
 				else
 				{
-					$return.='<option value="'.$res->rowid.'">'.($langs->trans('unit'.$res->code)!=$res->label?$langs->trans('unit'.$res->code):$res->label).'</option>';
+				    $return.='<option value="'.$res->rowid.'">'.$unitLabel.'</option>';
 				}
 			}
 			$return.='</select>';
@@ -3631,7 +3641,7 @@ class Form
 	 *     @param	int			$disableformtag		1=Disable form tag. Can be used if we are already inside a <form> section.
 	 *     @return 	string      	    			HTML ajax code if a confirm ajax popup is required, Pure HTML code if it's an html form
 	 */
-	function formconfirm($page, $title, $question, $action, $formquestion='', $selectedchoice='', $useajax=0, $height=200, $width=500, $disableformtag=0)
+	function formconfirm($page, $title, $question, $action, $formquestion='', $selectedchoice='', $useajax=0, $height=210, $width=500, $disableformtag=0)
 	{
 		global $langs,$conf;
 		global $useglobalvars;
