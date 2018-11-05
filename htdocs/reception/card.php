@@ -1008,6 +1008,7 @@ $numAsked ++;
             if ($numAsked)
             {
                 print '<tr class="liste_titre">';
+                print '<td>'.$langs->trans("Product").'</td>';
                 print '<td>'.$langs->trans("Description").'</td>';
                 print '<td align="center">'.$langs->trans("QtyOrdered").'</td>';
                 print '<td align="center">'.$langs->trans("QtyReceived").'</td>';
@@ -1107,10 +1108,15 @@ $numAsked ++;
                     print "</td>\n";
                 }
 				
+				
+				//Desc
+				print '<td>';
+				print '<textarea  name="comment'.$indiceAsked.'" >'.$line->desc.'</textarea>';
+				print '</td>';
+				
                 // Qty
                 print '<td align="center">'.$line->qty;
 				print '<input type="hidden" name="fk_commandefournisseurdet'.$indiceAsked.'" value=\''.$line->id.'\' />';
-				print '<textarea style="display:none;"  name="comment'.$indiceAsked.'" >'.$line->desc.'</textarea>';
                 print '<input name="qtyasked'.$indiceAsked.'" id="qtyasked'.$indiceAsked.'" type="hidden" value="'.$line->qty.'">';
                 print '</td>';
                 $qtyProdCom=$line->qty;
@@ -1210,7 +1216,7 @@ $numAsked ++;
 				//Display lines extrafields
 				if (is_array($extralabelslines) && count($extralabelslines)>0)
 				{
-					$colspan=5;
+					$colspan=6;
 					if($conf->productbatch->enabled)$colspan+=3;
 					$orderLineExtrafields = new Extrafields($db);
 					$orderLineExtrafieldLabels = $orderLineExtrafields->fetch_name_optionals_label($object->table_element_line);

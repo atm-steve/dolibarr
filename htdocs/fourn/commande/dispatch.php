@@ -486,7 +486,7 @@ if ($id > 0 || ! empty($ref)) {
 			$db->free($resql);
 		}
 
-		$sql = "SELECT l.rowid, l.fk_product, l.subprice, l.remise_percent, SUM(l.qty) as qty,";
+		$sql = "SELECT l.rowid, l.fk_product, l.subprice, l.description, l.remise_percent, SUM(l.qty) as qty,";
 		$sql .= " p.ref, p.label, p.tobatch";
 		$sql .= " FROM " . MAIN_DB_PREFIX . "commande_fournisseurdet as l";
 		$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON l.fk_product=p.rowid";
@@ -504,8 +504,8 @@ if ($id > 0 || ! empty($ref)) {
 			if ($num) {
 				print '<tr class="liste_titre">';
 
+				print '<td>' . $langs->trans("Product") . '</td>';
 				print '<td>' . $langs->trans("Description") . '</td>';
-				print '<td></td>';
 				print '<td></td>';
 				print '<td></td>';
 				print '<td align="right">' . $langs->trans("QtyOrdered") . '</td>';
@@ -533,7 +533,7 @@ if ($id > 0 || ! empty($ref)) {
 			$var = false;
 			while ( $i < $num ) {
 				$objp = $db->fetch_object($resql);
-
+				
 				// On n'affiche pas les produits libres
 				if (! $objp->fk_product > 0) {
 					$nbfreeproduct++;
@@ -559,20 +559,29 @@ if ($id > 0 || ! empty($ref)) {
 
 						if (! empty($conf->productbatch->enabled)) {
 							if ($objp->tobatch) {
-								print '<td colspan="4">';
+								print '<td >';
 								print $linktoprod;
+								print "</td>";
+								print '<td colspan="3" style="white-space: pre;">';
+								print $objp->description;
 								print "</td>";
 							} else {
 								print '<td>';
 								print $linktoprod;
 								print "</td>";
-								print '<td colspan="3">';
+								print '<td  style="white-space: pre;">';
+								print $objp->description;
+								print "</td>";
+								print '<td colspan="2">';
 								print $langs->trans("ProductDoesNotUseBatchSerial");
 								print '</td>';
 							}
 						} else {
-							print '<td colspan="4">';
+							print '<td >';
 							print $linktoprod;
+							print "</td>";
+							print '<td colspan="3" style="white-space: pre;">';
+							print $objp->description;
 							print "</td>";
 						}
 
