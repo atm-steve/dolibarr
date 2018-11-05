@@ -52,6 +52,7 @@ $diroutputmassaction=$conf->reception->dir_output . '/temp/massgeneration/'.$use
 
 $search_ref_rcp = GETPOST("search_ref_rcp");
 $search_ref_liv = GETPOST('search_ref_liv');
+$search_ref_origin = GETPOST('search_ref_origin');
 $search_ref_supplier = GETPOST('search_ref_supplier');
 $search_company = GETPOST("search_company");
 $search_town=GETPOST('search_town','alpha');
@@ -102,6 +103,7 @@ if (empty($user->socid)) $fieldstosearchall["e.note_private"]="NotePrivate";
 $checkedtypetiers=0;
 $arrayfields=array(
     'e.ref'=>array('label'=>$langs->trans("Ref"), 'checked'=>1),
+    'l.ref'=>array('label'=>$langs->trans("RefSupplierOrder"), 'checked'=>1),
     'e.ref_supplier'=>array('label'=>$langs->trans("RefSupplier"), 'checked'=>1),
     's.nom'=>array('label'=>$langs->trans("ThirdParty"), 'checked'=>1),
     's.town'=>array('label'=>$langs->trans("Town"), 'checked'=>1),
@@ -143,6 +145,7 @@ include DOL_DOCUMENT_ROOT.'/core/actions_changeselectedfields.inc.php';
 if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x','alpha') || GETPOST('button_removefilter','alpha')) // All tests are required to be compatible with all browsers
 {
 	$search_ref_supplier='';
+	$search_ref_origin='';
     $search_ref_rcp='';
     $search_ref_liv='';
     $search_company='';
@@ -435,7 +438,7 @@ $formfile = new FormFile($db);
 $helpurl='EN:Module_Receptions|FR:Module_Receptions|ES:M&oacute;dulo_Receptiones';
 llxHeader('',$langs->trans('ListOfReceptions'),$helpurl);
 
-$sql = "SELECT e.rowid, e.ref, e.ref_supplier, e.date_reception as date_reception, e.date_delivery as date_livraison, l.date_delivery as date_reception, e.fk_statut, e.billed,";
+$sql = "SELECT e.rowid, l.rowid as supplierid, l.ref as origin, e.ref, e.ref_supplier, e.date_reception as date_reception, e.date_delivery as date_livraison, e.fk_statut, e.billed,";
 $sql.= ' s.rowid as socid, s.nom as name, s.town, s.zip, s.fk_pays, s.client, s.code_client, ';
 $sql.= " typent.code as typent_code,";
 $sql.= " state.code_departement as state_code, state.nom as state_name,";
@@ -452,8 +455,8 @@ $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON s.rowid = e.fk_soc";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_country as country on (country.rowid = s.fk_pays)";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_typent as typent on (typent.id = s.fk_typent)";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_departements as state on (state.rowid = s.fk_departement)";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee ON e.rowid = ee.fk_source AND ee.sourcetype = 'reception' AND ee.targettype = 'delivery'";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."livraison as l ON l.rowid = ee.fk_target";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee ON e.rowid = ee.fk_target AND ee.sourcetype = 'order_supplier' AND ee.targettype = 'reception'";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseur as l ON l.rowid = ee.fk_source";
 if (!$user->rights->societe->client->voir && !$socid)	// Internal user with no permission to see all
 {
 	$sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
@@ -484,6 +487,7 @@ if ($search_company) $sql .= natural_search('s.nom', $search_company);
 if (!empty($search_date_start_delivery) && $search_date_end_delivery) $sql .= ' AND e.date_delivery BETWEEN "'.$search_date_start_delivery.'" AND "'.$search_date_end_delivery.'"';
 else if (!empty($search_date_start_delivery)) $sql .= ' AND e.date_delivery >= "'.$search_date_start_delivery .'"';
 else if (!empty($search_date_end_delivery)) $sql .= ' AND e.date_delivery <= "'.$search_date_end_delivery.'"' ;
+if ($search_ref_origin) $sql .= natural_search('l.ref', $search_ref_origin);
 if ($search_ref_supplier) $sql .= natural_search('e.ref_supplier', $search_ref_supplier);
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
 // Add where from extra fields
@@ -541,6 +545,7 @@ if ($resql)
 	if ($search_country) $param.= "&amp;search_country=".$search_country; 
 	if ($search_type_thirdparty) $param.= "&amp;search_type_thirdparty=".$search_type_thirdparty;
 	if ($search_ref_supplier) $param.= "&amp;search_ref_supplier=".$search_ref_supplier;
+	if ($search_ref_origin) $param.= "&amp;search_ref_origin=".$search_ref_origin;
 	if ($search_date_start_delivery) $param.= "&amp;date_start_deliveryday=".GETPOST('date_start_deliveryday')."&amp;date_start_deliverymonth=".GETPOST('date_start_deliverymonth')."&amp;date_start_deliveryyear=".GETPOST('date_start_deliveryyear');
 	if ($search_date_end_delivery) $param.= "&amp;date_end_deliveryday=".GETPOST('date_end_deliveryday')."&amp;date_end_deliverymonth=".GETPOST('date_end_deliverymonth')."&amp;date_end_deliveryyear=".GETPOST('date_end_deliveryyear');
 	// Add $param from extra fields
@@ -654,6 +659,13 @@ if ($resql)
 	{
 	    print '<td class="liste_titre">';
     	print '<input class="flat" size="6" type="text" name="search_ref_rcp" value="'.$search_ref_rcp.'">';
+        print '</td>';
+	}
+	// Ref supplier order
+	if (! empty($arrayfields['l.ref']['checked']))
+	{
+	    print '<td class="liste_titre">';
+    	print '<input class="flat" size="6" type="text" name="search_ref_origin" value="'.$search_ref_origin.'">';
         print '</td>';
 	}
 	// Ref customer
@@ -778,6 +790,7 @@ if ($resql)
 
 	print '<tr class="liste_titre">';
 	if (! empty($arrayfields['e.ref']['checked']))            print_liste_field_titre($arrayfields['e.ref']['label'], $_SERVER["PHP_SELF"],"e.ref","",$param,'',$sortfield,$sortorder);
+	if (! empty($arrayfields['l.ref']['checked']))			  print_liste_field_titre($arrayfields['l.ref']['label'], $_SERVER["PHP_SELF"],"l.ref","",$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['e.ref_supplier']['checked']))   print_liste_field_titre($arrayfields['e.ref_supplier']['label'], $_SERVER["PHP_SELF"],"e.ref_supplier","",$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['s.nom']['checked']))            print_liste_field_titre($arrayfields['s.nom']['label'], $_SERVER["PHP_SELF"],"s.nom", "", $param,'align="left"',$sortfield,$sortorder);
 	if (! empty($arrayfields['s.town']['checked']))           print_liste_field_titre($arrayfields['s.town']['label'],$_SERVER["PHP_SELF"],'s.town','',$param,'',$sortfield,$sortorder);
@@ -833,7 +846,7 @@ if ($resql)
 		// Ref
 		if (! empty($arrayfields['e.ref']['checked']))
 		{
-    		print "<td>";
+    		print "<td nowrap>";
     		print $reception->getNomUrl(1);
     		$filename=dol_sanitizeFileName($reception->ref);
     		$filedir=$conf->reception->dir_output . '/' . dol_sanitizeFileName($reception->ref);
@@ -844,6 +857,24 @@ if ($resql)
     		if (! $i) $totalarray['nbfield']++;
 		}
 
+		// Ref customer
+		if (! empty($arrayfields['l.ref']['checked']))
+		{
+			$cf = new CommandeFournisseur($db);
+			
+			
+		    print "<td>";
+			
+			if(!empty($obj->supplierid)){
+				$cf->fetch($obj->supplierid);
+				
+				print $cf->getNomUrl();
+			}else {
+				print $obj->origin;
+			}
+		    print "</td>\n";
+		    if (! $i) $totalarray['nbfield']++;
+		}
 		// Ref customer
 		if (! empty($arrayfields['e.ref_supplier']['checked']))
 		{
