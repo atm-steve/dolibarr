@@ -297,7 +297,11 @@ if ($status == 'done') $title=$langs->trans("DoneActions");
 if ($status == 'todo') $title=$langs->trans("ToDoActions");
 
 $param='';
-if ($actioncode || isset($_GET['actioncode']) || isset($_POST['actioncode'])) $param.="&actioncode=".$actioncode;
+if ($actioncode || isset($_GET['actioncode']) || isset($_POST['actioncode'])) {
+	if(is_array($actioncode)) {
+		foreach($actioncode as $str_action) $param.="&actioncode[]=".$str_action;
+	} else $param.="&actioncode=".$actioncode;
+}
 if ($resourceid > 0)  $param.="&resourceid=".$resourceid;
 if ($status || isset($_GET['status']) || isset($_POST['status'])) $param.="&status=".$status;
 if ($filter)  $param.="&filter=".$filter;
@@ -482,7 +486,14 @@ if (! empty($actioncode))
         elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND ca.type = 'systemauto'";
         else
         {
-            $sql.=" AND ca.code IN ('".implode("','", explode(',',$actioncode))."')";
+		if (is_array($actioncode))
+		{
+	        	$sql.=" AND ca.code IN ('".implode("','", $actioncode)."')";
+		}
+		else
+		{
+	        	$sql.=" AND ca.code IN ('".implode("','", explode(',', $actioncode))."')";
+		}
         }
     }
 }
@@ -523,8 +534,8 @@ if ($type) $sql.= " AND ca.id = ".$type;
 if ($status == '0') { $sql.= " AND a.percent = 0"; }
 if ($status == '-1') { $sql.= " AND a.percent = -1"; }	// Not applicable
 if ($status == '50') { $sql.= " AND (a.percent > 0 AND a.percent < 100)"; }	// Running already started
-if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep2 <= '".$db->idate($now)."'))"; }
-if ($status == 'todo') { $sql.= " AND ((a.percent >= 0 AND a.percent < 100) OR (a.percent = -1 AND a.datep2 > '".$db->idate($now)."'))"; }
+if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100)"; }
+if ($status == 'todo') { $sql.= " AND (a.percent >= 0 AND a.percent < 100)"; }
 // We must filter on assignement table
 if ($filtert > 0 || $usergroup > 0)
 {
@@ -1232,7 +1243,7 @@ function show_day_events($db, $day, $month, $year, $monthshown, $style, &$eventa
     $i=0; $nummytasks=0; $numother=0; $numbirthday=0; $numical=0; $numicals=array();
     $ymd=sprintf("%04d",$year).sprintf("%02d",$month).sprintf("%02d",$day);
 
-    $nextindextouse=count($colorindexused);	// At first run this is 0, so fist user has 0, next 1, ...
+    $nextindextouse=is_array($colorindexused)?count($colorindexused):0;	// At first run this is 0, so fist user has 0, next 1, ...
     //print $nextindextouse;
 
     foreach ($eventarray as $daykey => $notused)

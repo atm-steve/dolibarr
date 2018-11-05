@@ -414,7 +414,7 @@ function ajax_combobox($htmlname, $events=array(), $minLengthToAutocomplete=0, $
 	if ($forcefocus) $msg.= '.select2(\'focus\')';
 	$msg.= ';'."\n";
 
-	if (count($events))    // If an array of js events to do were provided.
+	if (is_array($events) && count($events))    // If an array of js events to do were provided.
 	{
 		$msg.= '
 			jQuery("#'.$htmlname.'").change(function () {
@@ -547,7 +547,7 @@ function ajax_constantonoff($code, $input=array(), $entity=null, $revertonoff=0,
  *  @param  string  $text_on    Text if on
  *  @param  string  $text_off   Text if off
  *  @param  array   $input      Array of type->list of CSS element to switch. Example: array('disabled'=>array(0=>'cssid'))
- *  @return void
+ *  @return string              html for button on/off
  */
 function ajax_object_onoff($object, $code, $field, $text_on, $text_off, $input=array())
 {

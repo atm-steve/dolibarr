@@ -169,7 +169,11 @@ $listofextcals=array();
 $param='';
 if (! empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) $param.='&contextpage='.$contextpage;
 if ($limit > 0 && $limit != $conf->liste_limit) $param.='&limit='.$limit;
-if ($actioncode != '') $param.="&actioncode=".$actioncode;
+if ($actioncode != '') {
+	if(is_array($actioncode)) {
+		foreach($actioncode as $str_action) $param.="&actioncode[]=".$str_action;
+	} else $param.="&actioncode=".$actioncode;
+}
 if ($resourceid > 0) $param.="&resourceid=".$resourceid;
 if ($status != '' && $status > -1) $param.="&status=".$status;
 if ($filter) $param.="&filter=".$filter;
@@ -227,7 +231,14 @@ if (! empty($actioncode))
         elseif ($actioncode == 'AC_ALL_AUTO') $sql.= " AND c.type = 'systemauto'";
         else
         {
-            $sql.=" AND c.code IN ('".implode("','", explode(',',$actioncode))."')";
+		if (is_array($actioncode))
+ 		{
+ 	        	$sql.=" AND c.code IN ('".implode("','", $actioncode)."')";
+ 		}
+ 		else
+ 		{
+ 	        	$sql.=" AND c.code IN ('".implode("','", explode(',', $actioncode))."')";
+ 		}
         }
     }
 }
@@ -242,8 +253,8 @@ if ($status == '0') { $sql.= " AND a.percent = 0"; }
 if ($status == '-1') { $sql.= " AND a.percent = -1"; }	// Not applicable
 if ($status == '50') { $sql.= " AND (a.percent > 0 AND a.percent < 100)"; }	// Running already started
 if ($status == '100') { $sql.= " AND a.percent = 100"; }
-if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep2 <= '".$db->idate($now)."'))"; }
-if ($status == 'todo') { $sql.= " AND ((a.percent >= 0 AND a.percent < 100) OR (a.percent = -1 AND a.datep2 > '".$db->idate($now)."'))"; }
+if ($status == 'done' || $status == '100') { $sql.= " AND (a.percent = 100)"; }
+if ($status == 'todo') { $sql.= " AND (a.percent >= 0 AND a.percent < 100)"; }
 if ($search_title) $sql.=natural_search("a.label", $search_title);
 // We must filter on assignement table
 if ($filtert > 0 || $usergroup > 0)

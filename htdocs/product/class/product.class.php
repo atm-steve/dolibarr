@@ -12,7 +12,7 @@
  * Copyright (C) 2014		Henry Florian			<florian.henry@open-concept.pro>
  * Copyright (C) 2014-2016	Philippe Grand			<philippe.grand@atoo-net.com>
  * Copyright (C) 2014		Ion agorria			    <ion@agorria.com>
- * Copyright (C) 2016-2017	Ferran Marcet			<fmarcet@2byte.es>
+ * Copyright (C) 2016-2018	Ferran Marcet			<fmarcet@2byte.es>
  * Copyright (C) 2017		Gustavo Novaro
  *
  * This program is free software; you can redistribute it and/or modify
@@ -745,12 +745,12 @@ class Product extends CommonObject
 		if (empty($this->surface) && !empty($this->length) && !empty($this->width) && $this->length_units == $this->width_units)
 		{
 			$this->surface = $this->length * $this->width;
-			$this->surface_units = $this->length_units + $this->width_units;
+			$this->surface_units = measuring_units_squared($this->length_units);
 		}
 		if (empty($this->volume) && !empty($this->surface_units) && !empty($this->height) && $this->length_units == $this->height_units)
 		{
 			$this->volume =  $this->surface * $this->height;
-			$this->volume_units = $this->surface_units + $this->height_units;
+			$this->volume_units = measuring_units_cubed($this->height_units);
 		}
 
 		$this->surface = price2num($this->surface);
@@ -1111,6 +1111,19 @@ class Product extends CommonObject
 				if (!$error && ($prodcomb->fetchByFkProductChild($id) > 0) && ($prodcomb->delete() < 0)) {
 					$error++;
 					$this->errors[] = 'Error deleting child combination';
+				}
+			}
+
+			// Delete from product_association
+			if (!$error){
+				$sql = "DELETE FROM ".MAIN_DB_PREFIX."product_association";
+				$sql.= " WHERE fk_product_pere = ".$id." OR fk_product_fils = ".$id;
+				dol_syslog(get_class($this).'::delete', LOG_DEBUG);
+				$result = $this->db->query($sql);
+				if (! $result)
+				{
+					$error++;
+					$this->errors[] = $this->db->lasterror();
 				}
 			}
 
@@ -1505,6 +1518,7 @@ class Product extends CommonObject
 		// We do a first seach with a select by searching with couple prodfournprice and qty only (later we will search on triplet qty/product_id/fourn_ref)
 		$sql = "SELECT pfp.rowid, pfp.price as price, pfp.quantity as quantity, pfp.remise_percent,";
 		$sql.= " pfp.fk_product, pfp.ref_fourn, pfp.fk_soc, pfp.tva_tx, pfp.fk_supplier_price_expression";
+		$sql.= " ,pfp.default_vat_code";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price as pfp";
 		$sql.= " WHERE pfp.rowid = ".$prodfournprice;
 		if ($qty > 0) $sql.= " AND pfp.quantity <= ".$qty;
@@ -1537,9 +1551,11 @@ class Product extends CommonObject
 				$this->fourn_pu = $obj->price / $obj->quantity;     // Unit price of product of supplier
 				$this->fourn_price_base_type = 'HT';                // Price base type
 				$this->ref_fourn = $obj->ref_fourn;                 // deprecated
+				$this->product_fourn_price_id = $obj->rowid;	    // supplier price id
 				$this->ref_supplier = $obj->ref_fourn;              // Ref supplier
 				$this->remise_percent = $obj->remise_percent;       // remise percent if present and not typed
 				$this->vatrate_supplier = $obj->tva_tx;             // Vat ref supplier
+				$this->default_vat_code = $obj->default_vat_code;   // Vat code supplier
 				$result=$obj->fk_product;
 				return $result;
 			}
@@ -1548,6 +1564,7 @@ class Product extends CommonObject
 				// We do a second search by doing a select again but searching with less reliable criteria: couple qty/id product, and if set fourn_ref or fk_soc.
 				$sql = "SELECT pfp.rowid, pfp.price as price, pfp.quantity as quantity, pfp.fk_soc,";
 				$sql.= " pfp.fk_product, pfp.ref_fourn as ref_supplier, pfp.tva_tx, pfp.fk_supplier_price_expression";
+				$sql.= " ,pfp.default_vat_code";
 				$sql.= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price as pfp";
 				$sql.= " WHERE pfp.fk_product = ".$product_id;
 				if ($fourn_ref != 'none') $sql.= " AND pfp.ref_fourn = '".$fourn_ref."'";
@@ -1583,10 +1600,12 @@ class Product extends CommonObject
 						$this->fourn_qty = $obj->quantity;					// min quantity for price for a virtual supplier
 						$this->fourn_pu = $obj->price / $obj->quantity;     // Unit price of product for a virtual supplier
 						$this->fourn_price_base_type = 'HT';                // Price base type for a virtual supplier
+						$this->product_fourn_price_id = $obj->rowid;	    // supplier price id
 						$this->ref_fourn = $obj->ref_supplier;              // deprecated
 						$this->ref_supplier = $obj->ref_supplier;           // Ref supplier
 						$this->remise_percent = $obj->remise_percent;       // remise percent if present and not typed
 						$this->vatrate_supplier = $obj->tva_tx;             // Vat ref supplier
+						$this->default_vat_code = $obj->default_vat_code;   // Vat code supplier
 						$result=$obj->fk_product;
 						return $result;
 					}
@@ -4000,8 +4019,8 @@ class Product extends CommonObject
 
 		if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))
 		{
-			$dirold .= get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
-			$pdirold .= get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
+			$dir = $sdir . '/'. get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
+			$pdir = '/' . get_exdir($this->id,2,0,0,$this,'product') . $this->id ."/photos/";
 		}
 
 		// Defined relative dir to DOL_DATA_ROOT
@@ -4021,11 +4040,11 @@ class Product extends CommonObject
 
 		$filearray=dol_dir_list($dir,"files",0,'','(\.meta|_preview.*\.png)$',$sortfield,(strtolower($sortorder)=='desc'?SORT_DESC:SORT_ASC),1);
 
-		if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))    // For backward compatiblity, we scan also old dirs
+		/*if (! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))    // For backward compatiblity, we scan also old dirs
 		{
 		    $filearrayold=dol_dir_list($dirold,"files",0,'','(\.meta|_preview.*\.png)$',$sortfield,(strtolower($sortorder)=='desc'?SORT_DESC:SORT_ASC),1);
 		    $filearray=array_merge($filearray, $filearrayold);
-		}
+		}*/
 
         $filearrayindatabase = dol_dir_list_in_database($relativedir, '', null, 'name', SORT_ASC);
 
@@ -4452,8 +4471,6 @@ class Product extends CommonObject
 		}
 
 		$langs->load('products');
-
-		$this->db->begin();
 
 		$label_type = 'label';
 

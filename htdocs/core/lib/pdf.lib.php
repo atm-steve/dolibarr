@@ -432,8 +432,17 @@ function pdf_build_address($outputlangs,$sourcecompany,$targetcompany='',$target
 
     			if (!empty($targetcontact->address)) {
     				$stringaddress .= ($stringaddress ? "\n" : '' ).$outputlangs->convToOutputCharset(dol_format_address($targetcontact))."\n";
-    			}else {
-    				$stringaddress .= ($stringaddress ? "\n" : '' ).$outputlangs->convToOutputCharset(dol_format_address($targetcompany))."\n";
+    			} else {
+    				$companytouseforaddress = $targetcompany;
+
+				// Contact on a thirdparty that is a different thirdparty than the thirdparty of object
+    				if ($targetcontact->socid > 0 && $targetcontact->socid != $targetcompany->id)
+				{
+    					$targetcontact->fetch_thirdparty();
+    					$companytouseforaddress = $targetcontact->thirdparty;
+    				}
+
+    				$stringaddress .= ($stringaddress ? "\n" : '' ).$outputlangs->convToOutputCharset(dol_format_address($companytouseforaddress))."\n";
     			}
     			// Country
     			if (!empty($targetcontact->country_code) && $targetcontact->country_code != $sourcecompany->country_code) {
@@ -1822,7 +1831,7 @@ function pdf_getlineremisepercent($object,$i,$outputlangs,$hidedetails=0)
 function pdf_getlineprogress($object, $i, $outputlangs, $hidedetails = 0, $hookmanager = null)
 {
 	if (empty($hookmanager)) global $hookmanager;
-	
+
 	$reshook=0;
     $result='';
     //if (is_object($hookmanager) && ( (isset($object->lines[$i]->product_type) && $object->lines[$i]->product_type == 9 && ! empty($object->lines[$i]->special_code)) || ! empty($object->lines[$i]->fk_parent_line) ) )
@@ -1841,10 +1850,14 @@ function pdf_getlineprogress($object, $i, $outputlangs, $hidedetails = 0, $hookm
         	if ($object->lines[$i]->special_code == 3) return '';
 		if (empty($hidedetails) || $hidedetails > 1)
 		{
-			if($conf->global->SITUATION_DISPLAY_DIFF_ON_PDF)
+			if ($conf->global->SITUATION_DISPLAY_DIFF_ON_PDF)
 			{
-			 	$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
-			 	$result = ( $object->lines[$i]->situation_percent - $prev_progress) . '%';
+				$prev_progress = 0;
+				if (method_exists($object, 'get_prev_progress'))
+				{
+			 		$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
+				}
+			 	$result = ($object->lines[$i]->situation_percent - $prev_progress) . '%';
 			}
 			else
 				$result = $object->lines[$i]->situation_percent . '%';
@@ -1891,12 +1904,17 @@ function pdf_getlinetotalexcltax($object,$i,$outputlangs,$hidedetails=0)
         if (empty($hidedetails) || $hidedetails > 1)
         {
         	$total_ht = ($conf->multicurrency->enabled && $object->multicurrency_tx != 1 ? $object->lines[$i]->multicurrency_total_ht : $object->lines[$i]->total_ht);
-        	if ($object->lines[$i]->situation_percent > 0 )
+        	if ($object->lines[$i]->situation_percent > 0)
         	{
-		 	$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
-		 	$progress = ( $object->lines[$i]->situation_percent - $prev_progress) /100;
-		 	$result.=price($sign * ($total_ht/($object->lines[$i]->situation_percent/100)) * $progress, 0, $outputlangs);
-		}
+        		$prev_progress = 0;
+        		$progress = 1;
+        		if (method_exists($object->lines[$i], 'get_prev_progress'))
+        		{
+					$prev_progress = $object->lines[$i]->get_prev_progress($object->id);
+					$progress = ($object->lines[$i]->situation_percent - $prev_progress) / 100;
+        		}
+				$result.=price($sign * ($total_ht/($object->lines[$i]->situation_percent/100)) * $progress, 0, $outputlangs);
+        	}
         	else
 			$result.=price($sign * $total_ht, 0, $outputlangs);
 	}

@@ -76,6 +76,9 @@ class Commande extends CommonOrder
     public $facturee;
     public $billed;		// billed or not
 
+    /**
+     * @var int Draft Status of the order
+     */
     public $brouillon;
     public $cond_reglement_code;
 
@@ -226,7 +229,7 @@ class Commande extends CommonOrder
                 $mybool|=@include_once $dir.$file;
             }
 
-            if (! $mybool)
+            if ($mybool === false)
             {
                 dol_print_error('',"Failed to include file ".$file);
                 return '';
@@ -400,6 +403,7 @@ class Commande extends CommonOrder
         {
             $this->ref = $num;
             $this->statut = self::STATUS_VALIDATED;
+            $this->brouillon = 0;
         }
 
         if (! $error)
@@ -709,7 +713,7 @@ class Commande extends CommonOrder
 		// $date_commande is deprecated
         $date = ($this->date_commande ? $this->date_commande : $this->date);
 
-		// Multicurrency (test on $this->multicurrency_tx because we sould take the default rate only if not using origin rate)
+		// Multicurrency (test on $this->multicurrency_tx because we should take the default rate only if not using origin rate)
 		if (!empty($this->multicurrency_code) && empty($this->multicurrency_tx)) list($this->fk_multicurrency,$this->multicurrency_tx) = MultiCurrency::getIdAndTxFromCode($this->db, $this->multicurrency_code, $date);
 		else $this->fk_multicurrency = MultiCurrency::getIdFromCode($this->db, $this->multicurrency_code);
 		if (empty($this->fk_multicurrency))
@@ -821,11 +825,15 @@ class Commande extends CommonOrder
                         $fk_parent_line = 0;
                     }
 
+					// Complete vat rate with code
+					$vatrate = $line->tva_tx;
+					if ($line->vat_src_code && ! preg_match('/\(.*\)/', $vatrate)) $vatrate.=' ('.$line->vat_src_code.')';
+
                     $result = $this->addline(
                         $line->desc,
                         $line->subprice,
                         $line->qty,
-                        $line->tva_tx,
+                        $vatrate,
                         $line->localtax1_tx,
                         $line->localtax2_tx,
                         $line->fk_product,
@@ -1211,9 +1219,9 @@ class Commande extends CommonOrder
      *	@param      string			$desc            	Description of line
      *	@param      float			$pu_ht    	        Unit price (without tax)
      *	@param      float			$qty             	Quantite
-     *	@param      float			$txtva           	Taux de tva force, sinon -1
-     *	@param      float			$txlocaltax1		Local tax 1 rate
-     *	@param      float			$txlocaltax2		Local tax 2 rate
+     * 	@param    	float			$txtva           	Force Vat rate, -1 for auto (Can contain the vat_src_code too with syntax '9.9 (CODE)')
+     * 	@param		float			$txlocaltax1		Local tax 1 rate (deprecated, use instead txtva with code inside)
+     * 	@param		float			$txlocaltax2		Local tax 2 rate (deprecated, use instead txtva with code inside)
      *	@param      int				$fk_product      	Id of product
      *	@param      float			$remise_percent  	Pourcentage de remise de la ligne
      *	@param      int				$info_bits			Bits de type de lignes
@@ -1265,6 +1273,7 @@ class Commande extends CommonOrder
         $remise_percent=price2num($remise_percent);
         $qty=price2num($qty);
         $pu_ht=price2num($pu_ht);
+        $pu_ht_devise=price2num($pu_ht_devise);
         $pu_ttc=price2num($pu_ttc);
     	$pa_ht=price2num($pa_ht);
         $txtva = price2num($txtva);
@@ -2811,6 +2820,7 @@ class Commande extends CommonOrder
             $qty=price2num($qty);
             $pu = price2num($pu);
       		$pa_ht=price2num($pa_ht);
+        	$pu_ht_devise=price2num($pu_ht_devise);
             $txtva=price2num($txtva);
             $txlocaltax1=price2num($txlocaltax1);
             $txlocaltax2=price2num($txlocaltax2);
@@ -3122,7 +3132,13 @@ class Commande extends CommonOrder
             if ($result < 0) $error++;
             // End call triggers
         }
-
+        
+        if ($this->nb_expedition() != 0) 
+	{
+		$this->errors[] = $langs->trans('SomeShipmentExists');
+		$error++;
+	}
+	    
         //TODO: Check for error after each action. If one failed we rollback, don't waste time to do action if previous fail
         if (! $error)
         {
@@ -4030,7 +4046,7 @@ class OrderLine extends CommonOrderLine
         $sql.= " ".(! empty($this->date_start)?"'".$this->db->idate($this->date_start)."'":"null").',';
         $sql.= " ".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null").',';
 	    $sql.= ' '.(!$this->fk_unit ? 'NULL' : $this->fk_unit);
-		$sql.= ", ".$this->fk_multicurrency;
+		$sql.= ", ".(! empty($this->fk_multicurrency) ? $this->fk_multicurrency : 'NULL');
 		$sql.= ", '".$this->db->escape($this->multicurrency_code)."'";
 		$sql.= ", ".$this->multicurrency_subprice;
 		$sql.= ", ".$this->multicurrency_total_ht;

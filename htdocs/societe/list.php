@@ -7,6 +7,7 @@
  * Copyright (C) 2015       Florian Henry           <florian.henry@open-concept.pro>
  * Copyright (C) 2016       Josep Lluis Amador      <joseplluis@lliuretic.cat>
  * Copyright (C) 2016       Ferran Marcet      		<fmarcet@2byte.es>
+ * Copyright (C) 2017       Juanjo Menent      		<jmenent@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +82,8 @@ $search_type=GETPOST('search_type','alpha');
 $search_level_from = GETPOST("search_level_from","alpha");
 $search_level_to   = GETPOST("search_level_to","alpha");
 $search_stcomm=GETPOST('search_stcomm','int');
+$search_btn=GETPOST('button_search','alpha');
+$search_remove_btn=GETPOST('button_removefilter','alpha');
 
 $type=GETPOST('type');
 $optioncss=GETPOST('optioncss','alpha');
@@ -94,7 +97,7 @@ $sortorder=GETPOST("sortorder",'alpha');
 $page=GETPOST("page",'int');
 if (! $sortorder) $sortorder="ASC";
 if (! $sortfield) $sortfield="s.nom";
-if (empty($page) || $page == -1) { $page = 0; }
+if (empty($page) || $page == -1 || !empty($search_btn) || !empty($search_remove_btn) || (empty($toselect) && $massaction === '0')) { $page = 0; }
 $offset = $limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
@@ -963,6 +966,7 @@ while ($i < min($num, $limit))
 
 	$companystatic->id=$obj->rowid;
 	$companystatic->name=$obj->name;
+	$companystatic->name_alias=$obj->name_alias;
 	$companystatic->canvas=$obj->canvas;
 	$companystatic->client=$obj->client;
 	$companystatic->status=$obj->status;
@@ -978,14 +982,16 @@ while ($i < min($num, $limit))
 	print '<tr class="oddeven">';
 	if (! empty($arrayfields['s.nom']['checked']))
 	{
+		$savalias = $obj->name_alias;
+		if (! empty($arrayfields['s.name_alias']['checked'])) $companystatic->name_alias='';
 		print '<td class="tdoverflowmax200">';
 		print $companystatic->getNomUrl(1,'',100);
 		print "</td>\n";
+		$companystatic->name_alias = $savalias;
         if (! $i) $totalarray['nbfield']++;
 	}
 	if (! empty($arrayfields['s.name_alias']['checked']))
 	{
-	    $companystatic->name_alias=$obj->name_alias;   // Added after the getNomUrl
 	    print '<td class="tdoverflowmax200">';
 	    print $companystatic->name_alias;
 	    print "</td>\n";
@@ -1052,7 +1058,7 @@ while ($i < min($num, $limit))
     if (! empty($arrayfields['typent.code']['checked']))
     {
         print '<td align="center">';
-		if (count($typenArray)==0) $typenArray = $formcompany->typent_array(1);
+        if (! is_array($typenArray) || count($typenArray)==0) $typenArray = $formcompany->typent_array(1);
 		print $typenArray[$obj->typent_code];
 		print '</td>';
         if (! $i) $totalarray['nbfield']++;

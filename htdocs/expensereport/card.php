@@ -216,7 +216,7 @@ if (empty($reshook))
     	    if ($ret < 0) $error++;
     	}
 
-    	if ($object->periode_existe($fuser,$object->date_debut,$object->date_fin))
+    	if (empty($conf->global->EXPENSEREPORT_ALLOW_OVERLAPPING_PERIODS) && $object->periode_existe($fuser,$object->date_debut,$object->date_fin))
     	{
     		$error++;
     		setEventMessages($langs->trans("ErrorDoubleDeclaration"), null, 'errors');
@@ -228,8 +228,12 @@ if (empty($reshook))
     		$db->begin();
 
     		$id = $object->create($user);
+    		if ($id <= 0)
+    		{
+    			$error++;
+    		}
 
-    		if ($id > 0)
+    		if (! $error)
     		{
     			$db->commit();
     			Header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
