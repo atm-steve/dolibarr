@@ -151,10 +151,10 @@ if ($action == 'export_csv') {
 	{
 		print length_accountg($line->numero_compte) . $sep;
 		print $object->get_compte_desc($line->numero_compte) . $sep;
-		print price($line->debit) . $sep;
-		print price($line->credit) . $sep;
-		print price($line->debit) . $sep;
-		print price($line->credit - $line->debit) . $sep;
+		print price2num($line->debit) . $sep;
+		print price2num($line->credit) . $sep;
+		print price2num($line->debit) . $sep;
+		print price2num($line->credit - $line->debit) . $sep;
 		print "\n";
 	}
 }
