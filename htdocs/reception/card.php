@@ -2041,7 +2041,7 @@ else if ($id || $ref)
 
 			// Display lines extrafields
 			if (is_array($extralabelslines) && count($extralabelslines)>0) {
-				$colspan= empty($conf->productbatch->enabled) ? 8 : 9;
+				$colspan= empty($conf->productbatch->enabled) ? 11 : 12;
 				$line = new CommandeFournisseurDispatch($db);
 				$line->fetch_optionals($lines[$i]->id,$extralabelslines);
 				print '<tr class="oddeven">';
