@@ -85,6 +85,9 @@ class Commande extends CommonOrder
     public $facturee;
     public $billed;		// billed or not
 
+    /**
+     * @var int Draft Status of the order
+     */
     public $brouillon;
     public $cond_reglement_code;
 
@@ -233,7 +236,7 @@ class Commande extends CommonOrder
                 $mybool|=@include_once $dir.$file;
             }
 
-            if (! $mybool)
+            if ($mybool === false)
             {
                 dol_print_error('',"Failed to include file ".$file);
                 return '';
@@ -407,6 +410,7 @@ class Commande extends CommonOrder
         {
             $this->ref = $num;
             $this->statut = self::STATUS_VALIDATED;
+            $this->brouillon = 0;
         }
 
         if (! $error)
@@ -1677,10 +1681,11 @@ class Commande extends CommonOrder
 
                 // Retrieve all extrafields for invoice
                 // fetch optionals attributes and labels
-                require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-                $extrafields=new ExtraFields($this->db);
-                $extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
-               	$this->fetch_optionals($this->id,$extralabels);
+//                require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+//                $extrafields=new ExtraFields($this->db);
+//                $extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
+//               	$this->fetch_optionals($this->id,$extralabels);
+           	$this->fetch_optionals();
 
                 $this->db->free($result);
 
@@ -1881,6 +1886,9 @@ class Commande extends CommonOrder
 				$line->multicurrency_total_ht 	= $objp->multicurrency_total_ht;
 				$line->multicurrency_total_tva 	= $objp->multicurrency_total_tva;
 				$line->multicurrency_total_ttc 	= $objp->multicurrency_total_ttc;
+
+           	$line->fetch_optionals();
+
 
                 $this->lines[$i] = $line;
 

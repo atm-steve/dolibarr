@@ -1353,10 +1353,12 @@ class Facture extends CommonInvoice
 
 				// Retrieve all extrafield for invoice
 				// fetch optionals attributes and labels
-				require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-				$extrafields=new ExtraFields($this->db);
-				$extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
-				$this->fetch_optionals($this->id,$extralabels);
+//				require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+//				$extrafields=new ExtraFields($this->db);
+//				$extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
+//				$this->fetch_optionals($this->id,$extralabels);
+				$this->fetch_optionals();
+                                
 
 				/*
 				 * Lines
@@ -1477,7 +1479,7 @@ class Facture extends CommonInvoice
 				$line->multicurrency_total_tva 	= $objp->multicurrency_total_tva;
 				$line->multicurrency_total_ttc 	= $objp->multicurrency_total_ttc;
 
-				// TODO Fetch optional like done in fetch line of facture_rec ?
+                                $line->fetch_optionals();
 
 				$this->lines[$i] = $line;
 
@@ -1698,9 +1700,9 @@ class Facture extends CommonInvoice
 			$facligne->total_ttc = -$remise->amount_ttc;
 
 			$facligne->multicurrency_subprice = -$remise->multicurrency_subprice;
-			$facligne->multicurrency_total_ht = -$remise->multicurrency_total_ht;
-			$facligne->multicurrency_total_tva = -$remise->multicurrency_total_tva;
-			$facligne->multicurrency_total_ttc = -$remise->multicurrency_total_ttc;
+			$facligne->multicurrency_total_ht = -$remise->multicurrency_amount_ht;
+			$facligne->multicurrency_total_tva = -$remise->multicurrency_amount_tva;
+			$facligne->multicurrency_total_ttc = -$remise->multicurrency_amount_ttc;
 
 			$lineid=$facligne->insert();
 			if ($lineid > 0)
