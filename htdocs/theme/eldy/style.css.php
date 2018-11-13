@@ -894,7 +894,8 @@ div.fiche {
     min-width: 150px;
 }
 .thumbstat150 {
-    min-width: 170px;
+    /* min-width: 170px; */
+    width: 170px;
 }
 .thumbstat, .thumbstat150 {
 <?php if ($conf->browser->name == 'ie') { ?>
@@ -1354,6 +1355,23 @@ div.secondcolumn div.box {
 	div.secondcolumn div.box {
 		padding-left: 0px;
 	}
+}
+
+/* Force values on one colum for small screen */
+@media only screen and (max-width: 1599px)
+{
+    div.fichehalfleft-lg {
+    	float: none;
+    	width: auto;
+    }
+    div.fichehalfright-lg {
+    	float: none;
+    	width: auto;
+    }
+    
+    .fichehalfright-lg .ficheaddleft{
+    	padding-left:0;
+    }
 }
 
 /* For table into table into card */
