@@ -207,7 +207,7 @@ if ($socid > 0)
     			$markRate = ($objp->selling_price != 0)?(100 * $objp->marge / $objp->selling_price):'' ;
 
     			$sign = '';
-    			if($objp->type == Facture::TYPE_CREDIT_NOTE){
+    			if ($objp->type == Facture::TYPE_CREDIT_NOTE){
     			    $sign = '-';
     			}
 
