@@ -156,7 +156,7 @@ class mod_facture_mars extends ModeleNumRefFactures
 		$sql.= " FROM ".MAIN_DB_PREFIX."facture";
 		$sql.= " WHERE facnumber LIKE '".$prefix."____-%'";
 		if(!empty($conf->global->MULTICOMPANY_INVOICENUMBER_SHARING_ENABLED))  $sql.= " AND entity IN (".getEntity('invoicenumber').")";
-		else $sql.= " AND entity = $entity";
+        else $sql.= " AND entity = $entity";
 
 		$resql=$db->query($sql);
 		dol_syslog(get_class($this)."::getNextValue", LOG_DEBUG);
