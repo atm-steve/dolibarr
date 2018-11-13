@@ -2230,6 +2230,7 @@ elseif (! empty($object->id))
 		$formmail->substit['__ORDERREF__']=$object->ref;                  	// For backward compatibility
 		$formmail->substit['__ORDERSUPPLIERREF__']=$object->ref_supplier;	// For backward compatibility
 		$formmail->substit['__SUPPLIERORDERREF__']=$object->ref_supplier;
+        complete_substitutions_array($formmail->substit, $langs, $object);
 
 		//Find the good contact adress
 		$custcontact='';
