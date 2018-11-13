@@ -200,6 +200,37 @@ if ($action == 'createtask' && $user->rights->projet->creer)
 			$action='create';
 			$error++;
 		}
+		
+		if (!empty($taskref))
+		{
+		    $checkTaskExistObj = new Task($db);
+		    if($checkTaskExistObj->fetch(0,$taskref) > 0)
+		    {
+		        if(!empty($conf->global->PROJECT_TASK_FORCE_NEW_TASKREF_ON_EXIST))
+		        {
+		            $obj = empty($conf->global->PROJECT_TASK_ADDON)?'mod_task_simple':$conf->global->PROJECT_TASK_ADDON;
+		            if (! empty($conf->global->PROJECT_TASK_ADDON) && is_readable(DOL_DOCUMENT_ROOT ."/core/modules/project/task/".$conf->global->PROJECT_TASK_ADDON.".php"))
+		            {
+		                require_once DOL_DOCUMENT_ROOT ."/core/modules/project/task/".$conf->global->PROJECT_TASK_ADDON.'.php';
+		                $modTask = new $obj;
+		                $taskref = $modTask->getNextValue($object->thirdparty,null);
+		                setEventMessages($langs->trans("RefChangedAutomatically"), null, 'errors');
+		            }
+		            else{
+		                $error++;
+		            }
+		        }
+		        
+		        if($error || empty($conf->global->PROJECT_TASK_FORCE_NEW_TASKREF_ON_EXIST))
+		        {
+		            // TODO : create new trans key in develop like ErrorDuplicateRef using $taskref as parameter
+		            setEventMessages($langs->trans("ErrorDuplicateField"), null, 'errors');
+		            $action='create';
+		            $error++;
+		        }
+		    }  
+		}
+		
 	    if (empty($label))
 		{
 			setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentities("Label")), null, 'errors');
