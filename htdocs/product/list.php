@@ -731,7 +731,7 @@ else
 				// Label
 				if (! empty($arrayfields['p.label']['checked']))
 				{
-					print '<td class="tdoverflowmax200">'.dol_trunc($obj->label,40).'</td>';
+					print '<td>'.dol_trunc($obj->label,100).'</td>';
 					if (! $i) $totalarray['nbfield']++;
 				}
 
