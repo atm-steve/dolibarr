@@ -2412,7 +2412,7 @@ class Facture extends CommonInvoice
                 	$final = true;
     				$nboflines = count($this->lines);
     				while (($i < $nboflines) && $final) {
-    					$final = ($this->lines[$i]->situation_percent == 100);
+    				    $final = ($this->lines[$i]->situation_percent == 100 || $this->lines[$i]->product_type == 9);
     					$i++;
     				}
 

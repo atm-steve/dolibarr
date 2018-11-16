@@ -4099,7 +4099,11 @@ else if ($id > 0 || ! empty($ref))
 	if( ( $object->type == Facture::TYPE_SITUATION && (!empty($object->retained_warranty) || !empty($conf->global->INVOICE_USE_SITUATION_RETAINED_WARRANTY)) ) )
 	{
 	    // Check if this situation invoice is 100% for real
-	    if(!empty($object->situation_final) &&  !empty($object->lines)){
+	    if(!empty($object->situation_final)){
+	        $displayWarranty = true;
+	    }
+	    elseif(!empty($object->lines) && $object->status == Facture::STATUS_DRAFT ){
+	        // $object->situation_final need validation to be done so this test is need for draft
 	        $displayWarranty = true;
 	        foreach( $object->lines as $i => $line ){
 	            if($line->product_type < 2 && $line->situation_percent < 100){
@@ -4108,6 +4112,8 @@ else if ($id > 0 || ! empty($ref))
 	            }
 	        }
 	    }
+	    
+	    
 	    
 	    
 	    
