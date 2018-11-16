@@ -81,3 +81,5 @@ DateInvoice=Date de facturation
 CreateOneBillByThird=Créer une facture par tiers (sinon une par réception)
 ValidateInvoices=Factures validées
 StatusMustBeValidate=La réception %s doit être au statut 'Validée'
+Order=Commande Fournisseur
+SupplierOrderRef=Ref. Commande Fournisseur
