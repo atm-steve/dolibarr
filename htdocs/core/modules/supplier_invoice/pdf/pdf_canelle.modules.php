@@ -1228,7 +1228,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 		$posxval=52;
 
 		// Show payments conditions
-		if ( ($object->cond_reglement_code || $object->cond_reglement))
+		if ($object->type != 2 && ($object->cond_reglement_code || $object->cond_reglement))
 		{
 			$pdf->SetFont('','B', $default_font_size - 2);
 			$pdf->SetXY($this->marge_gauche, $posy);
@@ -1244,7 +1244,8 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 			$posy=$pdf->GetY()+3;
 		}
 
-		
+		if ($object->type != 2)
+		{
 			// Check a payment mode is defined
 			if (empty($object->mode_reglement_code)
 			&& empty($conf->global->FACTURE_CHQ_NUMBER)
@@ -1333,7 +1334,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 			// If payment mode not forced or forced to VIR, show payment with BAN
 			if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')
 			{
-				if (! empty($object->fk_account) || ! empty($object->fk_bank) || ! empty($conf->global->FACTURE_RIB_NUMBER))
+				if (! empty($object->thirdparty->display_rib()) )
 				{
 					$bankid=(empty($object->fk_account)?$conf->global->FACTURE_RIB_NUMBER:$object->fk_account);
 					if (! empty($object->fk_bank)) $bankid=$object->fk_bank;   // For backward compatibility when object->fk_account is forced with object->fk_bank
@@ -1348,6 +1349,7 @@ class pdf_canelle extends ModelePDFSuppliersInvoices
 					$posy+=2;
 				}
 			}
+		}
 		
 
 		return $posy;
