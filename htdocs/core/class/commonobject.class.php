@@ -1052,7 +1052,10 @@ abstract class CommonObject
 		if($this->element=='shipping' && $this->origin_id != 0) {
 			$id=$this->origin_id;
 			$element='commande';
-		} else {
+		} else if($this->element=='reception' && $this->origin_id != 0) {
+            $id=$this->origin_id;
+            $element='order_supplier';
+        } else {
 			$id=$this->id;
 			$element=$this->element;
 		}
@@ -1241,6 +1244,25 @@ abstract class CommonObject
 		return $result;
 	}
 
+	 /**
+     *		Charge le product d'id $this->fk_product dans this->product
+     *
+     *		@return		int			<0 if KO, >=0 if OK
+     */
+    function fetch_product()
+    {
+    	include_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+
+    	if (empty($this->fk_product) && ! empty($this->fk_product)) $this->fk_product = $this->fk_product;	// For backward compatibility
+        if (empty($this->fk_product)) return 0;
+
+        $product = new Product($this->db);
+        $result = $product->fetch($this->fk_product);
+
+        $this->product = $product;
+        return $result;
+    }
+
 	/**
 	 *		Charge le user d'id userid dans this->user
 	 *
@@ -1264,6 +1286,7 @@ abstract class CommonObject
 	{
 		if ($this->origin == 'shipping') $this->origin = 'expedition';
 		if ($this->origin == 'delivery') $this->origin = 'livraison';
+        if ($this->origin == 'order_supplier') $this->origin = 'commandeFournisseur';
 
 		$origin = $this->origin;
 
@@ -2614,6 +2637,7 @@ abstract class CommonObject
 		// Special case
 		if ($origin == 'order') $origin='commande';
 		if ($origin == 'invoice') $origin='facture';
+    	if ($origin == 'supplierorder') $origin='order_supplier';
 
 		$this->db->begin();
 
@@ -3251,7 +3275,11 @@ abstract class CommonObject
 			{
 				if (empty($totalToShip)) $totalToShip=0;    // Avoid warning because $totalToShip is ''
 				$totalToShip+=$line->qty_shipped;   // defined for shipment only
-			}
+			}else if ($line->element == 'commandefournisseurdispatch' && isset($line->qty))
+            {
+                if (empty($totalToShip)) $totalToShip=0;    
+                $totalToShip+=$line->qty;   // defined for reception only
+            }
 
 			// Define qty, weight, volume, weight_units, volume_units
 			if ($this->element == 'shipping') {
@@ -3263,10 +3291,14 @@ abstract class CommonObject
 			}
 
 			$weight = $line->weight ? $line->weight : 0;
+            ($weight==0 && !empty($line->product->weight))? $weight=$line->product->weight: 0;
 			$volume = $line->volume ? $line->volume : 0;
+			($volume==0 && !empty($line->product->volume))? $volume=$line->product->volume: 0;
 
 			$weight_units=$line->weight_units;
+			($weight_units==0 && !empty($line->product->weight_units))? $weight_units=$line->product->weight_units: 0;
 			$volume_units=$line->volume_units;
+			($volume_units==0 && !empty($line->product->volume_units))? $volume_units=$line->product->volume_units: 0;
 
 			$weightUnit=0;
 			$volumeUnit=0;
@@ -3858,6 +3890,11 @@ abstract class CommonObject
 			$productstatic->id = $line->fk_product;
 			$productstatic->ref = $line->ref;
 			$productstatic->type = $line->fk_product_type;
+            if(empty($productstatic->ref)){
+				$line->fetch_product();
+				$productstatic = $line->product;
+			}
+
 			$this->tpl['label'].= $productstatic->getNomUrl(1);
 			$this->tpl['label'].= ' - '.(! empty($line->label)?$line->label:$line->product_label);
 			// Dates
