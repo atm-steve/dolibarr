@@ -366,14 +366,14 @@ class modCategorie extends DolibarrModules
 				'u.label' => "Label",
 				'u.description' => "Description",
 				'p.rowid' => 'ContactId',
-				'p.civilite' => 'Civitity',
+				'p.civility' => 'Civitity',
 				'p.lastname' => 'LastName',
 				'p.firstname' => 'Firstname',
 				'p.address' => 'Address',
 				'p.zip' => 'Zip',
 				'p.town' => 'Town',
 				'country.code' => 'CountryCode',
-				'country.libelle' => 'Country',
+				'country.label' => 'Country',
 				'p.birthday' => 'DateToBirth',
 				'p.poste' => 'PostOrFunction',
 				'p.phone' => 'Phone',
@@ -416,14 +416,14 @@ class modCategorie extends DolibarrModules
 				'u.label' => "category",
 				'u.description' => "category",
 				'p.rowid' => 'contact',
-				'p.civilite' => 'contact',
+				'p.civility' => 'contact',
 				'p.lastname' => 'contact',
 				'p.firstname' => 'contact',
 				'p.address' => 'contact',
 				'p.zip' => 'contact',
 				'p.town' => 'contact',
 				'country.code' => 'contact',
-				'country.libelle' => 'contact',
+				'country.label' => 'contact',
 				'p.birthday' => 'contact',
 				'p.poste' => 'contact',
 				'p.phone' => 'contact',
@@ -447,7 +447,7 @@ class modCategorie extends DolibarrModules
 		); // We define here only fields that use another picto
 		$this->export_sql_start[$r] = 'SELECT DISTINCT ';
 		$this->export_sql_end[$r]  = ' FROM '.MAIN_DB_PREFIX . 'socpeople as p';
-		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'c_pays as country ON p.fk_pays = country.rowid';
+		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'c_country as country ON p.fk_pays = country.rowid';
 		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'societe as s ON s.rowid = p.fk_soc';
 		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'categorie_contact as cp ON cp.fk_socpeople = p.rowid';
 		$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'categorie as u ON u.rowid = cp.fk_categorie';
