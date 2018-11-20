@@ -1049,7 +1049,7 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
             include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_print_fields.tpl.php';
 
             // Actions
-			print '<td align="right">';
+			print '<td align="right" nowrap>';
 
 			// Add to agenda
             if (! empty($conf->agenda->enabled) && $user->rights->agenda->myactions->create)

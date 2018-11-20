@@ -432,6 +432,7 @@ CompanyFoundation=Société/Organisation
 Accountant=Comptable
 ContactsForCompany=Contacts de ce tiers
 ContactsAddressesForCompany=Contacts/adresses de ce tiers
+ReplaceSelectedAdressesWithThirdpartyAddress=Remplacer l'adresse par celle du tiers
 AddressesForCompany=Adresses de ce tiers
 ActionsOnCompany=Événements vis à vis de ce tiers
 ActionsOnMember=Événements vis à vis de cet adhérent
