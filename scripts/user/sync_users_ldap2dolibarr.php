@@ -38,6 +38,8 @@ require_once($path."../../htdocs/master.inc.php");
 require_once(DOL_DOCUMENT_ROOT."/core/lib/date.lib.php");
 require_once(DOL_DOCUMENT_ROOT."/core/class/ldap.class.php");
 require_once(DOL_DOCUMENT_ROOT."/user/class/user.class.php");
+require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 
 $langs->load("main");
 $langs->load("errors");
@@ -78,7 +80,11 @@ $required_fields = array(
 	$conf->global->LDAP_FIELD_MAIL,
 	$conf->global->LDAP_FIELD_TITLE,
 	$conf->global->LDAP_FIELD_DESCRIPTION,
-	$conf->global->LDAP_FIELD_SID
+	$conf->global->LDAP_FIELD_SID,
+	'manager',
+	'distinguishedName',
+	'homePhone',
+	'thumbnailPhoto'
 );
 
 // Remove from required_fields all entries not configured in LDAP (empty) and duplicated
@@ -169,7 +175,7 @@ $result = $ldap->connect_bind();
 if ($result >= 0)
 {
 	$justthese=array();
-
+	$TUser = array();
 
 	// We disable synchro Dolibarr-LDAP
 	$conf->global->LDAP_SYNCHRO_ACTIVE=0;
@@ -179,9 +185,18 @@ if ($result >= 0)
 	{
 		$db->begin();
 
+        //print_r($ldaprecords['tga']);
+        //print_r($conf->user->dir_output);
+        //exit;
 		// Warning $ldapuser has a key in lowercase
 		foreach ($ldaprecords as $key => $ldapuser)
 		{
+			/*
+			if(! empty($ldapuser['title'])) {
+				print_r($ldapuser);
+				exit;
+			}
+*/
 			// If login into exclude list, we discard record
 			if (in_array($ldapuser[$conf->global->LDAP_FIELD_LOGIN],$excludeuser))
 			{
@@ -226,6 +241,8 @@ if ($result >= 0)
 			$fuser->societe_id=0;
 			$fuser->contact_id=0;
 			$fuser->fk_member=0;
+
+//			$fuser->photo = 'thumbnailPhoto.jpg';
 
 			$fuser->statut=1;
 			// TODO : revoir la gestion du status
@@ -276,6 +293,25 @@ if ($result >= 0)
 					$groupdn;
 				}
 			}*/
+			$TUser[$ldapuser['distinguishedName']] = $fuser->id;
+
+//            if(! empty($ldapuser['thumbnailPhoto'])) {
+//                $dir = $conf->user->dir_output.'/'.get_exdir($fuser->id,3,0,1);
+//                if(! is_dir($dir)) $res = mkdir($dir, 0775, true);
+//
+//                $photo = $ldapuser['thumbnailPhoto'];
+//                $im = imagecreatefromstring($photo);
+//            }
+
+//            if(is_dir($dir)) imagejpeg($im, $dir.'/thumbnailPhoto.jpg');
+		}
+
+		foreach($ldaprecords as $ldapuser) {
+			$u = new User($db);
+			$u->fetch($TUser[$ldapuser['distinguishedName']]);
+
+			$u->fk_user = $TUser[$ldapuser['manager']];
+			$u->update($user);
 		}
 
 		if (! $error || $forcecommit)
