@@ -205,9 +205,6 @@ if (empty($reshook))
 				
 			}
     		else {
-				
-				
-							
     			$object->socid = $rcp->socid;
     			$object->type = FactureFournisseur::TYPE_STANDARD;
     			$object->cond_reglement_id	= $rcp->thirdparty->cond_reglement_supplier_id;
@@ -215,11 +212,10 @@ if (empty($reshook))
 				$object->fk_account         = !empty($rcp->thirdparty->fk_account)?$rcp->thirdparty->fk_account:0;
 				$object->remise_percent 	= !empty($rcp->thirdparty->remise_percent)?$rcp->thirdparty->remise_percent:0;
 				$object->remise_absolue 	= !empty($rcp->thirdparty->remise_absolue)?$rcp->thirdparty->remise_absolue:0;
-
     			$object->fk_project			= $rcp->fk_project;
-    			$object->ref_supplier		= $rcp->ref.' - '.$rcp->ref_supplier;
+				$object->ref_supplier		= GETPOST('ref_supplier_invoice_'.$id_reception);
 
-    			$datefacture = dol_mktime(12, 0, 0, GETPOST('remonth'),GETPOST('reday'), GETPOST('reyear'));
+				$datefacture = dol_mktime(12, 0, 0, GETPOST('date_invoice_'.$id_reception.'month'),GETPOST('date_invoice_'.$id_reception.'day'), GETPOST('date_invoice_'.$id_reception.'year'));
     			if (empty($datefacture))
     			{
     				$datefacture = dol_mktime(date("h"), date("M"), 0, date("m"), date("d"), date("Y"));
@@ -587,14 +583,6 @@ if ($resql)
 		print '<table class="noborder" width="100%" >';
 		print '<tr>';
 		print '<td class="titlefieldmiddle">';
-		print $langs->trans('DateInvoice');
-		print '</td>';
-		print '<td>';
-		print $form->select_date('', '', '', '', '', '', 1, 1);
-		print '</td>';
-		print '</tr>';
-		print '<tr>';
-		print '<td>';
 		print $langs->trans('CreateOneBillByThird');
 		print '</td>';
 		print '<td>';
@@ -752,7 +740,7 @@ if ($resql)
 	    }
 	}
 	// Fields from hook
-	$parameters=array('arrayfields'=>$arrayfields);
+	$parameters=array('arrayfields'=>$arrayfields, 'massaction' => $massaction);
 	$reshook=$hookmanager->executeHooks('printFieldListOption',$parameters);    // Note that $action and $object may have been modified by hook
 	print $hookmanager->resPrint;
 	// Date creation
@@ -816,7 +804,7 @@ if ($resql)
 	    }
 	}
 	// Hook fields
-	$parameters=array('arrayfields'=>$arrayfields);
+	$parameters=array('arrayfields'=>$arrayfields, 'massaction' => $massaction);
 	$reshook=$hookmanager->executeHooks('printFieldListTitle',$parameters);    // Note that $action and $object may have been modified by hook
 	print $hookmanager->resPrint;
 	if (! empty($arrayfields['e.datec']['checked']))  print_liste_field_titre($arrayfields['e.datec']['label'],$_SERVER["PHP_SELF"],"e.date_creation","",$param,'align="center" class="nowrap"',$sortfield,$sortorder);
@@ -987,7 +975,7 @@ if ($resql)
 		    }
 		}
 		// Fields from hook
-		$parameters=array('arrayfields'=>$arrayfields, 'obj'=>$obj);
+		$parameters=array('arrayfields'=>$arrayfields, 'obj'=>$obj, 'massaction' => $massaction, 'arrayofselected' => $arrayofselected);
 		$reshook=$hookmanager->executeHooks('printFieldListValue',$parameters);    // Note that $action and $object may have been modified by hook
 		print $hookmanager->resPrint;
 		// Date creation
