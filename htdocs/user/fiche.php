@@ -961,7 +961,7 @@ else
 
     if ($id > 0)
     {
-        $object->fetch($id);
+        $res=$object->fetch($id);
         if ($res < 0) { dol_print_error($db,$object->error); exit; }
         $res=$object->fetch_optionals($object->id,$extralabels);
 
@@ -1208,7 +1208,11 @@ else
 
             // Signature
             print '<tr><td valign="top">'.$langs->trans('Signature').'</td><td>';
-            print dol_htmlentitiesbr($object->signature);
+            if (empty($conf->global->FCKEDITOR_ENABLE_USERSIGN)) {
+            	print dol_htmlentitiesbr($object->signature);
+            } else {
+            	print $object->signature;
+            }
             print "</td></tr>\n";
 
             // Hierarchy

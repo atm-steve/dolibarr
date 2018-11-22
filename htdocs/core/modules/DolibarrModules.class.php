@@ -748,6 +748,8 @@ abstract class DolibarrModules
 
         $err=0;
 
+        if (empty($this->const)) return 0;
+
         foreach ($this->const as $key => $value)
         {
             $name      = $this->const[$key][0];
@@ -815,6 +817,8 @@ abstract class DolibarrModules
         global $conf;
 
         $err=0;
+
+        if (empty($this->const)) return 0;
 
         foreach ($this->const as $key => $value)
         {
@@ -1009,7 +1013,6 @@ abstract class DolibarrModules
 
         $this->db->begin();
 
-        //var_dump($this->menu); exit;
         foreach ($this->menu as $key => $value)
         {
             $menu = new Menubase($this->db);
@@ -1018,11 +1021,9 @@ abstract class DolibarrModules
             if (! $this->menu[$key]['fk_menu'])
             {
                 $menu->fk_menu=0;
-                //print 'aaa'.$this->menu[$key]['fk_menu'];
             }
             else
             {
-                //print 'xxx'.$this->menu[$key]['fk_menu'];exit;
                 $foundparent=0;
                 $fk_parent=$this->menu[$key]['fk_menu'];
                 if (preg_match('/^r=/',$fk_parent))	// old deprecated method

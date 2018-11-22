@@ -2,6 +2,7 @@
 /* Copytight (C) 2005-2009 Regis Houssin               <regis.houssin@capnetworks.com>
  * Copyright (C) 2008-2009 Laurent Destailleur (Eldy)  <eldy@users.sourceforge.net>
  * Copyright (C) 2008      Raphael Bertrand (Resultic) <raphael.bertrand@resultic.fr>
+ * Copyright (C) 2015	   Marcos García			   <marcosgdf@gmail.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -164,7 +165,7 @@ if ($_REQUEST["account"] || $_REQUEST["ref"])
 	$sql.= " ORDER BY dlr ASC";
 
 	// Supplier invoices
-	$sql2= " SELECT 'invoice_supplier' as family, ff.rowid as objid, ff.ref_supplier as ref, (-1*ff.total_ttc) as total_ttc, ff.type, ff.date_lim_reglement as dlr,";
+	$sql2= " SELECT 'invoice_supplier' as family, ff.rowid as objid, ff.ref as ref, ff.ref_supplier as ref_supplier, (-1*ff.total_ttc) as total_ttc, ff.type, ff.date_lim_reglement as dlr,";
 	$sql2.= " s.rowid as socid, s.nom, s.fournisseur";
 	$sql2.= " FROM ".MAIN_DB_PREFIX."facture_fourn as ff";
 	$sql2.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON ff.fk_soc = s.rowid";
@@ -260,12 +261,13 @@ if ($_REQUEST["account"] || $_REQUEST["ref"])
 
 			if ($obj->family == 'invoice_supplier')
 			{
-				// TODO This code is to avoid to count suppliers credit note (ff.type = 2)
-				// Ajouter gestion des avoirs fournisseurs, champ
-				if (($obj->total_ttc < 0 && $obj->type != 2)
-				 || ($obj->total_ttc > 0 && $obj->type == 2))
+				$showline=1;
+				// Uncomment this line to avoid to count suppliers credit note (ff.type = 2)
+				//$showline=(($obj->total_ttc < 0 && $obj->type != 2) || ($obj->total_ttc > 0 && $obj->type == 2))
+				if ($showline)
 				{
-					$facturefournstatic->ref=$obj->ref;
+					$ref=$obj->ref;
+					$facturefournstatic->ref=$ref;
 					$facturefournstatic->id=$obj->objid;
 					$facturefournstatic->type=$obj->type;
 					$ref = $facturefournstatic->getNomUrl(1,'');
@@ -304,7 +306,7 @@ if ($_REQUEST["account"] || $_REQUEST["ref"])
 			if ($paiement) $total_ttc = $obj->total_ttc - $paiement;
 			$solde += $total_ttc;
 
-			// We discard with a remain to pay to 0
+			// We discard lines with a remainder to pay to 0
 			if (price2num($total_ttc) != 0)
 			{
                 $var=!$var;
@@ -317,7 +319,7 @@ if ($_REQUEST["account"] || $_REQUEST["ref"])
     			print "</td>";
     			print "<td>".$ref."</td>";
     			print "<td>".$refcomp."</td>";
-    			if ($obj->total_ttc < 0) { print "<td align=\"right\">".price($total_ttc)."</td><td>&nbsp;</td>"; };
+    			if ($obj->total_ttc < 0) { print "<td align=\"right\">".price(abs($total_ttc))."</td><td>&nbsp;</td>"; };
     			if ($obj->total_ttc >= 0) { print "<td>&nbsp;</td><td align=\"right\">".price($total_ttc)."</td>"; };
     			print '<td align="right">'.price($solde).'</td>';
     			print "</tr>";

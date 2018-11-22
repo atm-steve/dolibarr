@@ -3,7 +3,7 @@
  * Copyright (C) 2004-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2005-2014 Regis Houssin        <regis.houssin@capnetworks.com>
  * Copyright (C) 2006      Andre Cianfarani     <acianfa@free.fr>
- * Copyright (C) 2010-2013 Juanjo Menent        <jmenent@2byte.es>
+ * Copyright (C) 2010-2015 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2011      Jean Heimburger      <jean@tiaris.info>
  * Copyright (C) 2012-2014 Christophe Battarel  <christophe.battarel@altairis.fr>
  * Copyright (C) 2013      Florian Henry		<florian.henry@open-concept.pro>
@@ -100,6 +100,11 @@ class Commande extends CommonOrder
     // Pour board
     var $nbtodo;
     var $nbtodolate;
+    
+     /**
+     * ERR Not engouch stock
+     */
+    const STOCK_NOT_ENOUGH_FOR_ORDER = -3;
 
 
     /**
@@ -137,17 +142,20 @@ class Commande extends CommonOrder
             $classname = $conf->global->COMMANDE_ADDON;
 
             // Include file with class
-            foreach ($conf->file->dol_document_root as $dirroot)
-            {
-            	$dir = $dirroot."/core/modules/commande/";
-            	// Load file with numbering class (if found)
-            	$mybool|=@include_once $dir.$file;
+            $dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
+
+            foreach ($dirmodels as $reldir) {
+
+                $dir = dol_buildpath($reldir."core/modules/commande/");
+
+                // Load file with numbering class (if found)
+                $mybool|=@include_once $dir.$file;
             }
 
             if (! $mybool)
             {
-            	dol_print_error('',"Failed to include file ".$file);
-            	return '';
+                dol_print_error('',"Failed to include file ".$file);
+                return '';
             }
 
             $obj = new $classname();
@@ -368,7 +376,7 @@ class Commande extends CommonOrder
                     {
                         $mouvP = new MouvementStock($this->db);
                         // We increment stock of product (and sub-products)
-                        $result=$mouvP->reception($user, $this->lines[$i]->fk_product, $idwarehouse, $this->lines[$i]->qty, $this->lines[$i]->subprice, $langs->trans("OrderBackToDraftInDolibarr",$this->ref));
+                        $result=$mouvP->reception($user, $this->lines[$i]->fk_product, $idwarehouse, $this->lines[$i]->qty, 0, $langs->trans("OrderBackToDraftInDolibarr",$this->ref));
                         if ($result < 0) { $error++; }
                     }
                 }
@@ -556,7 +564,7 @@ class Commande extends CommonOrder
 					{
 						$mouvP = new MouvementStock($this->db);
 						// We increment stock of product (and sub-products)
-						$result=$mouvP->reception($user, $this->lines[$i]->fk_product, $idwarehouse, $this->lines[$i]->qty, $this->lines[$i]->subprice, $langs->trans("OrderCanceledInDolibarr",$this->ref));
+						$result=$mouvP->reception($user, $this->lines[$i]->fk_product, $idwarehouse, $this->lines[$i]->qty, 0, $langs->trans("OrderCanceledInDolibarr",$this->ref));
 						if ($result < 0) {
 							$error++;
 						}
@@ -658,18 +666,19 @@ class Commande extends CommonOrder
         $this->db->begin();
 
         $sql = "INSERT INTO ".MAIN_DB_PREFIX."commande (";
-        $sql.= " ref, fk_soc, date_creation, fk_user_author, fk_projet, date_commande, source, note_private, note_public, ref_client, ref_int";
+        $sql.= " ref, fk_soc, date_creation, fk_user_author, fk_projet, date_commande, source, note_private, note_public, ref_ext, ref_client, ref_int";
         $sql.= ", model_pdf, fk_cond_reglement, fk_mode_reglement, fk_availability, fk_input_reason, date_livraison, fk_delivery_address";
         $sql.= ", remise_absolue, remise_percent";
         $sql.= ", entity";
         $sql.= ")";
         $sql.= " VALUES ('(PROV)',".$this->socid.", '".$this->db->idate($now)."', ".$user->id;
-        $sql.= ", ".($this->fk_project?$this->fk_project:"null");
+        $sql.= ", ".($this->fk_project>0?$this->fk_project:"null");
         $sql.= ", '".$this->db->idate($date)."'";
         $sql.= ", ".($this->source>=0 && $this->source != '' ?$this->source:'null');
         $sql.= ", '".$this->db->escape($this->note_private)."'";
         $sql.= ", '".$this->db->escape($this->note_public)."'";
-        $sql.= ", '".$this->db->escape($this->ref_client)."'";
+        $sql.= ", ".($this->ref_ext?"'".$this->db->escape($this->ref_ext)."'":"null");
+        $sql.= ", ".($this->ref_client?"'".$this->db->escape($this->ref_client)."'":"null");
         $sql.= ", ".($this->ref_int?"'".$this->db->escape($this->ref_int)."'":"null");
         $sql.= ", '".$this->modelpdf."'";
         $sql.= ", ".($this->cond_reglement_id>0?"'".$this->cond_reglement_id."'":"null");
@@ -730,8 +739,11 @@ class Commande extends CommonOrder
                     );
                     if ($result < 0)
                     {
-                        $this->error=$this->db->lasterror();
-                        dol_print_error($this->db);
+                    	if ($result != self::STOCK_NOT_ENOUGH_FOR_ORDER)
+                    	{
+                        	$this->error=$this->db->lasterror();
+                        	dol_print_error($this->db);
+                    	}
                         $this->db->rollback();
                         return -1;
                     }
@@ -894,6 +906,7 @@ class Commande extends CommonOrder
         // Clear fields
         $this->user_author_id     = $user->id;
         $this->user_valid         = '';
+		$this->date				  = dol_now();
         $this->date_creation      = '';
         $this->date_validation    = '';
         $this->ref_client         = '';
@@ -904,7 +917,7 @@ class Commande extends CommonOrder
         $modCommande = new $obj;
         $this->ref = $modCommande->getNextValue($objsoc,$this);
 
-        
+
         // Create clone
         $result=$this->create($user);
         if ($result < 0) $error++;
@@ -992,7 +1005,12 @@ class Commande extends CommonOrder
 				$line->marge_tx			= $marginInfos[1];
 				$line->marque_tx		= $marginInfos[2];
 
-                $this->lines[$i] = $line;
+                // get extrafields from original line
+				$object->lines[$i]->fetch_optionals($object->lines[$i]->rowid);
+				foreach($object->lines[$i]->array_options as $options_key => $value)
+					$line->array_options[$options_key] = $value;
+
+				$this->lines[$i] = $line;
             }
 
             $this->socid                = $object->socid;
@@ -1010,6 +1028,11 @@ class Commande extends CommonOrder
 
             $this->origin				= $object->element;
             $this->origin_id			= $object->id;
+
+            // get extrafields from original line
+			$object->fetch_optionals($object->id);
+			foreach($object->array_options as $options_key => $value)
+				$this->array_options[$options_key] = $value;
 
             // Possibility to add external linked objects with hooks
             $this->linked_objects[$this->origin] = $this->origin_id;
@@ -1155,10 +1178,12 @@ class Commande extends CommonOrder
 				$result=$product->fetch($fk_product);
 				$product_type=$product->type;
 
-				if($conf->global->STOCK_MUST_BE_ENOUGH_FOR_ORDER && $product_type == 0 && $product->stock_reel < $qty) {
+				if($conf->global->STOCK_MUST_BE_ENOUGH_FOR_ORDER && $product_type == 0 && $product->stock_reel < $qty)
+				{
 					$this->error=$langs->trans('ErrorStockIsNotEnough');
+					dol_syslog(get_class($this)."::addline error=Product ".$product->ref.": ".$this->error, LOG_ERR);
 					$this->db->rollback();
-					return -3;
+					return self::STOCK_NOT_ENOUGH_FOR_ORDER;
 				}
 			}
 
@@ -1204,7 +1229,15 @@ class Commande extends CommonOrder
             $this->line->date_end=$date_end;
 
 			// infos marge
-			$this->line->fk_fournprice = $fk_fournprice;
+			if (!empty($fk_product) && empty($fk_fournprice) && empty($pa_ht)) {
+			    // by external module, take lowest buying price
+			    include_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
+			    $productFournisseur = new ProductFournisseur($this->db);
+			    $productFournisseur->find_min_price_product_fournisseur($fk_product);
+			    $this->line->fk_fournprice = $productFournisseur->product_fourn_price_id;
+			} else {
+			    $this->line->fk_fournprice = $fk_fournprice;
+			}
 			$this->line->pa_ht = $pa_ht;
 
             // TODO Ne plus utiliser
@@ -2372,13 +2405,14 @@ class Commande extends CommonOrder
                 $price = ($pu - $remise);
             }
 
-            // Update line
-            $this->line=new OrderLine($this->db);
+            //Fetch current line from the database and then clone the object and set it in $oldline property
+            $line = new OrderLine($this->db);
+            $line->fetch($rowid);
 
-            // Stock previous line records
-            $staticline=new OrderLine($this->db);
-            $staticline->fetch($rowid);
-            $this->line->oldline = $staticline;
+            $staticline = clone $line;
+
+            $line->oldline = $staticline;
+            $this->line = $line;
 
             // Reorder if fk_parent_line change
             if (! empty($fk_parent_line) && ! empty($staticline->fk_parent_line) && $fk_parent_line != $staticline->fk_parent_line)
@@ -2412,7 +2446,15 @@ class Commande extends CommonOrder
             $this->line->skip_update_total=$skip_update_total;
 
 			// infos marge
-			$this->line->fk_fournprice = $fk_fournprice;
+			if (!empty($fk_product) && empty($fk_fournprice) && empty($pa_ht)) {
+			    //by external module, take lowest buying price
+			    include_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
+			    $productFournisseur = new ProductFournisseur($this->db);
+			    $productFournisseur->find_min_price_product_fournisseur($fk_product);
+			    $this->line->fk_fournprice = $productFournisseur->product_fourn_price_id;
+			} else {
+			    $this->line->fk_fournprice = $fk_fournprice;
+			}
 			$this->line->pa_ht = $pa_ht;
 
             // TODO deprecated
@@ -3179,10 +3221,12 @@ class OrderLine extends CommonOrderLine
             $this->date_end         = $this->db->jdate($objp->date_end);
 
             $this->db->free($result);
+
+            return 1;
         }
         else
         {
-            dol_print_error($this->db);
+            return -1;
         }
     }
 

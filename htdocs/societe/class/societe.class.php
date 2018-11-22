@@ -2348,7 +2348,7 @@ class Societe extends CommonObject
         }
 
          //Verify duplicate entries
-        $sql  = "SELECT COUNT(*) as idprof FROM ".MAIN_DB_PREFIX."societe WHERE ".$field." = '".$value."'";
+        $sql  = "SELECT COUNT(*) as idprof FROM ".MAIN_DB_PREFIX."societe WHERE ".$field." = '".$value."' AND entity IN (".getEntity('societe',1).")";
         if($socid) $sql .= " AND rowid <> ".$socid;
         $resql = $this->db->query($sql);
         if ($resql)
@@ -2848,10 +2848,10 @@ class Societe extends CommonObject
     }
 
     /**
-     *  Check if thirdparty may using localtax or not
+     *  Check if we must use localtax feature or not according to country (country of $mysocin most cases).
      *
      *	@param		int		$localTaxNum	To get info for only localtax1 or localtax2
-     *  @return		array					array(0=>boolean, 1=>boolean)
+     *  @return		boolean					true or false
      */
     function useLocalTax($localTaxNum=0)
     {
@@ -2873,9 +2873,9 @@ class Societe extends CommonObject
     }
 
     /**
-     *  Check if thirdparty is from a country using revenue stamps
+     *  Check if we must use revenue stamps feature or not according to country (country of $mysocin most cases).
      *
-     *  @return		boolean			Yes or no
+     *  @return		boolean			true or false
      */
     function useRevenueStamp()
     {
@@ -3091,7 +3091,7 @@ class Societe extends CommonObject
 		$alreadypayed=price2num($paiement + $creditnotes + $deposits,'MT');
 		$remaintopay=price2num($invoice->total_ttc - $paiement - $creditnotes - $deposits,'MT');
 		*/
-		$sql  = "SELECT sum(total) as amount FROM ".MAIN_DB_PREFIX."facture as f";
+		$sql  = "SELECT rowid, total_ttc FROM ".MAIN_DB_PREFIX."facture as f";
 		$sql .= " WHERE fk_soc = ". $this->id;
 		$sql .= " AND paye = 0";
 		$sql .= " AND fk_statut <> 0";	// Not a draft
@@ -3102,8 +3102,18 @@ class Societe extends CommonObject
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
-			$obj=$this->db->fetch_object($resql);
-   			return ($obj->amount);
+			$outstandingBill = 0;
+			require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+			$facturestatic=new Facture($this->db);
+			while($obj=$this->db->fetch_object($resql)) {
+				$facturestatic->id=$obj->rowid;
+				$paiement = $facturestatic->getSommePaiement();
+				$creditnotes = $facturestatic->getSumCreditNotesUsed();
+				$deposits = $facturestatic->getSumDepositsUsed();
+				
+				$outstandingBill+= $obj->total_ttc - $paiement - $creditnotes - $deposits;
+   			}
+   			return $outstandingBill;
 		}
 		else
 			return 0;

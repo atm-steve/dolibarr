@@ -3,7 +3,7 @@
  * Copyright (C) 2005-2013 Regis Houssin        <regis.houssin@capnetworks.com>
  * Copyright (C) 2010-2013 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2012      Christophe Battarel  <christophe.battarel@altairis.fr>
- * Copyright (C) 2010-2011 Juanjo Menent        <jmenent@2byte.es>
+ * Copyright (C) 2010-2014 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2012-2013 Christophe Battarel  <christophe.battarel@altairis.fr>
  * Copyright (C) 2011-2014 Philippe Grand	    <philippe.grand@atoo-net.com>
  * Copyright (C) 2012      Marcos García        <marcosgdf@gmail.com>
@@ -65,13 +65,15 @@ abstract class CommonObject
      */
     static function isExistingObject($element, $id, $ref='', $ref_ext='')
     {
-    	global $db;
+    	global $db,$conf;
 
 		$sql = "SELECT rowid, ref, ref_ext";
 		$sql.= " FROM ".MAIN_DB_PREFIX.$element;
-		if ($id > 0) $sql.= " WHERE rowid = ".$db->escape($id);
-		else if ($ref) $sql.= " WHERE ref = '".$db->escape($ref)."'";
-		else if ($ref_ext) $sql.= " WHERE ref_ext = '".$db->escape($ref_ext)."'";
+		$sql.= " WHERE entity IN (".getEntity($element, true).")" ;
+
+		if ($id > 0) $sql.= " AND rowid = ".$db->escape($id);
+		else if ($ref) $sql.= " AND ref = '".$db->escape($ref)."'";
+		else if ($ref_ext) $sql.= " AND ref_ext = '".$db->escape($ref_ext)."'";
 		else {
 			$error='ErrorWrongParameters';
 			dol_print_error(get_class()."::isExistingObject ".$error, LOG_ERR);
@@ -608,6 +610,8 @@ abstract class CommonObject
         global $conf;
 
         if (empty($this->socid) && empty($this->fk_soc)) return 0;
+
+	    require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 
         $thirdparty = new Societe($this->db);
         $result=$thirdparty->fetch(isset($this->socid)?$this->socid:$this->fk_soc);
@@ -2218,10 +2222,10 @@ abstract class CommonObject
             			$this->array_options[$key] = price2num($this->array_options[$key]);
             			break;
             		case 'date':
-            			$this->array_options[$key]=$this->db->idate($this->array_options[$key]);
+            			if (is_numeric($this->array_options[$key])) $this->array_options[$key]=$this->db->idate($this->array_options[$key]);
             			break;
             		case 'datetime':
-            			$this->array_options[$key]=$this->db->idate($this->array_options[$key]);
+            			if (is_numeric($this->array_options[$key])) $this->array_options[$key]=$this->db->idate($this->array_options[$key]);
             			break;
                	}
             }
@@ -2235,7 +2239,7 @@ abstract class CommonObject
             {
             	$attributeKey = substr($key,8);   // Remove 'options_' prefix
                 // Add field of attribut
-            	if ($extrafields->attribute_type[$attributeKey] != 'separate') // Only for other type of separate
+            	if (isset($extrafields->attribute_type[$attributeKey]) && $extrafields->attribute_type[$attributeKey] != 'separate') // Only for other type of separate
                 	$sql.=",".$attributeKey;
             }
             $sql .= ") VALUES (".$this->id;
@@ -2243,7 +2247,7 @@ abstract class CommonObject
             {
             	$attributeKey = substr($key,8);   // Remove 'options_' prefix
                 // Add field o fattribut
-            	if($extrafields->attribute_type[$attributeKey] != 'separate') // Only for other type of separate)
+            	if(isset($extrafields->attribute_type[$attributeKey]) && $extrafields->attribute_type[$attributeKey] != 'separate') // Only for other type of separate)
             	{
 	                if ($this->array_options[$key] != '')
 	                {

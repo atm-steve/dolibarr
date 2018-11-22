@@ -265,7 +265,7 @@ class pdf_merou extends ModelePdfExpedition
 					$pdf->MultiCell(30, 3, $object->lines[$i]->qty_shipped, 0, 'C', 0);
 
 					// Add line
-					if (! empty($conf->global->MAIN_PDF_DASH_BETWEEN_LINES) && $i < ($nblignes - 1))
+					if ($conf->global->MAIN_PDF_DASH_BETWEEN_LINES && $i < ($nblignes - 1))
 					{
 						$pdf->setPage($pageposafter);
 						$pdf->SetLineStyle(array('dash'=>'1,1','color'=>array(210,210,210)));
@@ -516,7 +516,7 @@ class pdf_merou extends ModelePdfExpedition
 		$pdf->SetTextColor(0,0,0);
 
 		// Sender properties
-		$carac_emetteur = pdf_build_address($outputlangs,$this->emetteur);
+		$carac_emetteur = pdf_build_address($outputlangs, $this->emetteur, $object->client);
 
 		$pdf->SetFont('','', $default_font_size - 3);
 		$pdf->SetXY($blSocX,$blSocY+4);
@@ -534,13 +534,18 @@ class pdf_merou extends ModelePdfExpedition
 
 		// Date Expedition
 		$Yoff = $Yoff+7;
-		$pdf->SetXY($blSocX-80,$blSocY+20);
+		$pdf->SetXY($blSocX-80,$blSocY+17);
 		$pdf->SetFont('','B', $default_font_size - 2);
 		$pdf->SetTextColor(0,0,0);
 		$pdf->MultiCell(50, 8, $outputlangs->transnoentities("Date")." : " . dol_print_date($object->date_delivery,'day',false,$outputlangs,true), '', 'L');
 
+		$pdf->SetXY($blSocX-80,$blSocY+20);
+		$pdf->SetFont('','B', $default_font_size - 2);
+		$pdf->SetTextColor(0,0,0);
+		$pdf->MultiCell(50, 8, $outputlangs->transnoentities("TrackingNumber")." : " . $object->tracking_number, '', 'L');
+
 		// Deliverer
-		$pdf->SetXY($blSocX-80,$blSocY+23);
+		$pdf->SetXY($blSocX-80,$blSocY+24);
 		$pdf->SetFont('','', $default_font_size - 2);
 		$pdf->SetTextColor(0,0,0);
 
@@ -554,13 +559,8 @@ class pdf_merou extends ModelePdfExpedition
 					// Get code using getLabelFromKey
 					$code=$outputlangs->getLabelFromKey($this->db,$object->shipping_method_id,'c_shipment_mode','rowid','code');
 					$label=$outputlangs->trans("SendingMethod".strtoupper($code))." :";
+					$pdf->writeHTMLCell(50, 8, '', '', $label." ".$object->tracking_url, '', 'L');
 				}
-				else
-				{
-					$label=$outputlangs->transnoentities("Deliverer");
-				}
-
-				$pdf->writeHTMLCell(50, 8, '', '', $label." ".$object->tracking_url, '', 'L');
 			}
 		}
 		else

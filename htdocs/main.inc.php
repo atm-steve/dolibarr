@@ -88,6 +88,7 @@ function test_sql_and_script_inject($val, $type)
         $sql_inj += preg_match('/union.+select/i', 	 $val);
         $sql_inj += preg_match('/into\s+(outfile|dumpfile)/i',  $val);
         $sql_inj += preg_match('/(\.\.%2f)+/i',		 $val);
+        $sql_inj += preg_match('/onerror=/i', 	     $val);
     }
     // For XSS Injection done by adding javascript with script
     // This is all cases a browser consider text is javascript:
@@ -95,7 +96,8 @@ function test_sql_and_script_inject($val, $type)
     // All examples on page: http://ha.ckers.org/xss.html#XSScalc
     $sql_inj += preg_match('/<script/i', $val);
     if (! defined('NOSTYLECHECK')) $sql_inj += preg_match('/<style/i', $val);
-    $sql_inj += preg_match('/base[\s]+href/i', $val);
+    $sql_inj += preg_match('/base[\s]+href/si', $val);
+    $sql_inj += preg_match('/<.*onmouse/si', $val);       // onmouseover can be set on img or any html tag like <img title='>' onmouseover=alert(1)>
     if ($type == 1)
     {
         $sql_inj += preg_match('/javascript:/i', $val);
@@ -531,7 +533,7 @@ if (! defined('NOLOGIN'))
     {
         // We are already into an authenticated session
         $login=$_SESSION["dol_login"];
-        dol_syslog("This is an already logged session. _SESSION['dol_login']=".$login);
+        dol_syslog("This is an already logged session. _SESSION['dol_login']=".$login, LOG_DEBUG);
 
         $resultFetchUser=$user->fetch('',$login);
         if ($resultFetchUser <= 0)
@@ -725,7 +727,7 @@ if (! empty($conf->browser->phone))
 // If we force to use jmobile, then we reenable javascript
 if (! empty($conf->dol_use_jmobile)) $conf->use_javascript_ajax=1;
 // Disabled bugged themes
-if (! empty($conf->dol_use_jmobile) && in_array($conf->theme,array('bureau2crea','cameleo')))
+if (! empty($conf->dol_use_jmobile) && in_array($conf->theme,array('bureau2crea','cameleo','amarok')))
 {
 	$conf->theme='eldy';
 	$conf->css  =  "/theme/".$conf->theme."/style.css.php";
@@ -1682,22 +1684,28 @@ function left_menu($menu_array_before, $helppagename='', $moresearchform='', $me
 	        }
 	    }
 
-	    // Link to bugtrack
-	    if (! empty($conf->global->MAIN_BUGTRACK_ENABLELINK))
-	    {
-	    	require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
+    	// Link to bugtrack
+		if (! empty($conf->global->MAIN_BUGTRACK_ENABLELINK))
+		{
+			require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
-	        $bugbaseurl='https://doliforge.org/tracker/?';
-	        $bugbaseurl.='func=add&group_id=144&atid=246';
-	        $bugbaseurl.="&details=";
-	        $bugbaseurl.=urlencode("\n\n\n\n\n-------------\n");
-	        $bugbaseurl.=urlencode($langs->trans("Version").": ".DOL_VERSION."\n");
-	        $bugbaseurl.=urlencode($langs->trans("Server").": ".$_SERVER["SERVER_SOFTWARE"]."\n");
-	        $bugbaseurl.=urlencode($langs->trans("PHP").": ".version_php()."\n");
-	        $bugbaseurl.=urlencode($langs->trans("Url").": ".$_SERVER["REQUEST_URI"]."\n");
-	        print '<div id="blockvmenubugtracker" class="blockvmenuhelp"><a class="help" target="_blank" href="'.$bugbaseurl.'">'.$langs->trans("FindBug").'</a></div>';
-	    }
-	    print "\n";
+			$bugbaseurl = 'https://github.com/Dolibarr/dolibarr/issues/new';
+			$bugbaseurl.= '?title=';
+			$bugbaseurl.= urlencode("Bug: ");
+			$bugbaseurl.= '&body=';
+			$bugbaseurl.= urlencode("# Environment\n");
+			$bugbaseurl.= urlencode("- **Version**: " . DOL_VERSION . "\n");
+			$bugbaseurl.= urlencode("- **OS**: " . php_uname('s') . "\n");
+			$bugbaseurl.= urlencode("- **Web server**: " . $_SERVER["SERVER_SOFTWARE"] . "\n");
+			$bugbaseurl.= urlencode("- **PHP**: " . php_sapi_name() . ' ' . phpversion() . "\n");
+			$bugbaseurl.= urlencode("- **Database**: " . $db::LABEL . ' ' . $db->getVersion() . "\n");
+			$bugbaseurl.= urlencode("- **URL**: " . $_SERVER["REQUEST_URI"] . "\n");
+			$bugbaseurl.= urlencode("\n");
+			$bugbaseurl.= urlencode("# Report\n");
+			print '<p id="blockvmenuhelpbugreport" class="blockvmenuhelp">';
+			print '<a class="help" target="_blank" href="'.$bugbaseurl.'">'.$langs->trans("FindBug").'</a>';
+			print '</p>';
+		}
 
 	    print "</div>\n";
 	    print "<!-- End left menu -->\n";

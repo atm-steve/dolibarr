@@ -203,7 +203,7 @@ class Form
             else
 			{
 				if ($typeofdata == 'email')   $ret.=dol_print_email($value,0,0,0,0,1);
-                elseif ($typeofdata == 'amount')   $ret.=($value != '' ? price($value,'',$langs,0,0,-1,$conf->currency) : '');
+                elseif ($typeofdata == 'amount')   $ret.=($value != '' ? price($value,'',$langs,0,-1,-1,$conf->currency) : '');
                 elseif (preg_match('/^text/',$typeofdata) || preg_match('/^note/',$typeofdata))  $ret.=dol_htmlentitiesbr($value);
                 elseif ($typeofdata == 'day' || $typeofdata == 'datepicker') $ret.=dol_print_date($value,'day');
                 elseif ($typeofdata == 'datehourpicker') $ret.=dol_print_date($value,'dayhour');
@@ -847,7 +847,7 @@ class Form
                         $out.= '<option value="'.$obj->rowid.'">'.$label.'</option>';
                     }
 
-                    array_push($outarray, array('key'=>$obj->rowid, 'value'=>$obj->name, 'label'=>$obj->name));
+                    array_push($outarray, array('key'=>$obj->rowid, 'value'=>$obj->rowid, 'label'=>$label));
 
                     $i++;
                     if (($i % 10) == 0) $out.="\n";
@@ -1399,13 +1399,13 @@ class Form
             foreach ($scrit as $crit)
             {
             	if ($i > 0) $sql.=" AND ";
-                $sql.="(p.ref LIKE '".$prefix.$crit."%' OR p.label LIKE '".$prefix.$crit."%'";
-                if (! empty($conf->global->MAIN_MULTILANGS)) $sql.=" OR pl.label LIKE '".$prefix.$crit."%'";
+                $sql.="(p.ref LIKE '".$db->escape($prefix.$crit)."%' OR p.label LIKE '".$db->escape($prefix.$crit)."%'";
+                if (! empty($conf->global->MAIN_MULTILANGS)) $sql.=" OR pl.label LIKE '".$db->escape($prefix.$crit)."%'";
                 $sql.=")";
                 $i++;
             }
             if (count($scrit) > 1) $sql.=")";
-          	if (! empty($conf->barcode->enabled)) $sql.= " OR p.barcode LIKE '".$prefix.$filterkey."%'";
+          	if (! empty($conf->barcode->enabled)) $sql.= " OR p.barcode LIKE '".$db->escape($prefix.$filterkey)."%'";
         	$sql.=')';
         }
         $sql.= $db->order("p.ref");
@@ -1551,7 +1551,7 @@ class Form
             $sql.= " WHERE fk_product='".$objp->rowid."'";
             $sql.= " AND entity IN (".getEntity('productprice', 1).")";
             $sql.= " AND price_level=".$price_level;
-            $sql.= " ORDER BY date_price";
+            $sql.= " ORDER BY date_price, rowid";
             $sql.= " DESC LIMIT 1";
 
             dol_syslog(get_class($this).'::constructProductListOption search price for level '.$price_level.' sql='.$sql);
@@ -1750,7 +1750,7 @@ class Form
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON pfp.fk_soc = s.rowid";
         $sql.= " WHERE p.entity IN (".getEntity('product', 1).")";
         $sql.= " AND p.tobuy = 1";
-        if (strval($filtertype) != '') $sql.=" AND p.fk_product_type=".$filtertype;
+        if (strval($filtertype) != '') $sql.=" AND p.fk_product_type=".$this->db->escape($filtertype);
         if (! empty($filtre)) $sql.=" ".$filtre;
         // Add criteria on ref/label
         if ($filterkey != '')
@@ -1764,11 +1764,11 @@ class Form
         	foreach ($scrit as $crit)
         	{
         		if ($i > 0) $sql.=" AND ";
-        		$sql.="(pfp.ref_fourn LIKE '".$prefix.$crit."%' OR p.ref LIKE '".$prefix.$crit."%' OR p.label LIKE '".$prefix.$crit."%')";
+        		$sql.="(pfp.ref_fourn LIKE '".$this->db->escape($prefix.$crit)."%' OR p.ref LIKE '".$this->db->escape($prefix.$crit)."%' OR p.label LIKE '".$this->db->escape($prefix.$crit)."%')";
         		$i++;
         	}
         	if (count($scrit) > 1) $sql.=")";
-        	if (! empty($conf->barcode->enabled)) $sql.= " OR p.barcode LIKE '".$prefix.$filterkey."%'";
+        	if (! empty($conf->barcode->enabled)) $sql.= " OR p.barcode LIKE '".$this->db->escape($prefix.$filterkey)."%'";
         	$sql.=')';
         }
         $sql.= " ORDER BY pfp.ref_fourn DESC, pfp.quantity ASC";
@@ -4172,7 +4172,7 @@ class Form
                 {
                     global $dolibarr_main_url_root;
                     $ret.='<!-- Put link to gravatar -->';
-                    $ret.='<img alt="Photo found on Gravatar" title="Photo Gravatar.com - email '.$email.'" border="0" width="'.$width.'" src="http://www.gravatar.com/avatar/'.dol_hash($email).'?s='.$width.'&d='.urlencode(dol_buildpath('/theme/common/nophoto.jpg',2)).'">';
+                    $ret.='<img alt="Photo found on Gravatar" title="Photo Gravatar.com - email '.$email.'" border="0" width="'.$width.'" src="https://www.gravatar.com/avatar/'.dol_hash($email).'?s='.$width.'&d='.urlencode(dol_buildpath('/theme/common/nophoto.jpg',2)).'">';
                 }
                 else
                 {

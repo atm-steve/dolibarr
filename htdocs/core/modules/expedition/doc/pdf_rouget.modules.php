@@ -180,10 +180,16 @@ class pdf_rouget extends ModelePdfExpedition
 				$tab_height = 130;
 				$tab_height_newpage = 150;
 
-				if (! empty($object->note_public) || (! empty($object->tracking_number) && ! empty($object->shipping_method_id)))
+				if (! empty($object->note_public) || ! empty($object->tracking_number))
 				{
 					$tab_top = 88;
 					$tab_top_alt = $tab_top;
+
+					$pdf->SetFont('','B', $default_font_size - 2);
+					$pdf->writeHTMLCell(60, 4, $this->posxdesc-1, $tab_top-1, $outputlangs->transnoentities("TrackingNumber")." : " . $object->tracking_number, 0, 1, false, true, 'L');
+
+					$tab_top_alt = $pdf->GetY();
+					//$tab_top_alt += 1;
 
 					// Tracking number
 					if (! empty($object->tracking_number))
@@ -198,14 +204,14 @@ class pdf_rouget extends ModelePdfExpedition
 								$label=$outputlangs->trans("LinkToTrackYourPackage")."<br>";
 								$label.=$outputlangs->trans("SendingMethod".strtoupper($code))." :";
 								$pdf->SetFont('','B', $default_font_size - 2);
-								$pdf->writeHTMLCell(60, 7, $this->posxdesc-1, $tab_top-1, $label." ".$object->tracking_url, 0, 1, false, true, 'L');
+								$pdf->writeHTMLCell(60, 4, $this->posxdesc-1, $tab_top+6, $label." ".$object->tracking_url, 0, 1, false, true, 'L');
 
-								$tab_top_alt += 7;
+								$tab_top_alt = $pdf->GetY();
 							}
 						}
 					}
 
-					// Affiche notes
+					// Notes
 					if (! empty($object->note_public))
 					{
 						$pdf->SetFont('','', $default_font_size - 1);   // Dans boucle pour gerer multi-page
@@ -266,7 +272,7 @@ class pdf_rouget extends ModelePdfExpedition
 					$pdf->MultiCell(($this->page_largeur - $this->marge_droite - $this->posxqtytoship), 3, $object->lines[$i]->qty_shipped,'','C');
 
 					// Add line
-					if (! empty($conf->global->MAIN_PDF_DASH_BETWEEN_LINES) && $i < ($nblignes - 1))
+					if ($conf->global->MAIN_PDF_DASH_BETWEEN_LINES && $i < ($nblignes - 1))
 					{
 						$pdf->setPage($pageposafter);
 						$pdf->SetLineStyle(array('dash'=>'1,1','color'=>array(210,210,210)));
@@ -564,7 +570,7 @@ class pdf_rouget extends ModelePdfExpedition
 		 		$carac_emetteur .= ($carac_emetteur ? "\n" : '' ).$outputlangs->transnoentities("Name").": ".$outputlangs->convToOutputCharset($object->user->getFullName($outputlangs))."\n";
 		 	}
 
-		 	$carac_emetteur .= pdf_build_address($outputlangs,$this->emetteur);
+		 	$carac_emetteur .= pdf_build_address($outputlangs, $this->emetteur, $object->client);
 
 			// Show sender
 			$posx=$this->marge_gauche;

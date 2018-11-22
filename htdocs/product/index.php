@@ -167,7 +167,7 @@ print $total;
 print '</td></tr>';
 print '</table>';
 
-if (! empty($conf->categorie->enabled))
+if (! empty($conf->categorie->enabled) && ! empty($conf->global->CATEGORY_GRAPHSTATS_ON_PRODUCTS))
 {
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 	print '<br>';
@@ -299,7 +299,7 @@ if ($result)
 			if (empty($conf->global->PRODUIT_MULTIPRICES))
 			{
 				print '<td align="right">';
-    			if ($objp->price_base_type == 'TTC') print price($objp->price_ttc).' '.$langs->trans("TTC");
+    			if (isset($objp->price_base_type) && $objp->price_base_type == 'TTC') print price($objp->price_ttc).' '.$langs->trans("TTC");
     			else print price($objp->price).' '.$langs->trans("HT");
     			print '</td>';
 			}

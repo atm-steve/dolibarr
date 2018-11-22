@@ -287,8 +287,8 @@ class Task extends CommonObject
         $sql.= " description=".(isset($this->description)?"'".$this->db->escape($this->description)."'":"null").",";
         $sql.= " duration_effective=".(isset($this->duration_effective)?$this->duration_effective:"null").",";
         $sql.= " planned_workload=".(isset($this->planned_workload)?$this->planned_workload:"0").",";
-        $sql.= " dateo=".($this->date_start!=''?$this->db->idate($this->date_start):'null').",";
-        $sql.= " datee=".($this->date_end!=''?$this->db->idate($this->date_end):'null').",";
+        $sql.= " dateo=".($this->date_start!=''?"'".$this->db->idate($this->date_start)."'":'null').",";
+        $sql.= " datee=".($this->date_end!=''?"'".$this->db->idate($this->date_end)."'":'null').",";
         $sql.= " progress=".$this->progress.",";
         $sql.= " rang=".((!empty($this->rang))?$this->rang:"0");
         $sql.= " WHERE rowid=".$this->id;
@@ -769,8 +769,9 @@ class Task extends CommonObject
         if ($this->db->query($sql) )
         {
             $tasktime_id = $this->db->last_insert_id(MAIN_DB_PREFIX."projet_task_time");
-            $ret = $tasktme_id;
-
+            $ret = $tasktime_id;
+			$this->timespent_id = $ret;
+			
             if (! $notrigger)
             {
                 // Call triggers
@@ -801,10 +802,7 @@ class Task extends CommonObject
                 dol_syslog(get_class($this)."::addTimeSpent error -2 ".$this->error, LOG_ERR);
                 $ret = -2;
             }
-        }
-
-		if ($ret >= 0)
-        {
+        
             $sql = "UPDATE ".MAIN_DB_PREFIX."projet_task_time";
             $sql.= " SET thm = (SELECT thm FROM ".MAIN_DB_PREFIX."user WHERE rowid = ".$this->timespent_fk_user.")";
             $sql.= " WHERE rowid = ".$tasktime_id;
@@ -1025,7 +1023,8 @@ class Task extends CommonObject
 
 		$error=0;
 
-		$now=dol_now();
+		//Use 00:00 of today if time is use on task.
+		$now=dol_mktime(0,0,0,dol_print_date(dol_now(),'%m'),dol_print_date(dol_now(),'%d'),dol_print_date(dol_now(),'%Y'));
 
 		$datec = $now;
 

@@ -7,6 +7,7 @@
  * Copyright (C) 2010-2013	Juanjo Menent			<jmenent@2byte.es>
  * Copyright (C) 2013		Christophe Battarel		<christophe.battarel@altairis.fr>
  * Copyright (C) 2013		Florian Henry			<florian.henry@open-concept.pro>
+ * Copyright (C) 2015		Ferran Marcet			<fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,23 +93,31 @@ class Contrat extends CommonObject
 		global $db, $langs, $conf;
 		$langs->load("contracts");
 
-		$dir = DOL_DOCUMENT_ROOT . "/core/modules/contract";
-
-		if (empty($conf->global->CONTRACT_ADDON))
+		if (!empty($conf->global->CONTRACT_ADDON))
 		{
-		    $conf->global->CONTRACT_ADDON='mod_contract_serpis';
-		}
+			$mybool = false;
 
-		$file = $conf->global->CONTRACT_ADDON.".php";
+			$file = $conf->global->CONTRACT_ADDON.".php";
+			$classname = $conf->global->CONTRACT_ADDON;
 
-		// Chargement de la classe de numerotation
-		$classname = $conf->global->CONTRACT_ADDON;
+			// Include file with class
+			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 
-		$result=include_once $dir.'/'.$file;
-		if ($result)
-		{
+			foreach ($dirmodels as $reldir) {
+
+				$dir = dol_buildpath($reldir."core/modules/contract/");
+
+				// Load file with numbering class (if found)
+				$mybool|=@include_once $dir.$file;
+			}
+
+			if (! $mybool)
+			{
+				dol_print_error('',"Failed to include file ".$file);
+				return '';
+			}
+
 			$obj = new $classname();
-
 			$numref = "";
 			$numref = $obj->getNextValue($soc,$this);
 
@@ -118,15 +127,17 @@ class Contrat extends CommonObject
 			}
 			else
 			{
+				$this->error = $obj->error;
 				dol_print_error($db,get_class($this)."::getNextValue ".$obj->error);
 				return "";
 			}
 		}
 		else
 		{
-			print $langs->trans("Error")." ".$langs->trans("Error_CONTRACT_ADDON_NotDefined");
+			$langs->load("errors");
+			print $langs->trans("Error")." ".$langs->trans("ErrorModuleSetupNotComplete");
 			return "";
-			}
+		}
 	}
 
 	/**
@@ -849,6 +860,13 @@ class Contrat extends CommonObject
 				dol_syslog(get_class($this)."::delete error", LOG_ERR);
 				$error++;
 			}
+		}
+
+		if (! $error)
+		{
+			// Delete linked object
+			$res = $this->deleteObjectLinked();
+			if ($res < 0) $error++;
 		}
 
 		if (! $error)
