@@ -586,7 +586,7 @@ if ($id > 0 || ! empty($ref)) {
 							print '<td >';
 							print $linktoprod;
 							print "</td>";
-							print '<td colspan="3" style="white-space: pre;">';
+							print '<td colspan="4" style="white-space: pre;">';
 							print $objp->description;
 							print "</td>";
 						}
@@ -652,7 +652,7 @@ if ($id > 0 || ! empty($ref)) {
 							print '</tr>';
 
 							print '<tr class="oddeven" name="' . $type . $suffix . '">';
-							print '<td colspan="6">';
+							print '<td colspan="7">';
 							print '<input name="fk_commandefourndet' . $suffix . '" type="hidden" value="' . $objp->rowid . '">';
 							print '<input name="product' . $suffix . '" type="hidden" value="' . $objp->fk_product . '">';
 
