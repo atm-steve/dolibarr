@@ -289,7 +289,7 @@ class TExportCompta extends TObjetStd {
 			}
 
 			//Cas particulier des factures de situation
-			if(in_array($facture->type, array(Facture::TYPE_SITUATION, Facture::TYPE_CREDIT_NOTE))){
+			if(in_array($facture->type, array(Facture::TYPE_SITUATION, Facture::TYPE_CREDIT_NOTE)) && ! empty($facture->situation_cycle_ref)) {
                     foreach($facture->lines as &$ligneSituation) {
 
                         if(!empty($ligneSituation->fk_product)) {
