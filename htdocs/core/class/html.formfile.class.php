@@ -127,6 +127,7 @@ class FormFile
 
 			if ($maxmin > 0)
 			{
+				// MAX_FILE_SIZE doit précéder le champ input de type file
 				$out .= '<input type="hidden" name="max_file_size" value="'.($maxmin*1024).'">';
 			}
 
@@ -1634,7 +1635,7 @@ class FormFile
 	 */
 	private function _formAjaxFileUpload($object)
 	{
-		global $langs;
+		global $langs, $conf;
 
 		// PHP post_max_size
 		$post_max_size				= ini_get('post_max_size');
