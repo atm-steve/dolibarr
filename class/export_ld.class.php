@@ -23,6 +23,7 @@ class TExportComptaLd extends TExportCompta {
 		    //LIBE 30 54 25 T Libellé
 		    array('name' => 'libelle',				'length' => 25,	'default' => '',	'type' => 'text'),
 		    //DATH 55 62 8 D Date échéance
+		    array('name' => 'DATH',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
 		    
 		    //CNPI 63 64 2 C Code nature pièce Voir remarque 8 ## FACULTATIF
 		    /*
@@ -44,7 +45,8 @@ class TExportComptaLd extends TExportCompta {
 		    //DATL 102 109 8 D Date lettrage A blanc, sauf remarque 6
 		    array('name' => 'DATL',	                   'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
 		    //CPTA 110 117 8 C Compte auxiliaire Voir remarque 2
-		    array('name' => 'CPTA',                   'length' => 8,	'default' => '',	'type' => 'text'),
+		    array('name' => 'numero_compte',		'length' => 17,	'default' => '',	'type' => 'text'),
+		    //array('name' => 'CPTA',                   'length' => 8,	'default' => '',	'type' => 'text'),
 		    //CNAT 118 118 1 C Code nature tiers Voir remarque 2 : C si client,  F si fournisseur,  A si autre.
 		    array('name' => 'CNAT',	                   'length' => 1,	'default' => 'C',	'type' => 'text'),
 		    //CTRE 119 120 2 C Code trésorerie Voir remarque 9  // facultatif
@@ -54,27 +56,40 @@ class TExportComptaLd extends TExportCompta {
 		    //DATV 122 129 8 D Date valeur
 		    array('name' => 'date_ecriture',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
 		    //REFD 130 139 10 T Référence document Voir remarque 4
+		    array('name' => 'numero_piece',			'length' => 10,	'default' => '',	'type' => 'text'),
 		    //NECA 140 143 3,0 N N° de séquence analytique Voir remarque 3
+		    array('name' => 'NECA',			'length' => 10,	'default' => '1',	'type' => 'text'),
 		    //CSEC 144 153 10 C Code section (axe anal. 1) Voir remarque 3
+		    array('name' => 'CSEC',			'length' => 10,	'default' => '',	'type' => 'text'),
 		    //CAFF 154 163 10 C Code affaire (axe anal. 2) Voir remarque 3
+		    array('name' => 'CAFF',			'length' => 10,	'default' => '',	'type' => 'text'),
 		    //CDES 154 173 10 C Code destination (axe anal. 2)Voir remarque 3
+		    array('name' => 'CDES',			'length' => 10,	'default' => '',	'type' => 'text'),
 		    //QTUE 174 183 9,3 N Quantité analytique Voir remarque 3
+		    array('name' => 'QTUE',			'length' => 9,	'default' => '',	'type' => 'text'),
 		    //MTDV 184 198 13,2 N Montant en devises Voir remarque 5
+		    array('name' => 'montant',	               'length' => 15,	'default' => '0',	'type' => 'text'),
 		    //CODV 199 201 3 C Code devise ISO Voir remarque 5
 		    array('name' => 'devise',				'length' => 3,	'default' => 'EUR',	'type' => 'text'),
 		    //TXDV 202 214 11,7 N Taux de la devise Voir remarque 5
+		    array('name' => 'TXDV',				'length' => 10,	'default' => '0',	'type' => 'text'),
 		    //MOPM 215 216 2 C Mode de paiement Voir remarque 10
+		    array('name' => 'MOPM',				'length' => 2,	'default' => '',	'type' => 'text'),
 		    //BONP 217 217 1 C Bon à payer Voir remarque 10
+		    array('name' => 'BONP',				'length' => 1,	'default' => '',	'type' => 'text'),
 		    //BQAF 218 219 2 C Code banque affectation Voir remarque 10
+		    array('name' => 'BQAF',				'length' => 1,	'default' => '',	'type' => 'text'),
 		    //ECES 220 220 1 C Echéance escomptable Voir remarque 10
+		    array('name' => 'ECES',				'length' => 1,	'default' => '',	'type' => 'text'),
 		    //TXTL 221 732 512 T Zone texte libre Voir remarque 11
+		    array('name' => 'ECRM',				'length' => 512,	'default' => '',	'type' => 'text'),
 		    //ECRM 733 733 1 C Ecriture modifiable Voir remarque 12
+		    array('name' => 'TXTL',				'length' => 1,	'default' => '',	'type' => 'text'),
 		    //DATK 734 741 8 D Date création Voir remarque 13
+		    array('name' => 'DATK',				'length' => 8,	'default' => '',	'type' => 'text'),
 		    //HEUK 742 747 6 H Heure création Voir remarque 13
+		    array('name' => 'HEUK',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
 		    
-			array('name' => 'numero_compte',		'length' => 17,	'default' => '0',	'type' => 'text'),
-			array('name' => '(vide)',				'length' => 8,	'default' => '',	'type' => 'text'),
-			array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text'),
 		    
 		);
 		
