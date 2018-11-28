@@ -253,7 +253,9 @@ print '<script type="text/javascript" language="javascript">
 			dol_include_once('/core/class/extrafields.class.php');
 			$extrafields = new ExtraFields($db);
 			$extralabels = $extrafields->fetch_name_optionals_label('societe');
+		
 			foreach ( $extralabels as $key => $val ) {
+				if($extrafields->attributes['societe']['ishidden'][$val]<=0)continue;
 				if ($key != 'ts_nameextra' && $key != 'ts_payeur') {
 					print '<tr><td>' . $extrafields->attribute_label[$key];
 					if (! empty($array_query['options_' . $key]) || (is_array($array_query['options_' . $key]) && count($array_query['options_' . $key]) > 0)) {
@@ -443,6 +445,7 @@ print '<script type="text/javascript" language="javascript">
 
 
 			foreach ( $extralabels as $key => $val ) {
+				if($extrafields->attributes['socpeople']['ishidden'][$val]<=0)continue;
 
 				print '<tr><td>' . $extrafields->attribute_label[$key];
 				if ($array_query['options_' . $key . '_cnct'] != '' || (is_array($array_query['options_' . $key . '_cnct']) && count($array_query['options_' . $key . '_cnct']) > 0)) {

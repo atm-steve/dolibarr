@@ -781,7 +781,7 @@ class ExtraFields
 		// We should not have several time this log. If we have, there is some optimization to do by calling a simple $object->fetch_optionals() that include cache management.
 		dol_syslog("fetch_name_optionals_label elementtype=".$elementtype);
 
-		$sql = "SELECT rowid,name,label,type,size,elementtype,fieldunique,fieldrequired,param,pos,alwayseditable,perms,langs,list,fielddefault,fieldcomputed,entity,enabled";
+		$sql = "SELECT rowid,name,label,type,size,elementtype,fieldunique,fieldrequired,param,pos,alwayseditable,perms,langs,list,fielddefault,fieldcomputed,entity,enabled,ishidden";
 		$sql.= " FROM ".MAIN_DB_PREFIX."extrafields";
 		$sql.= " WHERE entity IN (0,".$conf->entity.")";
 		if ($elementtype) $sql.= " AND elementtype = '".$elementtype."'";	// Filed with object->table_element
@@ -836,6 +836,7 @@ class ExtraFields
 					$this->attributes[$tab->elementtype]['entityid'][$tab->name]=$tab->entity;
 					$this->attributes[$tab->elementtype]['entitylabel'][$tab->name]=(empty($labelmulticompany[$tab->entity])?'Entity'.$tab->entity:$labelmulticompany[$tab->entity]);
 					$this->attributes[$tab->elementtype]['enabled'][$tab->name]=$tab->enabled;
+					$this->attributes[$tab->elementtype]['ishidden'][$tab->name]=$tab->ishidden;
 
 					$this->attributes[$tab->elementtype]['loaded']=1;
 				}
