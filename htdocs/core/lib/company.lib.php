@@ -791,7 +791,6 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
     	$user->fetch_clicktodial(); // lecture des infos de clicktodial du user
     }
 
-
     $contactstatic = new Contact($db);
 
     $extralabels=$extrafields->fetch_name_optionals_label($contactstatic->table_element);
@@ -802,7 +801,6 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
     'address'   =>array('type'=>'varchar(128)', 'label'=>'Address',          'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>30),
     'statut'    =>array('type'=>'integer',      'label'=>'Status',           'enabled'=>1, 'visible'=>1,  'notnull'=>1, 'default'=>0, 'index'=>1,  'position'=>40, 'arrayofkeyval'=>array(0=>$contactstatic->LibStatut(0,1), 1=>$contactstatic->LibStatut(1,1))),
     );
-
     // Definition of fields for list
     $arrayfields=array(
     't.rowid'=>array('label'=>"TechnicalID", 'checked'=>($conf->global->MAIN_SHOW_TECHNICAL_ID?1:0), 'enabled'=>($conf->global->MAIN_SHOW_TECHNICAL_ID?1:0), 'position'=>1),
@@ -868,7 +866,7 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
 
     $varpage=empty($contextpage)?$_SERVER["PHP_SELF"]:$contextpage;
     $selectedfields=$form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage);	// This also change content of $arrayfields
-    //if ($massactionbutton) $selectedfields.=$form->showCheckAddButtons('checkforselect', 1);
+    $selectedfields.=$form->showCheckAddButtons('checkforselect', 1);
 
 	print '<div class="div-table-responsive">';		// You can use div-table-responsive-no-min if you dont need reserved height for your table
     print "\n".'<table class="tagtable liste">'."\n";
@@ -948,6 +946,7 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
     $reshook=$hookmanager->executeHooks('printFieldListTitle', $parameters, $object);    // Note that $action and $object may have been modified by hook
     print $hookmanager->resPrint;
     print getTitleFieldOfList($selectedfields, 0, $_SERVER["PHP_SELF"],'','','','align="center"',$sortfield,$sortorder,'maxwidthsearch ')."\n";
+    
     print '</tr>'."\n";
 
     $i = -1;
@@ -1049,14 +1048,16 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
                 print '</a> &nbsp; ';
             }
 
-            // Edit
+            // Edit & massaction checkbox
             if ($user->rights->societe->contact->creer)
             {
                 print '<a href="'.DOL_URL_ROOT.'/contact/card.php?action=edit&id='.$obj->rowid.'&backtopage='.urlencode($backtopage).'">';
                 print img_edit();
                 print '</a>';
+                
+                print '<input id="'.$obj->rowid.'" class="flat checkforselect" type="checkbox" name="toselect[]" value="'.$obj->rowid.'"'.($selected?' checked="checked"':'').' style="margin-left:13px;margin-right:9px;"></td>';
             }
-
+            
             print '</td>';
 
             print "</tr>\n";
@@ -1213,6 +1214,8 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
 
     global $param;
 
+    dol_include_once('/comm/action/class/actioncomm.class.php');
+
     // Check parameters
     if (! is_object($filterobj) && ! is_object($objcon)) dol_print_error('','BadParameter');
 
@@ -1261,6 +1264,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         	$sql.= " AND a.fk_element = o.rowid AND a.elementtype = 'product'";
         	if ($filterobj->id) $sql.= " AND a.fk_element = ".$filterobj->id;
         }
+        //TODO check how ot work with new table actioncomm_resources and multiple contact affectation
         if (is_object($objcon) && $objcon->id) $sql.= " AND a.fk_contact = ".$objcon->id;
         // Condition on actioncode
         if (! empty($actioncode))
@@ -1297,6 +1301,14 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
             {
                 $obj = $db->fetch_object($resql);
 
+                $contactaction = new ActionComm($db);
+                $contactaction->id=$obj->id;
+                $result = $contactaction->fetchResources();
+                if ($result<0) {
+                	dol_print_error($db);
+                	setEventMessage("company.lib::show_actions_done Error fetch ressource",'errors');
+                }
+
                 //if ($donetodo == 'todo') $sql.= " AND ((a.percent >= 0 AND a.percent < 100) OR (a.percent = -1 AND a.datep > '".$db->idate($now)."'))";
                 //if ($donetodo == 'done') $sql.= " AND (a.percent = 100 OR (a.percent = -1 AND a.datep <= '".$db->idate($now)."'))";
                 $tododone='';
@@ -1318,6 +1330,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
                     'userphoto'=>$obj->user_photo,
 
                     'contact_id'=>$obj->fk_contact,
+                	'socpeopleassigned' => $contactaction->socpeopleassigned,
             		'lastname'=>$obj->lastname,
             		'firstname'=>$obj->firstname,
             		'fk_element'=>$obj->fk_element,
@@ -1470,7 +1483,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
 		$out.=getTitleFieldOfList($langs->trans("Label"), 0, $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder);
         $out.=getTitleFieldOfList($langs->trans("Date"), 0, $_SERVER["PHP_SELF"], 'a.datep,a.id', '', $param, 'align="center"', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList('');
-		$out.=getTitleFieldOfList($langs->trans("ActionOnContact"), 0, $_SERVER["PHP_SELF"], 'a.fk_contact', '', $param, '', $sortfield, $sortorder);
+		$out.=getTitleFieldOfList($langs->trans("ActionOnContact"), 0, $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList($langs->trans("Status"), 0, $_SERVER["PHP_SELF"], 'a.percent', '', $param, 'align="center"', $sortfield, $sortorder);
 		$out.=getTitleFieldOfList('', 0, $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder, 'maxwidthsearch ');
 		$out.='</tr>';
@@ -1617,10 +1630,28 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
                 $contactstatic->firstname=$histo[$key]['firstname'];
                 $contactstatic->id=$histo[$key]['contact_id'];
                 $out.='<td width="120">'.$contactstatic->getNomUrl(1,'',10).'</td>';
-            }
-            else
-            {
-                $out.='<td>&nbsp;</td>';
+            } elseif (isset($histo[$key]['socpeopleassigned']) && is_array($histo[$key]['socpeopleassigned']) && count($histo[$key]['socpeopleassigned']) > 0) {
+				$out .= '<td>';
+				foreach ( $histo[$key]['socpeopleassigned'] as $cid => $Tab ) {
+					$contact = new Contact($db);
+					$result = $contact->fetch($cid);
+
+					if ($result < 0)
+						dol_print_error($db, $contact->error);
+
+					if ($result > 0) {
+						$out .= $contact->getNomUrl(1);
+						if (isset($histo[$key]['acode']) && $histo[$key]['acode'] == 'AC_TEL') {
+							if (! empty($contact->phone_pro))
+								$out .= '(' . dol_print_phone($contact->phone_pro) . ')';
+						}
+						$out .= '<div class="paddingright"></div>';
+					}
+				}
+				$out .= '</td>';
+			}
+            else {
+            	$out.='<td>&nbsp;</td>';
             }
 
             // Status
