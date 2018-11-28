@@ -700,6 +700,7 @@ foreach ($listofreferent as $key => $value)
 	$buttonnew=$value['buttonnew'];
     $testnew=$value['testnew'];
 	$exclude_select_element = array('payment_various');
+	$project_field = $value['project_field'];
 	if (!empty($value['exclude_select_element'])) $exclude_select_element[] = $value['exclude_select_element'];
 
 	
