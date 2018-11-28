@@ -307,11 +307,16 @@ if ($result >= 0)
 		}
 
 		foreach($ldaprecords as $ldapuser) {
-			$u = new User($db);
-			$u->fetch($TUser[$ldapuser['distinguishedName']]);
+            $fk_user_manager = $TUser[$ldapuser['manager']];
+            $fk_user = $TUser[$ldapuser['distinguishedName']];
 
-			$u->fk_user = $TUser[$ldapuser['manager']];
-			$u->update($user);
+            if($fk_user != $fk_user_manager) {
+                $u = new User($db);
+                $u->fetch($fk_user);
+
+                $u->fk_user = $fk_user_manager;
+                $u->update($user);
+            }
 		}
 
 		if (! $error || $forcecommit)
