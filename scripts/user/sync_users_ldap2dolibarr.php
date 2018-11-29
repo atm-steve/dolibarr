@@ -324,6 +324,16 @@ if ($result >= 0)
 			if (! $error) print $langs->transnoentities("NoErrorCommitIsDone")."\n";
 			else print $langs->transnoentities("ErrorButCommitIsDone")."\n";
 			$db->commit();
+
+            $db->query('
+				UPDATE llx_user SET statut = 0
+				WHERE rowid IN (
+					SELECT u.rowid FROM llx_user u
+					INNER JOIN llx_usergroup_user uu ON (uu.fk_user = u.rowid)
+					INNER JOIN llx_usergroup g ON (g.rowid = uu.fk_usergroup)
+					WHERE g.nom = "GSL_COMPTES_SUPPRIMES"
+				)
+			');
 		}
 		else
 		{
