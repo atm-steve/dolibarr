@@ -48,8 +48,9 @@ class TExportCompta extends TObjetStd {
 			,'diacompta' => 'Diacompta'
 			,'orma' => 'Orma'
 			,'comptor' => 'Comptor'
-			,'winfic' => 'Winfic'
-			,'agiris' => 'Agiris'
+		    ,'winfic' => 'Winfic'
+		    ,'agiris' => 'Agiris'
+		    ,'ld' => 'LD Compta'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture'
