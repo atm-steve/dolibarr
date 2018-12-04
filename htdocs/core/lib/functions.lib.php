@@ -1499,6 +1499,12 @@ function dol_banner_tab($object, $paramid, $morehtml='', $shownav=1, $fieldid='r
 		$tmptxt=$object->getLibStatut(5);
 		$morehtmlstatus.=$tmptxt;		// No status on task
 	}
+	elseif ($object->element == 'order_supplier')
+	{
+	    $tmptxt=$object->getLibStatut(6);
+	    if (empty($tmptxt) || $tmptxt == $object->getLibStatut(3) || $conf->browser->layout=='phone') $tmptxt=$object->getLibStatut(4);
+	    $morehtmlstatus.=$tmptxt;
+	}
 	else { // Generic case
 		$tmptxt=$object->getLibStatut(6);
 		if (empty($tmptxt) || $tmptxt == $object->getLibStatut(3) || $conf->browser->layout=='phone') $tmptxt=$object->getLibStatut(5);
