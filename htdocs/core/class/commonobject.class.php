@@ -1778,7 +1778,7 @@ abstract class CommonObject
 				$this->multicurrency_code = $code;
 
 				list($fk_multicurrency, $rate) = MultiCurrency::getIdAndTxFromCode($this->db, $code);
-				if ($rate) $this->setMulticurrencyRate($rate);
+				if ($rate) $this->setMulticurrencyRate($rate,2);
 
 				return 1;
 			}
@@ -4727,6 +4727,7 @@ abstract class CommonObject
 			$resql=$this->db->query($sql);
 			if ($resql)
 			{
+				$this->array_options = array();
 				$numrows=$this->db->num_rows($resql);
 				if ($numrows)
 				{
@@ -5052,7 +5053,7 @@ abstract class CommonObject
 	 *  @return int                 		-1=error, O=did nothing, 1=OK
 	 *  @see setValueFrom, insertExtraFields
 	 */
-	function updateExtraField($key, $trigger, $userused)
+	function updateExtraField($key, $trigger=null, $userused=null)
 	{
 		global $conf,$langs,$user;
 
@@ -6141,7 +6142,7 @@ abstract class CommonObject
 		if (! is_object($form)) $form=new Form($db);
 
 		$out = '';
-
+		
 		if (is_array($extrafields->attributes[$this->table_element]['label']) && count($extrafields->attributes[$this->table_element]['label']) > 0)
 		{
 			$out .= "\n";
@@ -6151,6 +6152,11 @@ abstract class CommonObject
 			$e = 0;
 			foreach($extrafields->attributes[$this->table_element]['label'] as $key=>$label)
 			{
+			    if (isset($extrafields->attributes[$this->table_element]['list'][$key])
+			        && empty($extrafields->attributes[$this->table_element]['list'][$key]) && $mode == 'view'){
+			        continue;
+			    }
+			    
 				$enabled = 1;
 				if ($enabled && isset($extrafields->attributes[$this->table_element]['list'][$key]))
 				{

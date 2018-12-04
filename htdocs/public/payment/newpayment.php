@@ -2,6 +2,7 @@
 /* Copyright (C) 2001-2002	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2006-2017	Laurent Destailleur		<eldy@users.sourceforge.net>
  * Copyright (C) 2009-2012	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2018	    Juanjo Menent			<jmenent@2byte.e>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -413,7 +414,7 @@ if ($action == 'charge' && ! empty($conf->stripe->enabled))
 	$dol_type=(GETPOST('s', 'alpha') ? GETPOST('s', 'alpha') : GETPOST('source', 'alpha'));
   	$dol_id=GETPOST('dol_id', 'int');
   	$vatnumber = GETPOST('vatnumber','alpha');
-	$savesource=GETPOST('savesource', 'int');
+	$savesource=GETPOSTISSET('savesource')?GETPOST('savesource', 'int'):1;
 
 	dol_syslog("stripeToken = ".$stripeToken, LOG_DEBUG, 0, '_stripe');
 	dol_syslog("email = ".$email, LOG_DEBUG, 0, '_stripe');
@@ -454,9 +455,11 @@ if ($action == 'charge' && ! empty($conf->stripe->enabled))
 			$customer = $stripe->customerStripe($thirdparty, $stripeacc, $servicestatus, 1);
 
 			// Create Stripe card from Token
-			if (! empty($savesource)) {
-			$card = $customer->sources->create(array("source" => $stripeToken, "metadata" => $metadata));
-			} else { $card = $stripeToken; }
+			if ($savesource) {
+				$card = $customer->sources->create(array("source" => $stripeToken, "metadata" => $metadata));
+			} else {
+				$card = $stripeToken;
+			}
 
 			if (empty($card))
 			{
@@ -467,9 +470,9 @@ if ($action == 'charge' && ! empty($conf->stripe->enabled))
 			}
 			else
 			{
-        if (! empty($FULLTAG))       $metadata["FULLTAG"] = $FULLTAG;
-        if (! empty($dol_id))        $metadata["dol_id"] = $dol_id;
-        if (! empty($dol_type))      $metadata["dol_type"] = $dol_type;
+				if (! empty($FULLTAG))       $metadata["FULLTAG"] = $FULLTAG;
+				if (! empty($dol_id))        $metadata["dol_id"] = $dol_id;
+				if (! empty($dol_type))      $metadata["dol_type"] = $dol_type;
 
 				dol_syslog("Create charge on card ".$card->id, LOG_DEBUG, 0, '_stripe');
 				$charge = \Stripe\Charge::create(array(
@@ -926,7 +929,7 @@ if ($source == 'invoice')
 
 	if ($action != 'dopayment') // Do not change amount if we just click on first dopayment
 	{
-		$amount=price2num($invoice->total_ttc - $invoice->getSommePaiement());
+		$amount=price2num($invoice->total_ttc - ($invoice->getSommePaiement() + $invoice->getSumCreditNotesUsed()));
 		if (GETPOST("amount",'int')) $amount=GETPOST("amount",'int');
 		$amount=price2num($amount);
 	}

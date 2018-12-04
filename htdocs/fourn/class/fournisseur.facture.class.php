@@ -357,8 +357,8 @@ class FactureFournisseur extends CommonInvoice
                 dol_syslog("There is ".count($this->lines)." lines that are invoice lines objects");
                 foreach ($this->lines as $i => $val)
                 {
-                    $sql = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_fourn_det (fk_facture_fourn)';
-                    $sql .= ' VALUES ('.$this->id.')';
+                    $sql = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_fourn_det (fk_facture_fourn, special_code)';
+                    $sql .= ' VALUES ('.$this->id.','.intval($this->lines[$i]->special_code).')';
 
                     $resql_insert=$this->db->query($sql);
                     if ($resql_insert)
@@ -376,7 +376,14 @@ class FactureFournisseur extends CommonInvoice
                             $this->lines[$i]->fk_product,
                             'HT',
                             (! empty($this->lines[$i]->info_bits)?$this->lines[$i]->info_bits:''),
-                            $this->lines[$i]->product_type
+                            $this->lines[$i]->product_type,
+                            $this->lines[$i]->remise_percent,
+                            false,
+                            $this->lines[$i]->date_start,
+                            $this->lines[$i]->date_end,
+                            $this->lines[$i]->array_options,
+                            $this->lines[$i]->fk_unit,
+                            $this->lines[$i]->pu_ht_devise
                         );
                     }
                     else
@@ -398,8 +405,8 @@ class FactureFournisseur extends CommonInvoice
 				    //if (! is_object($line)) $line=json_decode(json_encode($line), false);  // convert recursively array into object.
                 	if (! is_object($line)) $line = (object) $line;
 
-                	$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_fourn_det (fk_facture_fourn)';
-			        $sql .= ' VALUES ('.$this->id.')';
+                	$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_fourn_det (fk_facture_fourn, special_code)';
+			        $sql .= ' VALUES ('.$this->id.','.intval($this->lines[$i]->special_code).')';
 
 			        $resql_insert=$this->db->query($sql);
 			        if ($resql_insert)
@@ -2018,10 +2025,10 @@ class FactureFournisseur extends CommonInvoice
 		$sql = "SELECT f.rowid as rowid, f.ref, f.fk_statut, f.type, f.paye, pf.fk_paiementfourn";
 		$sql.= " FROM ".MAIN_DB_PREFIX."facture_fourn as f";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiementfourn_facturefourn as pf ON f.rowid = pf.fk_facturefourn";
-		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture_fourn as ff ON (f.rowid = ff.fk_facture_source AND ff.type=".self::TYPE_REPLACEMENT.")";
 		$sql.= " WHERE f.entity = ".$conf->entity;
 		$sql.= " AND f.fk_statut in (".self::STATUS_VALIDATED.",".self::STATUS_CLOSED.")";
-		$sql.= " AND ff.type IS NULL";									// Renvoi vrai si pas facture de remplacement
+        $sql.= " AND NOT EXISTS (SELECT rowid from ".MAIN_DB_PREFIX."facture_fourn as ff WHERE f.rowid = ff.fk_facture_source";
+        $sql.= " AND ff.type=".self::TYPE_REPLACEMENT.")";
 		$sql.= " AND f.type != ".self::TYPE_CREDIT_NOTE;				// Type non 2 si facture non avoir
 		if ($socid > 0) $sql.=" AND f.fk_soc = ".$socid;
 		$sql.= " ORDER BY f.ref";
