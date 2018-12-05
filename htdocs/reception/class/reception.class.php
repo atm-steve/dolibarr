@@ -560,14 +560,13 @@ class Reception extends CommonObject
 
 			// Loop on each product line to add a stock movement
 			// TODO in future, reception lines may not be linked to order line
-			$sql = "SELECT cd.fk_product, cd.subprice,";
+			$sql = "SELECT ed.fk_product, cd.subprice,";
 			$sql.= " ed.rowid, ed.qty, ed.fk_entrepot,";
 			$sql.= " ed.eatby, ed.sellby, ed.batch";
-			$sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as cd,";
-			$sql.= " ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as ed";
+			$sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as ed";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet as cd on cd.rowid = ed.fk_commandefourndet";
 			$sql.= " WHERE ed.fk_reception = ".$this->id;
-			$sql.= " AND cd.rowid = ed.fk_commandefourndet";
-			
+			$sql.= " AND ed.fk_product is not null";
 			
 
 			dol_syslog(get_class($this)."::valid select details", LOG_DEBUG);
@@ -718,7 +717,7 @@ class Reception extends CommonObject
 	 * @param	string		$batch					Lot number
 	 * @return	int							<0 if KO, >0 if OK
 	 */
-	function addline($entrepot_id, $id, $qty, $array_options=0, $comment='', $eatby='', $sellby='', $batch='')
+	function addline($entrepot_id, $id, $qty, $array_options=0, $comment='', $eatby='', $sellby='', $batch='', $fk_prod = '')
 	{
 		global $conf, $langs, $user;
 
@@ -734,8 +733,6 @@ class Reception extends CommonObject
 		
 		if (! empty($conf->stock->enabled) && ! empty($supplierorderline->fk_product))
 		{
-			$fk_product = $supplierorderline->fk_product;
-			
 			if (! ($entrepot_id > 0) && empty($conf->global->STOCK_WAREHOUSE_NOT_REQUIRED_FOR_RECEPTIONS))
 			{
 			    $langs->load("errors");
@@ -745,6 +742,8 @@ class Reception extends CommonObject
 
 			
 		}
+
+        $fk_product = empty($fk_prod) ? $supplierorderline->fk_product : $fk_prod;
 
 		// extrafields
 		if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED) && is_array($array_options) && count($array_options)>0) // For avoid conflicts if trigger used
@@ -1510,13 +1509,13 @@ class Reception extends CommonObject
 
 				// Loop on each product line to add a stock movement
 				// TODO possibilite de receptionner a partir d'une propale ou autre origine ?
-				$sql = "SELECT cd.fk_product, cd.subprice,";
-				$sql.= " ed.rowid, ed.qty, ed.fk_entrepot,";
-				$sql.= " ed.eatby, ed.sellby, ed.batch";
-				$sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as cd,";
-				$sql.= " ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as ed";
-				$sql.= " WHERE ed.fk_reception = ".$this->id;
-				$sql.= " AND cd.rowid = ed.fk_commandefourndet";
+				$sql = "SELECT ed.fk_product, cd.subprice,";
+                $sql.= " ed.rowid, ed.qty, ed.fk_entrepot,";
+                $sql.= " ed.eatby, ed.sellby, ed.batch";
+                $sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as ed";
+                $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet as cd on cd.rowid = ed.fk_commandefourndet";
+                $sql.= " WHERE ed.fk_reception = ".$this->id;
+                $sql.= " AND ed.fk_product is not null";
 
 				dol_syslog(get_class($this)."::valid select details", LOG_DEBUG);
 				$resql=$this->db->query($sql);
@@ -1531,7 +1530,7 @@ class Reception extends CommonObject
 						$qty = $obj->qty;
 						
 						if ($qty <= 0) continue;
-						dol_syslog(get_class($this)."::valid movement index ".$i." ed.rowid=".$obj->rowid." edb.rowid=".$obj->edbrowid);
+						dol_syslog(get_class($this)."::valid movement index ".$i." ed.rowid=".$obj->rowid);
 
 						$mouvS = new MouvementStock($this->db);
 						$mouvS->origin = &$this;
@@ -1811,13 +1810,13 @@ class Reception extends CommonObject
 
 				// Loop on each product line to add a stock movement
 				// TODO possibilite de receptionner a partir d'une propale ou autre origine
-				$sql = "SELECT cd.fk_product, cd.subprice,";
-				$sql.= " ed.rowid, ed.qty, ed.fk_entrepot,";
-				$sql.= " ed.eatby, ed.sellby, ed.batch";
-				$sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet as cd,";
-				$sql.= " ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as ed";
-				$sql.= " WHERE ed.fk_reception = ".$this->id;
-				$sql.= " AND cd.rowid = ed.fk_commandefourndet";
+				$sql = "SELECT ed.fk_product, cd.subprice,";
+                $sql.= " ed.rowid, ed.qty, ed.fk_entrepot,";
+                $sql.= " ed.eatby, ed.sellby, ed.batch";
+                $sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseur_dispatch as ed";
+                $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet as cd on cd.rowid = ed.fk_commandefourndet";
+                $sql.= " WHERE ed.fk_reception = ".$this->id;
+                $sql.= " AND ed.fk_product is not null";
 
 				dol_syslog(get_class($this)."::valid select details", LOG_DEBUG);
 				$resql=$this->db->query($sql);

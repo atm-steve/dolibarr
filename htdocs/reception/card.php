@@ -708,6 +708,21 @@ if (empty($reshook))
 		header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $object->id); // Pour reaffichage de la fiche en cours d'edition
 		exit();
 	}
+    else if($action == 'addline' && $user->rights->reception->creer) {
+//        var_dump($_REQUEST);exit;
+        $qty = GETPOST('qty', 'int');
+        $entrepot = GETPOST('entrepot');
+        $fk_product = empty(GETPOST('idprod', 'int')) ? 0 : GETPOST('idprod', 'int');
+        $desc = GETPOST('dp_desc');
+
+		$object->addline($entrepot, 0, $qty, 0, '', '', '', '', $fk_product);
+        $nb_line = count($object->lines)-1;
+        $object->lines[$nb_line]->comment = $desc;
+        $object->lines[$nb_line]->create($user);
+
+        header('Location: '.$_SERVER['PHP_SELF'].'?id='.$id);
+        exit;
+    }
 
 	include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
 
@@ -1670,6 +1685,13 @@ else if ($id || $ref)
 			<input type="hidden" name="id" value="' . $object->id . '">
 			';
 		}
+        else {
+            print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '#addline' . '" method="POST">
+                    <input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">
+                    <input type="hidden" name="action" value="addline">
+                    <input type="hidden" name="id" value="' . $object->id . '">
+                    ';
+        }
 		print '<br>';
 
         print '<div class="div-table-responsive-no-min">';
@@ -2059,8 +2081,20 @@ else if ($id || $ref)
 
 		// TODO Show also lines ordered but not delivered
 
+        // Form to add new line
+        if ($action != 'editline' && $object->statut == Reception::STATUS_DRAFT && $user->rights->reception->creer)
+        {
+            // Add products/services form
+            $object->formAddObjectLine(1, $mysoc, $soc);
+
+            $parameters = array();
+            $reshook = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+
+        }
+
 		print "</table>\n";
 		print '</div>';
+        print '</form>';
 	}
 
 
