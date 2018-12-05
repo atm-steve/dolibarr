@@ -4,27 +4,27 @@
  *************************************************************************************************************************************************/
 
 class TExportComptaLd extends TExportCompta {
-	
+
 	function __construct($db, $exportAllreadyExported=false,$addExportTimeToBill=false) {
-		
+
 		parent::__construct($db, $exportAllreadyExported,$addExportTimeToBill);
-		
+
 		$this->_format_ecritures_comptables_vente = array(
 		    // TYPE 1 1 1 C Type d’enregistrement E ou A, Voir remarque 3
 		    array('name' => 'code_type_enregistrement',			'length' => 1,	'default' => 'E',	'type' => 'text'),
 		    //JNAL 2 3 2 C Code journal
-		    array('name' => 'code_journal',			'length' => 2,	'default' => 'VE',	'type' => 'text'),
+		    array('name' => 'code_journal',			'length' => 2,	'default' => 'VD',	'type' => 'text'),
 		    //NECR 4 11 7,0 N N° écriture Voir remarque 1
 		    array('name' => 'num_ecriture',			'length' => 7,	'default' => '',	'type' => 'text'),
 		    //NPIE 12 21 10 T N° pièce Voir remarque 3
 		    array('name' => 'numero_piece',			'length' => 10,	'default' => '',	'type' => 'text'),
 		    //DATP 22 29 8 D Date pièce
-		    array('name' => 'date_ecriture',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
+		    array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 		    //LIBE 30 54 25 T Libellé
 		    array('name' => 'libelle',				'length' => 25,	'default' => '',	'type' => 'text'),
 		    //DATH 55 62 8 D Date échéance
-		    array('name' => 'DATH',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
-		    
+		    array('name' => 'DATH',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
+
 		    //CNPI 63 64 2 C Code nature pièce Voir remarque 8 ## FACULTATIF
 		    /*
 		     * FC=Facture client, AC=Avoir client, FF=Facture fournisseur, AF=Avoir fournisseur
@@ -37,13 +37,13 @@ class TExportComptaLd extends TExportCompta {
 		    //CODC 82 82 1 C Code Débit/Crédit D ou C
 		    array('name' => 'sens',	                   'length' => 1,	'default' => 'D',	'type' => 'text'),
 		    //CPTG 83 90 8 C Compte Général Voir remarque 2
-		    array('name' => 'CPTG',                   'length' => 2,	'default' => '',	'type' => 'text'),
+		    array('name' => 'CPTG',                   'length' => 8,	'default' => '',	'type' => 'text'),
 		    //DATE 91 98 8 D Date Date comptable
-		    array('name' => 'date_ecriture',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
+		    array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 		    //CLET 99 101 3 T Code lettrage A blanc, sauf remarque 6
 		    array('name' => 'CLET',	                   'length' => 3,	'default' => '',	'type' => 'text'),
 		    //DATL 102 109 8 D Date lettrage A blanc, sauf remarque 6
-		    array('name' => 'DATL',	                   'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
+		    array('name' => 'DATL',	                   'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 		    //CPTA 110 117 8 C Compte auxiliaire Voir remarque 2
 		    array('name' => 'numero_compte',		'length' => 17,	'default' => '',	'type' => 'text'),
 		    //array('name' => 'CPTA',                   'length' => 8,	'default' => '',	'type' => 'text'),
@@ -54,7 +54,7 @@ class TExportComptaLd extends TExportCompta {
 		    //NORL 121 121 1 C N° relance Voir remarque 7
 		    array('name' => 'CNAT',	                   'length' => 2,	'default' => '',	'type' => 'text'),
 		    //DATV 122 129 8 D Date valeur
-		    array('name' => 'date_ecriture',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
+		    array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 		    //REFD 130 139 10 T Référence document Voir remarque 4
 		    array('name' => 'numero_piece',			'length' => 10,	'default' => '',	'type' => 'text'),
 		    //NECA 140 143 3,0 N N° de séquence analytique Voir remarque 3
@@ -76,7 +76,7 @@ class TExportComptaLd extends TExportCompta {
 		    //MOPM 215 216 2 C Mode de paiement Voir remarque 10
 		    array('name' => 'MOPM',				'length' => 2,	'default' => '',	'type' => 'text'),
 		    //BONP 217 217 1 C Bon à payer Voir remarque 10
-		    array('name' => 'BONP',				'length' => 1,	'default' => '',	'type' => 'text'),
+		    array('name' => 'BONP',				'length' => 1,	'default' => 'N',	'type' => 'text'),
 		    //BQAF 218 219 2 C Code banque affectation Voir remarque 10
 		    array('name' => 'BQAF',				'length' => 1,	'default' => '',	'type' => 'text'),
 		    //ECES 220 220 1 C Echéance escomptable Voir remarque 10
@@ -88,38 +88,38 @@ class TExportComptaLd extends TExportCompta {
 		    //DATK 734 741 8 D Date création Voir remarque 13
 		    array('name' => 'DATK',				'length' => 8,	'default' => '',	'type' => 'text'),
 		    //HEUK 742 747 6 H Heure création Voir remarque 13
-		    array('name' => 'HEUK',		'length' => 6,	'default' => '',	'type' => 'date',	'format' => 'dmy'),
-		    
-		    
+		    array('name' => 'HEUK',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
+
+
 		);
-		
+
 		$this->addExportTimeToBill = $addExportTimeToBill;
-		
+
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_achat[0] = array('name' => 'code_type_enregistrement','length' => 2,'default' => 'E',	'type' => 'text');
 		$this->_format_ecritures_comptables_achat[1] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
-		
+
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_achat[0] = array('name' => 'code_type_enregistrement','length' => 2,'default' => 'E',	'type' => 'text');
 		$this->_format_ecritures_comptables_banque[2] = array('name' => 'code_journal','length' => 2,'default' => 'BQ',	'type' => 'text');
-		
+
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ',';
 		$this->fieldPadding = false;
 	}
-	
+
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		if(empty($format)) $format = $this->_format_ecritures_comptables_vente;
 
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -136,12 +136,12 @@ class TExportComptaLd extends TExportCompta {
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				if($facture['type'] == 2 && $montant > 0) {
@@ -159,10 +159,10 @@ class TExportComptaLd extends TExportCompta {
 					'sens'							=> $sens,
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				
+
 				$numLignes++;
 			}
 
@@ -178,13 +178,13 @@ class TExportComptaLd extends TExportCompta {
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
 						'montant'						=> number_format(abs($montant),2,'.',''),
 					);
-					
+
 					// Ecriture générale
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
 					$numLignes++;
 				}
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -197,12 +197,12 @@ class TExportComptaLd extends TExportCompta {
 		if(empty($format)) $format = $this->_format_ecritures_comptables_achat;
 
 		$TabFactures = parent::get_factures_fournisseur($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -219,12 +219,12 @@ class TExportComptaLd extends TExportCompta {
 					'sens'							=> ($montant > 0 ? 'C' : 'D'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -236,10 +236,10 @@ class TExportComptaLd extends TExportCompta {
 					'sens'							=> ($montant > 0? 'D' : 'C'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				
+
 				$numLignes++;
 			}
 
@@ -255,13 +255,13 @@ class TExportComptaLd extends TExportCompta {
 						'sens'							=> ($montant > 0? 'D' : 'C'),
 						'montant'						=> number_format(abs($montant),2,'.',''),
 					);
-					
+
 					// Ecriture générale
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
 					$numLignes++;
 				}
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -274,17 +274,17 @@ class TExportComptaLd extends TExportCompta {
 		if(empty($format)) $format = $this->_format_ecritures_comptables_banque;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
-			
+
 			$label = $bankline['label'];
 			//pre($object, true);exit;
 			if(!empty($object)) {
@@ -305,12 +305,12 @@ class TExportComptaLd extends TExportCompta {
 					'sens'							=> ($montant > 0 ? 'C' : 'D'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Ligne banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -323,12 +323,12 @@ class TExportComptaLd extends TExportCompta {
 					'sens'							=> ($montant > 0? 'D' : 'C'),
 					'montant'						=> number_format(abs($montant),2,'.',''),
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			$numEcriture++;
 		}
 
