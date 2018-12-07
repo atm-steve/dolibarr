@@ -357,6 +357,12 @@ class pdf_squille extends ModelePdfReception
 				// Loop on each lines
 				for ($i = 0; $i < $nblignes; $i++)
 				{
+                    // This will prevent emtpy description from reception addline
+                    if(! empty($object->lines[$i]->fk_product) && ! isset($object->lines[$i]->product)) $object->lines[$i]->fetch_product();
+                    if(empty($object->lines[$i]->label)) {
+                        $object->lines[$i]->label = $object->lines[$i]->product->label;
+                    }
+
 					$curY = $nexY;
 					$pdf->SetFont('','', $default_font_size - 1);   // Into loop to work with multipage
 					$pdf->SetTextColor(0,0,0);

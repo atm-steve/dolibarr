@@ -87,6 +87,9 @@ if (!empty($extrafieldsline))
 	elseif ($this->table_element_line=='facturedet_rec') {
 		$objectline = new FactureLigneRec($this->db);
 	}
+	elseif ($this->table_element_line=='commande_fournisseur_dispatch') {
+		$objectline = new CommandeFournisseurDispatch($this->db);
+	}
 }
 
 ?>
@@ -108,15 +111,31 @@ if ($nolinesbefore) {
 	{
 	?>
 		<td class="linecolrefsupplier" align="right"><span id="title_fourn_ref"><?php echo $langs->trans('SupplierRef'); ?></span></td>
-	<?php } ?>
-	<td class="linecolvat" align="right"><span id="title_vat"><?php echo $langs->trans('VAT'); ?></span></td>
-	<td class="linecoluht" align="right"><span id="title_up_ht"><?php echo $langs->trans('PriceUHT'); ?></span></td>
-	<?php if (!empty($conf->multicurrency->enabled)) { $colspan++;?>
-	<td class="linecoluht_currency" align="right"><span id="title_up_ht_currency"><?php echo $langs->trans('PriceUHTCurrency'); ?></span></td>
-	<?php } ?>
-	<?php if (! empty($inputalsopricewithtax)) { ?>
-	<td class="linecoluttc" align="right"><span id="title_up_ttc"><?php echo $langs->trans('PriceUTTC'); ?></span></td>
-	<?php } ?>
+	<?php
+    }
+
+    if($object->element != 'reception') {
+    ?>
+        <td class="linecolvat" align="right"><span id="title_vat"><?php echo $langs->trans('VAT'); ?></span></td>
+        <td class="linecoluht" align="right"><span id="title_up_ht"><?php echo $langs->trans('PriceUHT'); ?></span></td>
+        <?php if (!empty($conf->multicurrency->enabled)) { $colspan++;?>
+        <td class="linecoluht_currency" align="right"><span id="title_up_ht_currency"><?php echo $langs->trans('PriceUHTCurrency'); ?></span></td>
+        <?php } ?>
+        <?php if (! empty($inputalsopricewithtax)) { ?>
+        <td class="linecoluttc" align="right"><span id="title_up_ttc"><?php echo $langs->trans('PriceUTTC'); ?></span></td>
+        <?php
+        }
+    }
+    else {
+        print '<td></td>';
+        print '<td></td>';
+        if (!empty($conf->multicurrency->enabled)) {
+            $colspan++;
+            print '<td></td>';
+        }
+        if (! empty($inputalsopricewithtax)) print '<td></td>';
+    }
+    ?>
 	<td class="linecolqty" align="right"><?php echo $langs->trans('Qty'); ?></td>
 	<?php
 	if($conf->global->PRODUCT_USE_UNITS)
@@ -126,9 +145,16 @@ if ($nolinesbefore) {
 		print $langs->trans('Unit');
 		print '</span></td>';
 	}
+    if($object->element == 'reception') {
+        ?>
+        <td class="linecolwarehouse" align="right"><?php echo $langs->trans('Warehouse'); ?></td>
+        <?php
+    }
+    else {
 	?>
-	<td class="linecoldiscount" align="right"><?php echo $langs->trans('ReductionShort'); ?></td>
+        <td class="linecoldiscount" align="right"><?php echo $langs->trans('ReductionShort'); ?></td>
 	<?php
+    }
 	if ($this->situation_cycle_ref) {
 		print '<td class="linecolcycleref" align="right">' . $langs->trans('Progress') . '</td>';
 	}
@@ -317,28 +343,44 @@ else {
 	{
 	?>
 		<td class="nobottom linecolresupplier"><input id="fourn_ref" name="fourn_ref" class="flat maxwidth75" value="<?php echo (isset($_POST["fourn_ref"])?GETPOST("fourn_ref",'alpha',2):''); ?>"></td>
-	<?php } ?>
+	<?php
+    }
 
-	<td class="nobottom linecolvat" align="right"><?php
-	if ($seller->tva_assuj == "0") echo '<input type="hidden" name="tva_tx" id="tva_tx" value="0">'.vatrate(0, true);
-	else echo $form->load_tva('tva_tx', (isset($_POST["tva_tx"])?GETPOST("tva_tx",'alpha',2):-1), $seller, $buyer, 0, 0, '', false, 1);
-	?>
-	</td>
-	<td class="nobottom linecoluht" align="right">
-	<input type="text" size="5" name="price_ht" id="price_ht" class="flat right" value="<?php echo (isset($_POST["price_ht"])?GETPOST("price_ht",'alpha',2):''); ?>">
-	</td>
+    if($object->element != 'reception') {
+    ?>
 
-	<?php if (!empty($conf->multicurrency->enabled)) { $colspan++;?>
-	<td class="nobottom linecoluht_currency" align="right">
-	<input type="text" size="5" name="multicurrency_price_ht" id="multicurrency_price_ht" class="flat right" value="<?php echo (isset($_POST["multicurrency_price_ht"])?GETPOST("multicurrency_price_ht",'alpha',2):''); ?>">
-	</td>
-	<?php } ?>
+        <td class="nobottom linecolvat" align="right"><?php
+        if ($seller->tva_assuj == "0") echo '<input type="hidden" name="tva_tx" id="tva_tx" value="0">'.vatrate(0, true);
+        else echo $form->load_tva('tva_tx', (isset($_POST["tva_tx"])?GETPOST("tva_tx",'alpha',2):-1), $seller, $buyer, 0, 0, '', false, 1);
+        ?>
+        </td>
+        <td class="nobottom linecoluht" align="right">
+        <input type="text" size="5" name="price_ht" id="price_ht" class="flat right" value="<?php echo (isset($_POST["price_ht"])?GETPOST("price_ht",'alpha',2):''); ?>">
+        </td>
 
-	<?php if (! empty($inputalsopricewithtax)) { ?>
-	<td class="nobottom linecoluttc" align="right">
-	<input type="text" size="5" name="price_ttc" id="price_ttc" class="flat" value="<?php echo (isset($_POST["price_ttc"])?GETPOST("price_ttc",'alpha',2):''); ?>">
-	</td>
-	<?php } ?>
+        <?php if (!empty($conf->multicurrency->enabled)) { $colspan++;?>
+        <td class="nobottom linecoluht_currency" align="right">
+        <input type="text" size="5" name="multicurrency_price_ht" id="multicurrency_price_ht" class="flat right" value="<?php echo (isset($_POST["multicurrency_price_ht"])?GETPOST("multicurrency_price_ht",'alpha',2):''); ?>">
+        </td>
+        <?php } ?>
+
+        <?php if (! empty($inputalsopricewithtax)) { ?>
+        <td class="nobottom linecoluttc" align="right">
+        <input type="text" size="5" name="price_ttc" id="price_ttc" class="flat" value="<?php echo (isset($_POST["price_ttc"])?GETPOST("price_ttc",'alpha',2):''); ?>">
+        </td>
+        <?php
+        }
+    }
+    else {
+        print '<td></td>';
+        print '<td></td>';
+        if (!empty($conf->multicurrency->enabled)) {
+            $colspan++;
+            print '<td></td>';
+        }
+        if (! empty($inputalsopricewithtax)) print '<td></td>';
+    }
+    ?>
 	<td class="nobottom linecolqty" align="right"><input type="text" size="2" name="qty" id="qty" class="flat right" value="<?php echo (isset($_POST["qty"])?GETPOST("qty",'alpha',2):1); ?>">
 	</td>
 	<?php
@@ -348,9 +390,19 @@ else {
 		print $form->selectUnits($line->fk_unit, "units");
 		print '</td>';
 	}
+
+    if($object->element != 'reception') {
 	?>
-	<td class="nobottom nowrap linecoldiscount" align="right"><input type="text" size="1" name="remise_percent" id="remise_percent" class="flat right" value="<?php echo (isset($_POST["remise_percent"])?GETPOST("remise_percent",'alpha',2):$buyer->remise_percent); ?>"><span class="hideonsmartphone">%</span></td>
+        <td class="nobottom nowrap linecoldiscount" align="right"><input type="text" size="1" name="remise_percent" id="remise_percent" class="flat right" value="<?php echo (isset($_POST["remise_percent"])?GETPOST("remise_percent",'alpha',2):$buyer->remise_percent); ?>"><span class="hideonsmartphone">%</span></td>
 	<?php
+    }
+    else {
+        $formproduct = new FormProduct($object->db);
+        ?>
+        <td class="linecolwarehouse" align="right"><?php echo $formproduct->selectWarehouses('', 'entrepot'); ?></td>
+        <?php
+    }
+
 	if ($this->situation_cycle_ref) {
 		$coldisplay++;
 		print '<td class="nobottom nowrap" align="right"><input class="falt right" type="text" size="1" value="0" name="progress">%</td>';
@@ -445,50 +497,53 @@ if ((! empty($conf->service->enabled) || ($object->element == 'contrat')) && $da
 		if (! empty($conf->global->DISPLAY_MARGIN_RATES)) $colspan++;
 		if (! empty($conf->global->DISPLAY_MARK_RATES))   $colspan++;
 	}
+    if($object->element != 'reception') {
+
 	?>
 
-	<tr id="trlinefordates" <?php echo $bcnd[$var]; ?>>
-	<?php if (! empty($conf->global->MAIN_VIEW_LINE_NUMBER)) { print '<td></td>'; } ?>
-	<td colspan="<?php echo $colspan; ?>">
-	<?php
-	$date_start=dol_mktime(GETPOST('date_starthour'), GETPOST('date_startmin'), 0, GETPOST('date_startmonth'), GETPOST('date_startday'), GETPOST('date_startyear'));
-	$date_end=dol_mktime(GETPOST('date_starthour'), GETPOST('date_startmin'), 0, GETPOST('date_endmonth'), GETPOST('date_endday'), GETPOST('date_endyear'));
-	if (! empty($object->element) && $object->element == 'contrat')
-	{
-		print $langs->trans("DateStartPlanned").' ';
-		$form->select_date($date_start,"date_start",$usehm,$usehm,1,"addproduct");
-		print ' &nbsp; '.$langs->trans("DateEndPlanned").' ';
-		$form->select_date($date_end,"date_end",$usehm,$usehm,1,"addproduct");
-	}
-	else
-	{
-		echo $langs->trans('ServiceLimitedDuration').' '.$langs->trans('From').' ';
-		echo $form->select_date($date_start,'date_start',empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,1,"addproduct",1,0,1);
-		echo ' '.$langs->trans('to').' ';
-		echo $form->select_date($date_end,'date_end',empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,1,"addproduct",1,0,1);
-	};
-	print '<script type="text/javascript">';
-	if (!$date_start) {
-		if (isset($conf->global->MAIN_DEFAULT_DATE_START_HOUR)) {
-			print 'jQuery("#date_starthour").val("'.$conf->global->MAIN_DEFAULT_DATE_START_HOUR.'");';
-		}
-		if (isset($conf->global->MAIN_DEFAULT_DATE_START_MIN)) {
-			print 'jQuery("#date_startmin").val("'.$conf->global->MAIN_DEFAULT_DATE_START_MIN.'");';
-		}
-	}
-	if (!$date_end) {
-		if (isset($conf->global->MAIN_DEFAULT_DATE_END_HOUR)) {
-			print 'jQuery("#date_endhour").val("'.$conf->global->MAIN_DEFAULT_DATE_END_HOUR.'");';
-		}
-		if (isset($conf->global->MAIN_DEFAULT_DATE_END_MIN)) {
-			print 'jQuery("#date_endmin").val("'.$conf->global->MAIN_DEFAULT_DATE_END_MIN.'");';
-		}
-	}
-	print '</script>'
-	?>
-	</td>
-	</tr>
+        <tr id="trlinefordates" <?php echo $bcnd[$var]; ?>>
+        <?php if (! empty($conf->global->MAIN_VIEW_LINE_NUMBER)) { print '<td></td>'; } ?>
+        <td colspan="<?php echo $colspan; ?>">
+        <?php
+        $date_start=dol_mktime(GETPOST('date_starthour'), GETPOST('date_startmin'), 0, GETPOST('date_startmonth'), GETPOST('date_startday'), GETPOST('date_startyear'));
+        $date_end=dol_mktime(GETPOST('date_starthour'), GETPOST('date_startmin'), 0, GETPOST('date_endmonth'), GETPOST('date_endday'), GETPOST('date_endyear'));
+        if (! empty($object->element) && $object->element == 'contrat')
+        {
+            print $langs->trans("DateStartPlanned").' ';
+            $form->select_date($date_start,"date_start",$usehm,$usehm,1,"addproduct");
+            print ' &nbsp; '.$langs->trans("DateEndPlanned").' ';
+            $form->select_date($date_end,"date_end",$usehm,$usehm,1,"addproduct");
+        }
+        else
+        {
+            echo $langs->trans('ServiceLimitedDuration').' '.$langs->trans('From').' ';
+            echo $form->select_date($date_start,'date_start',empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,1,"addproduct",1,0,1);
+            echo ' '.$langs->trans('to').' ';
+            echo $form->select_date($date_end,'date_end',empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,1,"addproduct",1,0,1);
+        };
+        print '<script type="text/javascript">';
+        if (!$date_start) {
+            if (isset($conf->global->MAIN_DEFAULT_DATE_START_HOUR)) {
+                print 'jQuery("#date_starthour").val("'.$conf->global->MAIN_DEFAULT_DATE_START_HOUR.'");';
+            }
+            if (isset($conf->global->MAIN_DEFAULT_DATE_START_MIN)) {
+                print 'jQuery("#date_startmin").val("'.$conf->global->MAIN_DEFAULT_DATE_START_MIN.'");';
+            }
+        }
+        if (!$date_end) {
+            if (isset($conf->global->MAIN_DEFAULT_DATE_END_HOUR)) {
+                print 'jQuery("#date_endhour").val("'.$conf->global->MAIN_DEFAULT_DATE_END_HOUR.'");';
+            }
+            if (isset($conf->global->MAIN_DEFAULT_DATE_END_MIN)) {
+                print 'jQuery("#date_endmin").val("'.$conf->global->MAIN_DEFAULT_DATE_END_MIN.'");';
+            }
+        }
+        print '</script>'
+        ?>
+        </td>
+        </tr>
 <?php
+    }
 }
 ?>
 
