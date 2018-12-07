@@ -789,7 +789,7 @@ else
 print '</a></td>';
 print '</tr>';
 
-/*print '<tr class="oddeven">';
+print '<tr class="oddeven">';
 print '<td width="80%">'.$langs->trans("OnSearchAndListGoOnCustomerOrSupplierCard").'</td>';
 print '<td>&nbsp</td>';
 print '<td align="center">';
@@ -806,9 +806,9 @@ else
 }
 print '</a></td>';
 print '</tr>';
-*/
 
-/*
+
+
 // COMPANY_USE_SEARCH_TO_SELECT
 
 print '<tr class="oddeven">';
@@ -826,7 +826,7 @@ else
 	print '</a></td>';
 }
 print '</tr>';
-*/
+
 
 print '</table>';
 
