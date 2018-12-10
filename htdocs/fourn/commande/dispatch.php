@@ -539,7 +539,7 @@ if ($id > 0 || ! empty($ref)) {
 				$objp = $db->fetch_object($resql);
 
 				// On n'affiche pas les produits libres
-				if (! $objp->fk_product > 0) {
+				if (! $objp->fk_product > 0 && empty($conf->global->RECEPTION_ALLOW_CREATION_FROM_SCRATCH)) {
 					$nbfreeproduct++;
 				} else {
 					$remaintodispatch = price2num($objp->qty - (( float ) $products_dispatched[$objp->rowid]), 5); // Calculation of dispatched
@@ -715,7 +715,7 @@ if ($id > 0 || ! empty($ref)) {
 		print '</div>';
 		print "<br>\n";
 
-		if ($nbproduct)
+		if ($nbproduct || ! empty($conf->global->RECEPTION_ALLOW_CREATION_FROM_SCRATCH))
 		{
             $checkboxlabel=$langs->trans("CloseReceivedSupplierOrdersAutomatically", $langs->transnoentitiesnoconv($object->statuts[5]));
 

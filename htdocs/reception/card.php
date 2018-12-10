@@ -311,7 +311,7 @@ if (empty($reshook))
 
 		
 
-		if ($totalqty > 0)  // There is at least one thing to ship
+		if ($totalqty > 0 || ! empty($conf->global->RECEPTION_ALLOW_CREATION_FROM_SCRATCH))  // There is at least one thing to ship
 		{
 			//var_dump($_POST);exit;
 			for ($i = 1; $i <= $num; $i++)
