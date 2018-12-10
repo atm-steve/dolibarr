@@ -45,10 +45,10 @@ class TExportComptaLd extends TExportCompta {
 		    //DATL 102 109 8 D Date lettrage A blanc, sauf remarque 6
 		    array('name' => 'DATL',	                   'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 		    //CPTA 110 117 8 C Compte auxiliaire Voir remarque 2
-		    array('name' => 'numero_compte',		'length' => 17,	'default' => '',	'type' => 'text'),
+		    array('name' => 'CPTA',		'length' => 17,	'default' => '',	'type' => 'text'),
 		    //array('name' => 'CPTA',                   'length' => 8,	'default' => '',	'type' => 'text'),
 		    //CNAT 118 118 1 C Code nature tiers Voir remarque 2 : C si client,  F si fournisseur,  A si autre.
-		    array('name' => 'CNAT',	                   'length' => 1,	'default' => 'C',	'type' => 'text'),
+		    array('name' => 'CNAT',	                   'length' => 1,	'default' => '',	'type' => 'text'),
 		    //CTRE 119 120 2 C Code trésorerie Voir remarque 9  // facultatif
 		    array('name' => 'CNAT',	                   'length' => 2,	'default' => '',	'type' => 'text'),
 		    //NORL 121 121 1 C N° relance Voir remarque 7
@@ -68,15 +68,15 @@ class TExportComptaLd extends TExportCompta {
 		    //QTUE 174 183 9,3 N Quantité analytique Voir remarque 3
 		    array('name' => 'QTUE',			'length' => 9,	'default' => '',	'type' => 'text'),
 		    //MTDV 184 198 13,2 N Montant en devises Voir remarque 5
-		    array('name' => 'montant',	               'length' => 15,	'default' => '0',	'type' => 'text'),
+		    array('name' => 'MTDV',	               'length' => 15,	'default' => '0.00',	'type' => 'text'),
 		    //CODV 199 201 3 C Code devise ISO Voir remarque 5
-		    array('name' => 'devise',				'length' => 3,	'default' => 'EUR',	'type' => 'text'),
+		    array('name' => 'CODV',				'length' => 3,	'default' => '',	'type' => 'text'),
 		    //TXDV 202 214 11,7 N Taux de la devise Voir remarque 5
-		    array('name' => 'TXDV',				'length' => 10,	'default' => '0',	'type' => 'text'),
+		    array('name' => 'TXDV',				'length' => 10,	'default' => '',	'type' => 'text'),
 		    //MOPM 215 216 2 C Mode de paiement Voir remarque 10
 		    array('name' => 'MOPM',				'length' => 2,	'default' => '',	'type' => 'text'),
 		    //BONP 217 217 1 C Bon à payer Voir remarque 10
-		    array('name' => 'BONP',				'length' => 1,	'default' => 'N',	'type' => 'text'),
+		    array('name' => 'BONP',				'length' => 1,	'default' => 'O',	'type' => 'text'),
 		    //BQAF 218 219 2 C Code banque affectation Voir remarque 10
 		    array('name' => 'BQAF',				'length' => 1,	'default' => '',	'type' => 'text'),
 		    //ECES 220 220 1 C Echéance escomptable Voir remarque 10
@@ -132,9 +132,16 @@ class TExportComptaLd extends TExportCompta {
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
+						'DATH' => 'date échaance facture', // TODO
+						'CPTA'=> $code_compta,
 					'libelle'						=> '"'.$tiers['nom'].'"',
 					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-					'montant'						=> number_format(abs($montant),2,'.',''),
+						'montant'						=> number_format(abs($montant),2,'.',''), /// 00000228.00 // TODO
+						'CNAT'  => 'C si client,  F si fournisseur', // TODO
+						'CNPI' => 'FC ou AC' // TODO,
+						'CNAT' =>'C',
+						'MOPM' => 'Mode de réglement' // TODO
+
 				);
 
 				// Ecriture générale
@@ -154,10 +161,17 @@ class TExportComptaLd extends TExportCompta {
 					'num_ecriture'					=> $numLignes,
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					'numero_compte'					=> $code_compta,
+					//'numero_compte'					=> $code_compta,
+						'DATH' => 'date échaance facture', // TODO
+					'numero_compte'					=> '',
+						'CPTA'						=> '',
 					'libelle'						=> '"'.$tiers['nom'].'"',
 					'sens'							=> $sens,
-					'montant'						=> number_format(abs($montant),2,'.',''),
+						'montant'						=> number_format(abs($montant),2,'.',''),/// 00000228.00// TODO
+						'CNAT'  => 'C si client,  F si fournisseur',// TODO
+						'CNPI' => 'FC ou AC'// TODO
+						'CNAT' =>'',
+						'MOPM' => '',
 				);
 
 				// Ecriture générale
@@ -174,9 +188,14 @@ class TExportComptaLd extends TExportCompta {
 						'date_ecriture'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
+							'DATH' => 'date échaance facture',// TODO
 						'libelle'						=> '"'.$tiers['nom'].'"',
 						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-						'montant'						=> number_format(abs($montant),2,'.',''),
+							'montant'						=> number_format(abs($montant),2,'.',''),/// 00000228.00
+							'CNAT'  => 'C si client,  F si fournisseur',// TODO
+							'CNPI' => 'FC ou AC',// TODO
+							'CNAT' =>'C',// TODO
+							'MOPM' => ''// TODO
 					);
 
 					// Ecriture générale
