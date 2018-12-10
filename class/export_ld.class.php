@@ -50,9 +50,9 @@ class TExportComptaLd extends TExportCompta {
 		    //CNAT 118 118 1 C Code nature tiers Voir remarque 2 : C si client,  F si fournisseur,  A si autre.
 		    array('name' => 'CNAT',	                   'length' => 1,	'default' => '',	'type' => 'text'),
 		    //CTRE 119 120 2 C Code trésorerie Voir remarque 9  // facultatif
-		    array('name' => 'CNAT',	                   'length' => 2,	'default' => '',	'type' => 'text'),
+		    array('name' => 'CTRE',	                   'length' => 2,	'default' => '',	'type' => 'text'),
 		    //NORL 121 121 1 C N° relance Voir remarque 7
-		    array('name' => 'CNAT',	                   'length' => 2,	'default' => '',	'type' => 'text'),
+		    array('name' => 'NORL',	                   'length' => 2,	'default' => '',	'type' => 'text'),
 		    //DATV 122 129 8 D Date valeur
 		    array('name' => 'date_ecriture',		'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'Ymd'),
 		    //REFD 130 139 10 T Référence document Voir remarque 4
@@ -100,7 +100,7 @@ class TExportComptaLd extends TExportCompta {
 		$this->_format_ecritures_comptables_achat[1] = array('name' => 'code_journal','length' => 2,'default' => 'AC',	'type' => 'text');
 
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
-		$this->_format_ecritures_comptables_achat[0] = array('name' => 'code_type_enregistrement','length' => 2,'default' => 'E',	'type' => 'text');
+		$this->_format_ecritures_comptables_banque[0] = array('name' => 'code_type_enregistrement','length' => 2,'default' => 'E',	'type' => 'text');
 		$this->_format_ecritures_comptables_banque[2] = array('name' => 'code_journal','length' => 2,'default' => 'BQ',	'type' => 'text');
 
 		$this->lineSeparator = "\r\n";
@@ -109,7 +109,7 @@ class TExportComptaLd extends TExportCompta {
 	}
 
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
-		global $conf;
+		global $conf, $db;
 
 		if(empty($format)) $format = $this->_format_ecritures_comptables_vente;
 
@@ -119,30 +119,46 @@ class TExportComptaLd extends TExportCompta {
 
 		$numEcriture = 1;
 		$numLignes = 1;
+		
+		dol_include_once('compta/facture/class/facture.class.php');
 
 		foreach ($TabFactures as $id_facture => $infosFacture) {
+		    
+		    $objFacture = new Facture($db);
+		    if($objFacture->fetch($id_facture) > 0){
+		        $objFacture->fetch_thirdparty();
+		    }
+		    else{
+		        $objFacture = false;
+		    }
+		    
+		    
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 			$tiers['nom'] = substr($tiers['nom'], 0, 33); // Bug si nom trop long car coupé et les guillemets ne sont plus présentes
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
-				$ligneFichier = array(
+			    
+			    $ligneFichier = array(
 					'num_ecriture'					=> $numLignes,
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
-						'DATH' => 'date échaance facture', // TODO
-						'CPTA'=> $code_compta,
+			        'DATH'                          => !empty($objFacture->date_lim_reglement)? date('Ymd', $objFacture->date_lim_reglement ) : '',
+					'CPTA'                          => $code_compta,
 					'libelle'						=> '"'.$tiers['nom'].'"',
-					'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
-						'montant'						=> number_format(abs($montant),2,'.',''), /// 00000228.00 // TODO
-						'CNAT'  => 'C si client,  F si fournisseur', // TODO
-						'CNPI' => 'FC ou AC' // TODO,
-						'CNAT' =>'C',
-						'MOPM' => 'Mode de réglement' // TODO
+			        'sens'							=> ($facture['type'] == 2 ? 'C' : 'D'),
+			        'montant'						=> sprintf("%'.011d", number_format(abs($montant),2,'.','') ),
+			        'CNPI'                          => $objFacture->type == Facture::TYPE_CREDIT_NOTE ? 'AC' : 'FC' ,
+					'CNAT'                          => 'C',
+			        'MOPM'                          => !empty($objFacture->mode_reglement_code)? $objFacture->mode_reglement_code : '',
 
 				);
+			    
+			   
+			    
+			    
 
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
@@ -161,17 +177,16 @@ class TExportComptaLd extends TExportCompta {
 					'num_ecriture'					=> $numLignes,
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-					//'numero_compte'					=> $code_compta,
-						'DATH' => 'date échaance facture', // TODO
+				    //'numero_compte'					=> $code_compta,
+				    'DATH'                          => !empty($objFacture->date_lim_reglement)? date('Ymd', $objFacture->date_lim_reglement ) : '',
 					'numero_compte'					=> '',
-						'CPTA'						=> '',
+					'CPTA'						=> '',
 					'libelle'						=> '"'.$tiers['nom'].'"',
-					'sens'							=> $sens,
-						'montant'						=> number_format(abs($montant),2,'.',''),/// 00000228.00// TODO
-						'CNAT'  => 'C si client,  F si fournisseur',// TODO
-						'CNPI' => 'FC ou AC'// TODO
-						'CNAT' =>'',
-						'MOPM' => '',
+				    'sens'							=> $sens,
+				    'montant'						=> sprintf("%'.011d", number_format(abs($montant),2,'.','') ),
+				    'CNPI'                          => $objFacture->type == Facture::TYPE_CREDIT_NOTE ? 'AC' : 'FC' ,
+				    'CNAT'                          => '',
+				    'MOPM'                          => !empty($objFacture->mode_reglement_code)? $objFacture->mode_reglement_code : '',
 				);
 
 				// Ecriture générale
@@ -187,15 +202,14 @@ class TExportComptaLd extends TExportCompta {
 						'num_ecriture'					=> $numLignes,
 						'date_ecriture'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
-						'numero_compte'					=> $code_compta,
-							'DATH' => 'date échaance facture',// TODO
+					    'numero_compte'					=> $code_compta,
+					    'DATH'                          => !empty($objFacture->date_lim_reglement)? date('Ymd', $objFacture->date_lim_reglement ) : '',
 						'libelle'						=> '"'.$tiers['nom'].'"',
-						'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
-							'montant'						=> number_format(abs($montant),2,'.',''),/// 00000228.00
-							'CNAT'  => 'C si client,  F si fournisseur',// TODO
-							'CNPI' => 'FC ou AC',// TODO
-							'CNAT' =>'C',// TODO
-							'MOPM' => ''// TODO
+					    'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
+					    'montant'						=> sprintf("%'.011d", number_format(abs($montant),2,'.','') ),
+					    'CNPI'                          => $objFacture->type == Facture::TYPE_CREDIT_NOTE ? 'AC' : 'FC' ,
+					    'CNAT'                          => '',
+					    'MOPM'                          => !empty($objFacture->mode_reglement_code)? $objFacture->mode_reglement_code : '',
 					);
 
 					// Ecriture générale
