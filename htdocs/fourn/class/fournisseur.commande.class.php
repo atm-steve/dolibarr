@@ -567,7 +567,7 @@ class CommandeFournisseur extends CommonOrder
         $langs->load('orders');
 
         $billedtext='';
-		//if ($statut==5 && $this->billed == 1) $statut = 8;
+        if ($statut==5 && $this->billed == 1){ $billed = 1;}
         if ($billed == 1) $billedtext=$langs->trans("Billed");
 
         // List of language codes for status
@@ -622,7 +622,10 @@ class CommandeFournisseur extends CommonOrder
             if ($statut==2) return '<span class="hideonsmartphone">'.$langs->trans($statutshort[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),'statut3');
             if ($statut==3) return '<span class="hideonsmartphone">'.$langs->trans($statutshort[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),'statut3');
             if ($statut==4) return '<span class="hideonsmartphone">'.$langs->trans($statutshort[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),'statut3');
-            if ($statut==5) return '<span class="hideonsmartphone">'.$langs->trans($statutshort[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),'statut6');
+            if ($statut==5){
+                //if ($statut==5 && $billedtext){ $statutshort[$statut] = 'StatusOrderProcessedShort'; }
+                return '<span class="hideonsmartphone">'.$langs->trans($statutshort[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),'statut6');
+            }
             if ($statut==6 || $statut==7) return '<span class="hideonsmartphone">'.$langs->trans($statutshort[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),'statut5');
             if ($statut==9) return '<span class="hideonsmartphone">'.$langs->trans($statutshort[$statut]).' </span>'.img_picto($langs->trans($this->statuts[$statut]),'statut5');
         }
