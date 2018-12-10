@@ -740,7 +740,7 @@ if ($id > 0 || ! empty($ref)) {
 		}
 
 		// Message if nothing to dispatch
-		if (! $nbproduct) {
+		if (! $nbproduct && empty($conf->global->RECEPTION_ALLOW_CREATION_FROM_SCRATCH)) {
 			if (empty($conf->global->SUPPLIER_ORDER_DISABLE_STOCK_DISPATCH_WHEN_TOTAL_REACHED))
 				print '<div class="opacitymedium">'.$langs->trans("NoPredefinedProductToDispatch").'</div>';		// No predefined line at all
 			else
