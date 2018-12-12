@@ -119,11 +119,11 @@ class TExportComptaLd extends TExportCompta {
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		dol_include_once('compta/facture/class/facture.class.php');
 
 		foreach ($TabFactures as $id_facture => $infosFacture) {
-		    
+
 		    $objFacture = new Facture($db);
 		    if($objFacture->fetch($id_facture) > 0){
 		        $objFacture->fetch_thirdparty();
@@ -131,20 +131,21 @@ class TExportComptaLd extends TExportCompta {
 		    else{
 		        $objFacture = false;
 		    }
-		    
-		    
+
+
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 			$tiers['nom'] = substr($tiers['nom'], 0, 33); // Bug si nom trop long car coupé et les guillemets ne sont plus présentes
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
-			    
+
 			    $ligneFichier = array(
 					'num_ecriture'					=> $numLignes,
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
+			    		'CPTG'						=> $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT,
 			        'DATH'                          => !empty($objFacture->date_lim_reglement)? date('Ymd', $objFacture->date_lim_reglement ) : '',
 					'CPTA'                          => $code_compta,
 					'libelle'						=> '"'.$tiers['nom'].'"',
@@ -155,10 +156,10 @@ class TExportComptaLd extends TExportCompta {
 			        'MOPM'                          => !empty($objFacture->mode_reglement_code)? $objFacture->mode_reglement_code : '',
 
 				);
-			    
-			   
-			    
-			    
+
+
+
+
 
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
@@ -177,9 +178,9 @@ class TExportComptaLd extends TExportCompta {
 					'num_ecriture'					=> $numLignes,
 					'date_ecriture'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
-				    //'numero_compte'					=> $code_compta,
+				    'numero_compte'					=> '',
 				    'DATH'                          => !empty($objFacture->date_lim_reglement)? date('Ymd', $objFacture->date_lim_reglement ) : '',
-					'numero_compte'					=> '',
+						'CPTG'					=> $code_compta,
 					'CPTA'						=> '',
 					'libelle'						=> '"'.$tiers['nom'].'"',
 				    'sens'							=> $sens,
@@ -202,7 +203,7 @@ class TExportComptaLd extends TExportCompta {
 						'num_ecriture'					=> $numLignes,
 						'date_ecriture'					=> $facture['date'],
 						'numero_piece'					=> $facture['ref'],
-					    'numero_compte'					=> $code_compta,
+							'CPTG'					=> $code_compta,
 					    'DATH'                          => !empty($objFacture->date_lim_reglement)? date('Ymd', $objFacture->date_lim_reglement ) : '',
 						'libelle'						=> '"'.$tiers['nom'].'"',
 					    'sens'							=> ($facture['type'] == 2 ? 'D' : 'C'),
