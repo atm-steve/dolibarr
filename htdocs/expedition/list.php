@@ -220,6 +220,7 @@ if ($search_state) $sql.= natural_search("state.nom",$search_state);
 if ($search_country) $sql .= " AND s.fk_pays IN (".$search_country.')';
 if ($search_type_thirdparty) $sql .= " AND s.fk_typent IN (".$search_type_thirdparty.')';
 if ($search_ref_exp) $sql .= natural_search('e.ref', $search_ref_exp);
+if ($search_ref_customer) $sql .= natural_search('e.ref_customer', $search_ref_customer);
 if ($search_ref_liv) $sql .= natural_search('l.ref', $search_ref_liv);
 if ($search_company) $sql .= natural_search('s.nom', $search_company);
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
@@ -267,6 +268,8 @@ if ($resql)
 	if ($sall) $param.= "&amp;sall=".$sall;
 	if ($search_ref_exp) $param.= "&amp;search_ref_exp=".$search_ref_exp;
 	if ($search_ref_liv) $param.= "&amp;search_ref_liv=".$search_ref_liv;
+	if ($search_ref_customer) $param.= "&amp;search_ref_customer=".$search_ref_customer;
+	
 	if ($search_company) $param.= "&amp;search_company=".$search_company;
 	if ($optioncss != '') $param.='&amp;optioncss='.$optioncss;
 	if ($search_town)$param .= '&search_town='.urlencode($search_town);
