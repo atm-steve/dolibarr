@@ -2573,6 +2573,8 @@ class SupplierInvoiceLine extends CommonObjectLine
 				$error++;
 			}
 		}
+		
+		$this->deleteObjectLinked();
 
 		if (!$error) {
 			// Supprime ligne

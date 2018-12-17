@@ -30,15 +30,21 @@
  */
 function addDispatchLine(index, type, mode) 
 {
-	mode = mode || 'qtymissing'
-	
+	mode = mode || 'qtymissing';
+
 	console.log("Split line type="+type+" index="+index+" mode="+mode);
+
+	let select = $("tr[name='"+type+'_0_'+index+"']").find('select');
+	select.select2('destroy');   // This avoid some bugs when cloning row
+
 	var $row = $("tr[name='"+type+'_0_'+index+"']").clone(true), // clone first batch line to jQuery object
 		nbrTrs = $("tr[name^='"+type+"_'][name$='_"+index+"']").length, // position of line for batch
 		qtyOrdered = parseFloat($("#qty_ordered_0_"+index).val()), // Qty ordered is same for all rows
 		qty = parseFloat($("#qty_"+(nbrTrs - 1)+"_"+index).val()),
 		qtyDispatched;
-			
+
+	select.select2();   // We re-build it when the row cloned
+
 	if (mode === 'lessone') 
 	{
 		qtyDispatched = parseFloat($("#qty_dispatched_0_"+index).val()) + 1;
