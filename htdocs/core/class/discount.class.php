@@ -148,6 +148,9 @@ class DiscountAbsolute
         $this->amount_tva=price2num($this->amount_tva);
         $this->amount_ttc=price2num($this->amount_ttc);
         $this->tva_tx=price2num($this->tva_tx);
+        $this->multicurrency_amount_ht=price2num($this->multicurrency_amount_ht);
+        $this->multicurrency_amount_tva=price2num($this->multicurrency_amount_tva);
+        $this->multicurrency_amount_ttc=price2num($this->multicurrency_amount_ttc);
 
         // Check parameters
         if (empty($this->description))
