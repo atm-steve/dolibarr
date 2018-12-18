@@ -3805,6 +3805,11 @@ function price($amount, $form=0, $outlangs='', $trunc=1, $rounding=-1, $forcerou
 	// If force rounding
 	if ($forcerounding >= 0) $nbdecimal = $forcerounding;
 
+	if(strlen($decpart) < $nbdecimal) {
+		$nbdecimal = strlen($decpart);
+		if($nbdecimal < 2) $nbdecimal = 2;  // We put at least 2 decimals
+	}
+
 	// Format number
 	$output=number_format($amount, $nbdecimal, $dec, $thousand);
 	if ($form)
