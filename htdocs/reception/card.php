@@ -712,7 +712,8 @@ if (empty($reshook))
 //        var_dump($_REQUEST);exit;
         $qty = GETPOST('qty', 'int');
         $entrepot = GETPOST('entrepot');
-        $fk_product = empty(GETPOST('idprod', 'int')) ? 0 : GETPOST('idprod', 'int');
+	$id_prod = GETPOST('idprod', 'int');
+        $fk_product = empty($id_prod) ? 0 : $id_prod;
         $desc = GETPOST('dp_desc');
 
 		$object->addline($entrepot, 0, $qty, 0, '', '', '', '', $fk_product);

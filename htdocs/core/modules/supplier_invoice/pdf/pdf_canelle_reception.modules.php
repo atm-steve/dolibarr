@@ -1271,6 +1271,7 @@ class pdf_canelle_reception extends ModelePDFSuppliersInvoices
 
 		if ($object->type != 2)
 		{
+			$display_rib = $object->thirdparty->display_rib();
 			// Check a payment mode is defined
 			if (empty($object->mode_reglement_code)
 			&& empty($conf->global->FACTURE_CHQ_NUMBER)
@@ -1279,8 +1280,8 @@ class pdf_canelle_reception extends ModelePDFSuppliersInvoices
 				$this->error = $outputlangs->transnoentities("ErrorNoPaiementModeConfigured");
 			}
 			// Avoid having any valid PDF with setup that is not complete
-			elseif (($object->mode_reglement_code == 'CHQ' && empty($conf->global->FACTURE_CHQ_NUMBER) && empty($object->thirdparty->display_rib()))
-				|| ($object->mode_reglement_code == 'VIR' && empty($conf->global->FACTURE_RIB_NUMBER) && empty($object->thirdparty->display_rib())))
+			elseif (($object->mode_reglement_code == 'CHQ' && empty($conf->global->FACTURE_CHQ_NUMBER) && empty($display_rib))
+				|| ($object->mode_reglement_code == 'VIR' && empty($conf->global->FACTURE_RIB_NUMBER) && empty($display_rib)))
 			{
 				$outputlangs->load("errors");
 
@@ -1359,7 +1360,8 @@ class pdf_canelle_reception extends ModelePDFSuppliersInvoices
 			// If payment mode not forced or forced to VIR, show payment with BAN
 			if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')
 			{
-				if (! empty($object->thirdparty->display_rib()) )
+				$display_rib = $object->thirdparty->display_rib();
+				if (! empty($display_rib) )
 				{
 					$bankid=(empty($object->fk_account)?$conf->global->FACTURE_RIB_NUMBER:$object->fk_account);
 					if (! empty($object->fk_bank)) $bankid=$object->fk_bank;   // For backward compatibility when object->fk_account is forced with object->fk_bank
