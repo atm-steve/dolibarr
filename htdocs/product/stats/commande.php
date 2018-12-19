@@ -126,7 +126,7 @@ if ($id > 0 || ! empty($ref))
 
 		if ($user->rights->commande->lire)
 		{
-			$sql = "SELECT DISTINCT s.nom as name, s.rowid as socid, s.code_client, c.rowid, d.total_ht as total_ht, c.ref,";
+			$sql = "SELECT DISTINCT s.nom as name, s.rowid as socid, s.code_client, d.total_ht as total_ht, c.ref,";
 			$sql.= " c.ref_client,";
 			$sql.= " c.date_commande, c.fk_statut as statut, c.facture, c.rowid as commandeid, d.rowid, d.qty, cde.date_de_livraison";
 			if (!$user->rights->societe->client->voir && !$socid) $sql.= ", sc.fk_soc, sc.fk_user ";
@@ -237,7 +237,11 @@ if ($id > 0 || ! empty($ref))
 						print '<td align="center">';
 						print dol_print_date($db->jdate($objp->date_de_livraison), 'dayhour')."</td>";
 	                    print '<td align="right">'.price($objp->total_ht)."</td>\n";
-						print '<td align="right">'.$orderstatic->LibStatut($objp->statut,$objp->facture,5).'</td>';
+	                    
+	                    $status = getExpLinesStatus($objp); // récupère les ligne d'expé liées 
+// 	                    $status = $orderstatic->LibStatut($objp->statut,$objp->facture,5);
+	                    
+						print '<td align="right">'.$status.'</td>';
 						print "</tr>\n";
 						$i++;
 					}
@@ -261,6 +265,56 @@ if ($id > 0 || ! empty($ref))
 	}
 } else {
 	dol_print_error();
+}
+
+function getExpLinesStatus($objsql)
+{
+    global $db, $langs;
+    
+    $status = 'A livrer'.' '.img_picto("Aucune ligne d'expédition de ce produit pour cette commande",'statut0');
+    $total_qty_livree = 0;
+    $enCoursPrepa = false;
+    $enCoursLiv = false;
+    $livtotale = false;
+    
+    $sql = "SELECT expdet.rowid as expline, expdet.qty, exp.fk_statut as exp_status";
+    $sql.= " FROM ".MAIN_DB_PREFIX."commande as c LEFT JOIN ".MAIN_DB_PREFIX."commandedet as cd ON cd.fk_commande = c.rowid";
+    $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."element_element AS el ON el.fk_source = c.rowid AND el.sourcetype = 'commande'";
+    $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."expedition AS exp ON exp.rowid = el.fk_target AND el.targettype = 'shipping'";
+    $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."expeditiondet AS expdet ON expdet.fk_expedition = exp.rowid AND expdet.fk_origin_line = cd.rowid";
+    $sql.= " WHERE c.rowid = ".$objsql->commandeid;
+    $sql.= " AND cd.rowid = ".$objsql->rowid;
+    
+    $result = $db->query($sql);
+    if ($result)
+    {
+        $num = $db->num_rows($result);
+        
+        if ($num)
+        {
+            while ($obj = $db->fetch_object($result))
+            {
+                if ($obj->exp_status !== null && $obj->exp_status !== '2') $enCoursPrepa = true;
+                elseif ($obj->exp_status !== null && $obj->exp_status == '2') $enCoursLiv = true;
+                
+                $total_qty_livree+=floatval($obj->qty);
+            }
+            
+            if ($total_qty_livree == floatval($objsql->qty)) $livtotale = true;
+        }
+        
+    } else {
+        dol_print_error($db);
+    }
+    
+    if ($enCoursPrepa) $status = $langs->trans("StatusOrderSentShort")." de préparation".' '.img_picto("Expédition en cours de préparation",'statut1'); // si une ligne de ce produit est dans une expédition non-cloturée
+    
+    elseif($enCoursLiv) $status = $langs->trans("StatusOrderSentShort")." de livraison".' '.img_picto("Expédition en cours de livraison",'statut3'); // si ce n'est pas le cas mais que la ligne est dans une ou des exp cloturée(s)
+    
+    if ($enCoursLiv && $livtotale) $status = $langs->trans('StatusOrderDeliveredShort').' '.img_picto("Quantité livrée en intégralité",'statut4'); // exp cloturée + qty totalement livrée
+    
+    
+    return $status;
 }
 
 llxFooter();
