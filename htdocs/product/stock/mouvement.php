@@ -65,6 +65,7 @@ $search_inventorycode = trim(GETPOST("search_inventorycode"));
 $search_user = trim(GETPOST("search_user"));
 $search_batch = trim(GETPOST("search_batch"));
 $search_qty = trim(GETPOST("search_qty"));
+$search_price = trim(GETPOST("search_price"));
 
 $limit = GETPOST('limit')?GETPOST('limit','int'):$conf->liste_limit;
 $page = GETPOST("page",'int');
@@ -102,6 +103,7 @@ $arrayfields=array(
     'm.label'=>array('label'=>$langs->trans("LabelMovement"), 'checked'=>1),
     'origin'=>array('label'=>$langs->trans("Origin"), 'checked'=>1),
     'm.value'=>array('label'=>$langs->trans("Qty"), 'checked'=>1),
+    'm.price'=>array('label'=>$langs->trans("Price"), 'checked'=>1),
 	//'m.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
     //'m.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500)
 );
@@ -135,6 +137,7 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
     $search_user="";
     $search_batch="";
     $search_qty='';
+    $search_price='';
     $sall="";
 	$toselect='';
     $search_array_options=array();
@@ -417,7 +420,7 @@ if (!empty($conf->projet->enabled)) $formproject=new FormProjets($db);
 $sql = "SELECT p.rowid, p.ref as product_ref, p.label as produit, p.fk_product_type as type, p.entity,";
 $sql.= " e.ref as stock, e.rowid as entrepot_id, e.lieu,";
 $sql.= " m.rowid as mid, m.value as qty, m.datem, m.fk_user_author, m.label, m.inventorycode, m.fk_origin, m.origintype,";
-$sql.= " m.batch,";
+$sql.= " m.batch, m.price,";
 $sql.= " pl.rowid as lotid, pl.eatby, pl.sellby,";
 $sql.= " u.login, u.photo, u.lastname, u.firstname";
 // Add fields from extrafields
@@ -459,6 +462,7 @@ if ($search_warehouse > 0)          $sql.= " AND e.rowid = '".$db->escape($searc
 if (! empty($search_user))          $sql.= natural_search('u.login', $search_user);
 if (! empty($search_batch))         $sql.= natural_search('m.batch', $search_batch);
 if ($search_qty != '')				$sql.= natural_search('m.value', $search_qty, 1);
+if ($search_price != '')				$sql.= natural_search('m.price', $search_price, 1);
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 // Add where from hooks
@@ -810,6 +814,13 @@ if ($resql)
 	    print '<input class="flat" type="text" size="4" name="search_qty" value="'.dol_escape_htmltag($search_qty).'">';
 	    print '</td>';
     }
+    if (! empty($arrayfields['m.price']['checked']))
+    {
+        // Price
+        print '<td class="liste_titre" align="right">';
+        print '<input class="flat" type="text" size="4" name="search_price" value="'.dol_escape_htmltag($search_price).'">';
+        print '</td>';
+    }
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
 	// Fields from hook
@@ -849,6 +860,7 @@ if ($resql)
     if (! empty($arrayfields['m.label']['checked']))            print_liste_field_titre($arrayfields['m.label']['label'],$_SERVER["PHP_SELF"], "m.label","",$param,"",$sortfield,$sortorder);
     if (! empty($arrayfields['origin']['checked']))             print_liste_field_titre($arrayfields['origin']['label'],$_SERVER["PHP_SELF"], "","",$param,"",$sortfield,$sortorder);
     if (! empty($arrayfields['m.value']['checked']))            print_liste_field_titre($arrayfields['m.value']['label'],$_SERVER["PHP_SELF"], "m.value","",$param,'align="right"',$sortfield,$sortorder);
+    if (! empty($arrayfields['m.price']['checked']))            print_liste_field_titre($arrayfields['m.price']['label'],$_SERVER["PHP_SELF"], "m.price","",$param,'align="right"',$sortfield,$sortorder);
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
 	// Hook fields
@@ -891,6 +903,7 @@ if ($resql)
         $arrayofuniqueproduct[$objp->rowid]=$objp->produit;
 		if(!empty($objp->fk_origin)) {
 			$origin = $movement->get_origin($objp->fk_origin, $objp->origintype);
+			
 		} else {
 			$origin = '';
 		}
@@ -975,6 +988,13 @@ if ($resql)
 	        if ($objp->qt > 0) print '+';
 	        print $objp->qty;
 	        print '</td>';
+        }
+        if (! empty($arrayfields['m.price']['checked']))
+        {
+            // Price
+            print '<td align="right">';
+            print price($objp->price);
+            print '</td>';
         }
         // Action column
         print '<td class="nowrap" align="center">';
