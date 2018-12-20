@@ -1289,8 +1289,9 @@ class CommandeFournisseur extends CommonOrder
 		$this->db->begin();
 
 		// Load source object
+		unset($this->linkedObjects);
+		unset($this->linkedObjectsIds);
 		$objFrom = clone $this;
-
         $this->id=0;
         $this->statut=0;
 
