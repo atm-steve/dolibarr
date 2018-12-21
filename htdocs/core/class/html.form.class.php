@@ -17,6 +17,7 @@
  * Copyright (C) 2012-2015  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2014       Alexandre Spangaro      <aspangaro.dolibarr@gmail.com>
  * Copyright (C) 2018       Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2018       Nicolas ZABOURI	        <info@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3393,7 +3394,7 @@ class Form
 			    {
 			        $unitLabel = $langs->trans('unit'.$res->code)!=$res->label?$langs->trans('unit'.$res->code):$res->label;
 			    }
-			    
+
 				if ($selected == $res->rowid)
 				{
 				    $return.='<option value="'.$res->rowid.'" selected>'.$unitLabel.'</option>';
@@ -6531,6 +6532,7 @@ class Form
 		}
 		else if ($object->element == 'member')
 		{
+			$ret.=$object->ref.'<br>';
 			$fullname=$object->getFullName($langs);
 			if ($object->morphy == 'mor' && $object->societe) {
 				$ret.= dol_htmlentities($object->societe) . ((! empty($fullname) && $object->societe != $fullname)?' ('.dol_htmlentities($fullname).')':'');
