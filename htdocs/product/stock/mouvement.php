@@ -65,7 +65,8 @@ $search_inventorycode = trim(GETPOST("search_inventorycode"));
 $search_user = trim(GETPOST("search_user"));
 $search_batch = trim(GETPOST("search_batch"));
 $search_qty = trim(GETPOST("search_qty"));
-$search_price = trim(GETPOST("search_price"));
+$search_price = trim(GETPOST("search_price", 'int'));
+$search_thirdparty = trim(GETPOST("search_thirdparty"));
 
 $limit = GETPOST('limit')?GETPOST('limit','int'):$conf->liste_limit;
 $page = GETPOST("page",'int');
@@ -104,6 +105,7 @@ $arrayfields=array(
     'origin'=>array('label'=>$langs->trans("Origin"), 'checked'=>1),
     'm.value'=>array('label'=>$langs->trans("Qty"), 'checked'=>1),
     'm.price'=>array('label'=>$langs->trans("Price"), 'checked'=>1),
+    'thirdparty'=>array('label'=>$langs->trans("Company"), 'checked'=>1),
 	//'m.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
     //'m.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500)
 );
@@ -138,6 +140,7 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
     $search_batch="";
     $search_qty='';
     $search_price='';
+    $search_thirdparty='';
     $sall="";
 	$toselect='';
     $search_array_options=array();
@@ -416,11 +419,28 @@ $form=new Form($db);
 $formother=new FormOther($db);
 $formproduct=new FormProduct($db);
 if (!empty($conf->projet->enabled)) $formproject=new FormProjets($db);
-
-$sql = "SELECT p.rowid, p.ref as product_ref, p.label as produit, p.fk_product_type as type, p.entity,";
+$sql = "SELECT * FROM (";
+$sql.= "SELECT p.rowid, p.ref as product_ref, p.label as produit, p.fk_product_type as type, p.entity,";
 $sql.= " e.ref as stock, e.rowid as entrepot_id, e.lieu,";
 $sql.= " m.rowid as mid, m.value as qty, m.datem, m.fk_user_author, m.label, m.inventorycode, m.fk_origin, m.origintype,";
 $sql.= " m.batch, m.price,";
+$sql.= "(
+        IF(
+            m.fk_origin <> 0,
+            (
+        SELECT CASE
+            WHEN m.origintype = 'commande' THEN (SELECT fk_soc FROM llx_commande WHERE rowid = m.fk_origin)
+            WHEN m.origintype = 'shipping' THEN (SELECT fk_soc FROM llx_expedition WHERE rowid = m.fk_origin)
+            WHEN m.origintype = 'facture' THEN (SELECT fk_soc FROM llx_facture WHERE rowid = m.fk_origin)
+            WHEN m.origintype = 'order_supplier' THEN (SELECT fk_soc FROM llx_commande_fournisseur WHERE rowid = m.fk_origin)
+            WHEN m.origintype = 'invoice_supplier' THEN (SELECT fk_soc FROM llx_facture_fourn WHERE rowid = m.fk_origin)
+            WHEN m.origintype = 'project' THEN (SELECT fk_soc FROM llx_projet WHERE rowid = m.fk_origin)
+        	ELSE ''        
+        END
+        ),
+        ''
+        ) 
+    ) as fk_soc_soc,";
 $sql.= " pl.rowid as lotid, pl.eatby, pl.sellby,";
 $sql.= " u.login, u.photo, u.lastname, u.firstname";
 // Add fields from extrafields
@@ -462,7 +482,7 @@ if ($search_warehouse > 0)          $sql.= " AND e.rowid = '".$db->escape($searc
 if (! empty($search_user))          $sql.= natural_search('u.login', $search_user);
 if (! empty($search_batch))         $sql.= natural_search('m.batch', $search_batch);
 if ($search_qty != '')				$sql.= natural_search('m.value', $search_qty, 1);
-if ($search_price != '')				$sql.= natural_search('m.price', $search_price, 1);
+if ($search_price != '')			$sql.= natural_search('m.price', $search_price, 1);
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 // Add where from hooks
@@ -471,6 +491,7 @@ $reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // No
 $sql.=$hookmanager->resPrint;
 $sql.= $db->order($sortfield,$sortorder);
 
+    
 $nbtotalofrecords = '';
 if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 {
@@ -479,7 +500,9 @@ if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 }
 
 $sql.= $db->plimit($limit+1, $offset);
-
+$sql.= " ) as result";
+$sql.= " WHERE 1=1";
+if ($search_thirdparty != '')	$sql.= natural_search('fk_soc_soc', $search_thirdparty, 1);
 //print $sql;
 
 $resql = $db->query($sql);
@@ -669,6 +692,9 @@ if ($resql)
     if (!empty($snom))           $param.='&snom='.urlencode($snom); // FIXME $snom is not defined
     if ($search_user)            $param.='&search_user='.urlencode($search_user);
     if ($idproduct > 0)          $param.='&idproduct='.$idproduct;
+    if ($search_price !== '')    $param.='&search_price='.$search_price;
+    if ($search_thirdparty > 0)  $param.='&search_thirdparty='.$search_thirdparty;
+    
     // Add $param from extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
@@ -821,6 +847,14 @@ if ($resql)
         print '<input class="flat" type="text" size="4" name="search_price" value="'.dol_escape_htmltag($search_price).'">';
         print '</td>';
     }
+    if (! empty($arrayfields['thirdparty']['checked']))
+    {
+        // Tiers
+        print '<td class="liste_titre" align="right">';
+        //print '<input class="flat" type="text" size="4" name="search_thirdparty" value="'.dol_escape_htmltag($search_thirdparty).'">';
+        print $form->select_company($search_thirdparty, 'search_thirdparty');
+        print '</td>';
+    }
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
 	// Fields from hook
@@ -861,6 +895,7 @@ if ($resql)
     if (! empty($arrayfields['origin']['checked']))             print_liste_field_titre($arrayfields['origin']['label'],$_SERVER["PHP_SELF"], "","",$param,"",$sortfield,$sortorder);
     if (! empty($arrayfields['m.value']['checked']))            print_liste_field_titre($arrayfields['m.value']['label'],$_SERVER["PHP_SELF"], "m.value","",$param,'align="right"',$sortfield,$sortorder);
     if (! empty($arrayfields['m.price']['checked']))            print_liste_field_titre($arrayfields['m.price']['label'],$_SERVER["PHP_SELF"], "m.price","",$param,'align="right"',$sortfield,$sortorder);
+    if (! empty($arrayfields['thirdparty']['checked']))         print_liste_field_titre($arrayfields['thirdparty']['label'],$_SERVER["PHP_SELF"], "fk_soc_soc","",$param,'align="right"',$sortfield,$sortorder);
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
 	// Hook fields
@@ -994,6 +1029,21 @@ if ($resql)
             // Price
             print '<td align="right">';
             print price($objp->price);
+            print '</td>';
+        }
+        if (! empty($arrayfields['thirdparty']['checked']))
+        {
+            // Thirdparty
+            print '<td align="right">';
+            if (!empty($objp->fk_soc_soc)) 
+            {
+                //print $objp->fk_soc_soc;
+                $companyStatic = new Societe($db);
+                $companyStatic->fetch($objp->fk_soc_soc);
+                
+                print $companyStatic->getNomUrl(1);
+            }
+            
             print '</td>';
         }
         // Action column
