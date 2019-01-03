@@ -12,7 +12,7 @@
  * Copyright (C) 2014		Henry Florian			<florian.henry@open-concept.pro>
  * Copyright (C) 2014-2016	Philippe Grand			<philippe.grand@atoo-net.com>
  * Copyright (C) 2014		Ion agorria			    <ion@agorria.com>
- * Copyright (C) 2016-2017	Ferran Marcet			<fmarcet@2byte.es>
+ * Copyright (C) 2016-2018	Ferran Marcet			<fmarcet@2byte.es>
  * Copyright (C) 2017		Gustavo Novaro
  *
  * This program is free software; you can redistribute it and/or modify
@@ -745,12 +745,12 @@ class Product extends CommonObject
 		if (empty($this->surface) && !empty($this->length) && !empty($this->width) && $this->length_units == $this->width_units)
 		{
 			$this->surface = $this->length * $this->width;
-			$this->surface_units = $this->length_units + $this->width_units;
+			$this->surface_units = measuring_units_squared($this->length_units);
 		}
 		if (empty($this->volume) && !empty($this->surface_units) && !empty($this->height) && $this->length_units == $this->height_units)
 		{
 			$this->volume =  $this->surface * $this->height;
-			$this->volume_units = $this->surface_units + $this->height_units;
+			$this->volume_units = measuring_units_cubed($this->height_units);
 		}
 
 		$this->surface = price2num($this->surface);
@@ -1111,6 +1111,19 @@ class Product extends CommonObject
 				if (!$error && ($prodcomb->fetchByFkProductChild($id) > 0) && ($prodcomb->delete() < 0)) {
 					$error++;
 					$this->errors[] = 'Error deleting child combination';
+				}
+			}
+
+			// Delete from product_association
+			if (!$error){
+				$sql = "DELETE FROM ".MAIN_DB_PREFIX."product_association";
+				$sql.= " WHERE fk_product_pere = ".$id." OR fk_product_fils = ".$id;
+				dol_syslog(get_class($this).'::delete', LOG_DEBUG);
+				$result = $this->db->query($sql);
+				if (! $result)
+				{
+					$error++;
+					$this->errors[] = $this->db->lasterror();
 				}
 			}
 
@@ -4455,8 +4468,6 @@ class Product extends CommonObject
 		}
 
 		$langs->load('products');
-
-		$this->db->begin();
 
 		$label_type = 'label';
 

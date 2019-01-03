@@ -19,7 +19,7 @@ use Term::ANSIColor;
 # Change this to defined target for option 98 and 99
 $PROJECT="dolibarr";
 $PUBLISHSTABLE="eldy,dolibarr\@frs.sourceforge.net:/home/frs/project/dolibarr";
-$PUBLISHBETARC="ldestailleur\@vmprod.dolibarr.org:/home/dolibarr/dolibarr.org/httpdocs/files";
+$PUBLISHBETARC="dolibarr\@vmprod1.dolibarr.org:/home/dolibarr/dolibarr.org/httpdocs/files";
 
 
 #@LISTETARGET=("TGZ","ZIP","RPM_GENERIC","RPM_FEDORA","RPM_MANDRIVA","RPM_OPENSUSE","DEB","APS","EXEDOLIWAMP","SNAPSHOT");   # Possible packages
@@ -466,10 +466,12 @@ if ($nboftargetok) {
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr_*.deb`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr_*.dsc`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr_*.tar.gz`;
+		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr_*.tar.xz`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.deb`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.rpm`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.tar`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.tar.gz`;
+		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.tar.xz`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.tgz`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.xz`;
 		$ret=`rm -f  $BUILDROOT/$PROJECT/build/dolibarr-*.zip`;
@@ -849,6 +851,8 @@ if ($nboftargetok) {
 			unlink("$NEWDESTI/${FILENAMEDEB}.changes");
 			print "Remove target ${FILENAMEDEB}.debian.tar.gz...\n";
 			unlink("$NEWDESTI/${FILENAMEDEB}.debian.tar.gz");
+			print "Remove target ${FILENAMEDEB}.debian.tar.xz...\n";
+			unlink("$NEWDESTI/${FILENAMEDEB}.debian.tar.xz");
 			print "Remove target ${FILENAMEDEBNATIVE}.orig.tar.gz...\n";
 			unlink("$NEWDESTI/${FILENAMEDEBNATIVE}.orig.tar.gz");
 
@@ -1024,7 +1028,7 @@ if ($nboftargetok) {
 			$ret=`mv $BUILDROOT/*_all.deb "$NEWDESTI/"`;
 			$ret=`mv $BUILDROOT/*.dsc "$NEWDESTI/"`;
 			$ret=`mv $BUILDROOT/*.orig.tar.gz "$NEWDESTI/"`;
-			$ret=`mv $BUILDROOT/*.debian.tar.gz "$NEWDESTI/"`;
+			$ret=`mv $BUILDROOT/*.debian.tar.xz "$NEWDESTI/"`;
 			$ret=`mv $BUILDROOT/*.changes "$NEWDESTI/"`;
 			next;
 		}
@@ -1168,7 +1172,7 @@ if ($nboftargetok) {
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}_all.deb"=>'Dolibarr installer for Debian-Ubuntu (DoliDeb)',
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}_amd64.changes"=>'none',		# none means it won't be published on SF
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}.dsc"=>'none',					# none means it won't be published on SF
-			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}.debian.tar.gz"=>'none',		# none means it won't be published on SF
+			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}.debian.tar.xz"=>'none',		# none means it won't be published on SF
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEBSHORT}.orig.tar.gz"=>'none',		# none means it won't be published on SF
 			"$DESTI/package_windows/$FILENAMEEXEDOLIWAMP.exe"=>'Dolibarr installer for Windows (DoliWamp)',
 			"$DESTI/standard/$FILENAMETGZ.tgz"=>'Dolibarr ERP-CRM',
@@ -1181,8 +1185,7 @@ if ($nboftargetok) {
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}_all.deb"=>'package_debian-ubuntu',
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}_amd64.changes"=>'package_debian-ubuntu',
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}.dsc"=>'package_debian-ubuntu',
-			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}.debian.tar.gz"=>'package_debian-ubuntu',
-			"$DESTI/package_debian-ubuntu/${FILENAMEDEBSHORT}.orig.tar.gz"=>'package_debian-ubuntu',
+			"$DESTI/package_debian-ubuntu/${FILENAMEDEB}.debian.tar.xz"=>'package_debian-ubuntu',
 			"$DESTI/package_debian-ubuntu/${FILENAMEDEBSHORT}.orig.tar.gz"=>'package_debian-ubuntu',
 			"$DESTI/package_windows/$FILENAMEEXEDOLIWAMP.exe"=>'package_windows',
 			"$DESTI/standard/$FILENAMETGZ.tgz"=>'standard',

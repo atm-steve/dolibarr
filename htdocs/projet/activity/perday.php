@@ -49,7 +49,8 @@ $projectid=isset($_GET["id"])?$_GET["id"]:$_POST["projectid"];
 
 // Security check
 $socid=0;
-if ($user->societe_id > 0) $socid=$user->societe_id;
+// For external user, no check is done on company because readability is managed by public status of project and assignement.
+//if ($user->societe_id > 0) $socid=$user->societe_id;
 $result = restrictedArea($user, 'projet', $projectid);
 
 $now=dol_now();
@@ -398,7 +399,7 @@ print '<div class="float valignmiddle">';
 $titleassigntask = $langs->trans("AssignTaskToMe");
 if ($usertoprocess->id != $user->id) $titleassigntask = $langs->trans("AssignTaskToUser", $usertoprocess->getFullName($langs));
 print '<div class="taskiddiv inline-block">';
-$formproject->selectTasks($socid?$socid:-1, $taskid, 'taskid', 32, 0, 1, 1);
+$formproject->selectTasks($socid?$socid:-1, $taskid, 'taskid', 32, 0, 1, 1, 0, 0, '', $usertoprocess);
 print '</div>';
 print ' ';
 print $formcompany->selectTypeContact($object, '', 'type','internal','rowid', 0, 'maxwidth200');
