@@ -1332,13 +1332,14 @@ else
 	        dol_include_once('/abricot/includes/class/class.form.core.php');
 	        print '<tr><td width="25%">'.$langs->trans('Partenaire').'</td>';
 	        print '<td colspan="3">';
+			$TEntityName = TFinancementTools::build_array_entities();
 			if($user->rights->financement->admin->write) {
 				$formcore=new TFormCore();
 				$entity = GETPOST('entity','int');
 				if(empty($entity)) $entity = $object->entity;
-				print $formcore->combo('', 'entity', TFinancementTools::build_array_entities(), $entity);
+				print $formcore->combo('', 'entity', $TEntityName, $entity);
 			} else {
-				print TFinancementTools::get_entity_translation($object->entity);
+				print $TEntityName[$object->entity];
 			}
 	        print '</td>';
 	        print '</tr>';
@@ -1711,9 +1712,10 @@ else
 		
         // Entity
         dol_include_once('/financement/lib/financement.lib.php');
+        $TEntityName = TFinancementTools::build_array_entities();
         print '<tr><td width="25%">'.$langs->trans('Partenaire').'</td>';
         print '<td colspan="3">';
-		print TFinancementTools::get_entity_translation($object->entity);
+		print $TEntityName[$object->entity];
         print '</td>';
         print '</tr>';
 
