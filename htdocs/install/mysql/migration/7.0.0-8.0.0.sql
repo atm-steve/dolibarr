@@ -553,10 +553,13 @@ INSERT INTO llx_accounting_system (fk_country, pcg_version, label, active) VALUE
 INSERT INTO llx_accounting_system (fk_country, pcg_version, label, active) VALUES (  5,   'SKR03', 'Standardkontenrahmen SKR 03', 1);
 INSERT INTO llx_accounting_system (fk_country, pcg_version, label, active) VALUES (  5,   'SKR04', 'Standardkontenrahmen SKR 04', 1);
 
+-- Retained warranty
+ALTER TABLE llx_facture ADD COLUMN retained_warranty real DEFAULT NULL after situation_final;	
+ALTER TABLE llx_facture ADD COLUMN retained_warranty_date_limit	date DEFAULT NULL after retained_warranty;	
+ALTER TABLE llx_facture ADD COLUMN retained_warranty_fk_cond_reglement	integer  DEFAULT NULL after retained_warranty_date_limit;
 
 -- advtargetmailing
 ALTER TABLE llx_advtargetemailing ADD COLUMN fk_element integer NOT NULL;
 ALTER TABLE llx_advtargetemailing ADD COLUMN type_element varchar(180) NOT NULL;
 UPDATE llx_advtargetemailing SET fk_element = fk_mailing, type_element='mailing';
 ALTER TABLE llx_advtargetemailing DROP COLUMN fk_mailing;
-
