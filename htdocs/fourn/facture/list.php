@@ -432,6 +432,7 @@ if ($resql)
 	if ($month_lim) 			$param.='&month_lim='.urlencode($month_lim);
 	if ($year_lim)  			$param.='&year_lim=' .urlencode($year_lim);
 	if ($search_ref)          	$param.='&search_ref='.urlencode($search_ref);
+	if ($search_project)        $param.='&search_project='.urlencode($search_project);
 	if ($search_refsupplier) 	$param.='&search_refsupplier='.urlencode($search_refsupplier);
 	if ($search_label)      	$param.='&search_label='.urlencode($search_label);
 	if ($search_company)      	$param.='&search_company='.urlencode($search_company);
