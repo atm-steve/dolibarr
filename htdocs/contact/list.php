@@ -725,7 +725,7 @@ while ($i < min($num,$limit))
 	// EMail
 	if (! empty($arrayfields['p.email']['checked']))
 	{
-		print '<td>'.dol_print_email($obj->email,$obj->rowid,$obj->socid,'AC_EMAIL',18).'</td>';
+		print '<td>'.dol_print_email($obj->email,$obj->rowid,$obj->socid,'AC_EMAIL',35).'</td>';
 		if (! $i) $totalarray['nbfield']++;
 	}
 	// Skype
