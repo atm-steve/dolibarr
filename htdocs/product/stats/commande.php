@@ -237,9 +237,12 @@ if ($id > 0 || ! empty($ref))
 						print '<td align="center">';
 						print dol_print_date($db->jdate($objp->date_de_livraison), 'dayhour')."</td>";
 	                    print '<td align="right">'.price($objp->total_ht)."</td>\n";
-	                    
-	                    $status = getExpLinesStatus($objp); // récupère les ligne d'expé liées 
-// 	                    $status = $orderstatic->LibStatut($objp->statut,$objp->facture,5);
+	                    if($objp->statut != Commande::STATUS_CANCELED){
+							 $status = getExpLinesStatus($objp); // récupère les ligne d'expé liées 
+						}else {
+							 $status = $orderstatic->LibStatut($objp->statut,$objp->facture,5);
+						}
+
 	                    
 						print '<td align="right">'.$status.'</td>';
 						print "</tr>\n";
