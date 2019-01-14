@@ -265,7 +265,14 @@ class modSociete extends DolibarrModules
 			's.idprof5'=>"ProfId5",'s.idprof6'=>"ProfId6",'s.tva_intra'=>"VATIntraShort",'s.capital'=>"Capital",'s.note_private'=>"NotePrivate",'s.note_public'=>"NotePublic",'s.canvas'=>"Canvas",
 			't.libelle'=>"ThirdPartyType",'ce.code'=>"Staff","cfj.libelle"=>"JuridicalStatus",'s.fk_prospectlevel'=>'ProspectLevel',
 			'st.code'=>'ProspectStatus','payterm.libelle'=>'PaymentConditions','paymode.libelle'=>'PaymentMode'
+		    //,'GROUP_CONCAT\(CONCAT\(socp.firstname,\' \',socp.lastname\)\) as TContact' => "ContactsTiers"
+		    //,'GROUP_CONCAT\(CONCAT\(u.firstname,\' \',u.lastname\)\) as commerciaux' => "Commerciaux"
+		    ,'CONCAT\(u.firstname,\' \',u.lastname\) as commerciaux' => "Commerciaux"
+		    ,'cat1.label'=>'ParentCategory','cat2.label'=>'FirstLevelChildCategory','cat3.label'=>'SecondLevelChildCategory'
 		);
+		
+		
+
 		if (! empty($conf->global->SOCIETE_USEPREFIX)) $this->export_fields_array[$r]['s.prefix']='Prefix';
 		// Add multicompany field
 		if (! empty($conf->global->MULTICOMPANY_ENTITY_IN_EXPORT_IF_SHARED))
@@ -295,7 +302,9 @@ class modSociete extends DolibarrModules
 			'paymode.libelle'=>'Text','s.entity'=>'Numeric'
 		);
 
-		$this->export_entities_array[$r]=array('u.login'=>'user','u.firstname'=>'user','u.lastname'=>'user');	// We define here only fields that use another picto
+		$this->export_entities_array[$r]=array('u.login'=>'user','u.firstname'=>'user','u.lastname'=>'user'
+		    ,'cat1.label'=>'company','cat2.label'=>'company','cat3.label'=>'company'
+		);	// We define here only fields that use another picto
 		$this->export_examplevalues_array[$r]=array('s.client'=>'0 (no customer no prospect)/1 (customer)/2 (prospect)/3 (customer and prospect)','s.fournisseur'=>'0 (not a supplier) or 1 (supplier)');
 		$this->export_sql_start[$r]='SELECT DISTINCT ';
 		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'societe as s';
@@ -307,9 +316,17 @@ class modSociete extends DolibarrModules
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_departements as d ON s.fk_departement = d.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_stcomm as st ON s.fk_stcomm = st.id';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid LEFT JOIN '.MAIN_DB_PREFIX.'user as u ON sc.fk_user = u.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'socpeople as socp ON s.rowid = socp.fk_soc';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_payment_term as payterm ON s.cond_reglement = payterm.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_paiement as paymode ON s.mode_reglement = paymode.id';
+		
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_societe as cs ON cs.fk_soc = s.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat1 ON (cs.fk_categorie = cat1.rowid AND cat1.fk_parent = 0)';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat2 ON (cat2.fk_parent = cat1.rowid AND cat2.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat3 ON (cat3.fk_parent = cat2.rowid AND cat3.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
+		
 		$this->export_sql_end[$r] .=' WHERE s.entity IN ('.getEntity('societe').')';
+		$this->export_sql_end[$r] .=' AND cat1.label IS NOT NULL';
 		if (is_object($user) && empty($user->rights->societe->client->voir)) {
 			$this->export_sql_end[$r] .=' AND (sc.fk_user = '.$user->id.' ';
 			if (! empty($conf->global->SOCIETE_EXPORT_SUBORDINATES_CHILDS)) {
@@ -359,7 +376,9 @@ class modSociete extends DolibarrModules
 		if (is_object($user) && empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_departements as d ON c.fk_departement = d.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as co ON c.fk_pays = co.rowid';
-		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'socpeople_extrafields as extra ON extra.fk_object = c.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'socpeople as socp ON s.rowid = socp.fk_soc';			//$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'socpeople as socp ON s.rowid = socp.fk_soc';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON s.rowid = sc.fk_soc';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'user as u ON sc.fk_user = u.rowid';
 		$this->export_sql_end[$r] .=' WHERE c.entity IN ('.getEntity('socpeople').')';
 		if (is_object($user) && empty($user->rights->societe->client->voir)) {
 			$this->export_sql_end[$r] .=' AND (sc.fk_user = '.$user->id.' ';
