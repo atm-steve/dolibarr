@@ -266,8 +266,8 @@ class modSociete extends DolibarrModules
 			't.libelle'=>"ThirdPartyType",'ce.code'=>"Staff","cfj.libelle"=>"JuridicalStatus",'s.fk_prospectlevel'=>'ProspectLevel',
 			'st.code'=>'ProspectStatus','payterm.libelle'=>'PaymentConditions','paymode.libelle'=>'PaymentMode'
 		    //,'GROUP_CONCAT\(CONCAT\(socp.firstname,\' \',socp.lastname\)\) as TContact' => "ContactsTiers"
-		    //,'GROUP_CONCAT\(CONCAT\(u.firstname,\' \',u.lastname\)\) as commerciaux' => "Commerciaux"
-		    ,'CONCAT\(u.firstname,\' \',u.lastname\) as commerciaux' => "Commerciaux"
+		    ,'GROUP_CONCAT\(CONCAT\(u.firstname,\' \',u.lastname\)\) as commerciaux' => "Commerciaux"
+		    //,'\(CONCAT\(u.firstname,\' \',u.lastname\)\) as commerciaux' => "Commerciaux"
 		    ,'cat1.label'=>'ParentCategory','cat2.label'=>'FirstLevelChildCategory','cat3.label'=>'SecondLevelChildCategory'
 		);
 		
