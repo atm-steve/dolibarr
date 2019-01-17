@@ -783,7 +783,8 @@ class TExportComptaCiel extends TExportCompta
 					'libelle_libre' => $tiers['nom'],
 					'montant' => abs($reglement['amount']),
 					'num_unique' => $numEcriture,
-					'sens' => 'D'
+					'sens' => 'D',
+					'numero_pointage'=>$reglement['num_fact']
 			)
 			;
 
@@ -798,7 +799,8 @@ class TExportComptaCiel extends TExportCompta
 					'libelle_libre' => $tiers['nom'],
 					'montant' => abs($reglement['amount']),
 					'num_unique' => $numEcriture,
-					'sens' => 'C'
+					'sens' => 'C',
+					'numero_pointage'=>$reglement['num_fact']
 			)
 			;
 

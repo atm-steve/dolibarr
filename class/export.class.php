@@ -301,7 +301,7 @@ class TExportCompta extends TObjetStd {
 			}
 
 			//Cas particulier des factures de situation
-			if(in_array($facture->type, array(Facture::TYPE_SITUATION, Facture::TYPE_CREDIT_NOTE))){
+			if(in_array($facture->type, array(Facture::TYPE_SITUATION, Facture::TYPE_CREDIT_NOTE)) && ! empty($facture->situation_cycle_ref)) {
                     foreach($facture->lines as &$ligneSituation) {
 
                         if(!empty($ligneSituation->fk_product)) {
@@ -333,9 +333,9 @@ class TExportCompta extends TObjetStd {
                         $codeComptableProduit = $this->_get_code_compta_product($facture, $produit);
 
                         if($facture->type == FACTURE::TYPE_CREDIT_NOTE) {
-                            $TotalTHSituationPrev[$facture->id][$codeComptableProduit] = $ligneSituation->total_ht;
-                            $TotalTTCSituationPrev[$facture->id][$codeComptableClient] = $ligneSituation->total_ttc;
-                            $TotalTVASituationPrev[$facture->id][$codeComptableTVA] = $ligneSituation->total_tva;
+                            $TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $ligneSituation->total_ht;
+                            $TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $ligneSituation->total_ttc;
+                            $TotalTVASituationPrev[$facture->id][$codeComptableTVA] += $ligneSituation->total_tva;
                         }
                         else {
                             $previousSituationAmount = self::getPreviousSituationAmount($ligneSituation);

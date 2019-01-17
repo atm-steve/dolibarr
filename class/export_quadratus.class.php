@@ -166,7 +166,7 @@ class TExportComptaQuadratus extends TExportCompta {
 				'libelle'=>$tiers['nom'], 
 				'compte_collectif'=>$conf->global->COMPTA_ACCOUNT_CUSTOMER,
 				'adresse1'>$tiers['address'],
-				'ville'=>$tiers['town'],
+				'ville'=>$tiers['zip'].$tiers['town'],
 				'telephone'=>$tiers['phone'],
 				'domiciliation'=>$tiers['domiciliation'],
 				'rib'=>$tiers['code_banque'].$tiers['code_quichet'].$tiers['code_banque'].$tiers['compte_bancaire'].$tiers['cle_rib'],
