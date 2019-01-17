@@ -4462,6 +4462,7 @@ abstract class CommonObject
 			$resql=$this->db->query($sql);
 			if ($resql)
 			{
+				$this->array_options = array();
 				$numrows=$this->db->num_rows($resql);
 				if ($numrows)
 				{
@@ -4581,6 +4582,7 @@ abstract class CommonObject
 			   		if ($this->array_options[$key] === '') $mandatorypb=true;
 			   		if ($mandatorypb)
 			   		{
+			   			dol_syslog($this->error);
 			   			$this->errors[]=$langs->trans('ErrorFieldRequired', $attributeLabel);
 			   			return -1;
 			   		}

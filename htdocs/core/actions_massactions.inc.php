@@ -1,6 +1,7 @@
 <?php
 /* Copyright (C) 2015-2017 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2018 	   Juanjo Menent  <jmenent@2byte.es>
+ * Copyright (C) 2019 	   Ferran Marcet  <fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -215,7 +216,7 @@ if (! $error && $massaction == 'confirm_presend')
 					$resaction.='<div class="error">'.$langs->trans('ErrorOnlyOrderNotDraftCanBeSentInMassAction',$objectobj->ref).'</div><br>';
 					continue;
 				}
-				if ($objectclass == 'Facture' && $objectobj->statut != Facture::STATUS_VALIDATED)
+				if ($objectclass == 'Facture' && $objectobj->statut == Facture::STATUS_DRAFT)
 				{
 					$langs->load("errors");
 					$nbignored++;
@@ -681,6 +682,7 @@ if ($massaction == 'confirm_createbills')
 			}
 
 			$id = $objecttmp->id; // For builddoc action
+			$object = $objecttmp;
 
 			// Builddoc
 			$donotredirect = 1;
@@ -1005,6 +1007,18 @@ if (! $error && ($massaction == 'delete' || ($action == 'delete' && $confirm == 
        			$resaction.='<div class="error">'.$langs->trans('ErrorOnlyDraftStatusCanBeDeletedInMassAction',$objecttmp->ref).'</div><br>';
        			continue;
        		}*/
+
+			if ($objectclass == "Task" && $objecttmp->hasChildren() > 0)
+			{
+				$sql = "UPDATE ".MAIN_DB_PREFIX."projet_task SET fk_task_parent = 0 WHERE fk_task_parent = ".$objecttmp->id;
+				$res = $db->query($sql);
+
+				if (!$res)
+				{
+					setEventMessage('ErrorRecordParentingNotModified', 'errors');
+					$error++;
+				}
+			}
 
 			if (in_array($objecttmp->element, array('societe','member'))) $result = $objecttmp->delete($objecttmp->id, $user, 1);
 			else $result = $objecttmp->delete($user);

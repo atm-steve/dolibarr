@@ -9,7 +9,7 @@
  * Copyright (C) 2012      Cedric Salvador      <csalvador@gpcsolutions.fr>
  * Copyright (C) 2013      Florian Henry		<florian.henry@open-concept.pro>
  * Copyright (C) 2014-2015 Marcos García        <marcosgdf@gmail.com>
- * Copyright (C) 2016-2017 Ferran Marcet        <fmarcet@2byte.es>
+ * Copyright (C) 2016-2018 Ferran Marcet        <fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,6 +85,9 @@ class Commande extends CommonOrder
     public $facturee;
     public $billed;		// billed or not
 
+    /**
+     * @var int Draft Status of the order
+     */
     public $brouillon;
     public $cond_reglement_code;
 
@@ -1279,6 +1282,8 @@ class Commande extends CommonOrder
 
         dol_syslog(get_class($this)."::addline commandeid=$this->id, desc=$desc, pu_ht=$pu_ht, qty=$qty, txtva=$txtva, fk_product=$fk_product, remise_percent=$remise_percent, info_bits=$info_bits, fk_remise_except=$fk_remise_except, price_base_type=$price_base_type, pu_ttc=$pu_ttc, date_start=$date_start, date_end=$date_end, type=$type special_code=$special_code, fk_unit=$fk_unit, origin=$origin, origin_id=$origin_id, pu_ht_devise=$pu_ht_devise", LOG_DEBUG);
 
+		if ($this->statut == self::STATUS_DRAFT)
+		{
         include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
         // Clean parameters
@@ -1298,7 +1303,9 @@ class Commande extends CommonOrder
         $pu_ht_devise=price2num($pu_ht_devise);
         $pu_ttc=price2num($pu_ttc);
     	$pa_ht=price2num($pa_ht);
-        $txtva = price2num($txtva);
+			if (!preg_match('/\((.*)\)/', $txtva)) {
+				$txtva = price2num($txtva);               // $txtva can have format '5.0(XXX)' or '5'
+			}
         $txlocaltax1 = price2num($txlocaltax1);
         $txlocaltax2 = price2num($txlocaltax2);
         if ($price_base_type=='HT')
@@ -1314,9 +1321,6 @@ class Commande extends CommonOrder
 
         // Check parameters
         if ($type < 0) return -1;
-
-        if ($this->statut == self::STATUS_DRAFT)
-        {
             $this->db->begin();
 
         	$product_type=$type;
@@ -1690,10 +1694,11 @@ class Commande extends CommonOrder
 
                 // Retrieve all extrafields for invoice
                 // fetch optionals attributes and labels
-                require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-                $extrafields=new ExtraFields($this->db);
-                $extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
-               	$this->fetch_optionals($this->id,$extralabels);
+//                require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+//                $extrafields=new ExtraFields($this->db);
+//                $extralabels=$extrafields->fetch_name_optionals_label($this->table_element,true);
+//               	$this->fetch_optionals($this->id,$extralabels);
+           	$this->fetch_optionals();
 
                 $this->db->free($result);
 
@@ -1894,6 +1899,9 @@ class Commande extends CommonOrder
 				$line->multicurrency_total_ht 	= $objp->multicurrency_total_ht;
 				$line->multicurrency_total_tva 	= $objp->multicurrency_total_tva;
 				$line->multicurrency_total_ttc 	= $objp->multicurrency_total_ttc;
+
+           	$line->fetch_optionals();
+
 
                 $this->lines[$i] = $line;
 
