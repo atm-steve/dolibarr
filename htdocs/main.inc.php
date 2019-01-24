@@ -79,6 +79,8 @@ function get_entity_user($username) {
 	
 	$u = new User($db);
 	$u->fetch('', $username);
+	$u->getrights('financement');
+	if($u->rights->financement->admin->write) return 17;
 	
 	$TGroupEntities_conf = unserialize($conf->global->MULTICOMPANY_USER_GROUP_ENTITY);
 	$TGroupEntities = array();
