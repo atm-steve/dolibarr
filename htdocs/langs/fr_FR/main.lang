@@ -947,4 +947,6 @@ AssignedTo=Assigné à
 Deletedraft=Supprimer brouillon
 ConfirmMassDraftDeletion=Confirmation de suppression de brouillon en bloc
 FileSharedViaALink=Fichier partagé via un lien
-
+ParentCategory=Catégorie parente
+FirstLevelChildCategory=Catégorie enfant de premier niveau
+SecondLevelChildCategory=Catégorie enfant de second niveau

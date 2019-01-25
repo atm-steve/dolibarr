@@ -216,7 +216,9 @@ class modFacture extends DolibarrModules
 		    's.zip'=>'Zip',
 		    's.town'=>'Town',
 		    'u.lastname'=>'SalesRepresentatives',
-		    'cat.label'=>'Category',
+		    'cat1.label'=>'ParentCategory',
+			'cat2.label'=>'FirstLevelChildCategory',
+			'cat3.label'=>'SecondLevelChildCategory',
 		    'c.code'=>'CountryCode',
 		    's.phone'=>'Phone',
 		    's.siren'=>'ProfId1',
@@ -272,7 +274,9 @@ class modFacture extends DolibarrModules
 		    's.zip'=>'Text',
 		    's.town'=>'Text',
 		    'u.lastname'=>'Text' ,
-		    'cat.label'=>'Text' ,
+		    'cat1.label'=>'Text',
+			'cat2.label'=>'Text',
+			'cat3.label'=>'Text',
 		    'c.code'=>'Text',
 		    's.phone'=>'Text',
 		    's.siren'=>'Text',
@@ -329,6 +333,9 @@ class modFacture extends DolibarrModules
 		    's.zip'=>'company',
 		    's.town'=>'company',
 		    'u.lastname'=>'company' ,
+			'cat1.label'=>'company',
+			'cat2.label'=>'company',
+			'cat3.label'=>'company',
 		    'cat.label'=>'company' ,
 		    'c.code'=>'company',
 		    's.phone'=>'company',
@@ -375,8 +382,9 @@ class modFacture extends DolibarrModules
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'user as u ON sc.fk_user = u.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_societe as cs ON cs.fk_soc = s.rowid';
-		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat ON cs.fk_categorie = cat.rowid';
-		
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat1 ON (cs.fk_categorie = cat1.rowid AND cat1.fk_parent = 0)';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat2 ON (cat2.fk_parent = cat1.rowid AND cat2.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat3 ON (cat3.fk_parent = cat2.rowid AND cat3.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';		
 		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c on s.fk_pays = c.rowid,';
 		$this->export_sql_end[$r] .= ' '.MAIN_DB_PREFIX.'facture as f';
 		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'projet as pj ON f.fk_projet = pj.rowid';
@@ -388,7 +396,7 @@ class modFacture extends DolibarrModules
 		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p on (fd.fk_product = p.rowid)';
 		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields as extra3 on p.rowid = extra3.fk_object';
 		$this->export_sql_end[$r] .= ' WHERE f.fk_soc = s.rowid AND f.rowid = fd.fk_facture';
-		$this->export_sql_end[$r] .= ' AND f.entity IN ('.getEntity('facture').')';
+		$this->export_sql_end[$r] .= ' AND f.entity IN ('.getEntity('facture').') AND cat1.label IS NOT NULL';
 		if (isset($user) && empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .= ' AND sc.fk_user = '.$user->id;
 		$r++;
 
@@ -397,7 +405,7 @@ class modFacture extends DolibarrModules
 		$this->export_icon[$r] = 'invoice';
 		$this->export_permission[$r] = array(array("facture", "facture", "export"));
 		$this->export_fields_array[$r] = array(
-			's.rowid'=>"IdCompany", 's.nom'=>'CompanyName', 's.code_client'=>'CustomerCode', 's.address'=>'Address', 's.zip'=>'Zip', 's.town'=>'Town', 'c.code'=>'CountryCode', 's.phone'=>'Phone',
+			's.rowid'=>"IdCompany", 's.nom'=>'CompanyName', 's.code_client'=>'CustomerCode', 's.address'=>'Address', 's.zip'=>'Zip', 's.town'=>'Town', 'ucomm.lastname'=>'SalesRepresentatives','cat1.label'=>'ParentCategory','cat2.label'=>'FirstLevelChildCategory','cat3.label'=>'SecondLevelChildCategory','c.code'=>'CountryCode', 's.phone'=>'Phone',
 			's.siren'=>'ProfId1', 's.siret'=>'ProfId2', 's.ape'=>'ProfId3', 's.idprof4'=>'ProfId4', 's.code_compta'=>'CustomerAccountancyCode',
 			's.code_compta_fournisseur'=>'SupplierAccountancyCode', 's.tva_intra'=>'VATIntra',
 			'f.rowid'=>"InvoiceId", 'f.facnumber'=>"InvoiceRef",  'f.ref_client'=>'RefCustomer',
@@ -409,7 +417,7 @@ class modFacture extends DolibarrModules
 			'pt.code'=>'CodePaymentMode', 'pt.libelle'=>'LabelPaymentMode', 'p.note'=>'PaymentNote', 'p.fk_bank'=>'IdTransaction', 'ba.ref'=>'AccountRef'
 		);
 		$this->export_TypeFields_array[$r] = array(
-			's.rowid'=>'Numeric', 's.nom'=>'Text', 's.code_client'=>'Text', 's.address'=>'Text', 's.zip'=>'Text', 's.town'=>'Text', 'c.code'=>'Text', 's.phone'=>'Text', 's.siren'=>'Text',
+			's.rowid'=>'Numeric', 's.nom'=>'Text', 's.code_client'=>'Text', 's.address'=>'Text', 's.zip'=>'Text', 's.town'=>'Text','ucomm.lastname'=>'Text','cat1.label'=>'Text','cat2.label'=>'Text','cat3.label'=>'Text', 'c.code'=>'Text', 's.phone'=>'Text', 's.siren'=>'Text',
 			's.siret'=>'Text', 's.ape'=>'Text', 's.idprof4'=>'Text', 's.code_compta'=>'Text', 's.code_compta_fournisseur'=>'Text', 's.tva_intra'=>'Text',
 			'f.rowid'=>"Numeric", 'f.facnumber'=>"Text", 'f.ref_client'=>'Text', 'f.type'=>"Numeric", 'f.datec'=>"Date", 'f.datef'=>"Date", 'f.date_lim_reglement'=>"Date",
 			'f.total'=>"Numeric", 'f.total_ttc'=>"Numeric", 'f.tva'=>"Numeric", 'none.rest'=>'NumericCompute', 'f.paye'=>"Boolean", 'f.fk_statut'=>'Status',
@@ -418,7 +426,7 @@ class modFacture extends DolibarrModules
 			'p.fk_bank'=>'Numeric', 'p.note'=>'Text', 'pt.code'=>'Text', 'pt.libelle'=>'text', 'ba.ref'=>'Text'
 		);
 		$this->export_entities_array[$r] = array(
-			's.rowid'=>"company", 's.nom'=>'company', 's.code_client'=>'company', 's.address'=>'company', 's.zip'=>'company', 's.town'=>'company', 'c.code'=>'company', 's.phone'=>'company',
+			's.rowid'=>"company", 's.nom'=>'company', 's.code_client'=>'company', 's.address'=>'company', 's.zip'=>'company', 's.town'=>'company','ucomm.lastname'=>'company','cat1.label'=>'company','cat2.label'=>'company','cat3.label'=>'company', 'c.code'=>'company', 's.phone'=>'company',
 			's.siren'=>'company', 's.siret'=>'company', 's.ape'=>'company', 's.idprof4'=>'company', 's.code_compta'=>'company', 's.code_compta_fournisseur'=>'company',
 			's.tva_intra'=>'company', 'pj.ref'=>'project', 'p.rowid'=>'payment', 'p.ref'=>'payment', 'p.amount'=>'payment', 'pf.amount'=>'payment', 'p.datep'=>'payment',
 			'p.num_paiement'=>'payment', 'pt.code'=>'payment', 'pt.libelle'=>'payment', 'p.note'=>'payment', 'f.fk_user_author'=>'user', 'uc.login'=>'user',
@@ -430,7 +438,12 @@ class modFacture extends DolibarrModules
 		include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
 		$this->export_sql_start[$r]='SELECT DISTINCT ';
 		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'societe as s';
-		if (empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'user as ucomm ON sc.fk_user = ucomm.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_societe as cs ON cs.fk_soc = s.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat1 ON (cs.fk_categorie = cat1.rowid AND cat1.fk_parent = 0)';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat2 ON (cat2.fk_parent = cat1.rowid AND cat2.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat3 ON (cat3.fk_parent = cat2.rowid AND cat3.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c on s.fk_pays = c.rowid,';
 		$this->export_sql_end[$r] .=' '.MAIN_DB_PREFIX.'facture as f';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'projet as pj ON f.fk_projet = pj.rowid';
@@ -443,7 +456,7 @@ class modFacture extends DolibarrModules
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'bank as b ON b.rowid = p.fk_bank';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'bank_account as ba ON ba.rowid = b.fk_account';
 		$this->export_sql_end[$r] .=' WHERE f.fk_soc = s.rowid';
-		$this->export_sql_end[$r] .=' AND f.entity IN ('.getEntity('facture').')';
+		$this->export_sql_end[$r] .=' AND f.entity IN ('.getEntity('facture').')  AND cat1.label IS NOT NULL';
 		if (isset($user) && empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' AND sc.fk_user = '.$user->id;
 		$r++;
 	}
