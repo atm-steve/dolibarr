@@ -829,7 +829,7 @@ function setforpredef() {
 
 	jQuery("#prod_entry_mode_free").prop('checked',false).change();
 	jQuery("#prod_entry_mode_predef").prop('checked',true).change();
-	jQuery("#price_ht").val('').hide();
+//	jQuery("#price_ht").val('').hide();
 	jQuery("#multicurrency_price_ht").hide();
 	jQuery("#price_ttc").hide();	// May no exists
 	jQuery("#fourn_ref").hide();
