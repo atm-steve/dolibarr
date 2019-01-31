@@ -1532,7 +1532,7 @@ if ($action == 'create')
 	print '</td></tr>';
 
 	// Ref supplier
-    print '<tr><td class="fieldrequired">'.$langs->trans('RefSupplier').'</td><td><input name="ref_supplier" value="'.(isset($_POST['ref_supplier'])?$_POST['ref_supplier']:$objectsrc->ref_supplier).'" type="text"></td>';
+    	print '<tr><td class="fieldrequired">'.$langs->trans('RefSupplier').'</td><td><input name="ref_supplier" value="'.(isset($_POST['ref_supplier'])?$_POST['ref_supplier']:"").'" type="text"></td>';
 	print '</tr>';
 
 	// Type invoice
