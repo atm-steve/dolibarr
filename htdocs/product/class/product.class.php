@@ -1078,7 +1078,7 @@ class Product extends CommonObject
 				$sql.= " WHERE fk_product_stock IN (";
 				$sql.= "SELECT rowid FROM ".MAIN_DB_PREFIX.'product_stock';
 				$sql.= " WHERE fk_product = ".$id.")";
-				dol_syslog(get_class($this).'::delete', LOG_DEBUG);
+
 				$result = $this->db->query($sql);
 				if (! $result)
 				{
@@ -1097,7 +1097,7 @@ class Product extends CommonObject
     				{
     					$sql = "DELETE FROM ".MAIN_DB_PREFIX.$table;
     					$sql.= " WHERE fk_product = ".$id;
-    					dol_syslog(get_class($this).'::delete', LOG_DEBUG);
+
     					$result = $this->db->query($sql);
     					if (! $result)
     					{
@@ -1132,7 +1132,7 @@ class Product extends CommonObject
 			if (!$error){
 				$sql = "DELETE FROM ".MAIN_DB_PREFIX."product_association";
 				$sql.= " WHERE fk_product_pere = ".$id." OR fk_product_fils = ".$id;
-				dol_syslog(get_class($this).'::delete', LOG_DEBUG);
+
 				$result = $this->db->query($sql);
 				if (! $result)
 				{
@@ -1146,7 +1146,7 @@ class Product extends CommonObject
 			{
 				$sqlz = "DELETE FROM ".MAIN_DB_PREFIX."product";
 				$sqlz.= " WHERE rowid = ".$id;
-				dol_syslog(get_class($this).'::delete', LOG_DEBUG);
+
 				$resultz = $this->db->query($sqlz);
 				if ( ! $resultz )
 				{

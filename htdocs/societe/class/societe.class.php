@@ -872,6 +872,24 @@ class Societe extends CommonObject
 			// We don't check when update called during a create because verify was already done.
 			// For a merge, we suppose source data is clean and a customer code of a deleted thirdparty must be accepted into a target thirdparty with empty code without duplicate error
 			$result = $this->verify();
+
+			// If there is only one error and error is ErrorBadCustomerCodeSyntax and we don't change customer code, we allow the update
+			// So we can update record that were using and old numbering rule.
+			if (is_array($this->errors))
+			{
+				if (in_array('ErrorBadCustomerCodeSyntax', $this->errors) && is_object($this->oldcopy) && $this->oldcopy->code_client == $this->code_client)
+				{
+					if (($key = array_search('ErrorBadCustomerCodeSyntax', $this->errors)) !== false) unset($this->errors[$key]);	// Remove error message
+				}
+				if (in_array('ErrorBadSupplierCodeSyntax', $this->errors) && is_object($this->oldcopy) && $this->oldcopy->code_fournisseur == $this->code_fournisseur)
+				{
+					if (($key = array_search('ErrorBadSupplierCodeSyntax', $this->errors)) !== false) unset($this->errors[$key]);	// Remove error message
+				}
+				if (empty($this->errors))	// If there is no more error, we can make like if there is no error at all
+				{
+					$result = 0;
+				}
+			}
 		}
 
 		if ($result >= 0)
@@ -1516,6 +1534,19 @@ class Societe extends CommonObject
 				{
 					$error++;
 					dol_syslog(get_class($this)."::delete error -3 ".$this->error, LOG_ERR);
+				}
+			}
+
+			// Remove links to subsidiaries companies
+			if (! $error)
+			{
+				$sql = "UPDATE ".MAIN_DB_PREFIX."societe";
+				$sql.= " SET parent = NULL";
+				$sql.= " WHERE parent = " . $id;
+				if (! $this->db->query($sql))
+				{
+					$error++;
+					$this->errors[] = $this->db->lasterror();
 				}
 			}
 
@@ -3049,12 +3080,13 @@ class Societe extends CommonObject
 	/**
 	 *  Create a third party into database from a member object
 	 *
-	 *  @param	Adherent	$member		Object member
-	 * 	@param	string	$socname		Name of third party to force
-	 *	@param	string	$socalias	Alias name of third party to force
-	 *  @return int					<0 if KO, id of created account if OK
+	 *  @param	Adherent	$member			Object member
+	 * 	@param	string		$socname		Name of third party to force
+	 *	@param	string		$socalias		Alias name of third party to force
+	 *  @param	string		$customercode	Customer code
+	 *  @return int							<0 if KO, id of created account if OK
 	 */
-	function create_from_member(Adherent $member, $socname='', $socalias='')
+	function create_from_member(Adherent $member, $socname='', $socalias='', $customercode='')
 	{
 		global $user,$langs;
 
@@ -3077,7 +3109,7 @@ class Societe extends CommonObject
 		$this->skype=$member->skype;
 
 		$this->client = 1;				// A member is a customer by default
-		$this->code_client = -1;
+		$this->code_client = ($customercode?$customercode:-1);
 		$this->code_fournisseur = -1;
 
 		$this->db->begin();
