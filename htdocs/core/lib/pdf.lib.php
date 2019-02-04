@@ -1224,6 +1224,15 @@ function pdf_getlinedesc($object,$i,$outputlangs,$hideref=0,$hidedesc=0,$issuppl
 			}
 			if (! empty($prodser->multilangs[$outputlangs->defaultlang]["description"]) && ($textwasmodified || $translatealsoifmodified))  $desc=$prodser->multilangs[$outputlangs->defaultlang]["description"];
 
+			if ($issupplierline && !empty($conf->global->PRODUIT_FOURN_TEXTS))
+			{
+			    $arr = $prodser->list_product_fournisseur_price($idprod);
+			    foreach ($arr as $pfp)
+			    {
+			        if ($pfp->fourn_id == $object->socid) $desc .= "<br /><br />" . $pfp->desc_supplier;
+			    }
+			}
+
 			// Set note
 			$textwasmodified=($note == $prodser->note);
 			if (! empty($prodser->multilangs[$outputlangs->defaultlang]["note"]) && ($textwasmodified || $translatealsoifmodified))  $note=$prodser->multilangs[$outputlangs->defaultlang]["note"];
