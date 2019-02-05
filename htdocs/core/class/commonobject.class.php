@@ -4848,6 +4848,7 @@ abstract class CommonObject
 			   		if ($this->array_options[$key] === '') $mandatorypb=true;
 			   		if ($mandatorypb)
 			   		{
+			   			dol_syslog($this->error);
 			   			$this->errors[]=$langs->trans('ErrorFieldRequired', $attributeLabel);
 			   			return -1;
 			   		}
@@ -5053,7 +5054,7 @@ abstract class CommonObject
 	 *  @return int                 		-1=error, O=did nothing, 1=OK
 	 *  @see setValueFrom, insertExtraFields
 	 */
-	function updateExtraField($key, $trigger, $userused)
+	function updateExtraField($key, $trigger=null, $userused=null)
 	{
 		global $conf,$langs,$user;
 
@@ -6152,6 +6153,11 @@ abstract class CommonObject
 			$e = 0;
 			foreach($extrafields->attributes[$this->table_element]['label'] as $key=>$label)
 			{
+			    if (isset($extrafields->attributes[$this->table_element]['list'][$key])
+			        && empty($extrafields->attributes[$this->table_element]['list'][$key]) && $mode == 'view'){
+			        continue;
+			    }
+
 				$enabled = 1;
 				if ($enabled && isset($extrafields->attributes[$this->table_element]['list'][$key]))
 				{

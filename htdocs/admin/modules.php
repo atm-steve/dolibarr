@@ -40,6 +40,7 @@ $langs->loadLangs(array("errors","admin","modulebuilder"));
 $mode=GETPOST('mode', 'alpha');
 if (empty($mode)) $mode='common';
 $action=GETPOST('action','alpha');
+//var_dump($_POST);exit;
 $value=GETPOST('value', 'alpha');
 $page_y=GETPOST('page_y','int');
 $search_keyword=GETPOST('search_keyword','alpha');
@@ -140,6 +141,12 @@ if ($action=='install')
 			setEventMessages($langs->trans("ErrorFilenameDosNotMatchDolibarrPackageRules",$original_file, 'module_*-x.y*.zip'), null, 'errors');
 			$error++;
 		}
+		if (empty($_FILES['fileinstall']['tmp_name']))
+		{
+		    $langs->load("errors");
+		    setEventMessages($langs->trans("ErrorFileNotUploaded"), null, 'errors');
+		    $error++;
+		}
     }
 
     if (! $error)
@@ -150,14 +157,14 @@ if ($action=='install')
             dol_mkdir($conf->admin->dir_temp.'/'.$original_file);
         }
 
-        $tmpdir=preg_replace('/\.zip$/','',$original_file).'.dir';
+        $tmpdir=preg_replace('/\.zip$/i','',$original_file).'.dir';
         if ($tmpdir)
         {
             @dol_delete_dir_recursive($conf->admin->dir_temp.'/'.$tmpdir);
             dol_mkdir($conf->admin->dir_temp.'/'.$tmpdir);
         }
 
-        $result=dol_move_uploaded_file($_FILES['fileinstall']['tmp_name'],$newfile,1,0,$_FILES['fileinstall']['error']);
+        $result=dol_move_uploaded_file($_FILES['fileinstall']['tmp_name'], $newfile, 1, 0, $_FILES['fileinstall']['error']);
         if ($result > 0)
         {
             $result=dol_uncompress($newfile,$conf->admin->dir_temp.'/'.$tmpdir);
@@ -205,6 +212,7 @@ if ($action=='install')
         }
         else
         {
+            setEventMessages($langs->trans("ErrorFailToRenameFile", $_FILES['fileinstall']['tmp_name'], $newfile), null, 'errors');
             $error++;
         }
     }
@@ -1001,10 +1009,46 @@ if ($mode == 'deploy')
 			print '<br>';
 
 			print '<form enctype="multipart/form-data" method="POST" class="noborder" action="'.$_SERVER["PHP_SELF"].'" name="forminstall">';
+			print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 			print '<input type="hidden" name="action" value="install">';
 			print '<input type="hidden" name="mode" value="deploy">';
-			print $langs->trans("YouCanSubmitFile").' <input type="file" name="fileinstall"> ';
+
+			print $langs->trans("YouCanSubmitFile");
+
+			$max=$conf->global->MAIN_UPLOAD_DOC;		// En Kb
+			$maxphp=@ini_get('upload_max_filesize');	// En inconnu
+			if (preg_match('/k$/i',$maxphp)) $maxphp=$maxphp*1;
+			if (preg_match('/m$/i',$maxphp)) $maxphp=$maxphp*1024;
+			if (preg_match('/g$/i',$maxphp)) $maxphp=$maxphp*1024*1024;
+			if (preg_match('/t$/i',$maxphp)) $maxphp=$maxphp*1024*1024*1024;
+			// Now $max and $maxphp are in Kb
+			$maxmin = $max;
+			if ($maxphp > 0) $maxmin=min($max,$maxphp);
+
+			if ($maxmin > 0)
+			{
+				// MAX_FILE_SIZE doit précéder le champ input de type file
+				print '<input type="hidden" name="max_file_size" value="'.($maxmin*1024).'">';
+			}
+
+			print '<input class="flat minwidth400" type="file" name="fileinstall"> ';
+
 			print '<input type="submit" name="send" value="'.dol_escape_htmltag($langs->trans("Send")).'" class="button">';
+
+			if (! empty($conf->global->MAIN_UPLOAD_DOC))
+			{
+			    if ($user->admin)
+			    {
+			        $langs->load('other');
+			        print ' ';
+			        print info_admin($langs->trans("ThisLimitIsDefinedInSetup",$max,$maxphp),1);
+			    }
+			}
+			else
+			{
+			    print ' ('.$langs->trans("UploadDisabled").')';
+			}
+
 			print '</form>';
 
 			print '<br>';

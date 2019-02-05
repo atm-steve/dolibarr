@@ -55,7 +55,7 @@ $search_deliveryyear=GETPOST("search_deliveryyear","int");
 $search_deliverymonth=GETPOST("search_deliverymonth","int");
 $search_deliveryday=GETPOST("search_deliveryday","int");
 
-$sall=GETPOST('search_all', 'alphanohtml');
+$sall=trim((GETPOST('search_all', 'alphanohtml')!='')?GETPOST('search_all', 'alphanohtml'):GETPOST('sall', 'alphanohtml'));
 $search_product_category=GETPOST('search_product_category','int');
 $search_ref=GETPOST('search_ref');
 $search_refsupp=GETPOST('search_refsupp');
@@ -517,6 +517,7 @@ if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
 if ($search_company) $sql .= natural_search('s.nom', $search_company);
 if ($search_request_author) $sql.=natural_search(array('u.lastname','u.firstname','u.login'), $search_request_author) ;
 if ($search_billed != '' && $search_billed >= 0) $sql .= " AND cf.billed = ".$db->escape($search_billed);
+if ($search_product_category > 0) $sql.= " AND cp.fk_categorie = ".$search_product_category;
 
 //Required triple check because statut=0 means draft filter
 if (GETPOST('statut', 'intcomma') !== '')

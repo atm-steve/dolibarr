@@ -127,6 +127,7 @@ class FormFile
 
 			if ($maxmin > 0)
 			{
+				// MAX_FILE_SIZE doit précéder le champ input de type file
 				$out .= '<input type="hidden" name="max_file_size" value="'.($maxmin*1024).'">';
 			}
 
@@ -299,8 +300,10 @@ class FormFile
 			return $this->getDocumentsLink($modulepart, $modulesubdir, $filedir);
 		}
 
-		// Add entity in $param
-		$param.= 'entity='.(!empty($object->entity)?$object->entity:$conf->entity);
+		// Add entity in $param if not already exists
+		if (!preg_match('/entity\=[0-9]+/', $param)) {
+			$param.= 'entity='.(!empty($object->entity)?$object->entity:$conf->entity);
+		}
 
 		$printer=0;
 		if (in_array($modulepart,array('facture','supplier_proposal','propal','proposal','order','commande','expedition', 'commande_fournisseur', 'expensereport')))	// The direct print feature is implemented only for such elements
@@ -1507,6 +1510,11 @@ class FormFile
 			include_once DOL_DOCUMENT_ROOT.'/expensereport/class/expensereport.class.php';
 			$object_instance=new ExpenseReport($this->db);
 		}
+		else if ($modulepart == 'holiday')
+		{
+			include_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
+			$object_instance=new Holiday($this->db);
+		}
 
 		foreach($filearray as $key => $file)
 		{
@@ -1536,7 +1544,8 @@ class FormFile
 				if ($modulepart == 'project')           { preg_match('/(.*)\/[^\/]+$/',$relativefile,$reg);  $ref=(isset($reg[1])?$reg[1]:'');}
 				if ($modulepart == 'fichinter')         { preg_match('/(.*)\/[^\/]+$/',$relativefile,$reg);  $ref=(isset($reg[1])?$reg[1]:'');}
 				if ($modulepart == 'user')              { preg_match('/(.*)\/[^\/]+$/',$relativefile,$reg);  $id=(isset($reg[1])?$reg[1]:'');}
-				if ($modulepart == 'expensereport')     { preg_match('/(.*)\/[^\/]+$/',$relativefile,$reg);  $id=(isset($reg[1])?$reg[1]:'');}
+				if ($modulepart == 'expensereport')     { preg_match('/(.*)\/[^\/]+$/',$relativefile,$reg);  $ref=(isset($reg[1])?$reg[1]:'');}
+				if ($modulepart == 'holiday')           { preg_match('/(.*)\/[^\/]+$/',$relativefile,$reg);  $id=(isset($reg[1])?$reg[1]:'');}
 
 				if (! $id && ! $ref) continue;
 				$found=0;
@@ -1634,7 +1643,7 @@ class FormFile
 	 */
 	private function _formAjaxFileUpload($object)
 	{
-		global $langs;
+		global $langs, $conf;
 
 		// PHP post_max_size
 		$post_max_size				= ini_get('post_max_size');
