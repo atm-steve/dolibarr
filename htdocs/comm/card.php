@@ -326,7 +326,7 @@ if ($id > 0)
 	print '</td><td>';
 	if ($action == 'editmode')
 	{
-		$form->form_modes_reglement($_SERVER['PHP_SELF'].'?socid='.$object->id,$object->mode_reglement_id,'mode_reglement_id');
+		$form->form_modes_reglement($_SERVER['PHP_SELF'].'?socid='.$object->id,$object->mode_reglement_id,'mode_reglement_id', 'CRDT');
 	}
 	else
 	{
@@ -552,7 +552,7 @@ if ($id > 0)
 		$link=DOL_URL_ROOT.'/comm/propal/list.php?socid='.$object->id;
 		$icon='bill';
 		if ($link) $boxstat.='<a href="'.$link.'" class="boxstatsindicator thumbstat nobold nounderline">';
-		$boxstat.='<div class="boxstats">';
+		$boxstat.='<div class="boxstats" title="'.dol_escape_htmltag($text).'">';
 		$boxstat.='<span class="boxstatstext">'.img_object("",$icon).' '.$text.'</span><br>';
 		$boxstat.='<span class="boxstatsindicator">'.price($outstandingTotal, 1, $langs, 1, -1, -1, $conf->currency).'</span>';
 		$boxstat.='</div>';
@@ -570,7 +570,7 @@ if ($id > 0)
 		$link=DOL_URL_ROOT.'/commande/list.php?socid='.$object->id;
 		$icon='bill';
 		if ($link) $boxstat.='<a href="'.$link.'" class="boxstatsindicator thumbstat nobold nounderline">';
-		$boxstat.='<div class="boxstats">';
+		$boxstat.='<div class="boxstats" title="'.dol_escape_htmltag($text).'">';
 		$boxstat.='<span class="boxstatstext">'.img_object("",$icon).' '.$text.'</span><br>';
 		$boxstat.='<span class="boxstatsindicator">'.price($outstandingTotal, 1, $langs, 1, -1, -1, $conf->currency).'</span>';
 		$boxstat.='</div>';
@@ -588,7 +588,7 @@ if ($id > 0)
 		$link=DOL_URL_ROOT.'/compta/facture/list.php?socid='.$object->id;
 		$icon='bill';
 		if ($link) $boxstat.='<a href="'.$link.'" class="boxstatsindicator thumbstat nobold nounderline">';
-		$boxstat.='<div class="boxstats">';
+		$boxstat.='<div class="boxstats" title="'.dol_escape_htmltag($text).'">';
 		$boxstat.='<span class="boxstatstext">'.img_object("",$icon).' '.$text.'</span><br>';
 		$boxstat.='<span class="boxstatsindicator">'.price($outstandingTotal, 1, $langs, 1, -1, -1, $conf->currency).'</span>';
 		$boxstat.='</div>';
@@ -604,7 +604,7 @@ if ($id > 0)
 		$link=DOL_URL_ROOT.'/compta/recap-compta.php?socid='.$object->id;
 		$icon='bill';
 		if ($link) $boxstat.='<a href="'.$link.'" class="boxstatsindicator thumbstat nobold nounderline">';
-		$boxstat.='<div class="boxstats">';
+		$boxstat.='<div class="boxstats" title="'.dol_escape_htmltag($text).'">';
 		$boxstat.='<span class="boxstatstext">'.img_object("",$icon).' '.$text.'</span><br>';
 		$boxstat.='<span class="boxstatsindicator'.($outstandingOpened>0?' amountremaintopay':'').'">'.price($outstandingOpened, 1, $langs, 1, -1, -1, $conf->currency).$warn.'</span>';
 		$boxstat.='</div>';
