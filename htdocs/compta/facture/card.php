@@ -108,7 +108,7 @@ if ($id > 0 || ! empty($ref)) {
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('invoicecard','globalcard'));
 
-$permissionnote = $user->rights->facture->creer; // Used by the include of actions_setnotes.inc.php
+$usercancreate = $permissionnote = $user->rights->facture->creer; // Used by the include of actions_setnotes.inc.php
 $permissiondellink=$user->rights->facture->creer;	// Used by the include of actions_dellink.inc.php
 $permissiontoedit = $user->rights->facture->creer; // Used by the include of actions_lineupdonw.inc.php
 
@@ -4845,7 +4845,7 @@ else if ($id > 0 || ! empty($ref))
 		$ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1);
 
 	// Form to add new line
-	if ($object->statut == 0 && $user->rights->facture->creer && $action != 'valid' && $action != 'editline' && ($object->is_first() || !$object->situation_cycle_ref))
+	if ($object->statut == 0 && $usercancreate && $action != 'valid' && $action != 'editline')
 	{
 	    if ($action != 'editline' && $action != 'selectlines')
 		{
