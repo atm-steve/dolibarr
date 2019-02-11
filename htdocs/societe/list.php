@@ -1083,7 +1083,7 @@ while ($i < min($num, $limit))
 	}
 	if (! empty($arrayfields['s.email']['checked']))
 	{
-		print "<td>".$obj->email."</td>\n";
+		print "<td><a href='mailto:".$obj->email."'>".$obj->email."</a></td>\n";
 		if (! $i) $totalarray['nbfield']++;
 	}
 	if (! empty($arrayfields['s.phone']['checked']))
