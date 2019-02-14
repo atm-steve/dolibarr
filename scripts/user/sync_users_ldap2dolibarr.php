@@ -81,10 +81,9 @@ $required_fields = array(
 	$conf->global->LDAP_FIELD_TITLE,
 	$conf->global->LDAP_FIELD_DESCRIPTION,
 	$conf->global->LDAP_FIELD_SID,
-	'manager',
+	$conf->global->LDAP_FIELD_MANAGER,
 	'distinguishedName',
-	'homePhone',
-	'thumbnailPhoto'
+	$conf->global->LDAP_FIELD_PHOTO
 );
 
 // Remove from required_fields all entries not configured in LDAP (empty) and duplicated
@@ -295,11 +294,12 @@ if ($result >= 0)
 			}*/
 			$TUser[$ldapuser['distinguishedName']] = $fuser->id;
 
-//            if(! empty($ldapuser['thumbnailPhoto'])) {
+
+//            if(! empty($ldapuser[$conf->global->LDAP_FIELD_PHOTO])) {
 //                $dir = $conf->user->dir_output.'/'.get_exdir($fuser->id,3,0,1);
 //                if(! is_dir($dir)) $res = mkdir($dir, 0775, true);
 //
-//                $photo = $ldapuser['thumbnailPhoto'];
+//                $photo = $ldapuser[$conf->global->LDAP_FIELD_PHOTO];
 //                $im = imagecreatefromstring($photo);
 //            }
 
@@ -307,7 +307,7 @@ if ($result >= 0)
 		}
 
 		foreach($ldaprecords as $ldapuser) {
-            $fk_user_manager = $TUser[$ldapuser['manager']];
+            $fk_user_manager = $TUser[$ldapuser[$conf->global->LDAP_FIELD_MANAGER]];
             $fk_user = $TUser[$ldapuser['distinguishedName']];
 
             if($fk_user != $fk_user_manager) {
@@ -368,4 +368,3 @@ function dolValidElement($element)
 {
 	return (trim($element) != '');
 }
-
