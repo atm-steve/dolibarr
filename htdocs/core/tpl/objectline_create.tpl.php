@@ -836,7 +836,7 @@ function setforpredef() {
 	jQuery("#tva_tx").hide();
 	jQuery("#buying_price").show();
 	jQuery("#title_vat").hide();
-	jQuery("#title_up_ht").hide();
+//	jQuery("#title_up_ht").hide();
 	jQuery("#title_up_ht_currency").hide();
 	jQuery("#title_up_ttc").hide();
 	jQuery("#title_up_ttc_currency").hide();
