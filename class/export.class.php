@@ -56,7 +56,7 @@ class TExportCompta extends TObjetStd {
 		$this->TTVA = array();
 		$sql = "SELECT t.fk_pays, t.taux, t.accountancy_code_sell, t.accountancy_code_buy";
 		$sql.= " FROM ".MAIN_DB_PREFIX."c_tva as t";
-		
+
 		$resql = $db->query($sql);
 		
 		while($obj = $db->fetch_object($resql)) {
@@ -76,8 +76,8 @@ class TExportCompta extends TObjetStd {
 		
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_FACTURES_CLIENT;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
-		
-		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+
+		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 		
 		// Requête de récupération des factures
@@ -179,7 +179,7 @@ class TExportCompta extends TObjetStd {
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_FACTURES_FOURNISSEUR;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
-		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 		
 		// Requête de récupération des factures fournisseur
@@ -270,7 +270,7 @@ class TExportCompta extends TObjetStd {
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_NDF;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
 		
-		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+		$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 		$idpays = $p[0];
 		
 		// Requête de récupération des notes de frais
