@@ -261,8 +261,8 @@ class TExportCompta extends TObjetStd {
 	function get_notes_de_frais($dt_deb, $dt_fin) {
 		global $db, $conf, $user;
 		
-		$ATMdb = new Tdb();
-		$sql = 'SELECT rowid, accountancy_code FROM '.MAIN_DB_PREFIX.'c_exp';
+		$ATMdb = new TPDOdb();
+		$sql = 'SELECT rowid, accountancy_code FROM '.MAIN_DB_PREFIX.'c_ndfp_exp';
 		$TCodesCompta = TRequeteCore::get_keyval_by_sql($ATMdb, $sql, 'rowid', 'accountancy_code');
 		
 		if(!$conf->ndfp->enabled) return array();
