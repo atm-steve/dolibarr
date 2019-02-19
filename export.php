@@ -133,7 +133,7 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 			</td>
 		</tr>
 	</table>
-<?
+<?php
 
 $form->end();
 
