@@ -6,7 +6,7 @@ require('./class/export.class.php');
 if (!$user->rights->exportcompta->generate) accessforbidden();
 
 $langs->load('main');
-$langs->load('export-compta@export-compta');
+$langs->load('exportcompta@exportcompta');
 
 $exp = new TExportCompta($db);
 
@@ -29,7 +29,7 @@ if(!empty($action) && $action == 'export') {
 	$fileContent = '';
 	
 	if(!empty($logiciel_export)) {
-		dol_include_once('/export-compta/class/export_'.$logiciel_export.'.class.php');
+		dol_include_once('/exportcompta/class/export_'.$logiciel_export.'.class.php');
 		switch ($logiciel_export) {
 			case 'quadratus':
 				$export = new TExportComptaQuadratus();
