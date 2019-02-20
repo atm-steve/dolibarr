@@ -63,11 +63,13 @@ if ($action == 'setvalue' && $user->admin)
 	if (! dolibarr_set_const($db, 'LDAP_FIELD_MAIL',GETPOST("fieldmail"),'chaine',0,'',$conf->entity)) $error++;
 	if (! dolibarr_set_const($db, 'LDAP_FIELD_PHONE',GETPOST("fieldphone"),'chaine',0,'',$conf->entity)) $error++;
 	if (! dolibarr_set_const($db, 'LDAP_FIELD_MOBILE',GETPOST("fieldmobile"),'chaine',0,'',$conf->entity)) $error++;
-  if (! dolibarr_set_const($db, 'LDAP_FIELD_SKYPE',GETPOST("fieldskype"),'chaine',0,'',$conf->entity)) $error++;
+	if (! dolibarr_set_const($db, 'LDAP_FIELD_SKYPE',GETPOST("fieldskype"),'chaine',0,'',$conf->entity)) $error++;
 	if (! dolibarr_set_const($db, 'LDAP_FIELD_FAX',GETPOST("fieldfax"),'chaine',0,'',$conf->entity)) $error++;
 	if (! dolibarr_set_const($db, 'LDAP_FIELD_DESCRIPTION',GETPOST("fielddescription"),'chaine',0,'',$conf->entity)) $error++;
 	if (! dolibarr_set_const($db, 'LDAP_FIELD_SID',GETPOST("fieldsid"),'chaine',0,'',$conf->entity)) $error++;
 	if (! dolibarr_set_const($db, 'LDAP_FIELD_TITLE',GETPOST("fieldtitle"),'chaine',0,'',$conf->entity)) $error++;
+	if (! dolibarr_set_const($db, 'LDAP_FIELD_MANAGER',GETPOST("fieldmanager"),'chaine',0,'',$conf->entity)) $error++;
+	if (! dolibarr_set_const($db, 'LDAP_FIELD_PHOTO',GETPOST("fieldphoto"),'chaine',0,'',$conf->entity)) $error++;
 
     // This one must be after the others
     $valkey='';
@@ -279,6 +281,22 @@ print '<tr '.$bc[$var].'><td>'.$langs->trans("LDAPFieldSid").'</td><td>';
 print '<input size="25" type="text" name="fieldsid" value="'.$conf->global->LDAP_FIELD_SID.'">';
 print '</td><td>'.$langs->trans("LDAPFieldSidExample").'</td>';
 print '<td align="right"><input type="radio" name="key" value="LDAP_FIELD_SID"'.(($conf->global->LDAP_KEY_USERS && $conf->global->LDAP_KEY_USERS==$conf->global->LDAP_FIELD_SID)?' checked="checked"':'')."></td>";
+print '</tr>';
+
+// Manager
+$var=!$var;
+print '<tr '.$bc[$var].'><td>'.$langs->trans("LDAPFieldManager").'</td><td>';
+print '<input size="25" type="text" name="fieldmanager" value="'.$conf->global->LDAP_FIELD_MANAGER.'">';
+print '</td><td>'.$langs->trans("LDAPFieldManagerExample").'</td>';
+print '<td align="right"><input type="radio" name="key" value="LDAP_FIELD_MANAGER"'.(($conf->global->LDAP_KEY_USERS && $conf->global->LDAP_KEY_USERS==$conf->global->LDAP_FIELD_MANAGER)?' checked="checked"':'')."></td>";
+print '</tr>';
+
+// Photo
+$var=!$var;
+print '<tr '.$bc[$var].'><td>'.$langs->trans("LDAPFieldPhoto").'</td><td>';
+print '<input size="25" type="text" name="fieldphoto" value="'.$conf->global->LDAP_FIELD_PHOTO.'">';
+print '</td><td>'.$langs->trans("LDAPFieldPhotoExample").'</td>';
+print '<td align="right"><input type="radio" name="key" value="LDAP_FIELD_PHOTO"'.(($conf->global->LDAP_KEY_USERS && $conf->global->LDAP_KEY_USERS==$conf->global->LDAP_FIELD_PHOTO)?' checked="checked"':'')."></td>";
 print '</tr>';
 
 $var=!$var;
