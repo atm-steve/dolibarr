@@ -24,7 +24,8 @@
  *       \ingroup    export
  *       \brief      Pages of export Wizard
  */
-
+set_time_limit(100);
+ini_set('memory_limit','256M');
 require_once '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
