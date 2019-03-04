@@ -239,7 +239,10 @@ class pdf_crabe extends ModelePDFFactures
 		}
 		if (count($realpatharray) == 0) $this->posxpicture=$this->posxtva;
 
-		if ($conf->facture->dir_output)
+		if(! empty($conf->global->MULTICOMPANY_INVOICE_SHARING_ENABLED)) $upload_dir = $conf->facture->multidir_output[$object->entity];
+		else $upload_dir = $conf->facture->dir_output;
+
+		if ($upload_dir)
 		{
 			$object->fetch_thirdparty();
 
@@ -250,13 +253,13 @@ class pdf_crabe extends ModelePDFFactures
 			// Definition of $dir and $file
 			if ($object->specimen)
 			{
-				$dir = $conf->facture->dir_output;
+				$dir = $upload_dir;
 				$file = $dir . "/SPECIMEN.pdf";
 			}
 			else
 			{
 				$objectref = dol_sanitizeFileName($object->ref);
-				$dir = $conf->facture->dir_output . "/" . $objectref;
+				$dir = $upload_dir . "/" . $objectref;
 				$file = $dir . "/" . $objectref . ".pdf";
 			}
 			if (! file_exists($dir))
