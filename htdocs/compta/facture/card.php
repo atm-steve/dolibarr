@@ -2490,7 +2490,9 @@ if (empty($reshook))
 	include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 
 	// Actions to build doc
-	$upload_dir = $conf->facture->dir_output;
+    if(! empty($conf->global->MULTICOMPANY_INVOICE_SHARING_ENABLED)) $upload_dir = $conf->facture->multidir_output[$object->entity];
+    else $upload_dir = $conf->facture->dir_output;
+
 	$permissioncreate=$user->rights->facture->creer;
 	include DOL_DOCUMENT_ROOT.'/core/actions_builddoc.inc.php';
 
@@ -4865,8 +4867,9 @@ else if ($id > 0 || ! empty($ref))
 		print '<a name="builddoc"></a>'; // ancre
 
 		// Documents generes
+
 		$filename = dol_sanitizeFileName($object->ref);
-		$filedir = $conf->facture->dir_output . '/' . dol_sanitizeFileName($object->ref);
+		$filedir = $upload_dir . '/' . dol_sanitizeFileName($object->ref);
 		$urlsource = $_SERVER['PHP_SELF'] . '?facid=' . $object->id;
 		$genallowed = $user->rights->facture->lire;
 		$delallowed = $user->rights->facture->creer;
@@ -4918,7 +4921,7 @@ else if ($id > 0 || ! empty($ref))
 	// Presend form
 	$modelmail='facture_send';
 	$defaulttopic='SendBillRef';
-	$diroutput = $conf->facture->dir_output;
+	$diroutput = $upload_dir;
 	$trackid = 'inv'.$object->id;
 
 	include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
