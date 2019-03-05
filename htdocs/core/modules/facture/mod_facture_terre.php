@@ -166,7 +166,7 @@ class mod_facture_terre extends ModeleNumRefFactures
 		
 		// Use object entity ID
 		$entity = ((isset($facture->entity) && is_numeric($facture->entity)) ? $facture->entity : $conf->entity);
-		
+
 		// D'abord on recupere la valeur max
 		$posindice=8;
 		$sql = "SELECT MAX(CAST(SUBSTRING(facnumber FROM ".$posindice.") AS SIGNED)) as max";	// This is standard SQL
