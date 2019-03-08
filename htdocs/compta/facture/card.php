@@ -1287,6 +1287,7 @@ if (empty($reshook))
 										if ($totalamount != 0) {
 											if ($numlines > 0) $numlines = $numlines-1;
 											$tva_tx = $lines[$numlines]->tva_tx;
+											if(! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $tva_tx = 0;
 											if (! empty($lines[$numlines]->vat_src_code) && ! preg_match('/\(/', $tva_tx)) $tva_tx .= ' ('.$lines[$numlines]->vat_src_code.')';
 											$amountdeposit[$tva_tx] = ($totalamount * $valuedeposit) / 100;
 										} else {
