@@ -2760,7 +2760,7 @@ if ($action != 'makeorder')
     		$somethingshown = $form->showLinkedObjectBlock($object, $linktoelem);
 
     		print '</div><div class="fichehalfright"><div class="ficheaddleft">';
-		if ($user->rights->fournisseur->commande->receptionner	&& ($object->statut == 3 || $object->statut == 4))
+		if ($user->rights->fournisseur->commande->receptionner	&& ($object->statut == 3 || $object->statut == 4) && $user->admin)
 		{
 			// Set status to received (action=livraison)
 			print '<!-- form to record supplier order received -->'."\n";
