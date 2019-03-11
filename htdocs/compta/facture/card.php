@@ -4874,7 +4874,7 @@ else if ($id > 0 || ! empty($ref))
 		$genallowed = $user->rights->facture->lire;
 		$delallowed = $user->rights->facture->creer;
 
-		print $formfile->showdocuments('facture', $filename, $filedir, $urlsource, $genallowed, $delallowed, $object->modelpdf, 1, 0, 0, 28, 0, '', '', '', $soc->default_lang);
+		print $formfile->showdocuments('facture', $filename, $filedir, $urlsource, $genallowed, $delallowed, $object->modelpdf, 1, 0, 0, 28, 0, '', '', '', $soc->default_lang, '', $object);
 		$somethingshown = $formfile->numoffiles;
 
 		// Show links to link elements

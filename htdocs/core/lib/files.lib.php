@@ -2397,7 +2397,7 @@ function dol_check_secure_access_document($modulepart, $original_file, $entity, 
 		{
 			$accessallowed=1;
 		}
-		$original_file=$conf->facture->dir_output.'/'.$original_file;
+		$original_file=$conf->facture->multidir_output[$entity].'/'.$original_file;
 		$sqlprotectagainstexternals = "SELECT fk_soc as fk_soc FROM ".MAIN_DB_PREFIX."facture WHERE ref='".$db->escape($refname)."' AND entity=".$conf->entity;
 	}
 	// Wrapping for mass actions
