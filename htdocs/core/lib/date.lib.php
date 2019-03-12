@@ -175,7 +175,7 @@ function convertSecondToTime($iSecond, $format='all', $lengthOfDay=86400, $lengt
 	if (empty($lengthOfDay))  $lengthOfDay = 86400;         // 1 day = 24 hours
     if (empty($lengthOfWeek)) $lengthOfWeek = 7;            // 1 week = 7 days
 
-	if ($format == 'all' || $format == 'allwithouthour' || $format == 'allhour' || $format == 'allhourmin')
+    if ($format == 'all' || $format == 'allwithouthour' || $format == 'allhour' || $format == 'allhourmin' || $format == 'allhourminsec' || $format == 'alldayhour' || $format == 'allday' || $format == 'alldaydecimal')
 	{
 		if ((int) $iSecond === 0) return '0';	// This is to avoid having 0 return a 12:00 AM for en_US
 
@@ -222,23 +222,48 @@ function convertSecondToTime($iSecond, $format='all', $lengthOfDay=86400, $lengt
 				$sTime.= dol_print_date($iSecond,'hourduration',true);
 			}
 		}
-		if ($format == 'allhourmin')
+		elseif ($format == 'allhourminsec')
 		{
-		    return sprintf("%02d",($sWeek*$lengthOfWeek*24 + $sDay*24 + (int) floor($iSecond/3600))).':'.sprintf("%02d",((int) floor(($iSecond % 3600)/60)));
+		    return sprintf("%02d", ($sWeek*$lengthOfWeek*24 + $sDay*24 + (int) floor($iSecond/3600))).':'.sprintf("%02d", ((int) floor(($iSecond % 3600)/60))).':'.sprintf("%02d", ((int) ($iSecond % 60)));
 		}
-		if ($format == 'allhour')
+		elseif ($format == 'allhourmin')
 		{
-			return sprintf("%02d",($sWeek*$lengthOfWeek*24 + $sDay*24 + (int) floor($iSecond/3600)));
+		    return sprintf("%02d", ($sWeek*$lengthOfWeek*24 + $sDay*24 + (int) floor($iSecond/3600))).':'.sprintf("%02d", ((int) floor(($iSecond % 3600)/60)));
 		}
+		elseif ($format == 'allhour')
+		{
+			return sprintf("%02d", ($sWeek*$lengthOfWeek*24 + $sDay*24 + (int) floor($iSecond/3600)));
+		}
+		elseif ($format == 'alldayhour')
+        {
+            $total_days = $sWeek * $lengthOfWeek + $sDay;
+            if ($total_days > 0)
+            {
+                $sTime = $total_days;
+                if ($total_days > 1) $sTime.= ' '.$langs->trans("Days");
+                else $sTime.= ' '.$langs->trans("Day");
+            }
+
+            if ($iSecond > 0) $sTime.= ' '.dol_print_date($iSecond, 'hourduration', true);
+        }
+		elseif ($format == 'allday')
+        {
+            return $sWeek * $lengthOfWeek + $sDay;
+        }
+		elseif ($format == 'alldaydecimal')
+        {
+            return ($sWeek * $lengthOfWeek + $sDay) + ($iSecond/$lengthOfDay);
+        }
 	}
 	else if ($format == 'hour')	// only hour part
 	{
 		$sTime=dol_print_date($iSecond,'%H',true);
 	}
-	else if ($format == 'fullhour')
+	elseif ($format == 'fullhour' || $format == 'fullmin')
 	{
 		if (!empty($iSecond)) {
-			$iSecond=$iSecond/3600;
+            if ($format == 'fullhour') $iSecond=$iSecond/3600;
+            else $iSecond=$iSecond/60;
 		}
 		else {
 			$iSecond=0;
