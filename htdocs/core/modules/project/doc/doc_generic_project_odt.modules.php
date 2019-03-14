@@ -755,7 +755,7 @@ class doc_generic_project_odt extends ModelePDFProjects
 								} else {
 									$row['fullcivname']='';
 								}
-
+								
 								if (!empty($row['thm'])) {
 									$row['amountht']=($row['task_duration'] / 3600) * $row['thm'];
 									$defaultvat = get_default_tva($mysoc, $mysoc);
@@ -767,7 +767,6 @@ class doc_generic_project_odt extends ModelePDFProjects
 								}
 
 								$tmparray=$this->get_substitutionarray_taskstime($row,$outputlangs);
-
 								foreach($tmparray as $key => $val)
 								{
 									try
@@ -952,12 +951,11 @@ class doc_generic_project_odt extends ModelePDFProjects
 								'table' => 'facture_rec',
 								'test' => $conf->facture->enabled && $user->rights->facture->lire 
 						),
-						'proposal_supplier' => array(
-								'title' => "ListSupplierProposalsAssociatedProject",
-								'class' => 'SupplierProposal',
-								'table' => 'supplier_proposal',
-								'test' => $conf->supplier_proposal->enabled && $user->rights->supplier_proposal->lire 
-						),
+						'proposal_supplier'=>array(
+								'title'=>"ListSupplierProposalsAssociatedProject",
+								'class'=>'SupplierProposal',
+								'table'=>'supplier_proposal',
+								'test'=>$conf->supplier_proposal->enabled && $user->rights->supplier_proposal->lire),
 						'order_supplier' => array(
 								'title' => "ListSupplierOrdersAssociatedProject",
 								'table' => 'commande_fournisseur',
@@ -983,13 +981,12 @@ class doc_generic_project_odt extends ModelePDFProjects
 								'disableamount' => 1,
 								'test' => $conf->ficheinter->enabled && $user->rights->ficheinter->lire 
 						),
-						'shipping' => array(
-								'title' => "ListShippingAssociatedProject",
-								'class' => 'Expedition',
-								'table' => 'expedition',
+						'shipping'=>array(
+								'title'=>"ListShippingAssociatedProject",
+								'class'=>'Expedition',
+								'table'=>'expedition',
 								'disableamount' => 1,
-								'test' => $conf->expedition->enabled && $user->rights->expedition->lire 
-						),
+								'test'=>$conf->expedition->enabled && $user->rights->expedition->lire),
 						'trip' => array(
 								'title' => "ListTripAssociatedProject",
 								'class' => 'Deplacement',
@@ -997,37 +994,37 @@ class doc_generic_project_odt extends ModelePDFProjects
 								'disableamount' => 1,
 								'test' => $conf->deplacement->enabled && $user->rights->deplacement->lire 
 						),
-						'expensereport' => array(
-								'title' => "ListExpenseReportsAssociatedProject",
-								'class' => 'ExpenseReportLine',
-								'table' => 'expensereport_det',
-								'test' => $conf->expensereport->enabled && $user->rights->expensereport->lire 
-						),
-						'donation' => array(
-								'title' => "ListDonationsAssociatedProject",
-								'class' => 'Don',
-								'table' => 'don',
-								'test' => $conf->don->enabled && $user->rights->don->lire 
-						),
-						'loan' => array(
-								'title' => "ListLoanAssociatedProject",
-								'class' => 'Loan',
-								'table' => 'loan',
-								'test' => $conf->loan->enabled && $user->rights->loan->read 
-						),
-						'chargesociales' => array(
-								'title' => "ListSocialContributionAssociatedProject",
-								'class' => 'ChargeSociales',
-								'table' => 'chargesociales',
-								'urlnew' => DOL_URL_ROOT . '/compta/sociales/card.php?action=create&projectid=' . $id,
-								'test' => $conf->tax->enabled && $user->rights->tax->charges->lire 
-						),
-						'stock_mouvement' => array(
-								'title' => "ListMouvementStockProject",
-								'class' => 'MouvementStock',
-								'table' => 'stock_mouvement',
-								'test' => ($conf->stock->enabled && $user->rights->stock->mouvement->lire && ! empty($conf->global->STOCK_MOVEMENT_INTO_PROJECT_OVERVIEW)) 
-						),
+						'expensereport'=>array(
+								'title'=>"ListExpenseReportsAssociatedProject",
+								'class'=>'ExpenseReportLine',
+								'table'=>'expensereport_det',
+								'test'=>$conf->expensereport->enabled && $user->rights->expensereport->lire),
+						'donation'=>array(
+								'title'=>"ListDonationsAssociatedProject",
+								'class'=>'Don',
+								'table'=>'don',
+								'test'=>$conf->don->enabled && $user->rights->don->lire),
+						'loan'=>array(
+								'title'=>"ListLoanAssociatedProject",
+								'class'=>'Loan',
+								'table'=>'loan',
+								'test'=>$conf->loan->enabled && $user->rights->loan->read),
+						'chargesociales'=>array(
+								'title'=>"ListSocialContributionAssociatedProject",
+								'class'=>'ChargeSociales',
+								'table'=>'chargesociales',
+								'urlnew'=>DOL_URL_ROOT.'/compta/sociales/card.php?action=create&projectid='.$id,
+								'test'=>$conf->tax->enabled && $user->rights->tax->charges->lire),
+						'project_task'=>array(
+								'title'=>"ListTaskTimeUserProject",
+								'class'=>'Task',
+								'table'=>'projet_task',
+								'test'=>($conf->projet->enabled && $user->rights->projet->lire && empty($conf->global->PROJECT_HIDE_TASKS))),
+						'stock_mouvement'=>array(
+								'title'=>"ListMouvementStockProject",
+								'class'=>'MouvementStock',
+								'table'=>'stock_mouvement',
+								'test'=>($conf->stock->enabled && $user->rights->stock->mouvement->lire && ! empty($conf->global->STOCK_MOVEMENT_INTO_PROJECT_OVERVIEW))),
 						'agenda' => array(
 								'title' => "ListActionsAssociatedProject",
 								'class' => 'ActionComm',
