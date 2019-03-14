@@ -713,7 +713,11 @@ while ($i < min($num,$limit))
                 if (!empty($conf->global->PROJECT_ENABLE_WORKING_TIME))
                 {
                     $workingdelay=convertSecondToTime($obj->planned_workload, $working_plannedworkloadoutputformat, $working_hours_per_day_in_seconds, $working_days_per_weeks);	// TODO Replace 86400 and 7 to take account working hours per day and working day per weeks
-                    if ($workingdelay != $fullhour) print '<br>('.$workingdelay.')';
+                    if ($workingdelay != $fullhour && !empty($workingdelay))
+                    {
+                        if (!empty($fullhour)) print '<br>';
+                        print '('.$workingdelay.')';
+                    }
                 }
 			}
 			//else print '--:--';
@@ -737,7 +741,11 @@ while ($i < min($num,$limit))
                 if (!empty($conf->global->PROJECT_ENABLE_WORKING_TIME))
                 {
                     $workingdelay=convertSecondToTime($obj->duration_effective, $working_timespentoutputformat, $working_hours_per_day_in_seconds, $working_days_per_weeks);	// TODO Replace 86400 and 7 to take account working hours per day and working day per weeks
-                    if ($workingdelay != $fullhour) print '<br>('.$workingdelay.')';
+                    if ($workingdelay != $fullhour)
+                    {
+                        if (!empty($fullhour)) print '<br>';
+                        print '('.$workingdelay.')';
+                    }
                 }
             }
 			else print '--:--';
@@ -839,7 +847,11 @@ if (isset($totalarray['totaldurationeffectivefield']) || isset($totalarray['tota
             if (!empty($conf->global->PROJECT_ENABLE_WORKING_TIME))
             {
                 $workingdelay=convertSecondToTime($totalarray['totalplannedworkload'], $working_plannedworkloadoutputformat, $working_hours_per_day_in_seconds, $working_days_per_weeks);
-                if ($workingdelay != $fulltime) print '<br>('.$workingdelay.')';
+                if ($workingdelay != $fulltime)
+                {
+                    if (!empty($fulltime)) print '<br>';
+                    print '('.$workingdelay.')';
+                }
             }
             print '</td>';
         }
@@ -850,7 +862,11 @@ if (isset($totalarray['totaldurationeffectivefield']) || isset($totalarray['tota
             if (!empty($conf->global->PROJECT_ENABLE_WORKING_TIME))
             {
                 $workingdelay=convertSecondToTime($totalarray['totaldurationeffective'], $working_timespentoutputformat, $working_hours_per_day_in_seconds, $working_days_per_weeks);
-                if ($workingdelay != $fulltime) print '<br>('.$workingdelay.')';
+                if ($workingdelay != $fulltime)
+                {
+                    if (!empty($fulltime)) print '<br>';
+                    print '('.$workingdelay.')';
+                }
             }
             print '</td>';
         }

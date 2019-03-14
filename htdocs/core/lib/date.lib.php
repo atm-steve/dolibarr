@@ -170,7 +170,7 @@ function convertTime2Seconds($iHours=0,$iMinutes=0,$iSeconds=0)
  */
 function convertSecondToTime($iSecond, $format='all', $lengthOfDay=86400, $lengthOfWeek=7)
 {
-	global $langs;
+	global $langs,$conf;
 
 	if (empty($lengthOfDay))  $lengthOfDay = 86400;         // 1 day = 24 hours
     if (empty($lengthOfWeek)) $lengthOfWeek = 7;            // 1 week = 7 days
@@ -248,11 +248,26 @@ function convertSecondToTime($iSecond, $format='all', $lengthOfDay=86400, $lengt
         }
 		elseif ($format == 'allday')
         {
-            return $sWeek * $lengthOfWeek + $sDay;
+            $total_days = $sWeek * $lengthOfWeek + $sDay;
+            if ($total_days == 0) $sTime = '';
+            else
+            {
+                if ($sWeek > 0 && $sDay == 1) $dayTranslate = $langs->trans("Days");
+                else $dayTranslate = $langs->trans("Day");
+                $sTime = $total_days.' '.$dayTranslate;
+            }
         }
 		elseif ($format == 'alldaydecimal')
         {
-            return ($sWeek * $lengthOfWeek + $sDay) + ($iSecond/$lengthOfDay);
+            $total_days = ($sWeek * $lengthOfWeek + $sDay) + ($iSecond/$lengthOfDay);
+            if ($total_days == 0) $sTime = '';
+            else
+            {
+                if ($total_days >= 2) $dayTranslate = $langs->trans("Days");
+                else $dayTranslate = $langs->trans("Day");
+                $frounding = isset($conf->global->PROJECT_FORCE_ROUNDING_DECIMAL_DAY) ? $conf->global->PROJECT_FORCE_ROUNDING_DECIMAL_DAY : 3;
+                $sTime = price($total_days, 0, '', 1 , -1, $frounding).' '.$dayTranslate;
+            }
         }
 	}
 	else if ($format == 'hour')	// only hour part
@@ -285,6 +300,16 @@ function convertSecondToTime($iSecond, $format='all', $lengthOfDay=86400, $lengt
     else if ($format == 'year')	// only year part
     {
         $sTime=dol_print_date($iSecond,'%Y',true);
+    }
+    elseif ($format == 'fulldaydecimal')
+    {
+        $nb_weeks =  floor($iSecond / ($lengthOfWeek * $lengthOfDay)); //$iSecond % ($lengthOfWeek * $lengthOfDay);
+        $iSecond = $iSecond - ($nb_weeks * ($lengthOfWeek * $lengthOfDay));
+
+        $nb_days = floor($iSecond / $lengthOfDay);
+        $iSecond = $iSecond - ($nb_days * $lengthOfDay);
+
+        $sTime = $nb_weeks * $lengthOfWeek + $nb_days + ($iSecond / $lengthOfDay);
     }
     return trim($sTime);
 }
