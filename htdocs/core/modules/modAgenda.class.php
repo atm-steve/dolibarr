@@ -90,7 +90,7 @@ class modAgenda extends DolibarrModules
 		$resql = $this->db->query($sqlreadactions);
 		if ($resql)
 		{
-		    while ($obj = $this->db->fetch_object($sqlreadactions))
+		    while ($obj = $this->db->fetch_object($resql))
 		    {
 		        //if (preg_match('/_CREATE$/',$obj->code) && (! in_array($obj->code, array('COMPANY_CREATE','PRODUCT_CREATE','TASK_CREATE')))) continue;    // We don't track such events (*_CREATE) by default, we prefer validation (except thirdparty/product/task creation because there is no validation).
 		        if (preg_match('/^TASK_/',$obj->code)) continue;      // We don't track such events by default.
@@ -395,7 +395,7 @@ class modAgenda extends DolibarrModules
 		$this->export_TypeFields_array[$r]=array('ac.ref_ext'=>"Text",'ac.datec'=>"Date",'ac.datep'=>"Date",
 			'ac.datep2'=>"Date",'ac.label'=>"Text",'ac.note'=>"Text",'ac.percent'=>"Numeric",
 			'ac.durationp'=>"Duree",
-			'cac.libelle'=>"List:c_actioncomm:libelle:id",
+			'cac.libelle'=>"List:c_actioncomm:libelle:libelle",
 			's.nom'=>'Text','s.address'=>'Text','s.zip'=>'Text','s.town'=>'Text',
 			'co.code'=>'Text','s.phone'=>'Text','s.siren'=>'Text','s.siret'=>'Text','s.ape'=>'Text','s.idprof4'=>'Text','s.idprof5'=>'Text','s.idprof6'=>'Text',
 			's.code_compta'=>'Text','s.code_compta_fournisseur'=>'Text','s.tva_intra'=>'Text');
@@ -417,7 +417,7 @@ class modAgenda extends DolibarrModules
 		$this->export_sql_end[$r] .=' WHERE ac.entity IN ('.getEntity('agenda').')';
 		if (empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' AND (sc.fk_user = '.(empty($user)?0:$user->id).' OR ac.fk_soc IS NULL)';
 		if (empty($user->rights->agenda->allactions->read)) $this->export_sql_end[$r] .=' AND acr.fk_element = '.(empty($user)?0:$user->id);
-		$this->export_sql_end[$r] .=' ORDER BY ac.datep';
+		$this->export_sql_order[$r] .=' ORDER BY ac.datep';
 
 	}
 

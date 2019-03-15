@@ -212,7 +212,7 @@ if (empty($reshook))
 		}
 		else
 		{
-			setEventMessages($object->errors, $object->error, 'errors');
+			setEventMessages($object->error, $object->errors, 'errors');
 		}
 	}
 
@@ -446,7 +446,7 @@ if (empty($reshook))
 		}
 
 		$typeid=GETPOST("typeid",'int');
-		$civility_id=GETPOST("civility_id",'int');
+		$civility_id=GETPOST("civility_id",'alpha');
 		$lastname=GETPOST("lastname",'alpha');
 		$firstname=GETPOST("firstname",'alpha');
 		$societe=GETPOST("societe",'alpha');
