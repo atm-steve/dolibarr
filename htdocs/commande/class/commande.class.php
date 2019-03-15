@@ -849,8 +849,8 @@ class Commande extends CommonOrder
                     	$line->label,
                     	$line->array_options,
 	                    $line->fk_unit,
-                        $this->element,
-                        $line->id
+                        $line->origin,
+                        $line->origin_id
                     );
                     if ($result < 0)
                     {
@@ -1129,6 +1129,9 @@ class Commande extends CommonOrder
 
             $line->date_start      	= $object->lines[$i]->date_start;
             $line->date_end    		= $object->lines[$i]->date_end;
+
+            $line->origin_id        = $object->lines[$i]->id;
+            $line->origin           = $object->lines[$i]->element;
 
 			$line->fk_fournprice	= $object->lines[$i]->fk_fournprice;
 			$marginInfos			= getMarginInfos($object->lines[$i]->subprice, $object->lines[$i]->remise_percent, $object->lines[$i]->tva_tx, $object->lines[$i]->localtax1_tx, $object->lines[$i]->localtax2_tx, $object->lines[$i]->fk_fournprice, $object->lines[$i]->pa_ht);
@@ -1415,6 +1418,7 @@ class Commande extends CommonOrder
 			}
 
             $result=$this->line->insert($user);
+            $this->line->add_object_linked($this->line->origin, $this->line->origin_id);
             if ($result > 0)
             {
                 // Reorder if child line
