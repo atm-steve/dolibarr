@@ -1052,11 +1052,12 @@ else
             // Length
             if (empty($conf->global->PRODUCT_DISABLE_SIZE))
             {
-                print '<tr><td>'.$langs->trans("Length").' x '.$langs->trans("Width").' x '.$langs->trans("Height").'</td><td colspan="3">';
-                print '<input name="size" size="4" value="'.GETPOST('size').'"> x ';
-                print '<input name="sizewidth" size="4" value="'.GETPOST('sizewidth').'"> x ';
-                print '<input name="sizeheight" size="4" value="'.GETPOST('sizeheight').'">';
-                print $formproduct->select_measuring_units("size_units","size");
+                print '<tr><td>'.$langs->trans("Width").' x '.$langs->trans("Length").' x '.$langs->trans("Height").'</td><td colspan="3">';
+
+                print '<input name="sizewidth" placeholder="'.$langs->trans("Width").'" size="4" value="'.GETPOST('sizewidth').'"> x ';
+				print '<input name="size"  placeholder="'.$langs->trans("Length").'" size="4" value="'.GETPOST('size').'"> x ';
+                print '<input name="sizeheight"  placeholder="'.$langs->trans("Height").'" size="4" value="'.GETPOST('sizeheight').'">';
+                print $formproduct->select_measuring_units("size_units","size", -2);
                 print '</td></tr>';
             }
             if (empty($conf->global->PRODUCT_DISABLE_SURFACE))
@@ -1425,10 +1426,11 @@ else
                 if (empty($conf->global->PRODUCT_DISABLE_SIZE))
                 {
         			// Length
-        			print '<tr><td>'.$langs->trans("Length").' x '.$langs->trans("Width").' x '.$langs->trans("Height").'</td><td colspan="3">';
-        			print '<input name="size" size="5" value="'.$object->length.'">x';
-        			print '<input name="sizewidth" size="5" value="'.$object->width.'">x';
-        			print '<input name="sizeheight" size="5" value="'.$object->height.'"> ';
+        			print '<tr><td>'.$langs->trans("Width").' x '.$langs->trans("Length").' x '.$langs->trans("Height").'</td><td colspan="3">';
+
+					print '<input name="sizewidth" placeholder="'.$langs->trans("Width").'" size="5" value="'.$object->width.'">x';
+					print '<input name="size" size="5" placeholder="'.$langs->trans("Length").'"  value="'.$object->length.'">x';
+        			print '<input name="sizeheight" placeholder="'.$langs->trans("Height").'" size="5" value="'.$object->height.'"> ';
         			print $formproduct->select_measuring_units("size_units", "size", $object->length_units);
         			print '</td></tr>';
                 }
@@ -1848,11 +1850,11 @@ else
                 if (empty($conf->global->PRODUCT_DISABLE_SIZE))
                 {
                     // Length
-                    print '<tr><td>'.$langs->trans("Length").' x '.$langs->trans("Width").' x '.$langs->trans("Height").'</td><td colspan="2">';
+                    print '<tr><td>'.$langs->trans("Width").' x '.$langs->trans("Length").' x '.$langs->trans("Height").'</td><td colspan="2">';
                     if ($object->length != '' || $object->width != '' || $object->height != '')
                     {
-                        print $object->length;
-                        if ($object->width) print " x ".$object->width;
+                        print $object->width;
+						print " x ".$object->length;
                         if ($object->height) print " x ".$object->height;
                         print ' '.measuring_units_string($object->length_units,"size");
                     }
