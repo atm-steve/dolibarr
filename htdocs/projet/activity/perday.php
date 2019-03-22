@@ -36,6 +36,8 @@ require_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
 
 $langs->loadLangs(array('projects','users','companies'));
 
+$atm = 'evol';
+
 $action=GETPOST('action', 'aZ09');
 $mode=GETPOST("mode", 'alpha');
 $id=GETPOST('id', 'int');
@@ -115,7 +117,7 @@ $arrayfields=array(
 $extrafields = new ExtraFields($db);
 
 // fetch optionals attributes and labels
-$extralabels = $extrafields->fetch_name_optionals_label('projet');
+$extralabels_project = $extrafields->fetch_name_optionals_label('projet');
 if (!empty($extrafields->attributes['projet']['label']))
 {
     foreach($extrafields->attributes['projet']['label'] as $key => $val)
@@ -123,7 +125,7 @@ if (!empty($extrafields->attributes['projet']['label']))
         if (! empty($extrafields->attributes['projet']['list'][$key])) $arrayfields["efp.".$key]=array('label'=>$extrafields->attributes['projet']['label'][$key], 'checked'=>(($extrafields->attributes['projet']['list'][$key]<0)?0:1), 'position'=>$extrafields->attributes['projet']['pos'][$key], 'enabled'=>(abs($extrafields->attributes['projet']['list'][$key])!=3 && $extrafields->attributes['projet']['perms'][$key]));
     }
 }
-$extralabels+= $extrafields->fetch_name_optionals_label('projet_task', true);
+$extralabels_project_task= $extrafields->fetch_name_optionals_label('projet_task', true);
 if (!empty($extrafields->attributes['projet_task']['label']))
 {
     foreach($extrafields->attributes['projet_task']['label'] as $key => $val)
@@ -131,6 +133,10 @@ if (!empty($extrafields->attributes['projet_task']['label']))
         if (! empty($extrafields->attributes['projet_task']['list'][$key])) $arrayfields["efpt.".$key]=array('label'=>$extrafields->attributes['projet_task']['label'][$key], 'checked'=>(($extrafields->attributes['projet_task']['list'][$key]<0)?0:1), 'position'=>$extrafields->attributes['projet_task']['pos'][$key], 'enabled'=>(abs($extrafields->attributes['projet_task']['list'][$key])!=3 && $extrafields->attributes['projet_task']['perms'][$key]));
     }
 }
+
+$extralabels=array();
+if (is_array($extralabels_project)) $extralabels = $extralabels_project;
+if (is_array($extralabels_project_task)) $extralabels+= $extralabels_project_task;
 
 $search_array_options=array();
 $search_array_options_project=$extrafields->getOptionalsFromPost('projet', '', 'search_');

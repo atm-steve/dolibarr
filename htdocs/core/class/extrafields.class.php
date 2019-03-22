@@ -1813,31 +1813,41 @@ class ExtraFields
 	 * @param  string  $keysuffix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
 	 * @return array|int               array_options set or 0 if no value
 	 */
-	function getOptionalsFromPost($extralabels,$keyprefix='',$keysuffix='')
+	public function getOptionalsFromPost($extrafieldsobjectkey, $keyprefix = '', $keysuffix = '')
 	{
 		global $_POST;
-
-		$array_options = array();
+		if (is_string($extrafieldsobjectkey) && is_array($this->attributes[$extrafieldsobjectkey]['label']))
+		{
+			$extralabels = $this->attributes[$extrafieldsobjectkey]['label'];
+		}
+		else
+		{
+			$extralabels = $extrafieldsobjectkey;
+		}
 		if (is_array($extralabels))
 		{
+			$array_options = array();
 			// Get extra fields
 			foreach ($extralabels as $key => $value)
 			{
-				$key_type = $this->attribute_type[$key];
-
-				if (in_array($key_type,array('date','datetime')))
+				$key_type = '';
+				if (is_string($extrafieldsobjectkey))
+				{
+					$key_type = $this->attributes[$extrafieldsobjectkey]['type'][$key];
+				}
+				if (in_array($key_type, array('date','datetime')))
 				{
 					// Clean parameters
 					$value_key=dol_mktime($_POST[$keysuffix."options_".$key.$keyprefix."hour"], $_POST[$keysuffix."options_".$key.$keyprefix."min"], 0, $_POST[$keysuffix."options_".$key.$keyprefix."month"], $_POST[$keysuffix."options_".$key.$keyprefix."day"], $_POST[$keysuffix."options_".$key.$keyprefix."year"]);
 				}
-				else if (in_array($key_type,array('checkbox', 'chkbxlst')))
+				elseif (in_array($key_type, array('checkbox', 'chkbxlst')))
 				{
 					$value_arr=GETPOST($keysuffix."options_".$key.$keyprefix);
 					// Make sure we get an array even if there's only one checkbox
 					$value_arr=(array) $value_arr;
 					$value_key=implode(',', $value_arr);
 				}
-				else if (in_array($key_type,array('price','double')))
+				elseif (in_array($key_type, array('price','double')))
 				{
 					$value_arr=GETPOST($keysuffix."options_".$key.$keyprefix);
 					$value_key=price2num($value_arr);
@@ -1846,14 +1856,10 @@ class ExtraFields
 				{
 					$value_key=GETPOST($keysuffix."options_".$key.$keyprefix);
 				}
-
 				$array_options[$keysuffix."options_".$key]=$value_key;	// No keyprefix here. keyprefix is used only for read.
 			}
-
 			return $array_options;
 		}
-		else {
-			return 0;
-		}
+		return 0;
 	}
 }

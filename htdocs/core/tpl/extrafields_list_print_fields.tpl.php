@@ -1,100 +1,191 @@
 <?php
 
-// Protection to avoid direct call of template
-if (empty($conf) || ! is_object($conf))
+if ($atm == 'evol')
 {
-	print "Error, template page can't be called as URL";
-	exit;
-}
-
-if (empty($extrafieldsobjectkey) && is_object($object)) $extrafieldsobjectkey=$object->table_element;
-
-// Loop to show all columns of extrafields from $obj, $extrafields and $db
-if (! empty($extrafieldsobjectkey))	// $extrafieldsobject is the $object->table_element like 'societe', 'socpeople', ...
-{
-	if (is_array($extrafields->attributes[$extrafieldsobjectkey]['label']) && count($extrafields->attributes[$extrafieldsobjectkey]['label']))
+	// Protection to avoid direct call of template
+	if (empty($conf) || !is_object($conf))
 	{
-        if (empty($extrafieldsobjectprefix)) $extrafieldsobjectprefix = 'ef.';
+		print "Error, template page can't be called as URL";
+		exit;
+	}
 
-        foreach($extrafields->attributes[$extrafieldsobjectkey]['label'] as $key => $val)
+	if (empty($extrafieldsobjectkey) && is_object($object)) $extrafieldsobjectkey = $object->table_element;
+
+	// Loop to show all columns of extrafields from $obj, $extrafields and $db
+	if (!empty($extrafieldsobjectkey))    // $extrafieldsobject is the $object->table_element like 'societe', 'socpeople', ...
+	{
+		if (is_array($extrafields->attributes[$extrafieldsobjectkey]['label']) && count($extrafields->attributes[$extrafieldsobjectkey]['label']))
 		{
-			if (! empty($arrayfields[$extrafieldsobjectprefix.$key]['checked']))
+			if (empty($extrafieldsobjectprefix)) $extrafieldsobjectprefix = 'ef.';
+
+			foreach ($extrafields->attributes[$extrafieldsobjectkey]['label'] as $key => $val)
 			{
-				$align=$extrafields->getAlignFlag($key, $extrafieldsobjectkey);
-				print '<td';
-                if ($align) print ' class="'.$align.'"';
-                print ' data-key="'.$key.'"';
-                print '>';
-                $tmpkey='options_'.$key;
-
-				if (in_array($extrafields->attributes[$extrafieldsobjectkey]['type'][$key], array('date', 'datetime', 'timestamp')) && !is_numeric($obj->$tmpkey))
+				if (!empty($arrayfields[$extrafieldsobjectprefix.$key]['checked']))
 				{
-					$datenotinstring = $obj->$tmpkey;
-					if (! is_numeric($obj->$tmpkey))	// For backward compatibility
+					$align = $extrafields->getAlignFlag($key, $extrafieldsobjectkey);
+					print '<td';
+					if ($align) print ' class="'.$align.'"';
+					print ' data-key="'.$key.'"';
+					print '>';
+					$tmpkey = 'options_'.$key;
+
+					if (in_array($extrafields->attributes[$extrafieldsobjectkey]['type'][$key], array('date', 'datetime', 'timestamp')) && !is_numeric($obj->$tmpkey))
 					{
-						$datenotinstring = $db->jdate($datenotinstring);
+						$datenotinstring = $obj->$tmpkey;
+						if (!is_numeric($obj->$tmpkey))    // For backward compatibility
+						{
+							$datenotinstring = $db->jdate($datenotinstring);
+						}
+						$value = $datenotinstring;
 					}
-					$value = $datenotinstring;
-				}
-				else
-				{
-					$value = $obj->$tmpkey;
-				}
+					else
+					{
+						$value = $obj->$tmpkey;
+					}
 
-				print $extrafields->showOutputField($key, $value, '', $extrafieldsobjectkey);
-				print '</td>';
-				if (! $i) $totalarray['nbfield']++;
+					print $extrafields->showOutputField($key, $value, '', $extrafieldsobjectkey);
+					print '</td>';
+					if (!$i) $totalarray['nbfield']++;
 
-                if ($extrafields->attributes[$extrafieldsobjectkey]['totalizable'][$key]) {
-                    if (! $i) {
-                        // we keep position for the first line
-                        $totalarray['totalizable'][$key]['pos'] = $totalarray['nbfield'];
-                    }
-                    $totalarray['totalizable'][$key]['total'] += $obj->$tmpkey;
-                }
-				if (! empty($val['isameasure']))
+					if ($extrafields->attributes[$extrafieldsobjectkey]['totalizable'][$key])
+					{
+						if (!$i)
+						{
+							// we keep position for the first line
+							$totalarray['totalizable'][$key]['pos'] = $totalarray['nbfield'];
+						}
+						$totalarray['totalizable'][$key]['total'] += $obj->$tmpkey;
+					}
+					if (!empty($val['isameasure']))
+					{
+						if (!$i) $totalarray['pos'][$totalarray['nbfield']] = $extrafieldsobjectprefix.$tmpkey;
+						$totalarray['val'][$extrafieldsobjectprefix.$tmpkey] += $obj->$tmpkey;
+					}
+				}
+			}
+		}
+	}
+	else                                // Old method
+	{
+		if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
+		{
+			foreach ($extrafields->attribute_label as $key => $val)
+			{
+				if (!empty($arrayfields["ef.".$key]['checked']))
 				{
-					if (! $i) $totalarray['pos'][$totalarray['nbfield']]=$extrafieldsobjectprefix.$tmpkey;
-					$totalarray['val'][$extrafieldsobjectprefix.$tmpkey] += $obj->$tmpkey;
+					$align = $extrafields->getAlignFlag($key);
+					print '<td';
+					if ($align) print ' align="'.$align.'"';
+					print '>';
+					$tmpkey = 'options_'.$key;
+					if (in_array($extrafields->attribute_type[$key], array('date', 'datetime', 'timestamp')))
+					{
+						$value = $db->jdate($obj->$tmpkey);
+						if (is_array($obj->array_options) && isset($obj->array_options[$tmpkey]))
+						{
+							$value = $db->jdate($obj->array_options[$tmpkey]);
+						}
+					}
+					else
+					{
+						$value = $obj->$tmpkey;
+						if (is_array($obj->array_options) && isset($obj->array_options[$tmpkey]))
+						{
+							$value = $obj->array_options[$tmpkey];
+						}
+					}
+					print $extrafields->showOutputField($key, $value, '');
+					print '</td>';
+					if (!$i) $totalarray['nbfield']++;
+					if (!empty($val['isameasure']))
+					{
+						if (!$i) $totalarray['pos'][$totalarray['nbfield']] = 'ef.'.$tmpkey;
+						$totalarray['val']['ef.'.$tmpkey] += $obj->$tmpkey;
+					}
 				}
 			}
 		}
 	}
 }
-else								// Old method
+else
 {
-	if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
+	// Protection to avoid direct call of template
+	if (empty($conf) || ! is_object($conf))
 	{
-		foreach($extrafields->attribute_label as $key => $val)
+		print "Error, template page can't be called as URL";
+		exit;
+	}
+
+// Loop to show all columns of extrafields from $obj, $extrafields and $db
+	if (! empty($extrafieldsobjectkey))	// New method: $extrafieldsobject can be 'societe', 'socpeople', ...
+	{
+		if (is_array($extrafields->attributes[$extrafieldsobjectkey]['label']) && count($extrafields->attributes[$extrafieldsobjectkey]['label']))
 		{
-			if (! empty($arrayfields["ef.".$key]['checked']))
+			foreach($extrafields->attributes[$extrafieldsobjectkey]['label'] as $key => $val)
 			{
-				$align=$extrafields->getAlignFlag($key);
-				print '<td';
-				if ($align) print ' align="'.$align.'"';
-				print '>';
-				$tmpkey='options_'.$key;
-				if (in_array($extrafields->attribute_type[$key], array('date', 'datetime', 'timestamp')))
+				if (! empty($arrayfields["ef.".$key]['checked']))
 				{
-					$value = $db->jdate($obj->$tmpkey);
-                                        if (is_array($obj->array_options) && isset($obj->array_options[$tmpkey])){
-                                            $value = $db->jdate($obj->array_options[$tmpkey]);
-                                        }
+					$align=$extrafields->getAlignFlag($key, $extrafieldsobjectkey);
+					print '<td';
+					if ($align) print ' align="'.$align.'"';
+					print '>';
+					$tmpkey='options_'.$key;
+					if (in_array($extrafields->attributes[$extrafieldsobjectkey]['type'][$key], array('date', 'datetime', 'timestamp')) && !is_numeric($obj->$tmpkey))
+					{
+						$value = $db->jdate($obj->$tmpkey);
+					}
+					else
+					{
+						$value = $obj->$tmpkey;
+					}
+
+					print $extrafields->showOutputField($key, $value, '', $extrafieldsobjectkey);
+					print '</td>';
+					if (! $i) $totalarray['nbfield']++;
+					if (! empty($val['isameasure']))
+					{
+						if (! $i) $totalarray['pos'][$totalarray['nbfield']]='ef.'.$tmpkey;
+						$totalarray['val']['ef.'.$tmpkey] += $obj->$tmpkey;
+					}
 				}
-				else
+			}
+		}
+	}
+	else								// Old method
+	{
+		if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
+		{
+			foreach($extrafields->attribute_label as $key => $val)
+			{
+				if (! empty($arrayfields["ef.".$key]['checked']))
 				{
-					$value = $obj->$tmpkey;
-                                        if (is_array($obj->array_options) && isset($obj->array_options[$tmpkey])){
-                                            $value = $obj->array_options[$tmpkey];
-                                        }
-				}
-				print $extrafields->showOutputField($key, $value, '');
-				print '</td>';
-				if (! $i) $totalarray['nbfield']++;
-				if (! empty($val['isameasure']))
-				{
-					if (! $i) $totalarray['pos'][$totalarray['nbfield']]='ef.'.$tmpkey;
-					$totalarray['val']['ef.'.$tmpkey] += $obj->$tmpkey;
+					$align=$extrafields->getAlignFlag($key);
+					print '<td';
+					if ($align) print ' align="'.$align.'"';
+					print '>';
+					$tmpkey='options_'.$key;
+					if (in_array($extrafields->attribute_type[$key], array('date', 'datetime', 'timestamp')))
+					{
+						$value = $db->jdate($obj->$tmpkey);
+						if (is_array($obj->array_options) && isset($obj->array_options[$tmpkey])){
+							$value = $db->jdate($obj->array_options[$tmpkey]);
+						}
+					}
+					else
+					{
+						$value = $obj->$tmpkey;
+						if (is_array($obj->array_options) && isset($obj->array_options[$tmpkey])){
+							$value = $obj->array_options[$tmpkey];
+						}
+					}
+					print $extrafields->showOutputField($key, $value, '');
+					print '</td>';
+					if (! $i) $totalarray['nbfield']++;
+					if (! empty($val['isameasure']))
+					{
+						if (! $i) $totalarray['pos'][$totalarray['nbfield']]='ef.'.$tmpkey;
+						$totalarray['val']['ef.'.$tmpkey] += $obj->$tmpkey;
+					}
 				}
 			}
 		}

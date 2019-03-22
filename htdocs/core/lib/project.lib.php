@@ -859,6 +859,7 @@ function projectLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projectsr
 {
 	global $conf, $db, $user, $bc, $langs;
 	global $form, $formother, $projectstatic, $taskstatic, $thirdpartystatic;
+	global $atm;
 
 	$lastprojectid=0;
 	$totalforeachday=array();
@@ -1280,6 +1281,7 @@ function projectLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &$
 {
 	global $conf, $db, $user, $bc, $langs;
 	global $form, $formother, $projectstatic, $taskstatic, $thirdpartystatic;
+	global $atm;
 
 	$numlines=count($lines);
 
