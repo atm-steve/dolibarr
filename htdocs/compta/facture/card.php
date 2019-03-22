@@ -719,6 +719,7 @@ if (empty($reshook))
 			$db->begin();
 
 			$amount_ht = $amount_tva = $amount_ttc = array();
+			$multicurrency_amount_ht = $multicurrency_amount_tva = $multicurrency_amount_ttc = array();
 
 			// Loop on each vat rate
 			$i = 0;
@@ -732,7 +733,7 @@ if (empty($reshook))
 					$multicurrency_amount_ht[$line->tva_tx] += $line->multicurrency_total_ht;
 					$multicurrency_amount_tva[$line->tva_tx] += $line->multicurrency_total_tva;
 					$multicurrency_amount_ttc[$line->tva_tx] += $line->multicurrency_total_ttc;
-					$i ++;
+					$i++;
 				}
 			}
 
@@ -1329,15 +1330,15 @@ if (empty($reshook))
 											$qualified=1;
 											if (empty($lines[$i]->qty)) $qualified=0;	// We discard qty=0, it is an option
 											if (! empty($lines[$i]->special_code)) $qualified=0;	// We discard special_code (frais port, ecotaxe, option, ...)
-											if ($qualified) $totalamount += $lines[$i]->total_ht; // Fixme : is it not for the customer ? Shouldn't we take total_ttc ?
+											if ($qualified){
+												$totalamount += $lines[$i]->total_ht; // Fixme : is it not for the customer ? Shouldn't we take total_ttc ?
+												$tva_tx = $lines[$i]->tva_tx;
+												$amountdeposit[$tva_tx] += ($lines[$i]->total_ht * $valuedeposit) / 100;
+											}
+																					
 										}
 
-										if ($totalamount != 0) {
-											if ($numlines > 0) $numlines = $numlines-1;
-											$tva_tx = $lines[$numlines]->tva_tx;
-											if (! empty($lines[$numlines]->vat_src_code) && ! preg_match('/\(/', $tva_tx)) $tva_tx .= ' ('.$lines[$numlines]->vat_src_code.')';
-											$amountdeposit[$tva_tx] = ($totalamount * $valuedeposit) / 100;
-										} else {
+										if($totalamount == 0) {
 											$amountdeposit[0] = 0;
 										}
 									} else {
@@ -1348,9 +1349,10 @@ if (empty($reshook))
 
 								$amount_ttc_diff = $amountdeposit[0];
 							}
-
 							foreach ($amountdeposit as $tva => $amount)
 							{
+								if (empty($amount)) continue;
+
 								$arraylist = array('amount' => 'FixAmount','variable' => 'VarAmount');
 								$descline = $langs->trans('Deposit');
 								//$descline.= ' - '.$langs->trans($arraylist[$typeamount]);
@@ -1359,6 +1361,7 @@ if (empty($reshook))
 								} elseif ($typeamount=='variable') {
 									$descline.= ' ('. $valuedeposit.'%)';
 								}
+								
 								$descline.= ' - '.$srcobject->ref;
 								$result = $object->addline(
 										$descline,
@@ -1741,7 +1744,7 @@ if (empty($reshook))
 		// Extrafields
 		$extrafieldsline = new ExtraFields($db);
 		$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
-		$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline, $predef);
+		$array_options = $extrafieldsline->getOptionalsFromPost($object->table_element_line, $predef);
 		// Unset extrafield
 		if (is_array($extralabelsline)) {
 			// Get extra fields
@@ -2148,7 +2151,7 @@ if (empty($reshook))
 		// Extrafields
 		$extrafieldsline = new ExtraFields($db);
 		$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
-		$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline);
+		$array_options = $extrafieldsline->getOptionalsFromPost($object->table_element_line);
 		// Unset extrafield
 		if (is_array($extralabelsline)) {
 			// Get extra fields
