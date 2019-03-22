@@ -59,7 +59,8 @@ class TExportComptaCegid extends TExportCompta {
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'date_ecriture'					=> $facture['date'],
+                    'date_ecriture'					=> $facture['date'],
+                    'date_lim_reglement'			=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> '41100000',
 					'numero_compte_aux'				=> $code_compta,
@@ -78,7 +79,8 @@ class TExportComptaCegid extends TExportCompta {
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
-					'date_ecriture'					=> $facture['date'],
+                    'date_ecriture'					=> $facture['date'],
+                    'date_lim_reglement'			=> $facture['date_lim_reglement'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte'					=> $code_compta,
 					'libelle'						=> $tiers['nom'],
@@ -99,6 +101,7 @@ class TExportComptaCegid extends TExportCompta {
 				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 					$ligneFichier = array(
 						'date_ecriture'					=> $facture['date'],
+                        'date_lim_reglement'			=> $facture['date_lim_reglement'],
 						'numero_piece'					=> $facture['ref'],
 						'numero_compte'					=> $code_compta,
 						'libelle'						=> $tiers['nom'],
