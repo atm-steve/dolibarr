@@ -175,12 +175,12 @@ if (! $error && $massaction == 'confirm_presend')
             {
                 //var_dump($thirdpartyid.' - '.$objectid.' - '.$object->statut);
 
-                if ($objectclass == 'Facture' && $object->statut != Facture::STATUS_VALIDATED)
+                if ($objectclass == 'Facture' && $object->statut == Facture::STATUS_DRAFT)
                 {
                 	$langs->load("errors");
                     $nbignored++;
                     $resaction.='<div class="error">'.$langs->trans('ErrorOnlyInvoiceValidatedCanBeSentInMassAction',$object->ref).'</div><br>';
-                    continue; // Payment done or started or canceled
+                    continue;
                 }
                 if ($objectclass == 'Commande' && $object->statut == Commande::STATUS_DRAFT)
                 {
@@ -598,6 +598,17 @@ if (! $error && $massaction == 'delete' && $permtodelete)
         $result=$objecttmp->fetch($toselectid);
         if ($result > 0)
         {
+            if ($objectclass == "Task" && $objecttmp->hasChildren() > 0) {
+                $sql = "UPDATE ".MAIN_DB_PREFIX."projet_task SET fk_task_parent = 0 WHERE fk_task_parent = ".$objecttmp->id;
+                $res = $db->query($sql);
+                
+                if (!$res)
+                {
+                    setEventMessage('ErrorRecordParentingNotModified', 'errors');
+                    $error++;
+                }
+            }
+            
             if (in_array($objecttmp->element, array('societe','member'))) $result = $objecttmp->delete($objecttmp->id, $user, 1);
             else $result = $objecttmp->delete($user);
             if ($result <= 0)

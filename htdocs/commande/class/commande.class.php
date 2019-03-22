@@ -76,6 +76,9 @@ class Commande extends CommonOrder
     public $facturee;
     public $billed;		// billed or not
 
+    /**
+     * @var int Draft Status of the order
+     */
     public $brouillon;
     public $cond_reglement_code;
 
@@ -226,7 +229,7 @@ class Commande extends CommonOrder
                 $mybool|=@include_once $dir.$file;
             }
 
-            if (! $mybool)
+            if ($mybool === false)
             {
                 dol_print_error('',"Failed to include file ".$file);
                 return '';
@@ -400,6 +403,7 @@ class Commande extends CommonOrder
         {
             $this->ref = $num;
             $this->statut = self::STATUS_VALIDATED;
+            $this->brouillon = 0;
         }
 
         if (! $error)
@@ -1269,6 +1273,7 @@ class Commande extends CommonOrder
         $remise_percent=price2num($remise_percent);
         $qty=price2num($qty);
         $pu_ht=price2num($pu_ht);
+        $pu_ht_devise=price2num($pu_ht_devise);
         $pu_ttc=price2num($pu_ttc);
     	$pa_ht=price2num($pa_ht);
         $txtva = price2num($txtva);
@@ -2815,6 +2820,7 @@ class Commande extends CommonOrder
             $qty=price2num($qty);
             $pu = price2num($pu);
       		$pa_ht=price2num($pa_ht);
+        	$pu_ht_devise=price2num($pu_ht_devise);
             $txtva=price2num($txtva);
             $txlocaltax1=price2num($txlocaltax1);
             $txlocaltax2=price2num($txlocaltax2);
