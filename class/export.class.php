@@ -27,6 +27,11 @@ class TExportCompta extends TObjetStd {
 
 		$this->db = $db;
 
+        $this->dbInvoiceRefColName = 'ref';
+        if(floatval(DOL_VERSION) < 10 ) {
+            $this->dbInvoiceRefColName = 'facnumber';
+        }
+
 		$this->dt_deb = strtotime('first day of last month');
 		$this->dt_fin = strtotime('last day of last month');
 
@@ -166,14 +171,14 @@ class TExportCompta extends TObjetStd {
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
 		$sql.= " AND f.fk_statut IN (1,2)";
 		if(!empty($conf->global->EXPORT_COMPTA_FACT_CLI_FILTER)) {
-			$sql.= " AND f.facnumber LIKE '".$conf->global->EXPORT_COMPTA_FACT_CLI_FILTER."'";
+			$sql.= " AND f.".$this->dbInvoiceRefColName." LIKE '".$conf->global->EXPORT_COMPTA_FACT_CLI_FILTER."'";
 		}
 
 		if(!$this->exportAllreadyExported) {
 			$sql.=" AND fex.date_compta IS NULL ";
 		}
 
-		$sql.= " ORDER BY f.".$datefield.", f.facnumber ASC";
+		$sql.= " ORDER BY f.".$datefield.", f.".$this->dbInvoiceRefColName." ASC";
 
                 //Hook to set sql
 		$parameters=array('sql'=>&$sql, 'dt_deb'=>$dt_deb,'dt_fin'=>$dt_fin);
@@ -1014,7 +1019,7 @@ class TExportCompta extends TObjetStd {
 		}
 
 		// Requête de récupération des règlements
-		$sql = "SELECT r.rowid, r.num_paiement, f.facnumber num_fact, rf.amount as facture_paiement_amount, r.amount as paiement_amount, cp.code as paiement_mode, r.datep as paiement_datep,";
+		$sql = "SELECT r.rowid, r.num_paiement, f.".$this->dbInvoiceRefColName." num_fact, rf.amount as facture_paiement_amount, r.amount as paiement_amount, cp.code as paiement_mode, r.datep as paiement_datep,";
 		$sql.= " s.code_compta as client_code_compta, s.nom as client_nom, ba.account_number,s.rowid as fk_soc";
 		$sql.= " FROM llx_paiement r";
 		$sql.= " LEFT JOIN llx_paiement_facture rf ON rf.fk_paiement = r.rowid";
