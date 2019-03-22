@@ -1301,7 +1301,8 @@ function projectLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &$
 						print $projectstatic->title;
 					}
 
-                    $colspan=5+(empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)?0:2);
+//                    $colspan=5+(empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)?0:2);
+					$colspan=7;
 					print '<table class="">';
 
 					print '<tr class="liste_titre">';

@@ -709,7 +709,8 @@ class Task extends CommonObject
 		$sql.= " t.dateo as date_start, t.datee as date_end, t.planned_workload, t.rang,";
 		$sql.= " s.rowid as thirdparty_id, s.nom as thirdparty_name, s.email as thirdparty_email";
 
-        $sql.= ", p.fk_opp_status, p.opp_amount, p.opp_percent, p.budget_amount, p.bill_time ";
+//        $sql.= ", p.fk_opp_status, p.opp_amount, p.opp_percent, p.budget_amount, p.bill_time ";
+        $sql.= ", p.fk_opp_status, p.opp_amount, p.opp_percent, p.budget_amount ";
 
         if (!empty($extrafields->attributes['projet']['label']))
         {
@@ -851,7 +852,7 @@ class Task extends CommonObject
                     $tasks[$i]->opp_amount = $obj->opp_amount;
                     $tasks[$i]->opp_percent = $obj->opp_percent;
                     $tasks[$i]->budget_amount = $obj->budget_amount;
-                    $tasks[$i]->bill_time = $obj->bill_time;
+//                    $tasks[$i]->bill_time = $obj->bill_time;
 
                     if (!empty($extrafields->attributes['projet']['label']))
                     {
