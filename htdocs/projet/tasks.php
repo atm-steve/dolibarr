@@ -399,10 +399,10 @@ if ($action == 'create' && $user->rights->projet->creer && (empty($object->third
 	print $form->select_date(($date_end?$date_end:-1),'datee',-1,1,0,'',1,1,1);
 	print '</td></tr>';
 
-	// Planned workload
-	print '<tr><td>'.$langs->trans("PlannedWorkload").'</td><td>';
-	print $form->select_duration('planned_workload', $planned_workload?$planned_workload : $object->planned_workload,0,'text');
-	print '</td></tr>';
+		// Planned workload
+		print '<tr><td>'.$langs->trans("PlannedWorkload").'</td><td>';
+		print $form->select_duration('planned_workload', $planned_workload?$planned_workload : 0, 0, (empty($conf->global->PROJECT_USE_DECIMAL_DAY) ? 'text' : 'days'));
+		print '</td></tr>';
 
 	// Progress
 	print '<tr><td>'.$langs->trans("ProgressDeclared").'</td><td colspan="3">';

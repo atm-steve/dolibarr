@@ -57,9 +57,13 @@ if (! $sortfield)
 $startdate=$enddate='';
 
 if (!empty($_POST['startdatemonth']))
-  $startdate  = dol_mktime(0, 0, 0, $_POST['startdatemonth'],  $_POST['startdateday'],  $_POST['startdateyear']);
+  $startdate  = dol_mktime(0, 0, 0, $_POST['startdatemonth'], $_POST['startdateday'], $_POST['startdateyear']);
+else
+  $startdate  = dol_mktime(0, 0,0, $conf->global->SOCIETE_FISCAL_MONTH_START, 1, (date("m") >= $conf->global->SOCIETE_FISCAL_MONTH_START ) ? date("Y") : date("Y")-1);
 if (!empty($_POST['enddatemonth']))
-  $enddate  = dol_mktime(23, 59, 59, $_POST['enddatemonth'],  $_POST['enddateday'],  $_POST['enddateyear']);
+  $enddate  = dol_mktime(23, 59, 59, $_POST['enddatemonth'], $_POST['enddateday'], $_POST['enddateyear']);
+else
+  $enddate  = dol_mktime(23, 59, 59, $conf->global->SOCIETE_FISCAL_MONTH_START-1, 30, (date("m") < $conf->global->SOCIETE_FISCAL_MONTH_START ) ? date("Y") : date("Y")+1);
 
 // Security check
 if ($user->rights->margins->read->all) {

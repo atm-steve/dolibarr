@@ -76,7 +76,7 @@ class FormMargin
 				'total_margin_rate' => '',
 				'total_mark_rate' => ''
 		);
-
+		if(!empty($object->lines)){
 		foreach($object->lines as $line)
 		{
 			if (empty($line->pa_ht) && isset($line->fk_fournprice) && !$force_price)
@@ -157,6 +157,7 @@ class FormMargin
 						$marginInfos['margin_on_services'] += $pv - $pa;
 				}
 			}
+		}
 		}
 		if ($marginInfos['pa_products'] > 0)
 			$marginInfos['margin_rate_products'] = 100 * $marginInfos['margin_on_products'] / $marginInfos['pa_products'];

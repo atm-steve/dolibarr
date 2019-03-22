@@ -200,7 +200,8 @@ function restrictedArea($user, $features, $objectid=0, $tableandshare='', $featu
         {
             if (empty($user->rights->$feature->lire)
             && empty($user->rights->$feature->read)
-            && empty($user->rights->$feature->run)) { $readok=0; $nbko++; }
+            && empty($user->rights->$feature->run)
+			&& empty($user->rights->$feature->liretous)) { $readok=0; $nbko++; }
         }
     }
 

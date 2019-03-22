@@ -836,7 +836,17 @@ if (($id > 0 || ! empty($ref)) || $projectidforalltimes > 0)
 
 		$childids = $user->getAllChildIds();
 
-		$total = 0;
+        $task_duration_outputformat='allhourmin';
+        if (! empty($conf->global->PROJECT_TASK_DURATION_FORMAT)) $task_duration_outputformat=$conf->global->PROJECT_TASK_DURATION_FORMAT;
+        $working_task_duration_outputformat='all';
+        if (! empty($conf->global->PROJECT_WORKING_TASK_DURATION_FORMAT)) $working_task_duration_outputformat=$conf->global->PROJECT_WORKING_TASK_DURATION_FORMAT;
+
+        $working_hours_per_day=!empty($conf->global->PROJECT_WORKING_HOURS_PER_DAY) ? $conf->global->PROJECT_WORKING_HOURS_PER_DAY : 7;
+        $working_days_per_weeks=!empty($conf->global->PROJECT_WORKING_DAYS_PER_WEEKS) ? $conf->global->PROJECT_WORKING_DAYS_PER_WEEKS : 5;
+
+        $working_hours_per_day_in_seconds = 3600 * $working_hours_per_day;
+
+        $total = 0;
 		$totalvalue = 0;
 		$totalarray=array();
 		foreach ($tasks as $task_time)
@@ -947,7 +957,14 @@ if (($id > 0 || ! empty($ref)) || $projectidforalltimes > 0)
     			}
     			else
     			{
-    				print convertSecondToTime($task_time->task_duration,'allhourmin');
+                    $fulltime = convertSecondToTime($task_time->task_duration, $task_duration_outputformat);
+                    print $fulltime;
+                    $workingdelay=convertSecondToTime($task_time->task_duration, $working_task_duration_outputformat, $working_hours_per_day_in_seconds, $working_days_per_weeks);
+                    if ($workingdelay != $fulltime)
+                    {
+                        if (!empty($fulltime)) print '<br>';
+                        print '('.$workingdelay.')';
+                    }
     			}
     			print '</td>';
     			if (! $i) $totalarray['nbfield']++;
@@ -1023,8 +1040,23 @@ if (($id > 0 || ! empty($ref)) || $projectidforalltimes > 0)
 		            if ($num < $limit && empty($offset)) print '<td align="left">'.$langs->trans("Total").'</td>';
 		            else print '<td align="left">'.$langs->trans("Totalforthispage").'</td>';
 		        }
-		        elseif ($totalarray['totaldurationfield'] == $i) print '<td align="right">'.convertSecondToTime($totalarray['totalduration'],'allhourmin').'</td>';
-		        elseif ($totalarray['totalvaluefield'] == $i) print '<td align="right">'.price($totalarray['totalvalue']).'</td>';
+		        elseif ($totalarray['totaldurationfield'] == $i)
+                {
+                    print '<td align="right">';
+                    $fulltime = convertSecondToTime($totalarray['totalduration'], $task_duration_outputformat);
+                    print $fulltime;
+
+                    $workingdelay=convertSecondToTime($totalarray['totalduration'], $working_task_duration_outputformat, $working_hours_per_day_in_seconds, $working_days_per_weeks);
+                    if ($workingdelay != $fulltime)
+                    {
+                        if (!empty($fulltime)) print '<br>';
+                        print '('.$workingdelay.')';
+                    }
+
+                    print '</td>';
+                }
+		        elseif ($totalarray['totalvaluefield'] == $i) print '<td class="right">'.price($totalarray['totalvalue']).'</td>';
+		        //elseif ($totalarray['totalvaluebilledfield'] == $i) print '<td class="center">'.price($totalarray['totalvaluebilled']).'</td>';
 		        else print '<td></td>';
 		    }
 		    print '</tr>';

@@ -28,6 +28,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/product.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/fourn/class/fournisseur.commande.class.php';
 require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
+if(! empty($conf->projet->enabled)) require_once DOL_DOCUMENT_ROOT .'/projet/class/project.class.php';
 
 $langs->load("orders");
 $langs->load("products");
@@ -44,20 +45,20 @@ if (! empty($user->societe_id))
 	$socid = $user->societe_id;
 $result = restrictedArea($user, 'produit|service', $fieldvalue, 'product&product', '', '', $fieldtype);
 
-// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
+// Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
 $hookmanager->initHooks(array (
 		'productstatssupplyorder'
 ));
 
 $mesg = '';
 
-// Load variable for pagination
-$limit = GETPOST('limit','int')?GETPOST('limit','int'):$conf->liste_limit;
-$sortfield = GETPOST('sortfield','alpha');
-$sortorder = GETPOST('sortorder','alpha');
-$page = GETPOST('page','int');
-if (empty($page) || $page == -1) { $page = 0; }     // If $page is not defined, or '' or -1
-$offset = $limit * $page;
+$sortfield = GETPOST("sortfield", 'alpha');
+$sortorder = GETPOST("sortorder", 'alpha');
+$page = GETPOST("page", 'int');
+if ($page == - 1) {
+	$page = 0;
+}
+$offset = $conf->liste_limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
 if (! $sortorder)
@@ -67,11 +68,10 @@ if (! $sortfield)
 $search_month = GETPOST('search_month', 'aplha');
 $search_year = GETPOST('search_year', 'int');
 
-if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter','alpha')) {
+if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) {
 	$search_month = '';
 	$search_year = '';
 }
-
 
 /*
  * View
@@ -88,7 +88,7 @@ if ($id > 0 || ! empty($ref)) {
 	$result = $product->fetch($id, $ref);
 
 	$object = $product;
-
+	
 	$parameters = array ('id' => $id);
 	$reshook = $hookmanager->executeHooks('doActions', $parameters, $product, $action); // Note that $action and $object may have been modified by some hooks
 	if ($reshook < 0)
@@ -96,26 +96,21 @@ if ($id > 0 || ! empty($ref)) {
 
 	llxHeader("", "", $langs->trans("CardProduct" . $product->type));
 
-	if ($result > 0)
+	if ($result > 0) 
 	{
 		$head = product_prepare_head($product);
 		$titre = $langs->trans("CardProduct" . $product->type);
 		$picto = ($product->type == Product::TYPE_SERVICE ? 'service' : 'product');
-		dol_fiche_head($head, 'referers', $titre, -1, $picto);
+		dol_fiche_head($head, 'referers', $titre, 0, $picto);
 
 		$reshook = $hookmanager->executeHooks('formObjectOptions', $parameters, $product, $action); // Note that $action and $object may have been modified by hook
-        print $hookmanager->resPrint;
-		if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+		if ($reshook < 0)
+			setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
-		$linkback = '<a href="'.DOL_URL_ROOT.'/product/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
-
-        $shownav = 1;
-        if ($user->societe_id && ! in_array('product', explode(',',$conf->global->MAIN_MODULES_FOR_EXTERNAL))) $shownav=0;
-
-		dol_banner_tab($object, 'ref', $linkback, $shownav, 'ref');
-
+        dol_banner_tab($object, 'ref', '', ($user->societe_id?0:1), 'ref');
+        
         print '<div class="fichecenter">';
-
+        
         print '<div class="underbanner clearboth"></div>';
         print '<table class="border tableforfield" width="100%">';
 
@@ -125,19 +120,21 @@ if ($id > 0 || ! empty($ref)) {
 
         print '</div>';
         print '<div style="clear:both"></div>';
-
+		
 		dol_fiche_end();
-
+		
 
 		if ($user->rights->fournisseur->commande->lire)
 		{
 			$sql = "SELECT DISTINCT s.nom as name, s.rowid as socid, s.code_client,";
 			$sql .= " c.rowid, d.total_ht as total_ht, c.ref,";
 			$sql .= " c.date_commande, c.fk_statut as statut, c.rowid as commandeid, d.rowid, d.qty";
+			if($conf->projet->enabled) $sql .= ', c.fk_projet, p.ref as project_ref';
 			if (! $user->rights->societe->client->voir && ! $socid)
 				$sql .= ", sc.fk_soc, sc.fk_user ";
 			$sql .= " FROM " . MAIN_DB_PREFIX . "societe as s";
 			$sql .= ", " . MAIN_DB_PREFIX . "commande_fournisseur as c";
+			if($conf->projet->enabled) $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'projet as p ON p.rowid = c.fk_projet ';
 			$sql .= ", " . MAIN_DB_PREFIX . "commande_fournisseurdet as d";
 			if (! $user->rights->societe->client->voir && ! $socid)
 				$sql .= ", " . MAIN_DB_PREFIX . "societe_commerciaux as sc";
@@ -205,16 +202,18 @@ if ($id > 0 || ! empty($ref)) {
 				print '</div>';
 
 				$i = 0;
-                print '<div class="div-table-responsive">';
 				print '<table class="tagtable liste listwithfilterbefore" width="100%">';
 				print '<tr class="liste_titre">';
-				print_liste_field_titre("Ref", $_SERVER["PHP_SELF"], "c.rowid", "", $option, '', $sortfield, $sortorder);
-				print_liste_field_titre("Company", $_SERVER["PHP_SELF"], "s.nom", "", $option, '', $sortfield, $sortorder);
-				print_liste_field_titre("SupplierCode", $_SERVER["PHP_SELF"], "s.code_client", "", $option, '', $sortfield, $sortorder);
-				print_liste_field_titre("OrderDate", $_SERVER["PHP_SELF"], "c.date_commande", "", $option, 'align="center"', $sortfield, $sortorder);
-				print_liste_field_titre("Qty", $_SERVER["PHP_SELF"], "d.qty", "", $option, 'align="center"', $sortfield, $sortorder);
-				print_liste_field_titre("AmountHT", $_SERVER["PHP_SELF"], "c.total_ht", "", $option, 'align="right"', $sortfield, $sortorder);
-				print_liste_field_titre("Status", $_SERVER["PHP_SELF"], "c.fk_statut", "", $option, 'align="right"', $sortfield, $sortorder);
+				print_liste_field_titre($langs->trans("Ref"), $_SERVER["PHP_SELF"], "c.rowid", "", $option, '', $sortfield, $sortorder);
+				print_liste_field_titre($langs->trans("Company"), $_SERVER["PHP_SELF"], "s.nom", "", $option, '', $sortfield, $sortorder);
+				if(!empty($conf->projet->enabled)){
+					print_liste_field_titre($langs->trans('Project'),$_SERVER["PHP_SELF"],'p.ref','',$option,'',$sortfield,$sortorder);
+				}				
+				print_liste_field_titre($langs->trans("SupplierCode"), $_SERVER["PHP_SELF"], "s.code_client", "", $option, '', $sortfield, $sortorder);
+				print_liste_field_titre($langs->trans("OrderDate"), $_SERVER["PHP_SELF"], "c.date_commande", "", $option, 'align="center"', $sortfield, $sortorder);
+				print_liste_field_titre($langs->trans("Qty"), $_SERVER["PHP_SELF"], "d.qty", "", $option, 'align="center"', $sortfield, $sortorder);
+				print_liste_field_titre($langs->trans("AmountHT"), $_SERVER["PHP_SELF"], "c.total_ht", "", $option, 'align="right"', $sortfield, $sortorder);
+				print_liste_field_titre($langs->trans("Status"), $_SERVER["PHP_SELF"], "c.fk_statut", "", $option, 'align="right"', $sortfield, $sortorder);
 				print "</tr>\n";
 
 				if ($num > 0)
@@ -236,9 +235,19 @@ if ($id > 0 || ! empty($ref)) {
 						print $supplierorderstatic->getNomUrl(1);
 						print "</td>\n";
 						print '<td>' . $societestatic->getNomUrl(1) . '</td>';
+						
+						//Ref projet
+						if(! empty($conf->projet->enabled)){
+							$projet = new Project($db);
+							$projet->fetch($objp->fk_projet);
+							print '<td>';
+							print $projet->getNomUrl(1);
+							print '</td>';
+						}
+						
 						print "<td>" . $objp->code_client . "</td>\n";
 						print '<td align="center">';
-						print dol_print_date($db->jdate($objp->date_commande), 'dayhour') . "</td>";
+						print dol_print_date($db->jdate($objp->date_commande)) . "</td>";
 						print '<td align="center">' . $objp->qty . "</td>\n";
 						print '<td align="right">' . price($objp->total_ht) . "</td>\n";
 						print '<td align="right">' . $supplierorderstatic->getLibStatut(4) . '</td>';
@@ -253,9 +262,9 @@ if ($id > 0 || ! empty($ref)) {
 				print '<td align="center">' . $total_qty . '</td>';
 				print '<td align="right">' . price($total_ht) . '</td>';
 				print '<td></td>';
-				print "</table>";
-				print '</div>';
+				print "</tr></table>";
 				print '</form>';
+				print '<br>';
 			} else {
 				dol_print_error($db);
 			}

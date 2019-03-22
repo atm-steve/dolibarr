@@ -100,6 +100,7 @@ $year_lim	= GETPOST('year_lim','int');
 $toselect = GETPOST('toselect', 'array');
 $search_btn=GETPOST('button_search','alpha');
 $search_remove_btn=GETPOST('button_removefilter','alpha');
+$search_client_final = GETPOST("search_client_final","alpha");
 
 $option = GETPOST('option');
 if ($option == 'late') {
@@ -232,6 +233,7 @@ if (empty($reshook))
 		$search_array_options=array();
 		$filter='';
 		$option='';
+		$search_client_final='';
 	}
 
 	// Mass actions
@@ -261,7 +263,7 @@ llxHeader('',$langs->trans("SuppliersInvoices"),'EN:Suppliers_Invoices|FR:Factur
 
 $sql = "SELECT";
 if ($search_all || $search_product_category > 0) $sql = 'SELECT DISTINCT';
-$sql.= " f.rowid as facid, f.ref, f.ref_supplier, f.datef, f.date_lim_reglement as datelimite, f.fk_mode_reglement,";
+$sql.= " f.rowid as facid, f.ref, f.ref_supplier, f.datef, f.date_lim_reglement as datelimite, f.fk_mode_reglement, s2.rowid as socid2, s2.nom as name2,";
 $sql.= " f.total_ht, f.total_ttc, f.total_tva as total_vat, f.paye as paye, f.fk_statut as fk_statut, f.libelle as label, f.datec as date_creation, f.tms as date_update,";
 $sql.= " f.localtax1 as total_localtax1, f.localtax2 as total_localtax2,";
 $sql.= " s.rowid as socid, s.nom as name, s.email, s.town, s.zip, s.fk_pays, s.client, s.fournisseur, s.code_client, s.code_fournisseur, s.code_compta as code_compta_client, s.code_compta_fournisseur,";
@@ -288,6 +290,10 @@ if (! $search_all) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiementfourn_facturefou
 if ($search_all || $search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facture_fourn_det as pd ON f.rowid=pd.fk_facture_fourn';
 if ($search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product as cp ON cp.fk_product=pd.fk_product';
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON p.rowid = f.fk_projet";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee2 ON (ee2.fk_target = f.rowid AND ee2.sourcetype = 'order_supplier' AND ee2.targettype = 'invoice_supplier')";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee ON (ee.fk_target = ee2.fk_source AND ee.sourcetype = 'commande' AND ee.targettype = 'order_supplier')";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."commande as c ON (c.rowid = ee.fk_source)";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s2 ON (s2.rowid = c.fk_soc)";
 // We'll need this table joined to the select in order to filter by sale
 if ($search_sale > 0 || (! $user->rights->societe->client->voir && ! $socid)) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 if ($search_user > 0)
@@ -319,6 +325,10 @@ if ($search_montant_vat != '') $sql.= natural_search('f.total_tva', $search_mont
 if ($search_montant_localtax1 != '') $sql.= natural_search('f.localtax1', $search_montant_localtax1, 1);
 if ($search_montant_localtax2 != '') $sql.= natural_search('f.localtax2', $search_montant_localtax2, 1);
 if ($search_montant_ttc != '') $sql.= natural_search('f.total_ttc', $search_montant_ttc, 1);
+if ($search_client_final)
+{
+	$sql .= natural_search('s2.nom', $search_client_final);
+}
 if ($search_status != '' && $search_status >= 0) $sql.= " AND f.fk_statut = ".$db->escape($search_status);
 if ($search_paymentmode > 0) $sql .= " AND f.fk_mode_reglement = ".$search_paymentmode."";
 if ($month > 0)
@@ -383,7 +393,7 @@ if (! $search_all)
 	$sql.= " typent.code,";
 	$sql.= " state.code_departement, state.nom,";
 	$sql.= ' country.code,';
-	$sql.= " p.rowid, p.ref";
+	$sql.= " p.rowid, p.ref, s2.rowid";
 
 	foreach ($extrafields->attribute_label as $key => $val) //prevent error with sql_mode=only_full_group_by
 	{
@@ -620,6 +630,8 @@ if ($resql)
 	{
 		print '<td class="liste_titre"><input class="flat" type="text" size="6" name="search_project" value="'.$search_project.'"></td>';
 	}
+
+ 	print '<td class="liste_titre"><input type="text" class="flat" size="8" name="search_client_final" value="'.$search_client_final.'"></td>'; 
 	// Thirpdarty
 	if (! empty($arrayfields['s.nom']['checked']))
 	{
@@ -744,6 +756,7 @@ if ($resql)
 	if (! empty($arrayfields['f.datef']['checked']))              print_liste_field_titre($arrayfields['f.datef']['label'],$_SERVER['PHP_SELF'],'f.datef,f.rowid','',$param,'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['f.date_lim_reglement']['checked'])) print_liste_field_titre($arrayfields['f.date_lim_reglement']['label'],$_SERVER['PHP_SELF'],"f.date_lim_reglement",'',$param,'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['p.ref']['checked']))                print_liste_field_titre($arrayfields['p.ref']['label'],$_SERVER['PHP_SELF'],"p.ref",'',$param,'',$sortfield,$sortorder);
+print_liste_field_titre($langs->trans("Client final"),$_SERVER["PHP_SELF"],"s2.nom","",$param,'',$sortfield,$sortorder);	
 	if (! empty($arrayfields['s.nom']['checked']))                print_liste_field_titre($arrayfields['s.nom']['label'],$_SERVER['PHP_SELF'],'s.nom','',$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['s.town']['checked']))               print_liste_field_titre($arrayfields['s.town']['label'],$_SERVER["PHP_SELF"],'s.town','',$param,'',$sortfield,$sortorder);
 	if (! empty($arrayfields['s.zip']['checked']))                print_liste_field_titre($arrayfields['s.zip']['label'],$_SERVER["PHP_SELF"],'s.zip','',$param,'',$sortfield,$sortorder);
@@ -887,7 +900,15 @@ if ($resql)
 				if (! $i) $totalarray['nbfield']++;
 			}
 
-			// Third party
+		// Client final
+		print '<td>';
+		if($obj->socid2){
+			$supplierstatic->id = $obj->socid2;
+			$supplierstatic->name = $obj->name2;
+			print $supplierstatic->getNomUrl(1,'supplier');
+		}
+		print '</td>'."\n";			
+// Third party
 			if (! empty($arrayfields['s.nom']['checked']))
 			{
 				print '<td class="tdoverflowmax200">';

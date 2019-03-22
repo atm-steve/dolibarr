@@ -58,8 +58,12 @@ $startdate=$enddate='';
 
 if (!empty($_POST['startdatemonth']))
   $startdate  = dol_mktime(0, 0, 0, $_POST['startdatemonth'],  $_POST['startdateday'],  $_POST['startdateyear']);
+else
+  $startdate  = dol_mktime(0, 0,0, 7, 1, (date("m") >= 7 ) ? date("Y") : date("Y")-1);
 if (!empty($_POST['enddatemonth']))
   $enddate  = dol_mktime(23, 59, 59, $_POST['enddatemonth'],  $_POST['enddateday'],  $_POST['enddateyear']);
+else
+  $enddate  = dol_mktime(23, 59, 59, 6, 30, (date("m") < 7 ) ? date("Y") : date("Y")+1);
 
 
 /*
@@ -191,7 +195,7 @@ $sql.= " WHERE f.fk_soc = s.rowid";
 if ($socid > 0) $sql.= ' AND s.rowid = '.$socid;
 if (!$user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
 $sql.= " AND f.fk_statut > 0";
-$sql.= ' AND s.entity IN ('.getEntity('societe').')';
+$sql.= ' AND f.entity IN ('.getEntity('societe').')';
 $sql.= " AND d.fk_facture = f.rowid";
 $sql.= " AND (d.product_type = 0 OR d.product_type = 1)";
 if (!empty($startdate))
