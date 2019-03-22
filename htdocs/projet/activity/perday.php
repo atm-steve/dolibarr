@@ -605,17 +605,11 @@ print '<td class="right maxwidth100">'.$langs->trans("TimeSpent").'<br>('.$langs
 print '<td class="right maxwidth100">'.$langs->trans("TimeSpent").($usertoprocess->firstname?'<br>('.$usertoprocess->firstname.')':'').'</td>';
 print '<td class="center leftborder">'.$langs->trans("HourStart").'</td>';
 
-print '<td align="right" class="maxwidth100">'.$langs->trans("PlannedWorkload").'</td>';
-print '<td align="right" class="maxwidth100">'.$langs->trans("ProgressDeclared").'</td>';
-/*print '<td align="right" class="maxwidth100">'.$langs->trans("TimeSpent").'</td>';
-if ($usertoprocess->id == $user->id) print '<td align="right" class="maxwidth100">'.$langs->trans("TimeSpentByYou").'</td>';
-else print '<td align="right" class="maxwidth100">'.$langs->trans("TimeSpentByUser").'</td>';*/
-print '<td align="right" class="maxwidth100">'.$langs->trans("TimeSpent").'<br>('.$langs->trans("Everybody").')</td>';
-print '<td align="right" class="maxwidth100">'.$langs->trans("TimeSpent").($usertoprocess->firstname?'<br>('.$usertoprocess->firstname.')':'').'</td>';
-print '<td align="center">'.$langs->trans("HourStart").'</td>';
 if (empty($conf->global->PROJECT_USE_DECIMAL_DAY)) print '<td align="center">'.$langs->trans("Duration").'</td>';
 print '<td align="center">'.$langs->trans("Note").'</td>';
-print '<td align="center"></td>';
+//print '<td align="center"></td>';
+print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
+
 print "</tr>\n";
 
 
@@ -684,7 +678,7 @@ if (count($tasksarray) > 0)
 	if ($isdiff)
 	{
 		print '<tr class="oddeven othertaskwithtime">';
-        print '<td colspan="'.$colspan.'">';
+        print '<td colspan="'.($colspan+$addcolspan).'">';
 		print $langs->trans("OtherFilteredTasks");
 		print '</td>';
 		print '<td align="center">';
@@ -717,7 +711,7 @@ if (count($tasksarray) > 0)
 	if ($conf->use_javascript_ajax)
 	{
 		print '<tr class="liste_total">
-                <td class="liste_total" colspan="'.$colspan.'">';
+                <td class="liste_total" colspan="'.($colspan+$addcolspan).'">';
 				print $langs->trans("Total");
 				//print '  - '.$langs->trans("ExpectedWorkedHours").': <strong>'.price($usertoprocess->weeklyhours, 1, $langs, 0, 0).'</strong>';
 				print '</td>

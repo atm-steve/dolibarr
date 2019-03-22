@@ -655,7 +655,7 @@ if (count($tasksarray) > 0)
 
 	$j=0;
 	$level=0;
-	$totalforvisibletasks = projectLinesPerWeek($j, $firstdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0);
+	$totalforvisibletasks = projectLinesPerWeek($j, $firstdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $extralabels);
 	//var_dump($totalforvisibletasks);
 
 	// Show total for all other tasks
