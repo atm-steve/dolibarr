@@ -56,6 +56,9 @@ if($action)
 	if ($action == 'STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE') {
 		$res = dolibarr_set_const($db, "STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE", GETPOST('STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE','alpha'),'chaine',0,'',$conf->entity);
 	}
+	if ($action == 'STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD') {
+		$res = dolibarr_set_const($db, "STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD", GETPOST('STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD','alpha'),'chaine',0,'',$conf->entity);
+	}
 	if ($action == 'STOCK_ALLOW_NEGATIVE_TRANSFER')
 	{
 		$res = dolibarr_set_const($db, "STOCK_ALLOW_NEGATIVE_TRANSFER", GETPOST('STOCK_ALLOW_NEGATIVE_TRANSFER','alpha'),'chaine',0,'',$conf->entity);
@@ -479,6 +482,20 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print '</form>';
 print "</td>\n";
 print "</tr>\n";
+if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE)
+{
+	print '<tr class="oddeven">';
+	print '<td>'.$langs->trans("AllowAddLimitStockByWarehouseByPeriod").'</td>';
+	print '<td align="right">';
+	print "<form method=\"post\" action=\"stock.php\">";
+	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+	print "<input type=\"hidden\" name=\"action\" value=\"STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD\">";
+	print $form->selectyesno("STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD",$conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD,1);
+	print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+	print '</form>';
+	print "</td>\n";
+	print "</tr>\n";
+}
 
 if (! empty($conf->fournisseur->enabled) && !empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_DISPATCH_ORDER)) {
 

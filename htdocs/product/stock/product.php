@@ -62,6 +62,8 @@ $d_eatby=dol_mktime(0, 0, 0, $_POST['eatbymonth'], $_POST['eatbyday'], $_POST['e
 $d_sellby=dol_mktime(0, 0, 0, $_POST['sellbymonth'], $_POST['sellbyday'], $_POST['sellbyyear']);
 $pdluoid=GETPOST('pdluoid','int');
 $batchnumber=GETPOST('batch_number','san_alpha');
+$fk_productstockwarehouse = GETPOST('fk_productstockwarehouse', 'int');
+
 if (!empty($batchnumber)) {
 	$batchnumber=trim($batchnumber);
 }
@@ -130,19 +132,20 @@ if ($action == 'addlimitstockwarehouse' && !empty($user->rights->produit->creer)
 	if($maj_ok) {
 
 		$pse = new ProductStockEntrepot($db);
-		if($pse->fetch(0, $id, GETPOST('fk_entrepot')) > 0) {
+		// the addlimitstockwarehouse should be ONLY TO ADD new stock limit
+		/*if($pse->fetch(0, $id, GETPOST('fk_entrepot')) > 0) {
 			// Update
 			$pse->seuil_stock_alerte = $seuil_stock_alerte;
 			$pse->desiredstock  	 = $desiredstock;
 			if($pse->update($user) > 0) setEventMessage($langs->trans('ProductStockWarehouseUpdated'));
-		} else {
+		} else {*/
 			// Create
 			$pse->fk_entrepot 		 = GETPOST('fk_entrepot');
 			$pse->fk_product  	 	 = $id;
 			$pse->seuil_stock_alerte = GETPOST('seuil_stock_alerte');
 			$pse->desiredstock  	 = GETPOST('desiredstock');
 			if($pse->create($user) > 0) setEventMessage($langs->trans('ProductStockWarehouseCreated'));
-		}
+//		}
 	}
 
 	header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
@@ -150,11 +153,44 @@ if ($action == 'addlimitstockwarehouse' && !empty($user->rights->produit->creer)
 
 }
 
+if ($action == 'update' && !empty($user->rights->produit->creer))
+{
+
+	$seuil_stock_alerte = GETPOST('seuil_stock_alerte');
+	$desiredstock = GETPOST('desiredstock');
+
+	$maj_ok = true;
+	if($seuil_stock_alerte == '') {
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("StockLimit")), null, 'errors');
+		$maj_ok = false;
+	}
+	if($desiredstock == '') {
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("DesiredStock")), null, 'errors');
+		$maj_ok = false;
+	}
+
+	if($maj_ok) {
+
+		$pse = new ProductStockEntrepot($db);
+		if(!empty($fk_productstockwarehouse) && $pse->fetch($fk_productstockwarehouse) > 0)
+		{
+
+			$pse->seuil_stock_alerte = $seuil_stock_alerte;
+			$pse->desiredstock  	 = $desiredstock;
+			$ret = $pse->update($user);
+			if($ret > 0) setEventMessage($langs->trans('ProductStockWarehouseUpdated'));
+		}
+	}
+
+	header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
+	exit;
+}
+
 if($action == 'delete_productstockwarehouse' && !empty($user->rights->produit->creer))
 {
 
 	$pse = new ProductStockEntrepot($db);
-	$pse->fetch(GETPOST('fk_productstockwarehouse','int'));
+	$pse->fetch($fk_productstockwarehouse);
 	if($pse->delete($user) > 0) setEventMessage($langs->trans('ProductStockWarehouseDeleted'));
 	$action = '';
 }
@@ -942,16 +978,28 @@ if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE))
 
 	if (!empty($user->rights->produit->creer)){
 		print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
-		print '<input type="hidden" name="action" value="addlimitstockwarehouse">';
+		print '<input type="hidden" name="action" value="'.($action == 'update_productstockwarehouse' ? 'update' : 'addlimitstockwarehouse').'">';
 		print '<input type="hidden" name="id" value="'.$id.'">';
 	}
 	print '<table class="noborder" width="100%">';
 	if (!empty($user->rights->produit->creer)){
-		print '<tr class="liste_titre"><td width="40%">'.$formproduct->selectWarehouses('', 'fk_entrepot').'</td>';
-		print '<td align="right"><input name="seuil_stock_alerte" type="text" placeholder="'.$langs->trans("StockLimit").'" /></td>';
-		print '<td align="right"><input name="desiredstock" type="text" placeholder="'.$langs->trans("DesiredStock").'" /></td>';
-		print '<td align="right"><input type="submit" value="'.$langs->trans('Save').'" class="button" /></td>';
-		print '</tr>';
+		if ($action !== 'update_productstockwarehouse')
+		{
+			print '<tr class="liste_titre"><td width="40%">'.$formproduct->selectWarehouses('', 'fk_entrepot').'</td>';
+			print '<td align="right"><input name="seuil_stock_alerte" type="text" placeholder="'.$langs->trans("StockLimit").'" /></td>';
+			print '<td align="right"><input name="desiredstock" type="text" placeholder="'.$langs->trans("DesiredStock").'" /></td>';
+			print '<td align="right"><input type="submit" value="'.$langs->trans('Save').'" class="button" /></td>';
+			print '</tr>';
+		}
+		else
+		{
+			print '<tr class="liste_titre">';
+			print '<td width="40%">'.$langs->trans('Warehouse').'</td>';
+			print '<td align="right">'.$langs->trans('StockLimit').'</td>';
+			print '<td align="right">'.$langs->trans('DesiredStock').'</td>';
+			print '<td></td>';
+			print '</tr>';
+		}
 	}else{
 		print '<tr class="liste_titre"><td width="40%">'.$langs->trans("Warehouse").'</td>';
 		print '<td align="right">'.$langs->trans("StockLimit").'</td>';
@@ -970,11 +1018,32 @@ if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE))
 			$ent = new Entrepot($db);
 			$ent->fetch($line['fk_entrepot']);
 			print '<tr class="oddeven"><td width="40%">'.$ent->getNomUrl(3).'</td>';
-			print '<td align="right">'.$line['seuil_stock_alerte'].'</td>';
-			print '<td align="right">'.$line['desiredstock'].'</td>';
-			if (!empty($user->rights->produit->creer)){
-			    print '<td align="right"><a href="?id='.$id.'&fk_productstockwarehouse='.$line['id'].'&action=delete_productstockwarehouse">'.img_delete().'</a></td>';
+			if ($action == 'update_productstockwarehouse' && $line['id'] == $fk_productstockwarehouse)
+			{
+				print '<td align="right">';
+				print '<input type="hidden" name="fk_productstockwarehouse" value="'.$fk_productstockwarehouse.'">';
+				print '<input name="seuil_stock_alerte" type="text" value="'.$line['seuil_stock_alerte'].'" />';
+				print '</td>';
+				print '<td align="right"><input name="desiredstock" type="text" value="'.$line['desiredstock'].'" /></td>';
+
+				if (!empty($user->rights->produit->creer))
+				{
+					print '<td align="right"><input type="submit" value="'.$langs->trans('Save').'" class="button" /></td>';
+				}
 			}
+			else
+			{
+				print '<td align="right">'.$line['seuil_stock_alerte'].'</td>';
+				print '<td align="right">'.$line['desiredstock'].'</td>';
+
+				if (!empty($user->rights->produit->creer)){
+					print '<td align="right">';
+					print '<a href="?id='.$id.'&fk_productstockwarehouse='.$line['id'].'&action=update_productstockwarehouse">'.img_edit().'</a>';
+					print '<a href="?id='.$id.'&fk_productstockwarehouse='.$line['id'].'&action=delete_productstockwarehouse">'.img_delete().'</a>';
+					print '</td>';
+				}
+			}
+
 			print '</tr>';
 		}
 	}
