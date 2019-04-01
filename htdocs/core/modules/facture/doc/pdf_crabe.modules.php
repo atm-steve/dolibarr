@@ -974,7 +974,9 @@ class pdf_crabe extends ModelePDFFactures
 			}
 
 			// Show payment mode CHQ
-			if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'CHQ')
+			// if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'CHQ')
+			// Specific FST
+			if (true)
 			{
 				// Si mode reglement non force ou si force a CHQ
 				if (! empty($conf->global->FACTURE_CHQ_NUMBER))
@@ -1018,7 +1020,9 @@ class pdf_crabe extends ModelePDFFactures
 			}
 
 			// If payment mode not forced or forced to VIR, show payment with BAN
-			if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')
+			// if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR')
+			// Specific FST
+			if (true)
 			{
 				if (! empty($object->fk_account) || ! empty($object->fk_bank) || ! empty($conf->global->FACTURE_RIB_NUMBER))
 				{
