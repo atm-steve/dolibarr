@@ -129,11 +129,11 @@ $search_array_options=$extrafields->getOptionalsFromPost($extralabels,'','search
 $fieldstosearchall = array(
     'cf.ref'=>'Ref',
     'cf.ref_supplier'=>'RefSupplierOrder',
-    'pd.description'=>'Description',
+    //'pd.description'=>'Description',
     's.nom'=>"ThirdParty",
-    'cf.note_public'=>'NotePublic',
+    //'cf.note_public'=>'NotePublic',
 );
-if (empty($user->socid)) $fieldstosearchall["cf.note_private"]="NotePrivate";
+//if (empty($user->socid)) $fieldstosearchall["cf.note_private"]="NotePrivate";
 
 $checkedtypetiers=0;
 $arrayfields=array(
