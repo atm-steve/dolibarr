@@ -179,6 +179,12 @@ class Categorie extends CommonObject
 	public $cats = array();			// Categories table in memory
 	public $motherof = array();
 
+	// acountancy codes
+    public $accountancy_code_sell;
+    public $accountancy_code_sell_intra;
+    public $accountancy_code_sell_export;
+    public $accountancy_code_buy;
+
 	/**
 	 *	Constructor
 	 *
@@ -206,6 +212,7 @@ class Categorie extends CommonObject
 		if (! is_numeric($type)) $type=$this->MAP_ID[$type];
 
 		$sql = "SELECT rowid, fk_parent, entity, label, description, color, fk_soc, visible, type";
+		$sql.= ",accountancy_code_sell, accountancy_code_sell_intra, accountancy_code_sell_export, accountancy_code_buy";
 		$sql.= " FROM ".MAIN_DB_PREFIX."categorie";
 		if ($id > 0)
 		{
@@ -236,7 +243,13 @@ class Categorie extends CommonObject
 				$this->type			= $res['type'];
 				$this->entity		= $res['entity'];
 
-				// Retreive all extrafield
+                $this->accountancy_code_buy			= $res['accountancy_code_buy'];
+                $this->accountancy_code_sell		= $res['accountancy_code_sell'];
+                $this->accountancy_code_sell_intra	= $res['accountancy_code_sell_intra'];
+                $this->accountancy_code_sell_export	= $res['accountancy_code_sell_export'];
+
+
+                // Retreive all extrafield
 				// fetch optionals attributes and labels
 				$this->fetch_optionals();
 
@@ -289,6 +302,11 @@ class Categorie extends CommonObject
 		if (empty($this->visible)) $this->visible=0;
 		$this->fk_parent = ($this->fk_parent != "" ? intval($this->fk_parent) : 0);
 
+        $this->accountancy_code_buy = trim($this->accountancy_code_buy);
+        $this->accountancy_code_sell= trim($this->accountancy_code_sell);
+        $this->accountancy_code_sell_intra= trim($this->accountancy_code_sell_intra);
+        $this->accountancy_code_sell_export= trim($this->accountancy_code_sell_export);
+
 		if ($this->already_exists())
 		{
 			$this->error=$langs->trans("ImpossibleAddCat", $this->label);
@@ -311,6 +329,10 @@ class Categorie extends CommonObject
 		$sql.= " visible,";
 		$sql.= " type,";
 		$sql.= " import_key,";
+        $sql.= " accountancy_code_buy,";
+        $sql.= " accountancy_code_sell,";
+        $sql.= " accountancy_code_sell_intra,";
+        $sql.= " accountancy_code_sell_export,";
 		$sql.= " entity";
 		$sql.= ") VALUES (";
 		$sql.= $this->db->escape($this->fk_parent).",";
@@ -324,6 +346,10 @@ class Categorie extends CommonObject
 		$sql.= "'".$this->db->escape($this->visible)."',";
 		$sql.= $this->db->escape($type).",";
 		$sql.= (! empty($this->import_key)?"'".$this->db->escape($this->import_key)."'":'null').",";
+        $sql.= "'".$this->db->escape($this->accountancy_code_buy)."',";
+        $sql.= "'".$this->db->escape($this->accountancy_code_sell)."',";
+        $sql.= "'".$this->db->escape($this->accountancy_code_sell_intra)."',";
+        $sql.= "'".$this->db->escape($this->accountancy_code_sell_export)."',";
 		$sql.= $this->db->escape($conf->entity);
 		$sql.= ")";
 
@@ -400,6 +426,10 @@ class Categorie extends CommonObject
 		$this->description=trim($this->description);
 		$this->fk_parent = ($this->fk_parent != "" ? intval($this->fk_parent) : 0);
 		$this->visible = ($this->visible != "" ? intval($this->visible) : 0);
+        $this->accountancy_code_buy = trim($this->accountancy_code_buy);
+        $this->accountancy_code_sell= trim($this->accountancy_code_sell);
+        $this->accountancy_code_sell_intra= trim($this->accountancy_code_sell_intra);
+        $this->accountancy_code_sell_export= trim($this->accountancy_code_sell_export);
 
 		if ($this->already_exists())
 		{
@@ -419,6 +449,10 @@ class Categorie extends CommonObject
 			$sql .= ", fk_soc = ".($this->socid != -1 ? $this->socid : 'null');
 		}
 		$sql .= ", visible = '".$this->db->escape($this->visible)."'";
+        $sql .= ", accountancy_code_buy = '" . $this->db->escape($this->accountancy_code_buy)."'";
+        $sql .= ", accountancy_code_sell= '" . $this->db->escape($this->accountancy_code_sell)."'";
+        $sql .= ", accountancy_code_sell_intra= '" . $this->db->escape($this->accountancy_code_sell_intra)."'";
+        $sql .= ", accountancy_code_sell_export= '" . $this->db->escape($this->accountancy_code_sell_export)."'";
 		$sql .= ", fk_parent = ".$this->fk_parent;
 		$sql .= " WHERE rowid = ".$this->id;
 

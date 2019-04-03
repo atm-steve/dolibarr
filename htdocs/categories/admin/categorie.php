@@ -127,17 +127,17 @@ print '<td align="center" width="20">'. $form->textwithpicto('',$langs->trans("C
 print '<td align="center" width="100">';
 if ($conf->use_javascript_ajax)
 {
-    print ajax_constantonoff('CATEGORIE_USE_ACCOUNTACY_CODES');
+    print ajax_constantonoff('CATEGORIE_USE_ACCOUNTANCY_CODES');
 }
 else
 {
     if (empty($conf->global->CATEGORIE_USE_ACCOUNTACY_CODES))
     {
-        print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_USE_ACCOUNTACY_CODES">'.img_picto($langs->trans("Disabled"),'off').'</a>';
+        print '<a href="'.$_SERVER['PHP_SELF'].'?action=set_CATEGORIE_USE_ACCOUNTANCY_CODES">'.img_picto($langs->trans("Disabled"),'off').'</a>';
     }
     else
     {
-        print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_USE_ACCOUNTACY_CODES">'.img_picto($langs->trans("Enabled"),'on').'</a>';
+        print '<a href="'.$_SERVER['PHP_SELF'].'?action=del_CATEGORIE_USE_ACCOUNTANCY_CODES">'.img_picto($langs->trans("Enabled"),'on').'</a>';
     }
 }
 print '</td></tr>';

@@ -31,6 +31,10 @@ require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';
+
 // Load translation files required by the page
 $langs->load("categories");
 
@@ -133,6 +137,15 @@ if ($action == 'add' && $user->rights->categorie->creer)
 	$object->socid			= ($socid ? $socid : 'null');
 	$object->visible		= $visible;
 	$object->type			= $type;
+    $accountancy_code_sell 			 = GETPOST('accountancy_code_sell','alpha');
+    $accountancy_code_sell_intra	 = GETPOST('accountancy_code_sell_intra','alpha');
+    $accountancy_code_sell_export	 = GETPOST('accountancy_code_sell_export','alpha');
+    $accountancy_code_buy 			 = GETPOST('accountancy_code_buy','alpha');
+
+    if ($accountancy_code_sell <= 0) { $object->accountancy_code_sell = ''; } else { $object->accountancy_code_sell = $accountancy_code_sell; }
+    if ($accountancy_code_sell_intra <= 0) { $object->accountancy_code_sell_intra = ''; } else { $object->accountancy_code_sell_intra = $accountancy_code_sell_intra; }
+    if ($accountancy_code_sell_export <= 0) { $object->accountancy_code_sell_export = ''; } else { $object->accountancy_code_sell_export = $accountancy_code_sell_export; }
+    if ($accountancy_code_buy <= 0) { $object->accountancy_code_buy = ''; } else { $object->accountancy_code_buy = $accountancy_code_buy; }
 
 	if ($parent != "-1") $object->fk_parent = $parent;
 
@@ -216,6 +229,7 @@ if (($action == 'add' || $action == 'confirmed') && $user->rights->categorie->cr
 
 $form = new Form($db);
 $formother = new FormOther($db);
+if (! empty($conf->accounting->enabled)) $formaccounting = new FormAccounting($db);
 
 $helpurl='';
 llxHeader("",$langs->trans("Categories"),$helpurl);
@@ -265,6 +279,40 @@ if ($user->rights->categorie->creer)
 		print $form->select_all_categories($type, $catorigin, 'parent');
 		print ajax_combobox('parent');
 		print '</td></tr>';
+
+        // Accountancy codes
+        if (! empty($conf->accounting->enabled) && !empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES) && $type == 0)
+        {
+            // Accountancy_code_sell
+            print '<tr><td class="titlefieldcreate">'.$langs->trans("CategorieAccountancySellCode").'</td>';
+            print '<td>';
+            print $formaccounting->select_account(GETPOST('accountancy_code_sell'), 'accountancy_code_sell', 1, null, 1, 1, '');
+            print '</td></tr>';
+
+            if ($conf->global->MAIN_FEATURES_LEVEL)
+            {
+                // Accountancy_code_sell_intra
+                if ($mysoc->isInEEC())
+                {
+                    print '<tr><td class="titlefieldcreate">'.$langs->trans("CategorieAccountancySellIntraCode").'</td>';
+                    print '<td>';
+                    print $formaccounting->select_account(GETPOST('accountancy_code_sell_intra'), 'accountancy_code_sell_intra', 1, null, 1, 1, '');
+                    print '</td></tr>';
+                }
+
+                // Accountancy_code_sell_export
+                print '<tr><td class="titlefieldcreate">'.$langs->trans("CategorieAccountancySellExportCode").'</td>';
+                print '<td>';
+                print $formaccounting->select_account(GETPOST('accountancy_code_sell_export'), 'accountancy_code_sell_export', 1, null, 1, 1, '');
+                print '</td></tr>';
+            }
+
+            // Accountancy_code_buy
+            print '<tr><td>'.$langs->trans("CategorieAccountancyBuyCode").'</td>';
+            print '<td>';
+            print $formaccounting->select_account(GETPOST('accountancy_code_buy'), 'accountancy_code_buy', 1, null, 1, 1, '');
+            print '</td></tr>';
+        }
 
 		$parameters=array();
 		$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook

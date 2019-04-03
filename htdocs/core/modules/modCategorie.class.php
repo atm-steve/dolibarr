@@ -403,7 +403,7 @@ class modCategorie extends DolibarrModules
 		$this->import_icon[$r]=$this->picto;
 		$this->import_entities_array[$r]=array();		// We define here only fields that use another icon that the one defined into import_icon
 		$this->import_tables_array[$r]=array('ca'=>MAIN_DB_PREFIX.'categorie');
-		$this->import_fields_array[$r]=array('ca.label'=>"Label*",'ca.type'=>"Type*",'ca.description'=>"Description");
+		$this->import_fields_array[$r]=array('ca.label'=>"Label*",'ca.type'=>"Type*",'ca.description'=>"Description",'ca.accountancy_code_sell'=>"CategorieAccountancySellCode",'ca.accountancy_code_buy'=>"CategorieAccountancyBuyCode");
 
 		$this->import_regex_array[$r]=array('ca.type'=>'^[0|1|2|3]');
 		$typeexample="";
@@ -411,7 +411,7 @@ class modCategorie extends DolibarrModules
 		if ($conf->fournisseur->enabled) { $typeexample.=($typeexample?"/":"")."1=Supplier"; }
 		if ($conf->societe->enabled)     { $typeexample.=($typeexample?"/":"")."2=Customer-Prospect"; }
 		if ($conf->adherent->enabled)    { $typeexample.=($typeexample?"/":"")."3=Member"; }
-		$this->import_examplevalues_array[$r]=array('ca.label'=>"Supplier Category",'ca.type'=>$typeexample,'ca.description'=>"Imported category");
+		$this->import_examplevalues_array[$r]=array('ca.label'=>"Supplier Category",'ca.type'=>$typeexample,'ca.description'=>"Imported category",'ca.accountancy_code_sell'=>"CategorieAccountancySellCode",'ca.accountancy_code_buy'=>"CategorieAccountancyBuyCode");
 
 		if (! empty($conf->product->enabled))
 		{
