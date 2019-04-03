@@ -21,16 +21,20 @@
 
 create table llx_categorie
 (
-	rowid 		    integer AUTO_INCREMENT PRIMARY KEY,
-	entity          integer DEFAULT 1 NOT NULL,			-- multi company id
-	fk_parent		integer DEFAULT 0 NOT NULL,
-	label 		    varchar(180) NOT NULL,				-- category name
-	type	        tinyint DEFAULT 1 NOT NULL,			-- category type (product, supplier, customer, member)
-	description 	text,								-- description of the category
-    color           varchar(8),                         -- color
-	fk_soc          integer DEFAULT NULL,				-- not used by default. Used when option CATEGORY_ASSIGNED_TO_A_CUSTOMER is set.
-	visible         tinyint DEFAULT 1 NOT NULL,			-- determine if the products are visible or not
-    import_key      varchar(14)							-- Import key
+	rowid 		                    integer AUTO_INCREMENT PRIMARY KEY,
+	entity                          integer DEFAULT 1 NOT NULL,			-- multi company id
+	fk_parent		                integer DEFAULT 0 NOT NULL,
+	label 		                    varchar(180) NOT NULL,				-- category name
+	type	                        tinyint DEFAULT 1 NOT NULL,			-- category type (product, supplier, customer, member)
+	description 	                text,								-- description of the category
+    color                           varchar(8),                         -- color
+	fk_soc                          integer DEFAULT NULL,				-- not used by default. Used when option CATEGORY_ASSIGNED_TO_A_CUSTOMER is set.
+	visible                         tinyint DEFAULT 1 NOT NULL,			-- determine if the products are visible or not
+	accountancy_code_sell           varchar(32),
+	accountancy_code_sell_intra     varchar(32),
+	accountancy_code_sell_export    varchar(32),
+	accountancy_code_buy            varchar(32),
+    import_key                      varchar(14)							-- Import key
 )ENGINE=innodb;
 
 -- 
