@@ -45,7 +45,7 @@ $ref        = GETPOST('ref', 'alpha');
 $action		= GETPOST('action', 'aZ09');
 $confirm    = GETPOST('confirm', 'alpha');
 $cancel     = GETPOST('cancel', 'aZ09');
-$contextpage= GETPOST('contextpage','aZ')?GETPOST('contextpage','aZ'):'myobjectcard';   // To manage different context of search
+$contextpage= GETPOST('contextpage', 'aZ')?GETPOST('contextpage', 'aZ'):'myobjectcard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
 
 // Initialize technical objects
@@ -61,7 +61,7 @@ $search_array_options = $extrafields->getOptionalsFromPost($object->table_elemen
 $search_all = trim(GETPOST("search_all", 'alpha'));
 $search = array();
 foreach ($object->fields as $key => $val) {
-	if (GETPOST('search_'.$key,'alpha')) $search[$key]=GETPOST('search_'.$key,'alpha');
+	if (GETPOST('search_'.$key, 'alpha')) $search[$key]=GETPOST('search_'.$key, 'alpha');
 }
 
 if (empty($action) && empty($id) && empty($ref)) $action='view';
@@ -103,10 +103,10 @@ if (empty($reshook))
 	include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
 }
 
-if (GETPOST('addfilter','alpha'))
+if (GETPOST('addfilter', 'alpha'))
 {
 	$emailcollectorfilter = new EmailCollectorFilter($db);
-	$emailcollectorfilter->type = GETPOST('filtertype','az09');
+	$emailcollectorfilter->type = GETPOST('filtertype', 'az09');
 	$emailcollectorfilter->rulevalue = GETPOST('rulevalue', 'alpha');
 	$emailcollectorfilter->fk_emailcollector = $object->id;
 	$emailcollectorfilter->status = 1;
@@ -125,7 +125,7 @@ if (GETPOST('addfilter','alpha'))
 if ($action == 'deletefilter')
 {
 	$emailcollectorfilter = new EmailCollectorFilter($db);
-	$emailcollectorfilter->fetch(GETPOST('filterid','int'));
+	$emailcollectorfilter->fetch(GETPOST('filterid', 'int'));
 	$result = $emailcollectorfilter->delete($user);
 	if ($result > 0)
 	{
@@ -137,10 +137,10 @@ if ($action == 'deletefilter')
 	}
 }
 
-if (GETPOST('addoperation','alpha'))
+if (GETPOST('addoperation', 'alpha'))
 {
 	$emailcollectoroperation = new EmailCollectorAction($db);
-	$emailcollectoroperation->type = GETPOST('operationtype','az09');
+	$emailcollectoroperation->type = GETPOST('operationtype', 'az09');
 	$emailcollectoroperation->actionparam = GETPOST('operationparam', 'none');
 	$emailcollectoroperation->fk_emailcollector = $object->id;
 	$emailcollectoroperation->status = 1;
@@ -161,7 +161,7 @@ if (GETPOST('addoperation','alpha'))
 if ($action == 'deleteoperation')
 {
 	$emailcollectoroperation = new EmailCollectorAction($db);
-	$emailcollectoroperation->fetch(GETPOST('operationid','int'));
+	$emailcollectoroperation->fetch(GETPOST('operationid', 'int'));
 	$result = $emailcollectoroperation->delete($user);
 	if ($result > 0)
 	{
@@ -178,10 +178,9 @@ if ($action == 'confirm_collect')
 	dol_include_once('/emailcollector/class/emailcollector.class.php');
 
 	$res = $object->doCollectOneCollector();
-
 	if ($res > 0)
 	{
-		setEventMessages($object->output, null, 'mesgs');
+	    setEventMessages($object->lastresult, null, 'mesgs');
 	}
 	else
 	{
@@ -307,7 +306,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	if ($action == 'clone') {
 		// Create an array for form
 		$formquestion = array();
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('CloneMyObject'), $langs->trans('ConfirmCloneMyObject', $object->ref), 'confirm_clone', $formquestion, 'yes', 1);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneEmailCollector', $object->ref), 'confirm_clone', $formquestion, 'yes', 1);
 	}
 
 	// Confirmation of action process
@@ -384,27 +383,26 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$connectstringserver = '';
 	$connectstringsource = '';
 	$connectstringtarget = '';
-	
+
 	if (function_exists('imap_open'))
 	{
 		$connectstringserver = $object->getConnectStringIMAP();
 		$connectstringsource = $connectstringserver.imap_utf7_encode($sourcedir);
 		$connectstringtarget = $connectstringserver.imap_utf7_encode($targetdir);
 
-		$connection = imap_open($connectstringsource, $object->user, $object->password);
+		$connection = imap_open($connectstringsource, $object->login, $object->password);
 	}
 	else
 	{
 		$morehtml .= 'IMAP functions not available on your PHP';
 	}
-	
+
 	if (! $connection)
 	{
 		$morehtml .= 'Failed to open IMAP connection '.$connectstringsource;
 	}
 	else
 	{
-		//$morehtmlstatus .= imap_num_msg($connection).'</div><div class="statusref">';
 		$morehtml .= imap_num_msg($connection);
 	}
 
@@ -412,7 +410,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	{
 		imap_close($connection);
 	}
-	
+
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref.'<div class="refidno">'.$morehtml.'</div>', '', 0, '', '', 0, '');
 
 	print '<div class="fichecenter">';
@@ -444,12 +442,25 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	// Add filter
 	print '<tr class="oddeven">';
 	print '<td>';
-	$arrayoftypes=array('from'=>'MailFrom', 'to'=>'MailTo', 'cc'=>'Cc', 'bcc'=>'Bcc', 'subject'=>'Subject', 'body'=>'Body', 'seen'=>'AlreadyRead', 'unseen'=>'NotRead', 'withtrackingid'=>'WithDolTrackingID', 'withouttrackingid'=>'WithoutDolTrackingID');
-	print $form->selectarray('filtertype', $arrayoftypes, '', 1, 0, 0, '', 1);
+	$arrayoftypes=array(
+	    'from'=>'MailFrom',
+	    'to'=>'MailTo',
+	    'cc'=>'Cc',
+	    'bcc'=>'Bcc',
+	    'subject'=>'Subject',
+	    'body'=>'Body',
+	    'X1'=>'---',
+	    'seen'=>'AlreadyRead',
+	    'unseen'=>'NotRead',
+	    'X2'=>'---',
+	    'withtrackingid'=>'WithDolTrackingID',
+	    'withouttrackingid'=>'WithoutDolTrackingID'
+	);
+	print $form->selectarray('filtertype', $arrayoftypes, '', 1, 0, 0, '', 1, 0, 0, '', '', 0, '', 2);
 	print '</td><td>';
 	print '<input type="text" name="rulevalue">';
 	print '</td>';
-	print '<td align="right"><input type="submit" name="addfilter" id="addfilter" class="flat button" value="'.$langs->trans("Add").'"></td>';
+	print '<td class="right"><input type="submit" name="addfilter" id="addfilter" class="flat button" value="'.$langs->trans("Add").'"></td>';
 	print '</tr>';
 	// List filters
 	foreach($object->filters as $rulefilter)
@@ -462,8 +473,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		print $langs->trans($arrayoftypes[$rulefilter['type']]);
 		print '</td>';
 		print '<td>'.$rulefilter['rulevalue'].'</td>';
-		print '<td align="right">';
-		//print $rulefilterobj->getLibStatut(3);
+		print '<td class="right">';
 		print ' <a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=deletefilter&filterid='.$rulefilter['id'].'">'.img_delete().'</a>';
 		print '</td>';
 		print '</tr>';
@@ -487,9 +497,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print $form->selectarray('operationtype', $arrayoftypes, '', 1, 0, 0, '', 1);
 	print '</td><td>';
 	print '<input type="text" name="operationparam">';
+	$htmltext=$langs->transnoentitiesnoconv("OperationParamDesc");
+	//var_dump($htmltext);
+	print $form->textwithpicto('', $htmltext);
 	print '</td>';
 	print '<td></td>';
-	print '<td align="right"><input type="submit" name="addoperation" id="addoperation" class="flat button" value="'.$langs->trans("Add").'"></td>';
+	print '<td class="right"><input type="submit" name="addoperation" id="addoperation" class="flat button" value="'.$langs->trans("Add").'"></td>';
 	print '</tr>';
 	// List operations
 	$nboflines = count($object->actions);
@@ -506,7 +519,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		print $langs->trans($arrayoftypes[$ruleaction['type']]);
 		print '</td>';
 		print '<td>'.$ruleaction['actionparam'].'</td>';
-		print '<td align="right">';
+		print '<td class="right">';
 		//print $ruleactionobj->getLibStatut(3);
 		print ' <a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=deleteoperation&operationid='.$ruleaction['id'].'">'.img_delete().'</a>';
 		print '</td>';
