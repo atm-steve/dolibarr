@@ -92,3 +92,4 @@ CategorieAccountancyBuyCode=Code comptable (achat)
 CategorieAccountancySellCode=Code comptable (vente)
 CategorieAccountancySellIntraCode=Code comptable (vente intra-communautaire)
 CategorieAccountancySellExportCode=Code comptable (vente à l'export)
+DefaultForProductCategorie=Défaut pour la catégorie <br /> "%s"

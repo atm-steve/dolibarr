@@ -108,7 +108,7 @@ function getCategoryAccountancyCode($id, $type)
 {
     global $db;
 
-    if (empty ($id) || empty ($type)) return -1;
+    if (empty ($id) || empty ($type)) return array(-1, '');
 
     $motherof = array();
     // Load array[child]=parent
@@ -132,11 +132,12 @@ function getCategoryAccountancyCode($id, $type)
     $c = new Categorie($db);
     $prodcat = $c->containing($id, $type);
 
-    if(empty($prodcat)) return -2;
+    if(empty($prodcat)) return array(-2, '');
 
     $cat_order = array();
     foreach ($prodcat as $cat)
     {
+        $cat_order[$cat->id]['label'] = $cat->label;
         $cat_order[$cat->id]['profondeur'] = 0;
         $cat_order[$cat->id]['accountancy_code_sell'] = $cat->accountancy_code_sell;
 
@@ -167,7 +168,7 @@ function getCategoryAccountancyCode($id, $type)
         }
     }
 
-    if (!empty($suggest)) return $suggest['accountancy_code_sell'];
-    elseif (!empty($second_suggest)) $second_suggest['accountancy_code_sell'];
-    else return '';
+    if (!empty($suggest)) return array($suggest['accountancy_code_sell'], $suggest['label']);
+    elseif (!empty($second_suggest)) return array($second_suggest['accountancy_code_sell'], $second_suggest['label']);
+    else return array('','');
 }
