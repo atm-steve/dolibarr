@@ -1419,7 +1419,7 @@ class Categorie extends CommonObject
 		if ($type === Categorie::TYPE_BANK_LINE)   // TODO Remove this with standard category code
 		{
 		    // Load bank groups
-		    $sql = "SELECT c.label, c.rowid";
+		    $sql = "SELECT c.label, c.rowid, c.accountancy_code_sell";
 		    $sql.= " FROM ".MAIN_DB_PREFIX."bank_class as a, ".MAIN_DB_PREFIX."bank_categ as c";
 		    $sql.= " WHERE a.lineid=".$id." AND a.fk_categ = c.rowid";
 		    $sql.= " ORDER BY c.label";
@@ -1437,6 +1437,7 @@ class Categorie extends CommonObject
     				    $cat = new Categorie($this->db);
     				    $cat->id = $obj->rowid;
     				    $cat->label = $obj->label;
+				    $cat->accountancy_code_sell = $obj->accountancy_code_sell;
     				    $cats[] = $cat;
     				}
 		        }
