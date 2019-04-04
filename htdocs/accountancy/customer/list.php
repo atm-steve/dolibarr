@@ -34,6 +34,7 @@ require_once DOL_DOCUMENT_ROOT . '/accountancy/class/accountingaccount.class.php
 require_once DOL_DOCUMENT_ROOT . '/core/lib/accounting.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+if (!empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES)) require_once DOL_DOCUMENT_ROOT.'/core/lib/categories.lib.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array("bills","compta","accountancy","other","productbatch"));
@@ -432,6 +433,20 @@ if ($result) {
 			}
 		}
 		if ($objp->code_sell_l == -1) $objp->code_sell_l='';
+
+		if (!empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES))
+        {
+            if (empty($objp->code_sell))
+            {
+                // get account from categories of the product
+                $objp->code_sell = getCategoryAccountancyCode($objp->product_id, 'product');
+                if (!empty($objp->code_sell))
+                {
+                    if ($objp->code_sell < 0) $objp->code_sell = '';
+                    else $objp->aarowid_suggest = $accounting->fetch('', $objp->code_sell, 1);
+                }
+            }
+        }
 
 		if (! empty($objp->code_sell)) {
 			$objp->code_sell_p = $objp->code_sell;       // Code on product
