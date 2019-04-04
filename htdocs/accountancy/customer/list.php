@@ -505,11 +505,11 @@ if ($result) {
 	    print (($objp->type_l == 1)?$langs->trans("DefaultForService"):$langs->trans("DefaultForProduct")) . ' = ' . ($objp->code_sell_l > 0 ? length_accountg($objp->code_sell_l) : $langs->trans("Unknown"));
 		if ($objp->product_id > 0)
 		{
-		    if (!empty($cat_code))
-            {
-                print '<br>';
-                print (($objp->type_l == 1)?$langs->trans("DefaultForServiceCategorie", $cat_label):$langs->trans("DefaultForProductCategorie", $cat_label)) . ' = ' . ($cat_code > 0 ? length_accountg($cat_code) : $langs->trans("Unknown"));
-            }
+		    if (!empty($cat_code) && $cat_code > 0)
+		    {
+			print '<br>';
+			print (($objp->type_l == 1)?$langs->trans("DefaultForServiceCategorie", $cat_label):$langs->trans("DefaultForProductCategorie", $cat_label)) . ' = ' . ($cat_code > 0 ? length_accountg($cat_code) : $langs->trans("Unknown"));
+		    }
 		    print '<br>';
 		    print (($objp->type_l == 1)?$langs->trans("ThisService"):$langs->trans("ThisProduct")) . ' = ' . (empty($objp->code_sell_p) ? $langs->trans("Unknown") : length_accountg($objp->code_sell_p));
 		}
