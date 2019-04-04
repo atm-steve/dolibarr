@@ -561,8 +561,4 @@ ALTER TABLE llx_advtargetemailing DROP COLUMN fk_mailing;
 
 DROP TABLE llx_ticket_logs;
 
--- accountancy code for categories
-ALTER TABLE llx_categorie ADD COLUMN accountancy_code_sell VARCHAR(32) NULL;
-ALTER TABLE llx_categorie ADD COLUMN accountancy_code_sell_intra VARCHAR(32) NULL;
-ALTER TABLE llx_categorie ADD COLUMN accountancy_code_sell_export VARCHAR(32) NULL;
-ALTER TABLE llx_categorie ADD COLUMN accountancy_code_buy VARCHAR(32) NULL;
+
