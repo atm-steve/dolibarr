@@ -164,7 +164,7 @@ function getCategoryAccountancyCode($id, $type)
         if (!empty($cat['accountancy_code_sell']))
         {
             if ($cat['profondeur'] > $profondeur) $suggest = $cat;
-            elseif ($cat == $profondeur) $second_suggest = $cat;
+            elseif ($cat['profondeur'] == $profondeur) $second_suggest = $cat;
         }
     }
 
