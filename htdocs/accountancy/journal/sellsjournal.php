@@ -90,7 +90,7 @@ if (empty($date_start) || empty($date_end)) // We define date_start and date_end
 $idpays = $mysoc->country_id;
 
 $sql = "SELECT f.rowid, f.facnumber, f.type, f.datef as df, f.ref_client,";
-$sql .= " fd.rowid as fdid, fd.description, fd.product_type, fd.total_ht, fd.total_tva, fd.total_localtax1, fd.total_localtax2, fd.tva_tx, fd.total_ttc, fd.situation_percent, fd.vat_src_code,";
+$sql .= " fd.rowid as fdid, fd.description, fd.subprice, fd.qty, fd.product_type, fd.total_ht, fd.total_tva, fd.total_localtax1, fd.total_localtax2, fd.tva_tx, fd.total_ttc, fd.situation_percent, fd.vat_src_code,";
 $sql .= " s.rowid as socid, s.nom as name, s.code_client, s.code_fournisseur, s.code_compta, s.code_compta_fournisseur,";
 $sql .= " p.rowid as pid, p.ref as pref, p.accountancy_code_sell, aa.rowid as fk_compte, aa.account_number as compte, aa.label as label_compte";
 //$sql .= " ct.accountancy_code_sell as account_tva";
@@ -189,6 +189,18 @@ if ($result) {
 		if (! isset($tabtva[$obj->rowid][$compta_tva])) $tabtva[$obj->rowid][$compta_tva] = 0;
 		if (! isset($tablocaltax1[$obj->rowid][$compta_localtax1])) $tablocaltax1[$obj->rowid][$compta_localtax1] = 0;
 		if (! isset($tablocaltax2[$obj->rowid][$compta_localtax2])) $tablocaltax2[$obj->rowid][$compta_localtax2] = 0;
+
+		/*
+		 * FIX pour le spécifique A2A car le montant des lignes est à 0 lorsqu'on fait un avoir
+		 */
+        if($obj->total_ht == 0 && $prev_progress>0 && $obj->subprice > 0) {
+            $situation_ratio = $prev_progress / 100;
+
+            $obj->total_ht =  - ($obj->subprice*$obj->qty);
+            if(!empty($obj->tva_tx)) $obj->total_tva = $obj->total_ht*($obj->tva_tx/100);
+            else $obj->total_tva = 0;
+            $obj->total_ttc = $obj->total_ht + $obj->total_tva;
+        }
 
 		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc * $situation_ratio;
 		$tabht[$obj->rowid][$compta_prod] += $obj->total_ht * $situation_ratio;
