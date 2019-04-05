@@ -26,10 +26,11 @@ if ($atm == 'evol')
 					$align = $extrafields->getAlignFlag($key);
 					$typeofextrafield = $extrafields->attributes[$extrafieldsobjectkey]['type'][$key];
 					print '<td class="liste_titre'.($align ? ' '.$align : '').'">';
+
+                    $tmpkey = preg_replace('/'.$search_options_pattern.'/', '', $key);
 					if (in_array($typeofextrafield, array('varchar', 'int', 'double', 'select')) && empty($extrafields->attributes[$extrafieldsobjectkey]['computed'][$key]))
 					{
 						$crit = $val;
-						$tmpkey = preg_replace('/'.$search_options_pattern.'/', '', $key);
 						$searchclass = '';
 						if (in_array($typeofextrafield, array('varchar', 'select'))) $searchclass = 'searchstring';
 						if (in_array($typeofextrafield, array('int', 'double'))) $searchclass = 'searchnum';
@@ -40,7 +41,7 @@ if ($atm == 'evol')
 						// for the type as 'checkbox', 'chkbxlst', 'sellist' we should use code instead of id (example: I declare a 'chkbxlst' to have a link with dictionnairy, I have to extend it with the 'code' instead 'rowid')
 						$morecss = '';
 						if ($typeofextrafield == 'sellist') $morecss = 'maxwidth200';
-						echo $extrafields->showInputField($key, $search_array_options[$search_options_pattern.$key], '', '', 'search_', $morecss);
+						echo $extrafields->showInputField($key, $search_array_options[$search_options_pattern.$tmpkey], '', '', $search_options_pattern, $morecss);
 					}
 					elseif (in_array($typeofextrafield, array('datetime', 'timestamp')))
 					{
