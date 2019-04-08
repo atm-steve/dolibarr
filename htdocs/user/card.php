@@ -602,7 +602,7 @@ if (empty($reshook)) {
 	$trigger_name='USER_SENTBYMAIL';
 	$paramname='id';    // Name of param key to open the card
 	$mode='emailfromuser';
-	$trackid='use'.$object->id;
+	$trackid='use'.$id; // [PH] => https://github.com/Dolibarr/dolibarr/pull/10246
 	include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 
 	// Actions to build doc
