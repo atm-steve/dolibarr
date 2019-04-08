@@ -27,7 +27,10 @@
  */
 class Utils
 {
-	var $db;
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
 	var $output;   // Used by Cron method to return message
 	var $result;   // Used by Cron method to return data
@@ -281,8 +284,9 @@ class Utils
 			}
 
 			$errormsg='';
+			$handle = '';
 
-			// Debut appel methode execution
+			// Start call method to execute dump
 			$fullcommandcrypted=$command." ".$paramcrypted." 2>&1";
 			$fullcommandclear=$command." ".$paramclear." 2>&1";
 			if ($compression == 'none') $handle = fopen($outputfile, 'w');
@@ -339,7 +343,6 @@ class Utils
 						elseif (preg_match('/'.preg_quote('SET SQL_NOTES=@OLD_SQL_NOTES').'/i',$read)) $ok=1;
 					}
 					pclose($handlein);
-
 				}
 
 
@@ -374,7 +377,7 @@ class Utils
 				{
 					// Renommer fichier sortie en fichier erreur
 					//print "$outputfile -> $outputerror";
-					@dol_delete_file($outputerror,1);
+					@dol_delete_file($outputerror, 1, 0, 0, null, false, 0);
 					@rename($outputfile,$outputerror);
 					// Si safe_mode on et command hors du parametre exec, on a un fichier out vide donc errormsg vide
 					if (! $errormsg)
@@ -406,13 +409,13 @@ class Utils
 
 			if ($compression == 'gz' or $compression == 'bz')
 			{
-				$this->backup_tables($outputfiletemp);
+				$this->backupTables($outputfiletemp);
 				dol_compress_file($outputfiletemp, $outputfile, $compression);
 				unlink($outputfiletemp);
 			}
 			else
 			{
-				$this->backup_tables($outputfile);
+				$this->backupTables($outputfile);
 			}
 
 			$this->output = "";
@@ -481,7 +484,7 @@ class Utils
 			{
 				$i++;
 				if ($i <= $keeplastnfiles) continue;
-				dol_delete_file($val['fullname']);
+				dol_delete_file($val['fullname'], 0, 0, 0, null, false, 0);
 			}
 		}
 
@@ -610,17 +613,25 @@ class Utils
 			$FILENAMEASCII=strtolower($module).'.asciidoc';
 			$FILENAMEDOC=strtolower($module).'.html';			// TODO Use/text PDF
 
-			$dirofmodule = dol_buildpath(strtolower($module), 0).'/doc';
+			$dirofmodule = dol_buildpath(strtolower($module), 0);
+			$dirofmoduledoc = dol_buildpath(strtolower($module), 0).'/doc';
 			$dirofmoduletmp = dol_buildpath(strtolower($module), 0).'/doc/temp';
-			$outputfiledoc = $dirofmodule.'/'.$FILENAMEDOC;
-			if ($dirofmodule)
+			$outputfiledoc = $dirofmoduledoc.'/'.$FILENAMEDOC;
+			if ($dirofmoduledoc)
 			{
-				if (! dol_is_dir($dirofmodule)) dol_mkdir($dirofmodule);
+				if (! dol_is_dir($dirofmoduledoc)) dol_mkdir($dirofmoduledoc);
 				if (! dol_is_dir($dirofmoduletmp)) dol_mkdir($dirofmoduletmp);
 				if (! is_writable($dirofmoduletmp))
 				{
 					$this->error = 'Dir '.$dirofmoduletmp.' does not exists or is not writable';
 					return -1;
+				}
+
+				$conf->global->MODULEBUILDER_ASCIIDOCTOR='asciidoctor';
+				if (empty($conf->global->MODULEBUILDER_ASCIIDOCTOR))
+				{
+				    $this->error = 'Setup of module ModuleBuilder not complete';
+				    return -1;
 				}
 
 				$destfile=$dirofmoduletmp.'/'.$FILENAMEASCII;
@@ -634,6 +645,7 @@ class Utils
 					foreach ($specs as $spec)
 					{
 						if (preg_match('/notindoc/', $spec['relativename'])) continue;	// Discard file
+						if (preg_match('/example/',  $spec['relativename'])) continue;	// Discard file
 						if (preg_match('/disabled/', $spec['relativename'])) continue;	// Discard file
 
 						$pathtofile = strtolower($module).'/doc/'.$spec['relativename'];
@@ -659,17 +671,26 @@ class Utils
 					// TODO
 					fwrite($fhandle, "TODO...");
 
+
+					fwrite($fhandle, "\n\n\n== CHANGELOG...\n\n");
+
+					// TODO
+					fwrite($fhandle, "TODO...");
+
+
+
 					fclose($fhandle);
 				}
 
-				$conf->global->MODULEBUILDER_ASCIIDOCTOR='asciidoctor';
-				if (empty($conf->global->MODULEBUILDER_ASCIIDOCTOR))
-				{
-					dol_print_error('', 'Module setup not complete');
-					exit;
-				}
+				// Copy some files into temp directory
+				dol_copy($dirofmodule.'/README.md', $dirofmoduletmp.'/README.md', 0, 1);
+				dol_copy($dirofmodule.'/ChangeLog.md', $dirofmoduletmp.'/ChangeLog.md', 0, 1);
 
-				$command=$conf->global->MODULEBUILDER_ASCIIDOCTOR.' '.$destfile.' -n -o '.$dirofmodule.'/'.$FILENAMEDOC;
+				// Launch doc generation
+                $currentdir = getcwd();
+                chdir($dirofmodule);
+
+				$command=$conf->global->MODULEBUILDER_ASCIIDOCTOR.' '.$destfile.' -n -o '.$dirofmoduledoc.'/'.$FILENAMEDOC;
 				$outfile=$dirofmoduletmp.'/out.tmp';
 
 				require_once DOL_DOCUMENT_ROOT.'/core/class/utils.class.php';
@@ -680,6 +701,8 @@ class Utils
 					$this->error = $resarray['error'].' '.$resarray['output'];
 				}
 				$result = ($resarray['result'] == 0) ? 1 : 0;
+
+				chdir($currentdir);
 			}
 			else
 			{
@@ -708,12 +731,14 @@ class Utils
 	}
 
 	/**
-	 * This saves syslog files and compresses older ones
-	 * Used from cronjob
+	 * This saves syslog files and compresses older ones.
+	 * Nb of archive to keep is defined into $conf->global->SYSLOG_FILE_SAVES
+	 * CAN BE A CRON TASK
 	 *
 	 * @return	int						0 if OK, < 0 if KO
 	 */
-	function compressSyslogs() {
+    function compressSyslogs()
+    {
 		global $conf;
 
 		if(empty($conf->loghandlers['mod_syslog_file'])) { // File Syslog disabled
@@ -746,50 +771,52 @@ class Utils
 			$logname = $file['name'];
 			$logpath = $file['path'];
 
-			// Handle already compressed files to rename them and add +1
+			if (dol_is_file($logpath.'/'.$logname) && dol_filesize($logpath.'/'.$logname) > 0)	// If log file exists and is not empty
+			{
+				// Handle already compressed files to rename them and add +1
 
-			$filter = '^'.preg_quote($logname, '/').'\.([0-9]+)\.gz$';
+				$filter = '^'.preg_quote($logname, '/').'\.([0-9]+)\.gz$';
 
-			$gzfilestmp = dol_dir_list($logpath, 'files', 0, $filter);
-			$gzfiles = array();
+				$gzfilestmp = dol_dir_list($logpath, 'files', 0, $filter);
+				$gzfiles = array();
 
-			foreach($gzfilestmp as $gzfile) {
-				$tabmatches = array();
-				preg_match('/'.$filter.'/i', $gzfile['name'], $tabmatches);
+				foreach($gzfilestmp as $gzfile) {
+					$tabmatches = array();
+					preg_match('/'.$filter.'/i', $gzfile['name'], $tabmatches);
 
-				$numsave = intval($tabmatches[1]);
+					$numsave = intval($tabmatches[1]);
 
-				$gzfiles[$numsave] = $gzfile;
-			}
-
-			krsort($gzfiles, SORT_NUMERIC);
-
-			foreach($gzfiles as $numsave => $dummy) {
-				if (dol_is_file($logpath.'/'.$logname.'.'.($numsave+1).'.gz')) {
-					return -2;
+					$gzfiles[$numsave] = $gzfile;
 				}
 
-				if($numsave >= $nbSaves) {
-					dol_delete_file($logpath.'/'.$logname.'.'.$numsave.'.gz');
-				} else {
-					dol_move($logpath.'/'.$logname.'.'.$numsave.'.gz', $logpath.'/'.$logname.'.'.($numsave+1).'.gz', 0, 1, 0, 0);
-				}
-			}
+				krsort($gzfiles, SORT_NUMERIC);
 
-			// Compress last save
-			if (dol_is_file($logpath.'/'.$logname.'.1')) {
-				if($nbSaves > 1) {
-					$gzfilehandle = gzopen($logpath.'/'.$logname.'.2.gz', 'wb9');
+				foreach($gzfiles as $numsave => $dummy) {
+					if (dol_is_file($logpath.'/'.$logname.'.'.($numsave+1).'.gz')) {
+						return -2;
+					}
+
+					if($numsave >= $nbSaves) {
+						dol_delete_file($logpath.'/'.$logname.'.'.$numsave.'.gz', 0, 0, 0, null, false, 0);
+					} else {
+						dol_move($logpath.'/'.$logname.'.'.$numsave.'.gz', $logpath.'/'.$logname.'.'.($numsave+1).'.gz', 0, 1, 0, 0);
+					}
+				}
+
+				// Compress current file and recreate it
+
+				if ($nbSaves > 0) {			// If $nbSaves is 1, we keep 1 archive .gz file, If 2, we keep 2 .gz files
+					$gzfilehandle = gzopen($logpath.'/'.$logname.'.1.gz', 'wb9');
 
 					if (empty($gzfilehandle)) {
-						$this->error = 'Failted to open file '.$logpath.'/'.$logname.'.2.gz';
+						$this->error = 'Failted to open file '.$logpath.'/'.$logname.'.1.gz';
 						return -3;
 					}
 
-					$sourcehandle = fopen($logpath.'/'.$logname.'.1', 'r');
+					$sourcehandle = fopen($logpath.'/'.$logname, 'r');
 
 					if (empty($sourcehandle)) {
-						$this->error = 'Failed to open file '.$logpath.'/'.$logname.'.1';
+						$this->error = 'Failed to open file '.$logpath.'/'.$logname;
 						return -4;
 					}
 
@@ -799,19 +826,18 @@ class Utils
 
 					fclose($sourcehandle);
 					gzclose($gzfilehandle);
-				} else {
-					dol_delete_file($logpath.'/'.$logname.'.1');
-				}
-			}
 
-			// Compress current file et recreate it
-
-			if (dol_is_file($logpath.'/'.$logname)) {
-				if (dol_move($logpath.'/'.$logname, $logpath.'/'.$logname.'.1', 0, 1, 0, 0))
-				{
-					$newlog = fopen($logpath.'/'.$logname, 'a+');
-					fclose($newlog);
+					@chmod($logpath.'/'.$logname.'.1.gz', octdec(empty($conf->global->MAIN_UMASK)?'0664':$conf->global->MAIN_UMASK));
 				}
+
+				dol_delete_file($logpath.'/'.$logname, 0, 0, 0, null, false, 0);
+
+				// Create empty file
+				$newlog = fopen($logpath.'/'.$logname, 'a+');
+				fclose($newlog);
+
+				//var_dump($logpath.'/'.$logname." - ".octdec(empty($conf->global->MAIN_UMASK)?'0664':$conf->global->MAIN_UMASK));
+				@chmod($logpath.'/'.$logname, octdec(empty($conf->global->MAIN_UMASK)?'0664':$conf->global->MAIN_UMASK));
 			}
 		}
 
@@ -829,7 +855,7 @@ class Utils
 	 *	@param	string	$tables			Table name or '*' for all
 	 *	@return	int						<0 if KO, >0 if OK
 	 */
-	function backup_tables($outputfile, $tables='*')
+	function backupTables($outputfile, $tables='*')
 	{
 		global $db, $langs;
 		global $errormsg;
