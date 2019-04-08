@@ -721,6 +721,7 @@ if (empty($reshook))
 			{
 				// If we're on a standard invoice, we have to get excess received to create a discount in TTC without VAT
 
+				// Total payments
 				$sql = 'SELECT SUM(pf.amount) as total_paiements';
 				$sql.= ' FROM '.MAIN_DB_PREFIX.'paiement_facture as pf, '.MAIN_DB_PREFIX.'paiement as p';
 				$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_paiement as c ON p.fk_paiement = c.id';
@@ -734,7 +735,18 @@ if (empty($reshook))
 				$res = $db->fetch_object($resql);
 				$total_paiements = $res->total_paiements;
 
-				$discount->amount_ht = $discount->amount_ttc = $total_paiements - $object->total_ttc;
+				// Total credit note and deposit
+				$total_creditnote_and_deposit = 0;
+		                $sql = "SELECT re.rowid, re.amount_ht, re.amount_tva, re.amount_ttc,";
+		                $sql .= " re.description, re.fk_facture_source";
+		                $sql .= " FROM " . MAIN_DB_PREFIX . "societe_remise_except as re";
+		                $sql .= " WHERE fk_facture = " . $object->id;
+		                $resql = $db->query($sql);
+		                if (!empty($resql)) {
+		                        while ($obj = $db->fetch_object($resql)) $total_creditnote_and_deposit += $obj->amount_ttc;
+		                } else dol_print_error($db);
+
+				$discount->amount_ht = $discount->amount_ttc = $total_paiements + $total_creditnote_and_deposit - $object->total_ttc;
 				$discount->amount_tva = 0;
 				$discount->tva_tx = 0;
 
@@ -959,6 +971,8 @@ if (empty($reshook))
 
 							if($facture_source->type == Facture::TYPE_SITUATION)
 							{
+							    $source_fk_prev_id = $line->fk_prev_id; // temporary storing situation invoice fk_prev_id
+							    $line->fk_prev_id  = $line->id; // Credit note line need to be linked to the situation invoice it is create from
 
 							    if(!empty($facture_source->tab_previous_situation_invoice))
 							    {
@@ -1541,7 +1555,9 @@ if (empty($reshook))
 					{
 						$line->origin = $object->origin;
 						$line->origin_id = $line->id;
+						$line->fk_prev_id = $line->id;
 						$line->fetch_optionals($line->id);
+						$line->situation_percent =  $line->get_prev_progress($object->id); // get good progress including credit note
 
 						// Si fk_remise_except defini on vérifie si la réduction à déjà été appliquée
 						if ($line->fk_remise_except)
@@ -4813,7 +4829,7 @@ else if ($id > 0 || ! empty($ref))
 			}
 
 			// remove situation from cycle
-			if ($object->statut > 0
+			if ($object->statut > Facture::STATUS_DRAFT
 			    && $object->type == Facture::TYPE_SITUATION
 			    && $user->rights->facture->creer
 			    && !$objectidnext
