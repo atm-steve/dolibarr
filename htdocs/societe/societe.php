@@ -132,7 +132,7 @@ if ($mode == 'search')
 		{
 			$obj = $db->fetch_object($result);
 			$socid = $obj->rowid;
-			header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid.'&from=search');
+			header("Location: ".dol_buildpath('/financement/simulation/simulation.php',2).'?socid='.$obj->rowid.'&from=search');
 			exit;
 		} 
 		$db->free($result);
@@ -260,16 +260,6 @@ if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 {
 	$result = $db->query($sql);
 	$nbtotalofrecords = $db->num_rows($result);
-	
-	/*
-	if ($nbtotalofrecords == 1)
-	{
-	    $obj = $db->fetch_object($result);
-	    $socid = $obj->rowid;
-	    //solution sale mais ça marche
-	    echo 'Redirection en cours...<script>document.location.href="'.dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid.'";</script>';
-	    exit;
-	}*/
 }
 
 $sql.= $db->order($sortfield,$sortorder);
@@ -284,7 +274,7 @@ if ($resql)
 	{
 	    $obj = $db->fetch_object($resql);
 	    $socid = $obj->rowid;
-	    header("Location: ".dol_buildpath('/financement/simulation.php',2).'?socid='.$obj->rowid.'&from=search');
+	    header("Location: ".dol_buildpath('/financement/simulation/simulation.php',2).'?socid='.$obj->rowid.'&from=search');
 	    exit;
 	}
 	
@@ -433,7 +423,7 @@ if ($resql)
         $companystatic->fournisseur=$obj->fournisseur;
         $companystatic->code_client=$obj->code_client;
         $companystatic->code_fournisseur=$obj->code_fournisseur;
-        print '<a href="'.dol_buildpath('/financement/simulation.php',2).'?socid='.$companystatic->id.'&from=search">'.img_object($langs->trans("ShowCompany").': '.$companystatic->name,'company').''.$companystatic->name.'<a>';//.$companystatic->getNomUrl(1,'',100);
+        print '<a href="'.dol_buildpath('/financement/simulation/simulation.php',2).'?socid='.$companystatic->id.'&from=search">'.img_object($langs->trans("ShowCompany").': '.$companystatic->name,'company').''.$companystatic->name.'<a>';//.$companystatic->getNomUrl(1,'',100);
 		print "</td>\n";
 		// Barcode
 		if (! empty($conf->barcode->enabled))
