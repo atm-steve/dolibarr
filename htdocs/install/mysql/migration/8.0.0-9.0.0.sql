@@ -287,4 +287,6 @@ ALTER TABLE llx_accounting_account ADD UNIQUE INDEX uk_accounting_account (accou
 
 UPDATE llx_projet SET fk_opp_status = NULL WHERE fk_opp_status = -1;
 
-
+ALTER TABLE llx_product_warehouse_properties ADD COLUMN date_start DATE DEFAULT NULL AFTER desiredstock;
+ALTER TABLE llx_product_warehouse_properties ADD COLUMN date_end DATE DEFAULT NULL AFTER date_start;
+ALTER TABLE llx_product_warehouse_properties ADD COLUMN recurrent BOOLEAN NULL DEFAULT FALSE AFTER date_end;
