@@ -64,6 +64,9 @@ class ProductStockEntrepot extends CommonObject
 
 	public $seuil_stock_alerte;
 	public $desiredstock;
+	public $date_start;
+	public $date_end;
+	public $recurring;
 	public $import_key;
 
 
@@ -109,15 +112,19 @@ class ProductStockEntrepot extends CommonObject
 		$sql.= 'fk_entrepot,';
 		$sql.= 'seuil_stock_alerte,';
 		$sql.= 'desiredstock,';
+		$sql.= 'date_start,';
+		$sql.= 'date_end,';
+		$sql.= 'recurrent,';
 		$sql.= 'import_key';
-
-
 		$sql .= ') VALUES (';
 
 		$sql .= ' '.(! isset($this->fk_product)?'NULL':$this->fk_product).',';
 		$sql .= ' '.(! isset($this->fk_entrepot)?'NULL':$this->fk_entrepot).',';
 		$sql .= ' '.(! isset($this->seuil_stock_alerte)?'0':$this->seuil_stock_alerte).',';
 		$sql .= ' '.(! isset($this->desiredstock)?'0':$this->desiredstock).',';
+		$sql .= ' '.(! empty($this->date_start)? "'".$this->db->idate($this->date_start)."'": "null").',';
+		$sql .= ' '.(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'": "null").',';
+		$sql .= ' '.(! empty($this->recurring)?'1':'0').',';
 		$sql .= ' '.(! isset($this->import_key)?'NULL':"'".$this->db->escape($this->import_key)."'");
 
 
@@ -179,6 +186,9 @@ class ProductStockEntrepot extends CommonObject
 		$sql .= " t.fk_entrepot,";
 		$sql .= " t.seuil_stock_alerte,";
 		$sql .= " t.desiredstock,";
+		$sql .= " t.date_start,";
+		$sql .= " t.date_end,";
+		$sql .= " t.recurrent,";
 		$sql .= " t.import_key";
 		$sql .= ' FROM ' . MAIN_DB_PREFIX . $this->table_element . ' as t';
 		if(!empty($id)) $sql .= ' WHERE t.rowid = ' . $id;
@@ -199,6 +209,9 @@ class ProductStockEntrepot extends CommonObject
 				$this->fk_entrepot = $obj->fk_entrepot;
 				$this->seuil_stock_alerte = $obj->seuil_stock_alerte;
 				$this->desiredstock = $obj->desiredstock;
+				$this->date_start = $obj->date_start;
+				$this->date_end = $obj->date_end;
+				$this->recurring = $obj->recurrent;
 				$this->import_key = $obj->import_key;
 			}
 
@@ -249,9 +262,10 @@ class ProductStockEntrepot extends CommonObject
 		$sql .= " t.fk_entrepot,";
 		$sql .= " t.seuil_stock_alerte,";
 		$sql .= " t.desiredstock,";
+        $sql .= " t.date_start,";
+        $sql .= " t.date_end,";
+        $sql .= " t.recurrent,";
 		$sql .= " t.import_key";
-
-
 		$sql .= ' FROM ' . MAIN_DB_PREFIX . $this->table_element. ' as t';
 
 		$sql .= ' WHERE 1=1';
@@ -284,6 +298,9 @@ class ProductStockEntrepot extends CommonObject
 										,'fk_entrepot'=>$obj->fk_entrepot
 										,'seuil_stock_alerte'=>$obj->seuil_stock_alerte
 										,'desiredstock'=>$obj->desiredstock
+                                        ,'date_start'=>$obj->date_start
+                                        ,'date_end'=>$obj->date_end
+                                        ,'recurring'=>$obj->recurrent
 									);
 			}
 			$this->db->free($resql);
@@ -331,6 +348,9 @@ class ProductStockEntrepot extends CommonObject
 		$sql .= ' fk_entrepot = '.(isset($this->fk_entrepot)?$this->fk_entrepot:"null").',';
 		$sql .= ' seuil_stock_alerte = '.(isset($this->seuil_stock_alerte)?$this->seuil_stock_alerte:"null").',';
 		$sql .= ' desiredstock = '.(isset($this->desiredstock)?$this->desiredstock:"null").',';
+		$sql .= ' date_start = '.(isset($this->date_start)? "'".$this->db->idate($this->date_start)."'": "null").',';
+		$sql .= ' date_end = '.(isset($this->date_end)? "'".$this->db->idate($this->date_end)."'": "null").',';
+		$sql .= ' recurrent = '.(! empty($this->recurring)?'1':'0').',';
 		$sql .= ' import_key = '.(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null");
 
 

@@ -272,14 +272,20 @@ UPDATE llx_const set name = 'PRELEVEMENT_USTRD' where name = 'USTRD';
 
 -- Delete duplicate accounting account, but only if not used
 DROP TABLE tmp_llx_accouting_account;
-CREATE TABLE tmp_llx_accouting_account AS SELECT MIN(rowid) as MINID, account_number, entity, fk_pcg_version, count(*) AS NB FROM llx_accounting_account group BY account_number, entity, fk_pcg_version HAVING count(*) >= 2 order by account_number, entity, fk_pcg_version;
+CREATE TABLE tmp_llx_accouting_account AS SELECT MIN(rowid) as MINID, MAX(rowid) as MAXID, account_number, entity, fk_pcg_version, count(*) AS NB FROM llx_accounting_account group BY account_number, entity, fk_pcg_version HAVING count(*) >= 2 order by account_number, entity, fk_pcg_version;
 --SELECT * from tmp_llx_accouting_account;
 DELETE from llx_accounting_account where rowid in (select minid from tmp_llx_accouting_account where minid NOT IN (SELECT fk_code_ventilation from llx_facturedet) AND minid NOT IN (SELECT fk_code_ventilation from llx_facture_fourn_det) AND minid NOT IN (SELECT fk_code_ventilation from llx_expensereport_det));
+
+-- If there is record in tmp_llx_accouting_account, make a look on each line to do
+--update llx_facturedet        set fk_code_ventilation = maxid WHERE fk_code_ventilation = minid;
+--update llx_facture_fourn_det set fk_code_ventilation = maxid WHERE fk_code_ventilation = minid;
+--update llx_expensereport_det set fk_code_ventilation = maxid WHERE fk_code_ventilation = minid;
 
 
 ALTER TABLE llx_accounting_account DROP INDEX uk_accounting_account;
 ALTER TABLE llx_accounting_account ADD UNIQUE INDEX uk_accounting_account (account_number, entity, fk_pcg_version);
 
+UPDATE llx_projet SET fk_opp_status = NULL WHERE fk_opp_status = -1;
 
 ALTER TABLE llx_product_fournisseur_price ADD COLUMN barcode varchar(180) DEFAULT NULL;
 ALTER TABLE llx_product_fournisseur_price ADD COLUMN fk_barcode_type integer DEFAULT NULL;
@@ -293,3 +299,7 @@ ALTER TABLE llx_categorie ADD COLUMN accountancy_code_sell VARCHAR(32) NULL;
 ALTER TABLE llx_categorie ADD COLUMN accountancy_code_sell_intra VARCHAR(32) NULL;
 ALTER TABLE llx_categorie ADD COLUMN accountancy_code_sell_export VARCHAR(32) NULL;
 ALTER TABLE llx_categorie ADD COLUMN accountancy_code_buy VARCHAR(32) NULL;
+
+ALTER TABLE llx_product_warehouse_properties ADD COLUMN date_start DATE DEFAULT NULL AFTER desiredstock;
+ALTER TABLE llx_product_warehouse_properties ADD COLUMN date_end DATE DEFAULT NULL AFTER date_start;
+ALTER TABLE llx_product_warehouse_properties ADD COLUMN recurrent BOOLEAN NULL DEFAULT FALSE AFTER date_end;

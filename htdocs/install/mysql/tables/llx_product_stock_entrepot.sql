@@ -26,6 +26,9 @@ create table llx_product_warehouse_properties
   fk_entrepot     		integer NOT NULL,
   seuil_stock_alerte    integer DEFAULT '0',
   desiredstock    		integer DEFAULT '0',
+  date_start            date NULL DEFAULT NULL,
+  date_end              date NULL DEFAULT NULL,
+  recurrent             tinyint NULL DEFAULT 0,
   import_key      		varchar(14)               -- Import key
 )ENGINE=innodb;
 
