@@ -216,9 +216,9 @@ class modProjet extends DolibarrModules
 		$this->export_permission[$r]=array(array("projet","export"));
 		$this->export_dependencies_array[$r]=array('projecttask'=>'pt.rowid', 'task_time'=>'ptt.rowid');
 
-		$this->export_TypeFields_array[$r]=array('s.rowid'=>"List:societe:nom",'s.nom'=>'Text','s.address'=>'Text','s.zip'=>'Text','s.town'=>'Text','s.fk_pays'=>'List:c_country:label',
+		$this->export_TypeFields_array[$r]=array('s.rowid'=>"List:societe:nom::thirdparty",'s.nom'=>'Text','s.address'=>'Text','s.zip'=>'Text','s.town'=>'Text','s.fk_pays'=>'List:c_country:label',
 		's.phone'=>'Text','s.email'=>'Text','s.siren'=>'Text','s.siret'=>'Text','s.ape'=>'Text','s.idprof4'=>'Text','s.code_compta'=>'Text','s.code_compta_fournisseur'=>'Text',
-		'p.rowid'=>"List:projet:ref",'p.ref'=>"Text",'p.title'=>"Text",'p.datec'=>"Date",'p.dateo'=>"Date",'p.datee'=>"Date",'p.fk_statut'=>'Status','cls.code'=>"Text",'p.opp_percent'=>'Numeric','p.opp_amount'=>'Numeric','p.description'=>"Text",'p.entity'=>'Numeric',
+		'p.rowid'=>"List:projet:ref::project",'p.ref'=>"Text",'p.title'=>"Text",'p.datec'=>"Date",'p.dateo'=>"Date",'p.datee'=>"Date",'p.fk_statut'=>'Status','cls.code'=>"Text",'p.opp_percent'=>'Numeric','p.opp_amount'=>'Numeric','p.description'=>"Text",'p.entity'=>'Numeric',
 		'pt.rowid'=>'Text','pt.label'=>'Text','pt.dateo'=>"Date",'pt.datee'=>"Date",'pt.duration_effective'=>"Duree",'pt.planned_workload'=>"Numeric",'pt.progress'=>"Numeric",'pt.description'=>"Text",
 		'ptt.rowid'=>'Numeric','ptt.task_date'=>'Date','ptt.task_duration'=>"Duree",'ptt.fk_user'=>"List:user:CONCAT(lastname,' ',firstname)",'ptt.note'=>"Text");
 		$this->export_entities_array[$r]=array('s.rowid'=>"company",'s.nom'=>'company','s.address'=>'company','s.zip'=>'company','s.town'=>'company','s.fk_pays'=>'company',
@@ -277,7 +277,7 @@ class modProjet extends DolibarrModules
     		$this->import_tables_array[$r]=array('t'=>MAIN_DB_PREFIX.'projet_task','extra'=>MAIN_DB_PREFIX.'projet_task_extrafields');	// List of tables to insert into (insert done in same order)
     		$this->import_fields_array[$r]=array('t.fk_projet'=>'ProjectRef*','t.ref'=>'RefTask*','t.label'=>'LabelTask*','t.dateo'=>"DateStart",'t.datee'=>"DateEnd",'t.planned_workload'=>"PlannedWorkload",'t.progress'=>"Progress",'t.note_private'=>"NotePrivate",'t.note_public'=>"NotePublic",'t.datec'=>"DateCreation");
     		// Add extra fields
-    		$sql="SELECT name, label, fieldrequired FROM ".MAIN_DB_PREFIX."extrafields WHERE elementtype = 'projet_task' AND entity = ".$conf->entity;
+    		$sql="SELECT name, label, fieldrequired FROM ".MAIN_DB_PREFIX."extrafields WHERE elementtype = 'projet_task' AND entity IN (0,".$conf->entity.")";
     		$resql=$this->db->query($sql);
     		if ($resql)    // This can fail when class is used on old database (during migration for example)
     		{
@@ -359,7 +359,7 @@ class modProjet extends DolibarrModules
 		$sql[] ="INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, type, entity) VALUES('beluga','project',".$conf->entity.")";
 		$sql[] ="DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE nom = 'baleine' AND type = 'project' AND entity = ".$conf->entity;
 		$sql[] ="INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, type, entity) VALUES('baleine','project',".$conf->entity.")";
-		
+
 
 		return $this->_init($sql,$options);
 	}

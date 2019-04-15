@@ -859,9 +859,9 @@ class Product extends CommonObject
 			$sql.= ", barcode = ". (empty($this->barcode)?"null":"'".$this->db->escape($this->barcode)."'");
 			$sql.= ", fk_barcode_type = ". (empty($this->barcode_type)?"null":$this->db->escape($this->barcode_type));
 
-			$sql.= ", tosell = " . $this->status;
-			$sql.= ", tobuy = " . $this->status_buy;
-			$sql.= ", tobatch = " . ((empty($this->status_batch) || $this->status_batch < 0) ? '0' : $this->status_batch);
+			$sql.= ", tosell = " . (int) $this->status;
+			$sql.= ", tobuy = " . (int) $this->status_buy;
+			$sql.= ", tobatch = " . ((empty($this->status_batch) || $this->status_batch < 0) ? '0' : (int) $this->status_batch);
 			$sql.= ", finished = " . ((! isset($this->finished) || $this->finished < 0) ? "null" : (int) $this->finished);
 			$sql.= ", weight = " . ($this->weight!='' ? "'".$this->db->escape($this->weight)."'" : 'null');
 			$sql.= ", weight_units = " . ($this->weight_units!='' ? "'".$this->db->escape($this->weight_units)."'": 'null');
@@ -880,18 +880,18 @@ class Product extends CommonObject
 			$sql.= ", description = '" . $this->db->escape($this->description) ."'";
 			$sql.= ", url = " . ($this->url?"'".$this->db->escape($this->url)."'":'null');
 			$sql.= ", customcode = '" .        $this->db->escape($this->customcode) ."'";
-	        $sql.= ", fk_country = " . ($this->country_id > 0 ? $this->country_id : 'null');
+	        $sql.= ", fk_country = " . ($this->country_id > 0 ? (int) $this->country_id : 'null');
 	        $sql.= ", note = ".(isset($this->note) ? "'" .$this->db->escape($this->note)."'" : 'null');
 			$sql.= ", duration = '" . $this->db->escape($this->duration_value . $this->duration_unit) ."'";
 			$sql.= ", accountancy_code_buy = '" . $this->db->escape($this->accountancy_code_buy)."'";
 			$sql.= ", accountancy_code_sell= '" . $this->db->escape($this->accountancy_code_sell)."'";
 			$sql.= ", accountancy_code_sell_intra= '" . $this->db->escape($this->accountancy_code_sell_intra)."'";
 			$sql.= ", accountancy_code_sell_export= '" . $this->db->escape($this->accountancy_code_sell_export)."'";
-			$sql.= ", desiredstock = " . ((isset($this->desiredstock) && $this->desiredstock != '') ? $this->desiredstock : "null");
+			$sql.= ", desiredstock = " . ((isset($this->desiredstock) && $this->desiredstock != '') ? (int) $this->desiredstock : "null");
 			$sql.= ", cost_price = " . ($this->cost_price != '' ? $this->db->escape($this->cost_price) : 'null');
-	        $sql.= ", fk_unit= " . (!$this->fk_unit ? 'NULL' : $this->fk_unit);
+	        $sql.= ", fk_unit= " . ((! $this->fk_unit) ? 'NULL' : (int) $this->fk_unit);
 	        $sql.= ", price_autogen = " . (!$this->price_autogen ? 0 : 1);
-			$sql.= ", fk_price_expression = ".($this->fk_price_expression != 0 ? $this->fk_price_expression : 'NULL');
+			$sql.= ", fk_price_expression = ".($this->fk_price_expression != 0 ? (int) $this->fk_price_expression : 'NULL');
 			$sql.= ", fk_user_modif = ".($user->id > 0 ? $user->id : 'NULL');
 			// stock field is not here because it is a denormalized value from product_stock.
 			$sql.= " WHERE rowid = " . $id;
@@ -2920,14 +2920,16 @@ class Product extends CommonObject
 	 *  @param      int	$id_fils    Id of child product/service
 	 *  @param		int	$qty		Quantity
 	 *  @param		int	$incdec		1=Increase/decrease stock of child when parent stock increase/decrease
+	 *  @param		int	$optional	1=Mark component as optional
 	 *  @return     int        		< 0 if KO, > 0 if OK
 	 */
-	function add_sousproduit($id_pere, $id_fils, $qty, $incdec=1)
+	function add_sousproduit($id_pere, $id_fils, $qty, $incdec=1, $optional=0)
 	{
 		// Clean parameters
 		if (! is_numeric($id_pere)) $id_pere=0;
 		if (! is_numeric($id_fils)) $id_fils=0;
 		if (! is_numeric($incdec)) $incdec=0;
+		if (! is_numeric($optional)) $optional=0;
 
 		$result=$this->del_sousproduit($id_pere, $id_fils);
 		if ($result < 0) return $result;
@@ -2953,8 +2955,8 @@ class Product extends CommonObject
 				}
 				else
 				{
-					$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'product_association(fk_product_pere,fk_product_fils,qty,incdec)';
-					$sql .= ' VALUES ('.$id_pere.', '.$id_fils.', '.$qty.', '.$incdec.')';
+					$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'product_association(fk_product_pere,fk_product_fils,qty,incdec,optional)';
+					$sql .= ' VALUES ('.$id_pere.', '.$id_fils.', '.$qty.', '.$incdec.', '.$optional.')';
 					if (! $this->db->query($sql))
 					{
 						dol_print_error($this->db);
@@ -2976,19 +2978,22 @@ class Product extends CommonObject
 	 *  @param      int	$id_fils    Id of child product/service
 	 *  @param		int	$qty		Quantity
 	 *  @param		int	$incdec		1=Increase/decrease stock of child when parent stock increase/decrease
+	 *  @param		int	$optional	1=Mark component as optional
 	 * 	@return     int        		< 0 if KO, > 0 if OK
 	 */
-	function update_sousproduit($id_pere, $id_fils, $qty, $incdec=1)
+	function update_sousproduit($id_pere, $id_fils, $qty, $incdec=1, $optional=0)
 	{
 		// Clean parameters
 		if (! is_numeric($id_pere)) $id_pere=0;
 		if (! is_numeric($id_fils)) $id_fils=0;
 		if (! is_numeric($incdec)) $incdec=1;
 		if (! is_numeric($qty)) $qty=1;
+		if (! is_numeric($optional)) $optional=0;
 
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.'product_association SET ';
 		$sql.= 'qty='.$qty;
 		$sql.= ',incdec='.$incdec;
+		$sql.= ',optional='.$optional;
 		$sql .= ' WHERE fk_product_pere='.$id_pere.' AND fk_product_fils='.$id_fils;
 
 		if (!$this->db->query($sql))
@@ -3038,7 +3043,7 @@ class Product extends CommonObject
 	 */
 	function is_sousproduit($fk_parent, $fk_child)
 	{
-		$sql = "SELECT fk_product_pere, qty, incdec";
+		$sql = "SELECT fk_product_pere, qty, incdec, optional";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product_association";
 		$sql.= " WHERE fk_product_pere  = '".$fk_parent."'";
 		$sql.= " AND fk_product_fils = '".$fk_child."'";
@@ -3053,6 +3058,7 @@ class Product extends CommonObject
 				$obj = $this->db->fetch_object($result);
 				$this->is_sousproduit_qty = $obj->qty;
 				$this->is_sousproduit_incdec = $obj->incdec;
+				$this->is_sousproduit_optional = $obj->optional;
 
 				return true;
 			}
@@ -3332,6 +3338,7 @@ class Product extends CommonObject
 				$type=(! empty($desc_pere[2]) ? $desc_pere[2] :'');
 				$label=(! empty($desc_pere[3]) ? $desc_pere[3] :'');
 				$incdec=!empty($desc_pere[4]) ? $desc_pere[4] : 0;
+				$optional=!empty($desc_pere[5]) ? $desc_pere[5] : 0;
 
 				if ($multiply < 1) $multiply=1;
 
@@ -3352,6 +3359,7 @@ class Product extends CommonObject
 					'desiredstock'=>$this->desiredstock,
 					'level'=>$level,
 					'incdec'=>$incdec,
+					'optional'=>$optional,
 					'entity'=>$this->entity
 				);
 
@@ -3419,7 +3427,7 @@ class Product extends CommonObject
 	 */
 	function getFather()
 	{
-		$sql = "SELECT p.rowid, p.label as label, p.ref as ref, pa.fk_product_pere as id, p.fk_product_type, pa.qty, pa.incdec, p.entity";
+		$sql = "SELECT p.rowid, p.label as label, p.ref as ref, pa.fk_product_pere as id, p.fk_product_type, pa.qty, pa.incdec, pa.optional, p.entity";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product_association as pa,";
 		$sql.= " ".MAIN_DB_PREFIX."product as p";
 		$sql.= " WHERE p.rowid = pa.fk_product_pere";
@@ -3437,6 +3445,7 @@ class Product extends CommonObject
 				$prods[$record['id']]['label'] = $record['label'];
 				$prods[$record['id']]['qty'] = $record['qty'];
 				$prods[$record['id']]['incdec'] = $record['incdec'];
+				$prods[$record['id']]['optional'] = $record['optional'];
 				$prods[$record['id']]['fk_product_type'] =  $record['fk_product_type'];
 				$prods[$record['id']]['entity'] =  $record['entity'];
 			}
@@ -3462,7 +3471,7 @@ class Product extends CommonObject
 	{
 		global $alreadyfound;
 
-		$sql = "SELECT p.rowid, p.label as label, pa.qty as qty, pa.fk_product_fils as id, p.fk_product_type, pa.incdec";
+		$sql = "SELECT p.rowid, p.label as label, pa.qty as qty, pa.fk_product_fils as id, p.fk_product_type, pa.incdec, pa.optional";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product as p";
 		$sql.= ", ".MAIN_DB_PREFIX."product_association as pa";
 		$sql.= " WHERE p.rowid = pa.fk_product_fils";
@@ -3492,7 +3501,8 @@ class Product extends CommonObject
 					1=>$rec['qty'],
 					2=>$rec['fk_product_type'],
 					3=>$this->db->escape($rec['label']),
-					4=>$rec['incdec']
+					4=>$rec['incdec'],
+					5=>$rec['optional']
 				);
 				//$prods[$this->db->escape($rec['label'])]= array(0=>$rec['id'],1=>$rec['qty'],2=>$rec['fk_product_type']);
 				//$prods[$this->db->escape($rec['label'])]= array(0=>$rec['id'],1=>$rec['qty']);

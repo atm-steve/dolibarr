@@ -4885,6 +4885,7 @@ abstract class CommonObject
 			   		if ($this->array_options[$key] === '') $mandatorypb=true;
 			   		if ($mandatorypb)
 			   		{
+			   			dol_syslog($this->error);
 			   			$this->errors[]=$langs->trans('ErrorFieldRequired', $attributeLabel);
 			   			return -1;
 			   		}
@@ -4968,8 +4969,6 @@ abstract class CommonObject
 						$new_array_options[$key] = price2num($this->array_options[$key]);
 						break;
 					case 'date':
-						$new_array_options[$key] = $this->db->idate($this->array_options[$key]);
-						break;
 					case 'datetime':
 						// If data is a string instead of a timestamp, we convert it
 						if (! is_int($this->array_options[$key])) {
@@ -5017,8 +5016,9 @@ abstract class CommonObject
 			$table_element = $this->table_element;
 			if ($table_element == 'categorie') $table_element = 'categories'; // For compatibility
 
+			dol_syslog(get_class($this)."::insertExtraFields delete then insert", LOG_DEBUG);
+
 			$sql_del = "DELETE FROM ".MAIN_DB_PREFIX.$table_element."_extrafields WHERE fk_object = ".$this->id;
-			dol_syslog(get_class($this)."::insertExtraFields delete", LOG_DEBUG);
 			$this->db->query($sql_del);
 
 			$sql = "INSERT INTO ".MAIN_DB_PREFIX.$table_element."_extrafields (fk_object";
@@ -5028,6 +5028,17 @@ abstract class CommonObject
 				// Add field of attribut
 				if ($extrafields->attributes[$this->table_element]['type'][$attributeKey] != 'separate') // Only for other type than separator
 					$sql.=",".$attributeKey;
+			}
+			// We must insert a default value for fields for other entities that are mandatory to avoid not null error
+			if (is_array($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities']))
+			{
+    			foreach($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities'] as  $tmpkey => $tmpval)
+    			{
+    			    if (! isset($extrafields->attributes[$this->table_element]['type'][$tmpkey]))    // If field not already added previously
+    			    {
+    			        $sql.=",".$tmpkey;
+    			    }
+    			}
 			}
 			$sql .= ") VALUES (".$this->id;
 
@@ -5047,10 +5058,23 @@ abstract class CommonObject
 					}
 				}
 			}
+			// We must insert a default value for fields for other entities that are mandatory to avoid not null error
+			if (is_array($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities']))
+			{
+			    foreach($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities'] as  $tmpkey => $tmpval)
+    			{
+    			    if (! isset($extrafields->attributes[$this->table_element]['type'][$tmpkey]))    // If field not already added previously
+    			    {
+                        if (in_array($tmpval, array('int', 'double'))) $sql.=", 0";
+                        else $sql.=", ''";
+    			    }
+    			}
+			}
+
 			$sql.=")";
 
-			dol_syslog(get_class($this)."::insertExtraFields insert", LOG_DEBUG);
 			$resql = $this->db->query($sql);
+
 			if (! $resql)
 			{
 				$this->error=$this->db->lasterror();
@@ -5090,7 +5114,7 @@ abstract class CommonObject
 	 *  @return int                 		-1=error, O=did nothing, 1=OK
 	 *  @see setValueFrom, insertExtraFields
 	 */
-	function updateExtraField($key, $trigger, $userused)
+	function updateExtraField($key, $trigger=null, $userused=null)
 	{
 		global $conf,$langs,$user;
 
@@ -6179,7 +6203,7 @@ abstract class CommonObject
 		if (! is_object($form)) $form=new Form($db);
 
 		$out = '';
-		
+
 		if (is_array($extrafields->attributes[$this->table_element]['label']) && count($extrafields->attributes[$this->table_element]['label']) > 0)
 		{
 			$out .= "\n";
@@ -6189,10 +6213,11 @@ abstract class CommonObject
 			$e = 0;
 			foreach($extrafields->attributes[$this->table_element]['label'] as $key=>$label)
 			{
-			    if(empty($extrafields->attribute_list[$key]) && $mode == 'view'){
+			    if (isset($extrafields->attributes[$this->table_element]['list'][$key])
+			        && empty($extrafields->attributes[$this->table_element]['list'][$key]) && $mode == 'view'){
 			        continue;
 			    }
-			    
+
 				$enabled = 1;
 				if ($enabled && isset($extrafields->attributes[$this->table_element]['list'][$key]))
 				{

@@ -747,7 +747,7 @@ class ExtraFields
 	 * 	@param	boolean		$forceload			Force load of extra fields whatever is option MAIN_EXTRAFIELDS_DISABLED. Deprecated. Should not be required.
 	 * 	@return	array							Array of attributes keys+label for all extra fields.
 	 */
-	function fetch_name_optionals_label($elementtype,$forceload=false)
+	function fetch_name_optionals_label($elementtype, $forceload=false)
 	{
 		global $conf;
 
@@ -783,8 +783,8 @@ class ExtraFields
 
 		$sql = "SELECT rowid,name,label,type,size,elementtype,fieldunique,fieldrequired,param,pos,alwayseditable,perms,langs,list,fielddefault,fieldcomputed,entity,enabled";
 		$sql.= " FROM ".MAIN_DB_PREFIX."extrafields";
-		$sql.= " WHERE entity IN (0,".$conf->entity.")";
-		if ($elementtype) $sql.= " AND elementtype = '".$elementtype."'";	// Filed with object->table_element
+		//$sql.= " WHERE entity IN (0,".$conf->entity.")";    // Filter is done later
+		if ($elementtype) $sql.= " WHERE elementtype = '".$elementtype."'";	// Filed with object->table_element
 		$sql.= " ORDER BY pos";
 
 		$resql=$this->db->query($sql);
@@ -794,6 +794,16 @@ class ExtraFields
 			{
 				while ($tab = $this->db->fetch_object($resql))
 				{
+				    if ($tab->entity != 0 && $tab->entity != $conf->entity)
+				    {
+				        // This field is not in current entity. We discard but before we save it into the array of mandatory fields if it is a mandatory field without default value
+				        if ($tab->fieldrequired && is_null($tab->fielddefault))
+				        {
+				            $this->attributes[$tab->elementtype]['mandatoryfieldsofotherentities'][$tab->name]=$tab->type;
+				        }
+				        continue;
+				    }
+
 					// We can add this attribute to object. TODO Remove this and return $this->attributes[$elementtype]['label']
 					if ($tab->type != 'separate')
 					{
@@ -1515,7 +1525,7 @@ class ExtraFields
 		}
 		elseif ($type == 'phone')
 		{
-			$value=dol_print_phone($value, '', 0, 0, '', '&nbsp;', 1);
+			$value=dol_print_phone($value, '', 0, 0, '', '&nbsp;', 'phone');
 		}
 		elseif ($type == 'price')
 		{
@@ -1910,24 +1920,36 @@ class ExtraFields
 	/**
 	 * return array_options array of data of extrafields value of object sent by a search form
 	 *
-	 * @param  array   $extralabels    $array of extrafields (@deprecated)
-	 * @param  string  $keyprefix      Prefix string to add into name and id of field (can be used to avoid duplicate names)
-	 * @param  string  $keysuffix      Suffix string to add into name and id of field (can be used to avoid duplicate names)
-	 * @return array|int               array_options set or 0 if no value
+	 * @param  array|string		$extrafieldsobjectkey  	array of extrafields (old usage) or value of object->table_element (new usage)
+	 * @param  string			$keyprefix      		Prefix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @param  string			$keysuffix      		Suffix string to add into name and id of field (can be used to avoid duplicate names)
+	 * @return array|int								array_options set or 0 if no value
 	 */
-	function getOptionalsFromPost($extralabels,$keyprefix='',$keysuffix='')
+	function getOptionalsFromPost($extrafieldsobjectkey, $keyprefix='', $keysuffix='')
 	{
 		global $_POST;
 
-		if (is_array($this->attributes[$object->table_element]['label'])) $extralabels=$this->attributes[$object->table_element]['label'];
+		if (is_string($extrafieldsobjectkey) && is_array($this->attributes[$extrafieldsobjectkey]['label']))
+		{
+			$extralabels = $this->attributes[$extrafieldsobjectkey]['label'];
+		}
+		else
+		{
+			$extralabels = $extrafieldsobjectkey;
+		}
 
-		$array_options = array();
 		if (is_array($extralabels))
 		{
+			$array_options = array();
+
 			// Get extra fields
 			foreach ($extralabels as $key => $value)
 			{
-				$key_type = $this->attributes[$object->table_element]['type'][$key];
+				$key_type = '';
+				if (is_string($extrafieldsobjectkey))
+				{
+					$key_type = $this->attributes[$extrafieldsobjectkey]['type'][$key];
+				}
 
 				if (in_array($key_type,array('date','datetime')))
 				{
@@ -1956,8 +1978,7 @@ class ExtraFields
 
 			return $array_options;
 		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 }

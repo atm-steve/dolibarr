@@ -1357,23 +1357,6 @@ div.secondcolumn div.box {
 	}
 }
 
-/* Force values on one colum for small screen */
-@media only screen and (max-width: 1599px)
-{
-    div.fichehalfleft-lg {
-    	float: none;
-    	width: auto;
-    }
-    div.fichehalfright-lg {
-    	float: none;
-    	width: auto;
-    }
-    
-    .fichehalfright-lg .ficheaddleft{
-    	padding-left:0;
-    }
-}
-
 /* For table into table into card */
 div.ficheaddleft tr.liste_titre:first-child td table.nobordernopadding td {
     padding: 0 0 0 0;
@@ -1797,6 +1780,12 @@ foreach($mainmenuusedarray as $val)
 		if (file_exists($dirroot."/".$val."/img/".$val."_over.png"))
 		{
 			$url=dol_buildpath('/'.$val.'/img/'.$val.'_over.png', 1);
+			$found=1;
+			break;
+		}
+		else if (file_exists($dirroot."/".$val."/img/".$val.".png"))    // Retro compatibilité
+		{
+			$url=dol_buildpath('/'.$val.'/img/'.$val.'.png', 1);
 			$found=1;
 			break;
 		}
@@ -2437,7 +2426,7 @@ span.butAction, span.butActionDelete {
 }
 
 .butAction {
-	background: rgb(230, 236, 230)
+	background: rgb(225, 231, 225)
 	/* background: rgb(230, 232, 239); */
 }
 .butActionRefused, .butAction, .butAction:link, .butAction:visited, .butAction:hover, .butAction:active, .butActionDelete, .butActionDelete:link, .butActionDelete:visited, .butActionDelete:hover, .butActionDelete:active {
@@ -2492,7 +2481,7 @@ a.butActionNewRefused>span.fa-plus-circle, a.butActionNewRefused>span.fa-plus-ci
 }
 
 .butActionDelete, .butActionDelete:link, .butActionDelete:visited, .butActionDelete:hover, .butActionDelete:active, .buttonDelete {
-    background: rgb(239, 232, 230);
+    background: rgb(234, 228, 225);
     /* border: 1px solid #633; */
     color: #633;
 }

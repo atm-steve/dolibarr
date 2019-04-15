@@ -8,7 +8,8 @@
  * Copyright (C) 2012-2015  Marcos García           <marcosgdf@gmail.com>
  * Copyright (C) 2013       Florian Henry		  	<florian.henry@open-concept.pro>
  * Copyright (C) 2013       Cédric Salvador         <csalvador@gpcsolutions.fr>
- * Copyright (C) 2018      Nicolas ZABOURI			<info@inovea-conseil.com>
+ * Copyright (C) 2018       Nicolas ZABOURI			<info@inovea-conseil.com>
+ * Copyright (C) 2018       Ferran Marcet         	<fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1236,9 +1237,9 @@ class CommandeFournisseur extends CommonOrder
 	            // insert products details into database
 	            for ($i=0;$i<$num;$i++)
 	            {
-	                
+
 	                $this->special_code = $this->lines[$i]->special_code; // TODO : remove this in 9.0 and add special_code param to addline()
-	                
+
 	                $result = $this->addline(              // This include test on qty if option SUPPLIER_ORDER_WITH_NOPRICEDEFINED is not set
 	                    $this->lines[$i]->desc,
 	                    $this->lines[$i]->subprice,
@@ -1451,42 +1452,47 @@ class CommandeFournisseur extends CommonOrder
         dol_syslog(get_class($this)."::addline $desc, $pu_ht, $qty, $txtva, $txlocaltax1, $txlocaltax2, $fk_product, $fk_prod_fourn_price, $ref_supplier, $remise_percent, $price_base_type, $pu_ttc, $type, $info_bits, $notrigger, $date_start, $date_end, $fk_unit, $pu_ht_devise, $origin, $origin_id");
         include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
-        // Clean parameters
-        if (! $qty) $qty=1;
-        if (! $info_bits) $info_bits=0;
-        if (empty($txtva)) $txtva=0;
-        if (empty($txlocaltax1)) $txlocaltax1=0;
-        if (empty($txlocaltax2)) $txlocaltax2=0;
-		if (empty($remise_percent)) $remise_percent=0;
+		if ($this->statut == self::STATUS_DRAFT)
+		{
+			include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
-        $remise_percent=price2num($remise_percent);
-        $qty=price2num($qty);
-        $pu_ht=price2num($pu_ht);
-        $pu_ht_devise=price2num($pu_ht_devise);
-        $pu_ttc=price2num($pu_ttc);
-        $txtva = price2num($txtva);
-        $txlocaltax1 = price2num($txlocaltax1);
-        $txlocaltax2 = price2num($txlocaltax2);
-        if ($price_base_type=='HT')
-        {
-            $pu=$pu_ht;
-        }
-        else
-        {
-            $pu=$pu_ttc;
-        }
-        $desc=trim($desc);
+			// Clean parameters
+			if (! $qty) $qty=1;
+			if (! $info_bits) $info_bits=0;
+			if (empty($txtva)) $txtva=0;
+			if (empty($txlocaltax1)) $txlocaltax1=0;
+			if (empty($txlocaltax2)) $txlocaltax2=0;
+			if (empty($remise_percent)) $remise_percent=0;
 
-        // Check parameters
-        if ($qty < 1 && ! $fk_product)
-        {
-            $this->error=$langs->trans("ErrorFieldRequired",$langs->trans("Product"));
-            return -1;
-        }
-        if ($type < 0) return -1;
+			$remise_percent=price2num($remise_percent);
+			$qty=price2num($qty);
+			$pu_ht=price2num($pu_ht);
+			$pu_ht_devise=price2num($pu_ht_devise);
+			$pu_ttc=price2num($pu_ttc);
+			if (!preg_match('/\((.*)\)/', $txtva)) {
+				$txtva = price2num($txtva);               // $txtva can have format '5.0(XXX)' or '5'
+			}
+			$txlocaltax1 = price2num($txlocaltax1);
+			$txlocaltax2 = price2num($txlocaltax2);
+			if ($price_base_type=='HT')
+			{
+				$pu=$pu_ht;
+			}
+			else
+			{
+				$pu=$pu_ttc;
+			}
+			$desc=trim($desc);
 
-        if ($this->statut == self::STATUS_DRAFT)
-        {
+			// Check parameters
+			if ($qty < 1 && ! $fk_product)
+			{
+				$this->error=$langs->trans("ErrorFieldRequired",$langs->trans("Product"));
+				return -1;
+			}
+			if ($type < 0) return -1;
+
+
             $this->db->begin();
 
             if ($fk_product > 0)
@@ -1552,10 +1558,9 @@ class CommandeFournisseur extends CommonOrder
                 $product_type = $type;
             }
 
-            // Calcul du total TTC et de la TVA pour la ligne a partir de
-            // qty, pu, remise_percent et txtva
-            // TRES IMPORTANT: C'est au moment de l'insertion ligne qu'on doit stocker
-            // la part ht, tva et ttc, et ce au niveau de la ligne qui a son propre taux tva.
+            if ($conf->multicurrency->enabled && $pu_ht_devise > 0) {
+            	$pu = 0;
+            }
 
             $localtaxes_type=getLocalTaxesFromRate($txtva,0,$mysoc,$this->thirdparty);
 
@@ -1567,9 +1572,10 @@ class CommandeFournisseur extends CommonOrder
                 $txtva = preg_replace('/\s*\(.*\)/', '', $txtva);    // Remove code into vatrate.
             }
 
-            if ($conf->multicurrency->enabled && $pu_ht_devise > 0) {
-                $pu = 0;
-            }
+            // Calcul du total TTC et de la TVA pour la ligne a partir de
+            // qty, pu, remise_percent et txtva
+            // TRES IMPORTANT: C'est au moment de l'insertion ligne qu'on doit stocker
+            // la part ht, tva et ttc, et ce au niveau de la ligne qui a son propre taux tva.
 
             $tabprice = calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $product_type, $this->thirdparty, $localtaxes_type, 100, $this->multicurrency_tx,$pu_ht_devise);
 
@@ -3159,49 +3165,58 @@ class CommandeFournisseurLigne extends CommonOrderLine
         {
             $objp = $this->db->fetch_object($result);
 
-            $this->rowid            = $objp->rowid;
-            $this->id               = $objp->rowid;
-            $this->fk_commande      = $objp->fk_commande;
-            $this->desc             = $objp->description;
-            $this->qty              = $objp->qty;
-            $this->ref_fourn        = $objp->ref;
-            $this->ref_supplier     = $objp->ref;
-            $this->subprice         = $objp->subprice;
-            $this->tva_tx           = $objp->tva_tx;
-            $this->localtax1_tx		= $objp->localtax1_tx;
-            $this->localtax2_tx		= $objp->localtax2_tx;
-            $this->localtax1_type	= $objp->localtax1_type;
-            $this->localtax2_type	= $objp->localtax2_type;
-            $this->remise           = $objp->remise;
-            $this->remise_percent   = $objp->remise_percent;
-            $this->fk_product       = $objp->fk_product;
-            $this->info_bits        = $objp->info_bits;
-            $this->total_ht         = $objp->total_ht;
-            $this->total_tva        = $objp->total_tva;
-            $this->total_localtax1	= $objp->total_localtax1;
-            $this->total_localtax2	= $objp->total_localtax2;
-            $this->total_ttc        = $objp->total_ttc;
-            $this->product_type     = $objp->product_type;
-            $this->special_code     = $objp->special_code;
+            if (!empty($objp))
+            {
+                $this->rowid            = $objp->rowid;
+	            $this->id               = $objp->rowid;
+	            $this->fk_commande      = $objp->fk_commande;
+	            $this->desc             = $objp->description;
+	            $this->qty              = $objp->qty;
+	            $this->ref_fourn        = $objp->ref;
+	            $this->ref_supplier     = $objp->ref;
+	            $this->subprice         = $objp->subprice;
+	            $this->tva_tx           = $objp->tva_tx;
+	            $this->localtax1_tx		= $objp->localtax1_tx;
+	            $this->localtax2_tx		= $objp->localtax2_tx;
+	            $this->localtax1_type	= $objp->localtax1_type;
+	            $this->localtax2_type	= $objp->localtax2_type;
+	            $this->remise           = $objp->remise;
+	            $this->remise_percent   = $objp->remise_percent;
+	            $this->fk_product       = $objp->fk_product;
+	            $this->info_bits        = $objp->info_bits;
+	            $this->total_ht         = $objp->total_ht;
+	            $this->total_tva        = $objp->total_tva;
+    	        $this->total_localtax1	= $objp->total_localtax1;
+	            $this->total_localtax2	= $objp->total_localtax2;
+	            $this->total_ttc        = $objp->total_ttc;
+	            $this->product_type     = $objp->product_type;
+	            $this->special_code     = $objp->special_code;
+	
+    	        $this->ref	            = $objp->product_ref;
+	            $this->product_ref      = $objp->product_ref;
+	            $this->product_libelle  = $objp->product_libelle;
+	            $this->product_desc     = $objp->product_desc;
 
-            $this->ref	            = $objp->product_ref;
-            $this->product_ref      = $objp->product_ref;
-            $this->product_libelle  = $objp->product_libelle;
-            $this->product_desc     = $objp->product_desc;
+	            $this->date_start       		= $this->db->jdate($objp->date_start);
+	            $this->date_end         		= $this->db->jdate($objp->date_end);
+		        $this->fk_unit          		= $objp->fk_unit;
 
-            $this->date_start       		= $this->db->jdate($objp->date_start);
-            $this->date_end         		= $this->db->jdate($objp->date_end);
-	        $this->fk_unit          		= $objp->fk_unit;
+				$this->multicurrency_subprice	= $objp->multicurrency_subprice;
+				$this->multicurrency_total_ht	= $objp->multicurrency_total_ht;
+				$this->multicurrency_total_tva	= $objp->multicurrency_total_tva;
+				$this->multicurrency_total_ttc	= $objp->multicurrency_total_ttc;
 
-			$this->multicurrency_subprice	= $objp->multicurrency_subprice;
-			$this->multicurrency_total_ht	= $objp->multicurrency_total_ht;
-			$this->multicurrency_total_tva	= $objp->multicurrency_total_tva;
-			$this->multicurrency_total_ttc	= $objp->multicurrency_total_ttc;
+				$this->fetch_optionals();
 
-			$this->fetch_optionals();
-
-            $this->db->free($result);
-            return 1;
+	            $this->db->free($result);
+    	        return 1;
+            }
+    	    else
+    	    {
+    	        $this->error='Supplier order line  with id='.$rowid.' not found';
+    	        dol_syslog(get_class($this)."::fetch Error ".$this->error, LOG_ERR);
+    	        return 0;
+    	    }
         }
         else
         {

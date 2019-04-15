@@ -33,10 +33,14 @@ class DiscountAbsolute
 
     public $id;					// Id discount
     public $fk_soc;
-    public $discount_type;			// 0 => customer discount, 1 => supplier discount
-    public $amount_ht;				//
+
+    public $discount_type;		// 0 => customer discount, 1 => supplier discount
+    public $amount_ht;			//
     public $amount_tva;			//
     public $amount_ttc;			//
+    public $multicurrency_amount_ht;
+    public $multicurrency_amount_tva;
+    public $multicurrency_amount_ttc;
     public $tva_tx;				// Vat rate
     public $fk_user;				// Id utilisateur qui accorde la remise
     public $description;			// Description libre
@@ -405,6 +409,8 @@ class DiscountAbsolute
      */
     function unlink_invoice()
     {
+        global $user, $langs, $conf;
+
         $sql ="UPDATE ".MAIN_DB_PREFIX."societe_remise_except";
 		if(! empty($this->discount_type)) {
        		$sql.=" SET fk_invoice_supplier_line = NULL, fk_invoice_supplier = NULL";
@@ -417,6 +423,15 @@ class DiscountAbsolute
         $resql = $this->db->query($sql);
         if ($resql)
         {
+            require_once DOL_DOCUMENT_ROOT.'/core/class/interfaces.class.php';
+            $interface = new Interfaces($this->db);
+            $result = $interface->run_triggers('DISCOUNT_UNLINK_INVOICE', $this, $user, $langs, $conf);
+            if ($result < 0)
+            {
+                $this->errors=$interface->errors;
+                return -1;
+            }
+            
             return 1;
         }
         else

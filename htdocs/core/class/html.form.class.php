@@ -17,6 +17,7 @@
  * Copyright (C) 2012-2015  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2014       Alexandre Spangaro      <aspangaro.dolibarr@gmail.com>
  * Copyright (C) 2018       Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2018       Nicolas ZABOURI	        <info@inovea-conseil.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1363,7 +1364,7 @@ class Form
 				$out .= ajax_combobox($htmlid, $events, $conf->global->CONTACT_USE_SEARCH_TO_SELECT);
 			}
 
-			if ($htmlname != 'none' || $options_only) $out.= '<select class="flat'.($moreclass?' '.$moreclass:'').'" id="'.$htmlid.'" name="'.$htmlname.'" '.(!empty($moreparam) ? $moreparam : '').'>';
+			if ($htmlname != 'none' && ! $options_only) $out.= '<select class="flat'.($moreclass?' '.$moreclass:'').'" id="'.$htmlid.'" name="'.$htmlname.'" '.(!empty($moreparam) ? $moreparam : '').'>';
 			if ($showempty == 1 || ($showempty == 3 && $num > 1)) $out.= '<option value="0"'.($selected=='0'?' selected':'').'>&nbsp;</option>';
 			if ($showempty == 2) $out.= '<option value="0"'.($selected=='0'?' selected':'').'>'.$langs->trans("Internal").'</option>';
 			$num = $this->db->num_rows($resql);
@@ -1427,7 +1428,7 @@ class Form
 				$out.= ($socid != -1) ? ($langs->trans($socid?"NoContactDefinedForThirdParty":"NoContactDefined")) : $langs->trans('SelectAThirdPartyFirst');
 				$out.= '</option>';
 			}
-			if ($htmlname != 'none' || $options_only)
+			if ($htmlname != 'none' && ! $options_only)
 			{
 				$out.= '</select>';
 			}
@@ -3323,7 +3324,10 @@ class Form
 		$langs->load('bills');
 
 		$opt = '<option value ="" selected></option>';
-		$sql = 'SELECT rowid, facnumber, situation_cycle_ref, situation_counter, situation_final, fk_soc FROM ' . MAIN_DB_PREFIX . 'facture WHERE situation_counter>=1';
+		$sql = 'SELECT rowid, facnumber, situation_cycle_ref, situation_counter, situation_final, fk_soc';
+		$sql.= ' FROM ' . MAIN_DB_PREFIX . 'facture';
+		$sql.= ' WHERE entity IN ('.getEntity('facture').')';
+		$sql.= ' AND situation_counter>=1';
 		$sql.= ' ORDER by situation_cycle_ref, situation_counter desc';
 		$resql = $this->db->query($sql);
 		if ($resql && $this->db->num_rows($resql) > 0) {
@@ -3393,7 +3397,7 @@ class Form
 			    {
 			        $unitLabel = $langs->trans('unit'.$res->code)!=$res->label?$langs->trans('unit'.$res->code):$res->label;
 			    }
-			    
+
 				if ($selected == $res->rowid)
 				{
 				    $return.='<option value="'.$res->rowid.'" selected>'.$unitLabel.'</option>';
@@ -4516,7 +4520,7 @@ class Form
 
 		$out='';
 		$out.= '<select class="flat" name="'.$htmlname.'" id="'.$htmlname.'">';
-		if ($useempty) $out .= '<option value=""></option>';
+		if ($useempty) $out .= '<option value="">&nbsp;</option>';
 		// If company current currency not in table, we add it into list. Should always be available.
 		if (! in_array($conf->currency, $TCurrency))
 		{
@@ -5811,22 +5815,31 @@ class Form
 	 *  @param	int		$width			Force width of select box. May be used only when using jquery couch. Example: 250, 95%
 	 *  @param	string	$moreattrib		Add more options on select component. Example: 'disabled'
 	 *  @param	string	$elemtype		Type of element we show ('category', ...)
+	 *  @param	string	$placeholder	String to use as placeholder
+	 *  @param	int		$addjscombo		Add js combo
 	 *	@return	string					HTML multiselect string
 	 *  @see selectarray
 	 */
-	static function multiselectarray($htmlname, $array, $selected=array(), $key_in_label=0, $value_as_key=0, $morecss='', $translate=0, $width=0, $moreattrib='',$elemtype='')
+	static function multiselectarray($htmlname, $array, $selected=array(), $key_in_label=0, $value_as_key=0, $morecss='', $translate=0, $width=0, $moreattrib='',$elemtype='', $placeholder='', $addjscombo=-1)
 	{
 		global $conf, $langs;
 
 		$out = '';
+
+		if ($addjscombo < 0) {
+		    if (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)) $addjscombo = 1;
+		    else $addjscombo = 0;
+		}
 
 		// Add code for jquery to use multiselect
 		if (! empty($conf->global->MAIN_USE_JQUERY_MULTISELECT) || defined('REQUIRE_JQUERY_MULTISELECT'))
 		{
 			$tmpplugin=empty($conf->global->MAIN_USE_JQUERY_MULTISELECT)?constant('REQUIRE_JQUERY_MULTISELECT'):$conf->global->MAIN_USE_JQUERY_MULTISELECT;
    			$out.="\n".'<!-- JS CODE TO ENABLE '.$tmpplugin.' for id '.$htmlname.' -->
-    			<script type="text/javascript">
-	    			function formatResult(record) {'."\n";
+    			<script type="text/javascript">'."\n";
+			if ($addjscombo == 1)
+			{
+	    	$out.= '	function formatResult(record) {'."\n";
 						if ($elemtype == 'category')
 						{
 							$out.='	//return \'<span><img src="'.DOL_URL_ROOT.'/theme/eldy/img/object_category.png'.'"> <a href="'.DOL_URL_ROOT.'/categories/viewcat.php?type=0&id=\'+record.id+\'">\'+record.text+\'</a></span>\';
@@ -5858,8 +5871,9 @@ class Form
 							formatSelection: formatSelection,
     					 	templateResult: formatSelection		/* For 4.0 */
     					});
-    				});
-    			</script>';
+    				});';
+			}
+    		$out.='	</script>';
 		}
 
 		// Try also magic suggest
@@ -6246,7 +6260,7 @@ class Form
 
 			if (! empty($possiblelink['perms']) && (empty($restrictlinksto) || in_array($key, $restrictlinksto)) && (empty($excludelinksto) || ! in_array($key, $excludelinksto)))
 			{
-				print '<div id="'.$key.'list"'.(empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)?' style="display:none"':'').'>';
+				print '<div id="'.$key.'list"'.(empty($conf->use_javascript_ajax)?'':' style="display:none"').'>';
 				$sql = $possiblelink['sql'];
 
 				$resqllist = $this->db->query($sql);
@@ -6306,8 +6320,9 @@ class Form
 		{
 			$linktoelem='
     		<dl class="dropdown" id="linktoobjectname">
-    		<dt><a href="#linktoobjectname">'.$langs->trans("LinkTo").'...</a></dt>
-    		<dd>
+    		';
+			if (! empty($conf->use_javascript_ajax)) $linktoelem.='<dt><a href="#linktoobjectname">'.$langs->trans("LinkTo").'...</a></dt>';
+			$linktoelem.='<dd>
     		<div class="multiselectlinkto">
     		<ul class="ulselectedfields">'.$linktoelemlist.'
     		</ul>
@@ -6320,7 +6335,9 @@ class Form
 			$linktoelem='';
 		}
 
-		print '<!-- Add js to show linkto box -->
+		if (! empty($conf->use_javascript_ajax))
+		{
+		  print '<!-- Add js to show linkto box -->
 				<script type="text/javascript" language="javascript">
 				jQuery(document).ready(function() {
 					jQuery(".linkto").click(function() {
@@ -6330,7 +6347,8 @@ class Form
 					});
 				});
 				</script>
-		';
+		  ';
+		}
 
 		return $linktoelem;
 	}
@@ -6531,6 +6549,7 @@ class Form
 		}
 		else if ($object->element == 'member')
 		{
+			$ret.=$object->ref.'<br>';
 			$fullname=$object->getFullName($langs);
 			if ($object->morphy == 'mor' && $object->societe) {
 				$ret.= dol_htmlentities($object->societe) . ((! empty($fullname) && $object->societe != $fullname)?' ('.dol_htmlentities($fullname).')':'');
