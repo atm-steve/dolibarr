@@ -103,6 +103,9 @@ function marges_prepare_head()
 		$head[$h][2] = 'checkMargins';
 	}
 
+	complete_head_from_modules($conf,$langs,null,$head,$h,'margins','remove');
+	complete_head_from_modules($conf,$langs,null,$head,$h,'margins');
+
 	return $head;
 }
 

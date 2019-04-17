@@ -28,11 +28,11 @@ if ($atm == 'evol')
 					print '<td class="liste_titre'.($align ? ' '.$align : '').'">';
 
                     $tmpkey = preg_replace('/'.$search_options_pattern.'/', '', $key);
-					if (in_array($typeofextrafield, array('varchar', 'int', 'double', 'select')) && empty($extrafields->attributes[$extrafieldsobjectkey]['computed'][$key]))
+					if (in_array($typeofextrafield, array('varchar', 'int', 'double')) && empty($extrafields->attributes[$extrafieldsobjectkey]['computed'][$key]))
 					{
 						$crit = $val;
 						$searchclass = '';
-						if (in_array($typeofextrafield, array('varchar', 'select'))) $searchclass = 'searchstring';
+						if (in_array($typeofextrafield, array('varchar'))) $searchclass = 'searchstring';
 						if (in_array($typeofextrafield, array('int', 'double'))) $searchclass = 'searchnum';
 						print '<input class="flat'.($searchclass ? ' '.$searchclass : '').'" size="4" type="text" name="'.$search_options_pattern.$tmpkey.'" value="'.dol_escape_htmltag($search_array_options[$search_options_pattern.$tmpkey]).'">';
 					}
@@ -72,12 +72,12 @@ else
 				$align=$extrafields->getAlignFlag($key);
 				$typeofextrafield=$extrafields->attribute_type[$key];
 				print '<td class="liste_titre'.($align?' '.$align:'').'">';
-				if (in_array($typeofextrafield, array('varchar', 'int', 'double', 'select')) && empty($extrafields->attribute_computed[$key]))
+				if (in_array($typeofextrafield, array('varchar', 'int', 'double')) && empty($extrafields->attribute_computed[$key]))
 				{
 					$crit=$val;
 					$tmpkey=preg_replace('/search_options_/','',$key);
 					$searchclass='';
-					if (in_array($typeofextrafield, array('varchar', 'select'))) $searchclass='searchstring';
+					if (in_array($typeofextrafield, array('varchar'))) $searchclass='searchstring';
 					if (in_array($typeofextrafield, array('int', 'double'))) $searchclass='searchnum';
 					print '<input class="flat'.($searchclass?' '.$searchclass:'').'" size="4" type="text" name="search_options_'.$tmpkey.'" value="'.dol_escape_htmltag($search_array_options['search_options_'.$tmpkey]).'">';
 				}

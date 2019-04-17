@@ -36,7 +36,7 @@ require_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
 
 $langs->loadLangs(array('projects','users','companies'));
 
-$hookmanager->initHooks(array('perdaycard'));
+$hookmanager->initHooks(array('timesheetperdaycard'));
 $atm = 'evol';
 
 $action=GETPOST('action', 'aZ09');
