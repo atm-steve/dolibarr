@@ -13,6 +13,7 @@
  * Copyright (C) 2014		Cédric GROSS					<c.gross@kreiz-it.fr>
  * Copyright (C) 2014-2015	Marcos García				<marcosgdf@gmail.com>
  * Copyright (C) 2015		Jean-François Ferry			<jfefe@aternatik.fr>
+ * Copyright (C) 2018       Frédéric France             <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -449,7 +450,7 @@ function GETPOST($paramname, $check='', $method=0, $filter=NULL, $options=NULL, 
 	            if (! is_array($out) || empty($out)) $out=array();
 	            break;
 			case 'nohtml':
-			    $out=dol_string_nohtmltag($out);
+			    $out=dol_string_nohtmltag($out, 0);
 				break;
 			case 'alphanohtml':	// Recommended for search params
 	            $out=trim($out);
@@ -5068,6 +5069,7 @@ function dol_textishtml($msg,$option=0)
 		if (preg_match('/<html/i',$msg))				return true;
 		elseif (preg_match('/<body/i',$msg))			return true;
 		elseif (preg_match('/<(b|em|i|u)>/i',$msg))		return true;
+		elseif (preg_match('/<br\/>/i',$msg))	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)>/i',$msg)) 	  return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*>/i',$msg)) return true;
 		elseif (preg_match('/<(br|div|font|li|p|span|strong|table)\s+[^<>\/]*\/>/i',$msg)) return true;
@@ -5158,9 +5160,9 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
         {
             $tmp=dol_getdate(dol_now(), true);
             $tmp2=dol_get_prev_day($tmp['mday'], $tmp['mon'], $tmp['year']);
-            $tmp3=dol_get_prev_month($tmp['mday'], $tmp['mon'], $tmp['year']);
+            $tmp3=dol_get_prev_month($tmp['mon'], $tmp['year']);
             $tmp4=dol_get_next_day($tmp['mday'], $tmp['mon'], $tmp['year']);
-            $tmp5=dol_get_next_month($tmp['mday'], $tmp['mon'], $tmp['year']);
+            $tmp5=dol_get_next_month($tmp['mon'], $tmp['year']);
         }
         $substitutionarray=array_merge($substitutionarray, array(
             '__DAY__' => $tmp['mday'],
@@ -5974,11 +5976,12 @@ function complete_head_from_modules($conf,$langs,$object,&$head,&$h,$type,$mode=
 	// No need to make a return $head. Var is modified as a reference
 	if (! empty($hookmanager))
 	{
-		$parameters=array('object' => $object, 'mode' => $mode, 'head'=>$head);
-		$reshook=$hookmanager->executeHooks('completeTabsHead',$parameters);
+		$parameters=array('object' => $object, 'mode' => $mode, 'head' => $head);
+		$reshook=$hookmanager->executeHooks('completeTabsHead', $parameters);
 		if ($reshook > 0)
 		{
 			$head = $hookmanager->resArray;
+            $h = count($head);
 		}
 	}
 }

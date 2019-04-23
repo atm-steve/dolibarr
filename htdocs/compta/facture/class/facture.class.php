@@ -2516,6 +2516,7 @@ class Facture extends CommonInvoice
 		$remise_percent=price2num($remise_percent);
 		$qty=price2num($qty);
 		$pu_ht=price2num($pu_ht);
+        $pu_ht_devise=price2num($pu_ht_devise);
 		$pu_ttc=price2num($pu_ttc);
 		$pa_ht=price2num($pa_ht);
 		$txtva=price2num($txtva);
@@ -2739,6 +2740,7 @@ class Facture extends CommonInvoice
 			$remise_percent	= price2num($remise_percent);
 			$qty			= price2num($qty);
 			$pu 			= price2num($pu);
+        	$pu_ht_devise	= price2num($pu_ht_devise);
 			$pa_ht			= price2num($pa_ht);
 			$txtva			= price2num($txtva);
 			$txlocaltax1	= price2num($txlocaltax1);
@@ -4835,7 +4837,7 @@ class FactureLigne extends CommonInvoiceLine
 			$resql = $this->db->query($sql);
 			if ($resql && $resql->num_rows > 0) {
 				$res = $this->db->fetch_array($resql);
-				return $res['situation_percent'];
+				return floatval($res['situation_percent']);
 			} else {
 				$this->error = $this->db->error();
 				dol_syslog(get_class($this) . "::select Error " . $this->error, LOG_ERR);
