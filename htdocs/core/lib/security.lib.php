@@ -339,7 +339,7 @@ function restrictedArea($user, $features, $objectid=0, $dbtablename='', $feature
             $checksoc = array('societe');	 // Test for societe object
             $checkother = array('contact');	 // Test on entity and link to societe. Allowed if link is empty (Ex: contacts...).
             $checkproject = array('projet'); // Test for project object
-            $nocheck = array('barcode','stock','fournisseur');	// No test
+            $nocheck = array('barcode','stock','fournisseur', 'facture');	// No test
             $checkdefault = 'all other not already defined'; // Test on entity and link to third party. Not allowed if link is empty (Ex: invoice, orders...).
 
             // If dbtable not defined, we use same name for table than module name
