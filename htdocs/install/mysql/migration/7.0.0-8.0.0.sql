@@ -566,6 +566,7 @@ ALTER TABLE llx_advtargetemailing DROP COLUMN fk_mailing;
 
 DROP TABLE llx_ticket_logs;
 
+ALTER TABLE llx_actioncomm MODIFY COLUMN code varchar(50);
 
 -- Product components
 ALTER TABLE llx_product_association ADD COLUMN optional integer DEFAULT 0;
