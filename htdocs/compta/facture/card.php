@@ -4870,6 +4870,9 @@ else if ($id > 0 || ! empty($ref))
 		// Documents generes
 
 		$filename = dol_sanitizeFileName($object->ref);
+        if($object->entity == 1)$upload_dir= str_replace('invoice','facture',$upload_dir);
+        else $upload_dir= str_replace('facture','invoice',$upload_dir);
+
 		$filedir = $upload_dir . '/' . dol_sanitizeFileName($object->ref);
 		$urlsource = $_SERVER['PHP_SELF'] . '?facid=' . $object->id;
 		$genallowed = $user->rights->facture->lire;
