@@ -2437,6 +2437,7 @@ class Form
 		if ($socid) $sql.= " AND pfp.fk_soc = ".$socid;
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON pfp.fk_soc = s.rowid";
 		$sql.= " WHERE p.entity IN (".getEntity('product').")";
+		$sql.= " AND pfp.entity IN (".getEntity('productprice').")";
 		$sql.= " AND p.tobuy = 1";
 		if (strval($filtertype) != '') $sql.=" AND p.fk_product_type=".$this->db->escape($filtertype);
 		if (! empty($filtre)) $sql.=" ".$filtre;
