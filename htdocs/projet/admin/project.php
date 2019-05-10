@@ -277,6 +277,16 @@ elseif ($action == 'updateoptions')
 		$projectToSelect = GETPOST('projectToSelect','alpha');
 		dolibarr_set_const($db, 'PROJECT_ALLOW_TO_LINK_FROM_OTHER_COMPANY', $projectToSelect, 'chaine', 0, '', $conf->entity);	//Allow to disable this configuration if empty value
 	}
+    if (GETPOST('set_PROJECT_SHOW_FORECAST_PROFIT_BOARD'))
+    {
+        $showForecastBoard = GETPOST('PROJECT_SHOW_FORECAST_PROFIT_BOARD', 'int');
+        dolibarr_set_const($db, 'PROJECT_SHOW_FORECAST_PROFIT_BOARD', $showForecastBoard, 'chaine', 0, '', $conf->entity);	//Allow to disable this configuration if empty value
+    }
+    if (GETPOST('set_PROJECT_FORECAST_DEFAULT_THM') || isset($_REQUEST['PROJECT_FORECAST_DEFAULT_THM']))
+    {
+        $defaultForecastTHM = GETPOST('PROJECT_FORECAST_DEFAULT_THM', 'int');
+        dolibarr_set_const($db, 'PROJECT_FORECAST_DEFAULT_THM', $defaultForecastTHM, 'chaine', 0, '', $conf->entity);	//Allow to disable this configuration if empty value
+    }
 }
 
 
@@ -904,6 +914,30 @@ print '<input type="text" id="projectToSelect" name="projectToSelect" value="'.$
 print $form->textwithpicto('', $langs->trans('AllowToLinkFromOtherCompany'));
 print '<input type="submit" class="button" name="PROJECT_ALLOW_TO_LINK_FROM_OTHER_COMPANY" value="'.$langs->trans("Modify").'">';
 print '</td>';
+print '</tr>';
+
+print '<tr class="oddeven">';
+print '<td width="80%">'.$langs->trans("ShowForecastProfitBoard").'</td>';
+print '<td width="60" class="right">';
+$arrval=array('0'=>$langs->trans("No"),
+              '1'=>$langs->trans("Yes"),
+);
+print $form->selectyesno('PROJECT_SHOW_FORECAST_PROFIT_BOARD', empty($conf->global->PROJECT_SHOW_FORECAST_PROFIT_BOARD)?0:1, 1);
+print '</td><td class="right">';
+print '<input type="submit" class="button" name="set_PROJECT_SHOW_FORECAST_PROFIT_BOARD" value="'.$langs->trans("Modify").'">';
+print '</td>';
+print '</tr>';
+
+if(! empty($conf->global->PROJECT_SHOW_FORECAST_PROFIT_BOARD)) {
+    print '<tr class="oddeven">';
+    print '<td width="80%">'.$langs->trans("DefaultForecastTHM").'</td>';
+    print '<td width="60" class="right">';
+    print '<input type="number" class="width75" name="PROJECT_FORECAST_DEFAULT_THM" min="0" size="15" value="'.(empty($conf->global->PROJECT_FORECAST_DEFAULT_THM) ? 0 : $conf->global->PROJECT_FORECAST_DEFAULT_THM).'" />';
+    print '</td><td class="right">';
+    print '<input type="submit" class="button" name="set_PROJECT_FORECAST_DEFAULT_THM" value="'.$langs->trans("Modify").'">';
+    print '</td>';
+    print '</tr>';
+}
 
 print '</table>';
 
