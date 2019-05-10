@@ -243,7 +243,6 @@ $listofreferent=array(
 	'name'=>"Proposals",
 	'title'=>"ListProposalsAssociatedProject",
 	'class'=>'Propal',
-	'margin'=>'add',
 	'table'=>'propal',
     'datefieldname'=>'datep',
     'urlnew'=>DOL_URL_ROOT.'/comm/propal/card.php?action=create&origin=project&originid='.$id.'&socid='.$socid,
@@ -255,7 +254,6 @@ $listofreferent=array(
 	'name'=>"CustomersOrders",
 	'title'=>"ListOrdersAssociatedProject",
 	'class'=>'Commande',
-    'margin'=>'add',
 	'table'=>'commande',
 	'datefieldname'=>'date_commande',
     'urlnew'=>DOL_URL_ROOT.'/commande/card.php?action=create&projectid='.$id.'&socid='.$socid,
@@ -301,7 +299,6 @@ $listofreferent=array(
 	'name'=>"SuppliersOrders",
 	'title'=>"ListSupplierOrdersAssociatedProject",
 	'class'=>'CommandeFournisseur',
-    'margin'=>'minus',
 	'table'=>'commande_fournisseur',
 	'datefieldname'=>'date_commande',
     'urlnew'=>DOL_URL_ROOT.'/fourn/commande/card.php?action=create&projectid='.$id,		// No socid parameter here, the socid is often the customer and we create a supplier object
@@ -548,6 +545,10 @@ print load_fiche_titre($langs->trans("Profit"), '', 'title_accountancy');
 print '<table class="noborder" width="100%">';
 
 if(! empty($conf->global->PROJECT_SHOW_FORECAST_PROFIT_BOARD)) {
+    $listofreferent['propal']['margin'] = 'add';
+    $listofreferent['order']['margin'] = 'add';
+    $listofreferent['order_supplier']['margin'] = 'minus';
+
     print '<tr class="left">';
     print '<th colspan="4">'.$langs->trans('Forecast').'</th>';
     print '</tr>';
@@ -563,6 +564,8 @@ if(! empty($conf->global->PROJECT_SHOW_FORECAST_PROFIT_BOARD)) {
     print '<tr class="left">';
     print '<th colspan="4">'.$langs->trans('Real').'</th>';
     print '</tr>';
+
+    unset($listofreferent['propal']['margin'], $listofreferent['order']['margin'], $listofreferent['order_supplier']['margin']);
 }
 
 print '<tr class="liste_titre">';
