@@ -548,6 +548,7 @@ if(! empty($conf->global->PROJECT_SHOW_FORECAST_PROFIT_BOARD)) {
     $listofreferent['propal']['margin'] = 'add';
     $listofreferent['order']['margin'] = 'add';
     $listofreferent['order_supplier']['margin'] = 'minus';
+    unset($listofreferent['invoice']['margin'], $listofreferent['invoice_supplier']['margin']);
 
     print '<tr class="left">';
     print '<th colspan="4">'.$langs->trans('Forecast').'</th>';
@@ -566,6 +567,8 @@ if(! empty($conf->global->PROJECT_SHOW_FORECAST_PROFIT_BOARD)) {
     print '</tr>';
 
     unset($listofreferent['propal']['margin'], $listofreferent['order']['margin'], $listofreferent['order_supplier']['margin']);
+    $listofreferent['invoice']['margin'] = 'add';
+    $listofreferent['invoice_supplier']['margin'] = 'minus';
 }
 
 print '<tr class="liste_titre">';
