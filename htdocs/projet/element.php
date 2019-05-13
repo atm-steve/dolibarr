@@ -1317,16 +1317,7 @@ function printForecastProfitBoard(&$object, &$listofreferent, $dates, $datee) {
                     elseif ($tablename == 'projet_task')
                     {
                         $thm = $conf->global->PROJECT_FORECAST_DEFAULT_THM;
-                        if ($idofelementuser)
-                        {
-                            $tmp = $element->getSumOfAmount($elementuser, $dates, $datee);
-                            $total_ht_by_line = price2num(($tmp['nbseconds'] / 3600) * $thm, 'MT');
-                        }
-                        else
-                        {
-                            $tmp = $element->getSumOfAmount('', $dates, $datee);
-                            $total_ht_by_line = price2num(($tmp['nbseconds'] / 3600) * $thm, 'MT');
-                        }
+                        $total_ht_by_line = price2num(($element->planned_workload / 3600) * $thm, 'MT');
                     }
                     else $total_ht_by_line=$element->total_ht;
 
