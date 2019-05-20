@@ -356,6 +356,22 @@ class Documents extends DolibarrApi
 
 			$upload_dir = $conf->facture->dir_output . "/" . get_exdir(0, 0, 0, 1, $object, 'invoice');
 		}
+		else if ($modulepart == 'supplier_invoice')
+                {
+                        require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
+
+                        if (!DolibarrApiAccess::$user->rights->fournisseur->facture->lire) {
+                                throw new RestException(401);
+                        }
+
+                        $object = new FactureFournisseur($this->db);
+                        $result=$object->fetch($id, $ref);
+                        if ( ! $result ) {
+                                throw new RestException(404, 'Invoice not found');
+                        }
+
+                        $upload_dir = $conf->supplier_invoice->dir_output . "/" . get_exdir($object->id, 2, 0, 0, $object, 'invoice_supplier').dol_sanitizeFileName($object->ref);
+                }
 		else
 		{
 			throw new RestException(500, 'Modulepart '.$modulepart.' not implemented yet.');
