@@ -188,6 +188,10 @@ class Paiement extends CommonObject
 			if (! empty($newvalue)) $atleastonepaymentnotnull++;
 		}
 
+		// Spé Arcoop : on fetch une facture pour savoir à quelle entité rattacher le règlement
+		$invoice=new Facture($this->db);
+		$invoice->fetch($key);
+
 		$totalamount = price2num($totalamount);
 		$totalamount_converted = price2num($totalamount_converted);
 
@@ -216,7 +220,7 @@ class Paiement extends CommonObject
 		$note = ($this->note_public?$this->note_public:$this->note);
 
 		$sql = "INSERT INTO ".MAIN_DB_PREFIX."paiement (entity, ref, datec, datep, amount, multicurrency_amount, fk_paiement, num_paiement, note, fk_user_creat)";
-		$sql.= " VALUES (".$conf->entity.", '".$this->ref."', '". $this->db->idate($now)."', '".$this->db->idate($this->datepaye)."', '".$total."', '".$mtotal."', ".$this->paiementid.", '".$this->num_paiement."', '".$this->db->escape($note)."', ".$user->id.")";
+		$sql.= " VALUES (".$invoice->entity.", '".$this->ref."', '". $this->db->idate($now)."', '".$this->db->idate($this->datepaye)."', '".$total."', '".$mtotal."', ".$this->paiementid.", '".$this->num_paiement."', '".$this->db->escape($note)."', ".$user->id.")";
 
 		dol_syslog(get_class($this)."::Create insert paiement", LOG_DEBUG);
 		$resql = $this->db->query($sql);

@@ -745,6 +745,11 @@ if (empty($reshook))
 			$tva_tx = '';
 		}
 
+ 		if(!empty($conf->global->MAIN_DISABLE_FREE_LINES)&& empty($idprod)) {
+            		setEventMessage('Veuillez sélectionner un produit', 'errors');
+            		header('Location:'.$_SERVER['PHP_SELF'].'?id='.GETPOST('id'));
+			exit;
+        	}
 		$qty = GETPOST('qty' . $predef);
 		$remise_percent = GETPOST('remise_percent' . $predef);
 
