@@ -97,7 +97,7 @@ if ($id > 0 || ! empty($ref))
 	{
 		$object->fetch_thirdparty();
 
-		$upload_dir = $conf->facture->dir_output.'/'.dol_sanitizeFileName($object->ref);
+		$upload_dir = $conf->facture->multidir_output[$object->entity].'/'.dol_sanitizeFileName($object->ref);
 
 		$head = facture_prepare_head($object);
 		dol_fiche_head($head, 'documents', $langs->trans('InvoiceCustomer'), -1, 'bill');
@@ -178,7 +178,7 @@ if ($id > 0 || ! empty($ref))
 		$modulepart = 'facture';
 		$permission = $user->rights->facture->creer;
 		$permtoedit = $user->rights->facture->creer;
-		$param = '&id=' . $object->id;
+		$param = 'id=' . $object->id;
 		include_once DOL_DOCUMENT_ROOT . '/core/tpl/document_actions_post_headers.tpl.php';
 	}
 	else

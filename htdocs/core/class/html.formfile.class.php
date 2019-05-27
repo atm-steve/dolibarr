@@ -1029,6 +1029,13 @@ class FormFile
 		{
 		    $relativepath=preg_replace('/^.*\/produit\//','',$filearray[0]['path']).'/';
 		}
+
+        // Add entity in $param if not already exists
+        if (!preg_match('/entity\=[0-9]+/', $param)) {
+            if(! empty($param)) $param .= '&';
+            $param.= 'entity='.(!empty($object->entity)?$object->entity:$conf->entity);
+        }
+
 		// Defined relative dir to DOL_DATA_ROOT
 		$relativedir = '';
 		if ($upload_dir)
@@ -1066,9 +1073,7 @@ class FormFile
 				$form=new Form($this->db);
 			}
 
-			if (! preg_match('/&id=/', $param) && isset($object->id)) $param.='&id='.$object->id;
-			$relativepathwihtoutslashend=preg_replace('/\/$/', '', $relativepath);
-			if ($relativepathwihtoutslashend) $param.= '&file='.urlencode($relativepathwihtoutslashend);
+			if (! preg_match('/id=/', $param) && isset($object->id)) $param.='&id='.$object->id;
 
 			if ($permtoeditline < 0)  // Old behaviour for backward compatibility. New feature should call method with value 0 or 1
 			{
@@ -1186,7 +1191,7 @@ class FormFile
 						print '</a>';
 					}
 					// Preview link
-					if (! $editline) print $this->showPreview($file, $modulepart, $filepath);
+					if (! $editline) print $this->showPreview($file, $modulepart, $filepath, 0, $param);
 					// Public share link
 					//if (! $editline && ! empty($filearray[$key]['hashp'])) print pictowithlinktodirectdownload;
 
