@@ -451,6 +451,9 @@ if ($result) {
 		}
 		if ($objp->code_sell_l == -1) $objp->code_sell_l='';
 
+        $parameters = array('objp' => &$objp);
+        $reshook=$hookmanager->executeHooks('selectlineaccountancycode',$parameters);    // Note that $action and $object may have been modified by hook
+
 		if (!empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES))
         {
             if (empty($objp->code_sell))
