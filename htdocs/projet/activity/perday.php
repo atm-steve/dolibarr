@@ -36,6 +36,8 @@ require_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
 
 $langs->loadLangs(array('projects','users','companies'));
 
+$hookmanager->initHooks(array('timesheetperdaycard'));
+
 $action=GETPOST('action','aZ09');
 $mode=GETPOST("mode",'alpha');
 $id=GETPOST('id','int');
@@ -498,7 +500,7 @@ $holiday = new Holiday($db);
 $isavailable=array();
 
 $statusofholidaytocheck = '3';
-$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($usertoprocess->id, $daytoparse, $statusofholiday);	// $daytoparse is a date with hours = 0
+$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($usertoprocess->id, $daytoparse, $statusofholidaytocheck);	// $daytoparse is a date with hours = 0
 $isavailable[$daytoparse]=$isavailablefordayanduser;			// in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
 
 if (count($tasksarray) > 0)
