@@ -45,6 +45,8 @@ create table llx_actioncomm
 
   transparency      integer,						-- transparency (ical standard). used to say if user assigned to event are busy or not by event. This field may be deprecated if we want to store transparency for each assigned user, moved into table llx_actioncomm_resources.
 
+  private		    smallint NOT NULL default 0,
+
   priority			smallint,						-- priority (ical standard)
   fulldayevent		smallint NOT NULL default 0,    -- priority (ical standard)
   punctual			smallint NOT NULL default 1,    -- deprecated. milestone is event with date start (datep) = date end (datep2)

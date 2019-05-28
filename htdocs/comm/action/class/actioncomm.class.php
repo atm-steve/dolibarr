@@ -117,6 +117,7 @@ class ActionComm extends CommonObject
 
 	var $transparency;	// Transparency (ical standard). Used to say if people assigned to event are busy or not by event. 0=available, 1=busy, 2=busy (refused events)
     var $priority;      // Small int (0 By default)
+    var $private;      // 0=Public 1=Private
 
 	var $userassigned = array();	// Array of user ids
     var $userownerid;	// Id of user owner = fk_user_action into table
@@ -226,6 +227,7 @@ class ActionComm extends CommonObject
         $this->note=dol_htmlcleanlastbr(trim($this->note));
         if (empty($this->percentage))   $this->percentage = 0;
         if (empty($this->priority) || ! is_numeric($this->priority)) $this->priority = 0;
+        if (empty($this->private)) $this->private = 0;
         if (empty($this->fulldayevent)) $this->fulldayevent = 0;
         if (empty($this->punctual))     $this->punctual = 0;
         if (empty($this->transparency)) $this->transparency = 0;
@@ -306,6 +308,7 @@ class ActionComm extends CommonObject
         $sql.= "fk_user_action,";
         $sql.= "fk_user_done,";
         $sql.= "label,percent,priority,fulldayevent,location,punctual,";
+        $sql.= "private,";
         $sql.= "transparency,";
         $sql.= "fk_element,";
         $sql.= "elementtype,";
@@ -325,6 +328,7 @@ class ActionComm extends CommonObject
         $sql.= ($userownerid>0 ? $userownerid:"null").", ";
         $sql.= ($userdoneid>0 ? $userdoneid:"null").", ";
         $sql.= "'".$this->db->escape($this->label)."','".$this->db->escape($this->percentage)."','".$this->db->escape($this->priority)."','".$this->db->escape($this->fulldayevent)."','".$this->db->escape($this->location)."','".$this->db->escape($this->punctual)."', ";
+        $sql.= "'".$this->db->escape($this->private)."', ";
         $sql.= "'".$this->db->escape($this->transparency)."', ";
         $sql.= (! empty($this->fk_element)?$this->fk_element:"null").", ";
         $sql.= (! empty($this->elementtype)?"'".$this->db->escape($this->elementtype)."'":"null").", ";
@@ -549,7 +553,7 @@ class ActionComm extends CommonObject
         $sql.= " a.fk_user_action, a.fk_user_done,";
         $sql.= " a.fk_contact, a.percent as percentage,";
         $sql.= " a.fk_element as elementid, a.elementtype,";
-        $sql.= " a.priority, a.fulldayevent, a.location, a.punctual, a.transparency,";
+        $sql.= " a.priority, a.fulldayevent, a.location, a.punctual, a.private, a.transparency,";
         $sql.= " c.id as type_id, c.code as type_code, c.libelle as type_label, c.color as type_color, c.picto as type_picto,";
         $sql.= " s.nom as socname,";
         $sql.= " u.firstname, u.lastname as lastname";
@@ -610,6 +614,7 @@ class ActionComm extends CommonObject
                 $this->userownerid			= $obj->fk_user_action;
                 $this->userdoneid			= $obj->fk_user_done;
                 $this->priority				= $obj->priority;
+                $this->private				= $obj->private;
                 $this->fulldayevent			= $obj->fulldayevent;
                 $this->location				= $obj->location;
                 $this->transparency			= $obj->transparency;
@@ -812,6 +817,7 @@ class ActionComm extends CommonObject
         $this->note=trim($this->note);
         if (empty($this->percentage))    $this->percentage = 0;
         if (empty($this->priority) || ! is_numeric($this->priority)) $this->priority = 0;
+        if (empty($this->private))  $this->private = 0;
         if (empty($this->transparency))  $this->transparency = 0;
         if (empty($this->fulldayevent))  $this->fulldayevent = 0;
         if ($this->percentage > 100) $this->percentage = 100;
@@ -848,6 +854,7 @@ class ActionComm extends CommonObject
         $sql.= ", fk_soc =". ($socid > 0 ? $socid:"null");
         $sql.= ", fk_contact =". ($contactid > 0 ? $contactid:"null");
         $sql.= ", priority = '".$this->db->escape($this->priority)."'";
+        $sql.= ", private = '".$this->db->escape($this->private)."'";
         $sql.= ", fulldayevent = '".$this->db->escape($this->fulldayevent)."'";
         $sql.= ", location = ".($this->location ? "'".$this->db->escape($this->location)."'":"null");
         $sql.= ", transparency = '".$this->db->escape($this->transparency)."'";
@@ -1390,7 +1397,7 @@ class ActionComm extends CommonObject
             $sql.= " a.fk_user_action,";
             $sql.= " a.fk_contact, a.percent as percentage,";
             $sql.= " a.fk_element, a.elementtype,";
-            $sql.= " a.priority, a.fulldayevent, a.location, a.punctual, a.transparency,";
+            $sql.= " a.priority, a.private, a.fulldayevent, a.location, a.punctual, a.transparency,";
             $sql.= " u.firstname, u.lastname,";
             $sql.= " s.nom as socname,";
             $sql.= " c.id as type_id, c.code as type_code, c.libelle";
@@ -1469,6 +1476,7 @@ class ActionComm extends CommonObject
                     $event['duration']=$duration;	// Not required with type 'journal'
                     $event['author']=dolGetFirstLastname($obj->firstname, $obj->lastname);
                     $event['priority']=$obj->priority;
+                    $event['private']=$obj->private;
                     $event['fulldayevent']=$obj->fulldayevent;
                     $event['location']=$obj->location;
                     $event['transparency']=(($obj->transparency > 0)?'OPAQUE':'TRANSPARENT');		// OPAQUE (busy) or TRANSPARENT (not busy)
@@ -1582,6 +1590,7 @@ class ActionComm extends CommonObject
         $this->location='Location';
         $this->transparency=1;	// 1 means opaque
         $this->priority=1;
+        $this->private=0;
         $this->note = 'Note';
 
         $this->userownerid=$user->id;
@@ -1653,6 +1662,29 @@ class ActionComm extends CommonObject
 		$this->db->query($sql);
 
     	return 0;
+
+
+
+    }
+
+    /**
+     * Function checking if an event is viewable depending on private rights
+     *
+     * @return	boolean			true if OK, false if KO
+     */
+    public function isViewable(){
+        global $user;
+
+        if($this->private && empty($user->rights->agenda->myactions->read_private)) {
+            return false;
+        }
+        if($this->private && empty($user->rights->agenda->allactions->read_private)){
+            $this->fetchResources();
+            if(!array_key_exists($user->id,$this->userassigned)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
