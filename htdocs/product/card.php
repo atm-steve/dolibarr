@@ -1136,7 +1136,7 @@ else
             print '<table class="border" width="100%">';
             // VAT
             print '<tr><td class="titlefieldcreate">' . $langs->trans("VATRate") . '</td><td>';
-            $defaultva = get_default_tva($mysoc, $mysoc);
+            $defaultva = 20; // get_default_tva($mysoc, $mysoc);
             print $form->load_tva("tva_tx", $defaultva, $mysoc, $mysoc, 0, 0, '', false, 1);
             print '</td></tr>';
             print '</table>';
@@ -1159,7 +1159,7 @@ else
 
             // VAT
             print '<tr><td>'.$langs->trans("VATRate").'</td><td>';
-            $defaultva=get_default_tva($mysoc, $mysoc);
+            $defaultva=20; // get_default_tva($mysoc, $mysoc);
             print $form->load_tva("tva_tx", $defaultva, $mysoc, $mysoc, 0, 0, '', false, 1);
             print '</td></tr>';
 
