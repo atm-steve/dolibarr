@@ -1083,7 +1083,7 @@ if ($action == 'create')
 		}
 		print '<table class="border" width="100%">';
 		print '<tr><td class="fieldrequired">'.$langs->trans("ThirdParty").'</td><td>';
-		print $form->select_company('', 'socid', '', 'SelectThirdParty', 1, 0, null, 0, 'minwidth300');
+		print $form->select_company('', 'socid', 's.fournisseur IN (0,3)', 'SelectThirdParty', 1, 0, null, 0, 'minwidth300');
 		print '</td></tr>';
 		print '</table>';
 
