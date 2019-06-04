@@ -1081,7 +1081,7 @@ class Facture extends CommonInvoice
 	 */
 	function createFromOrder($object, User $user)
 	{
-		global $hookmanager;
+		global $conf, $hookmanager;
 
 		$error=0;
 
@@ -1142,8 +1142,12 @@ class Facture extends CommonInvoice
 		$this->fk_delivery_address  = $object->fk_delivery_address;
 		$this->contact_id           = $object->contactid;
 		$this->ref_client           = $object->ref_client;
-		$this->note_private         = $object->note_private;
-		$this->note_public          = $object->note_public;
+
+		if (empty($conf->global->MAIN_DISABLE_PROPAGATE_NOTES_FROM_ORIGIN))
+		{
+		    $this->note_private         = $object->note_private;
+            $this->note_public          = $object->note_public;
+		}
 
 		$this->origin				= $object->element;
 		$this->origin_id			= $object->id;
@@ -1691,7 +1695,7 @@ class Facture extends CommonInvoice
 		$sql.= " import_key=".(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null").",";
 		$sql.= " situation_cycle_ref=".(empty($this->situation_cycle_ref)?"null":$this->db->escape($this->situation_cycle_ref)).",";
 		$sql.= " situation_counter=".(empty($this->situation_counter)?"null":$this->db->escape($this->situation_counter)).",";
-		$sql.= " situation_final=".(empty($this->situation_counter)?"0":$this->db->escape($this->situation_counter));
+		$sql.= " situation_final=".(empty($this->situation_final)?"0":$this->db->escape($this->situation_final));
 		$sql.= " WHERE rowid=".$this->id;
 
 		$this->db->begin();
@@ -3132,7 +3136,13 @@ class Facture extends CommonInvoice
         // phpcs:enable
 	    global $mysoc,$user;
 
-		include_once DOL_DOCUMENT_ROOT . '/core/lib/price.lib.php';
+	    // Progress should never be changed for discount lines
+	    if (($line->info_bits & 2) == 2)
+	    {
+	    	return;
+	    }
+
+		include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
 		// Cap percentages to 100
 		if ($percent > 100) $percent = 100;
@@ -3148,7 +3158,6 @@ class Facture extends CommonInvoice
 		$line->multicurrency_total_ttc = $tabprice[18];
 		$line->update($user);
 		$this->update_price(1);
-		$this->db->commit();
 	}
 
 	/**
@@ -4402,20 +4411,16 @@ class FactureLigne extends CommonInvoiceLine
 	public $date_start;
 	public $date_end;
 
-	// Ne plus utiliser
-	//var $price;         	// P.U. HT apres remise % de ligne (exemple 80)
-	//var $remise;			// Montant calcule de la remise % sur PU HT (exemple 20)
-
 	// From llx_product
 	/**
 	 * @deprecated
-	 * @see product_ref
+	 * @see $product_ref
 	 */
 	public $ref;				// Product ref (deprecated)
 	public $product_ref;       // Product ref
 	/**
 	 * @deprecated
-	 * @see product_label
+	 * @see $product_label
 	 */
 	public $libelle;      		// Product label (deprecated)
 	public $product_label;     // Product label
@@ -4599,6 +4604,7 @@ class FactureLigne extends CommonInvoiceLine
 			if ($result <= 0)
 			{
 				$this->error='ErrorProductIdDoesNotExists';
+				dol_syslog(get_class($this)."::insert Error ".$this->error, LOG_ERR);
 				return -1;
 			}
 		}
@@ -4629,7 +4635,7 @@ class FactureLigne extends CommonInvoiceLine
 		$sql.= " '".$this->db->escape($this->localtax1_type)."',";
 		$sql.= " '".$this->db->escape($this->localtax2_type)."',";
 		$sql.= ' '.(! empty($this->fk_product)?$this->fk_product:"null").',';
-		$sql.= " ".$this->product_type.",";
+		$sql.= " ".((int) $this->product_type).",";
 		$sql.= " ".price2num($this->remise_percent).",";
 		$sql.= " ".price2num($this->subprice).",";
 		$sql.= ' '.(! empty($this->fk_remise_except)?$this->fk_remise_except:"null").',';

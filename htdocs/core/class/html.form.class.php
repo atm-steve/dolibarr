@@ -235,9 +235,9 @@ class Form
 				}
 				else if (preg_match('/^ckeditor/',$typeofdata))
 				{
-					$tmp=explode(':',$typeofdata);		// Example: ckeditor:dolibarr_zzz:width:height:savemethod:toolbarstartexpanded:rows:cols
+					$tmp=explode(':',$typeofdata);		// Example: ckeditor:dolibarr_zzz:width:height:savemethod:toolbarstartexpanded:rows:cols:uselocalbrowser
 					require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
-					$doleditor=new DolEditor($htmlname, ($editvalue?$editvalue:$value), ($tmp[2]?$tmp[2]:''), ($tmp[3]?$tmp[3]:'100'), ($tmp[1]?$tmp[1]:'dolibarr_notes'), 'In', ($tmp[5]?$tmp[5]:0), true, true, ($tmp[6]?$tmp[6]:'20'), ($tmp[7]?$tmp[7]:'100'));
+					$doleditor=new DolEditor($htmlname, ($editvalue?$editvalue:$value), ($tmp[2]?$tmp[2]:''), ($tmp[3]?$tmp[3]:'100'), ($tmp[1]?$tmp[1]:'dolibarr_notes'), 'In', ($tmp[5]?$tmp[5]:0), (isset($tmp[8])?($tmp[8]?true:false):true), true, ($tmp[6]?$tmp[6]:'20'), ($tmp[7]?$tmp[7]:'100'));
 					$ret.=$doleditor->Create(1);
 				}
 				if (empty($notabletag)) $ret.='</td>';
@@ -1873,8 +1873,10 @@ class Form
         // phpcs:enable
 		global $langs,$conf;
 
+		// check parameters
 		$price_level = (! empty($price_level) ? $price_level : 0);
-
+		if (is_null($ajaxoptions)) $ajaxoptions=array();
+		
 		if (! empty($conf->use_javascript_ajax) && ! empty($conf->global->PRODUIT_USE_SEARCH_TO_SELECT))
 		{
 			$placeholder='';
@@ -3455,7 +3457,10 @@ class Form
 		$langs->load('bills');
 
 		$opt = '<option value ="" selected></option>';
-		$sql = 'SELECT rowid, facnumber, situation_cycle_ref, situation_counter, situation_final, fk_soc FROM ' . MAIN_DB_PREFIX . 'facture WHERE situation_counter>=1';
+		$sql = 'SELECT rowid, facnumber, situation_cycle_ref, situation_counter, situation_final, fk_soc';
+		$sql.= ' FROM ' . MAIN_DB_PREFIX . 'facture';
+		$sql.= ' WHERE entity IN ('.getEntity('facture').')';
+		$sql.= ' AND situation_counter>=1';
 		$sql.= ' ORDER by situation_cycle_ref, situation_counter desc';
 		$resql = $this->db->query($sql);
 		if ($resql && $this->db->num_rows($resql) > 0) {

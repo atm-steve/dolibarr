@@ -344,6 +344,7 @@ if (! $error && $massaction == 'confirm_presend')
                 if ($objectclass == 'Supplier_Proposal') 	$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO));
                 if ($objectclass == 'CommandeFournisseur')	$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO));
                 if ($objectclass == 'FactureFournisseur')	$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO));
+                if ($objectclass == 'Project') 			    $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO));
 
                 // $listofqualifiedobj is array with key = object id and value is instance of qualified objects, for the current thirdparty (but thirdparty property is not loaded yet)
                 // $looparray will be an array with number of email to send for the current thirdparty (so 1 or n if n object for same thirdparty)
@@ -364,8 +365,8 @@ if (! $error && $massaction == 'confirm_presend')
                     $looparray[0]=$objectforloop;
                 }
                 //var_dump($looparray);exit;
-                dol_syslog("We have set an array of ".count($looparray)." emails to send");
-
+                dol_syslog("We have set an array of ".count($looparray)." emails to send. oneemailperrecipient=".$oneemailperrecipient);
+                //var_dump($oneemailperrecipient); var_dump($listofqualifiedobj); var_dump($listofqualifiedref);
                 foreach ($looparray as $objectid => $objecttmp)		// $objecttmp is a real object or an empty object if we choose to send one email per thirdparty instead of one per object
                 {
                     // Make substitution in email content
@@ -386,8 +387,8 @@ if (! $error && $massaction == 'confirm_presend')
 
                     complete_substitutions_array($substitutionarray, $langs, $objecttmp, $parameters);
 
-                    $subject=make_substitutions($subject, $substitutionarray);
-                    $message=make_substitutions($message, $substitutionarray);
+                    $subjectreplaced=make_substitutions($subject, $substitutionarray);
+                    $messagereplaced=make_substitutions($message, $substitutionarray);
 
                     $filepath = $attachedfiles['paths'];
                     $filename = $attachedfiles['names'];
@@ -415,10 +416,11 @@ if (! $error && $massaction == 'confirm_presend')
                     }
                     //var_dump($filepath);
                     //var_dump($trackid);exit;
+                    //var_dump($subjectreplaced);
 
                     // Send mail (substitutionarray must be done just before this)
                     require_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
-                    $mailfile = new CMailFile($subject,$sendto,$from,$message,$filepath,$mimetype,$filename,$sendtocc,$sendtobcc,$deliveryreceipt,-1,'','',$trackid);
+                    $mailfile = new CMailFile($subjectreplaced, $sendto, $from, $messagereplaced, $filepath, $mimetype, $filename, $sendtocc, $sendtobcc, $deliveryreceipt, -1, '', '', $trackid);
                     if ($mailfile->error)
                     {
                         $resaction.='<div class="error">'.$mailfile->error.'</div>';
@@ -450,9 +452,9 @@ if (! $error && $massaction == 'confirm_presend')
                                 if ($message)
                                 {
                                     if ($sendtocc) $actionmsg = dol_concatdesc($actionmsg, $langs->transnoentities('Bcc') . ": " . $sendtocc);
-                                    $actionmsg = dol_concatdesc($actionmsg, $langs->transnoentities('MailTopic') . ": " . $subject);
+                                    $actionmsg = dol_concatdesc($actionmsg, $langs->transnoentities('MailTopic') . ": " . $subjectreplaced);
                                     $actionmsg = dol_concatdesc($actionmsg, $langs->transnoentities('TextUsedInTheMessageBody') . ":");
-                                    $actionmsg = dol_concatdesc($actionmsg, $message);
+                                    $actionmsg = dol_concatdesc($actionmsg, $messagereplaced);
                                 }
                                 $actionmsg2='';
 
@@ -563,11 +565,13 @@ if ($massaction == 'confirm_createbills')
             $objecttmp->cond_reglement_id	= $cmd->cond_reglement_id;
             $objecttmp->mode_reglement_id	= $cmd->mode_reglement_id;
             $objecttmp->fk_project			= $cmd->fk_project;
+            $objecttmp->multicurrency_code  = $cmd->multicurrency_code;
+            if (empty($createbills_onebythird)) $objecttmp->ref_client = $cmd->ref_client;
 
-            $datefacture = dol_mktime(12, 0, 0, $_POST['remonth'], $_POST['reday'], $_POST['reyear']);
+            $datefacture = dol_mktime(12, 0, 0, GETPOST('remonth', 'int'), GETPOST('reday', 'int'), GETPOST('reyear', 'int'));
             if (empty($datefacture))
             {
-                $datefacture = dol_mktime(date("h"), date("M"), 0, date("m"), date("d"), date("Y"));
+                $datefacture = dol_now();
             }
 
             $objecttmp->date = $datefacture;
@@ -615,6 +619,12 @@ if ($massaction == 'confirm_createbills')
                 for ($i=0;$i<$num;$i++)
                 {
                     $desc=($lines[$i]->desc?$lines[$i]->desc:$lines[$i]->libelle);
+                    // If we build one invoice for several order, we must put the invoice of order on the line
+                    if (! empty($createbills_onebythird))
+                    {
+                        $desc=dol_concatdesc($desc, $langs->trans("Order").' '.$cmd->ref.' - '.dol_print_date($cmd->date, 'day', $langs));
+                    }
+
                     if ($lines[$i]->subprice < 0)
                     {
                         // Negative line, we create a discount line

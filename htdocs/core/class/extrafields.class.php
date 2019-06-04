@@ -770,7 +770,7 @@ class ExtraFields
 	 * 	@param	boolean		$forceload			Force load of extra fields whatever is option MAIN_EXTRAFIELDS_DISABLED. Deprecated. Should not be required.
 	 * 	@return	array							Array of attributes keys+label for all extra fields.
 	 */
-	function fetch_name_optionals_label($elementtype,$forceload=false)
+	function fetch_name_optionals_label($elementtype, $forceload=false)
 	{
         // phpcs:enable
 		global $conf;
@@ -807,8 +807,8 @@ class ExtraFields
 
 		$sql = "SELECT rowid,name,label,type,size,elementtype,fieldunique,fieldrequired,param,pos,alwayseditable,perms,langs,list,totalizable,fielddefault,fieldcomputed,entity,enabled,help";
 		$sql.= " FROM ".MAIN_DB_PREFIX."extrafields";
-		$sql.= " WHERE entity IN (0,".$conf->entity.")";
-		if ($elementtype) $sql.= " AND elementtype = '".$elementtype."'";	// Filed with object->table_element
+		//$sql.= " WHERE entity IN (0,".$conf->entity.")";    // Filter is done later
+		if ($elementtype) $sql.= " WHERE elementtype = '".$elementtype."'";	// Filed with object->table_element
 		$sql.= " ORDER BY pos";
 
 		$resql=$this->db->query($sql);
@@ -818,6 +818,16 @@ class ExtraFields
 			{
 				while ($tab = $this->db->fetch_object($resql))
 				{
+				    if ($tab->entity != 0 && $tab->entity != $conf->entity)
+				    {
+				        // This field is not in current entity. We discard but before we save it into the array of mandatory fields if it is a mandatory field without default value
+				        if ($tab->fieldrequired && is_null($tab->fielddefault))
+				        {
+				            $this->attributes[$tab->elementtype]['mandatoryfieldsofotherentities'][$tab->name]=$tab->type;
+				        }
+				        continue;
+				    }
+
 					// We can add this attribute to object. TODO Remove this and return $this->attributes[$elementtype]['label']
 					if ($tab->type != 'separate')
 					{
@@ -1214,13 +1224,14 @@ class ExtraFields
 
 						if ($value == $obj->rowid)
 						{
-							foreach ($fields_label as $field_toshow)
-							{
-								$translabel=$langs->trans($obj->$field_toshow);
-								if ($translabel!=$obj->$field_toshow) {
-									$labeltoshow=dol_trunc($translabel,18).' ';
-								}else {
-									$labeltoshow=dol_trunc($obj->$field_toshow,18).' ';
+							if (! $notrans) {
+								foreach ($fields_label as $field_toshow) {
+									$translabel = $langs->trans($obj->$field_toshow);
+									if ($translabel != $obj->$field_toshow) {
+										$labeltoshow = dol_trunc($translabel, 18) . ' ';
+									} else {
+										$labeltoshow = dol_trunc($obj->$field_toshow, 18) . ' ';
+									}
 								}
 							}
 							$out.='<option value="'.$obj->rowid.'" selected>'.$labeltoshow.'</option>';
@@ -1543,7 +1554,7 @@ class ExtraFields
 		}
 		elseif ($type == 'phone')
 		{
-			$value=dol_print_phone($value, '', 0, 0, '', '&nbsp;', 1);
+			$value=dol_print_phone($value, '', 0, 0, '', '&nbsp;', 'phone');
 		}
 		elseif ($type == 'price')
 		{
@@ -1850,7 +1861,7 @@ class ExtraFields
 	function setOptionalsFromPost($extralabels, &$object, $onlykey='')
 	{
 		global $_POST, $langs;
-		$nofillrequired='';// For error when required field left blank
+		$nofillrequired=0;// For error when required field left blank
 		$error_field_required = array();
 
 		if (is_array($this->attributes[$object->table_element]['label'])) $extralabels=$this->attributes[$object->table_element]['label'];
@@ -1881,7 +1892,8 @@ class ExtraFields
 				if ($this->attributes[$object->table_element]['required'][$key])	// Value is required
 				{
 					// Check if empty without using GETPOST, value can be alpha, int, array, etc...
-					if ((! is_array($_POST["options_".$key]) && empty($_POST["options_".$key]) && $_POST["options_".$key] != '0')
+				    if ((! is_array($_POST["options_".$key]) && empty($_POST["options_".$key]) && $this->attributes[$object->table_element]['type'][$key] != 'select' && $_POST["options_".$key] != '0')
+				        || (! is_array($_POST["options_".$key]) && empty($_POST["options_".$key]) && $this->attributes[$object->table_element]['type'][$key] == 'select')
 						|| (is_array($_POST["options_".$key]) && empty($_POST["options_".$key])))
 					{
 						//print 'ccc'.$value.'-'.$this->attributes[$object->table_element]['required'][$key];
@@ -1889,7 +1901,6 @@ class ExtraFields
 						$error_field_required[] = $langs->transnoentitiesnoconv($value);
 					}
 				}
-
 				if (in_array($key_type,array('date')))
 				{
 					// Clean parameters

@@ -226,7 +226,7 @@ class Project extends CommonObject
         $sql.= ", " . ($this->socid > 0 ? $this->socid : "null");
         $sql.= ", " . $user->id;
         $sql.= ", ".(is_numeric($this->statut) ? $this->statut : '0');
-        $sql.= ", ".(is_numeric($this->opp_status) ? $this->opp_status : 'NULL');
+        $sql.= ", ".((is_numeric($this->opp_status) && $this->opp_status > 0) ? $this->opp_status : 'NULL');
         $sql.= ", ".(is_numeric($this->opp_percent) ? $this->opp_percent : 'NULL');
         $sql.= ", " . ($this->public ? 1 : 0);
         $sql.= ", '".$this->db->idate($now)."'";
@@ -378,7 +378,7 @@ class Project extends CommonObject
                 		if (file_exists($olddir))
                 		{
 							include_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-							$res=dol_move($olddir, $newdir);
+							$res=@rename($olddir, $newdir);
 							if (! $res)
                 			{
 							    $langs->load("errors");
@@ -582,7 +582,7 @@ class Project extends CommonObject
 		}
         elseif ($type == 'project_task')
 		{
-			$sql = "SELECT DISTINCT pt.rowid FROM " . MAIN_DB_PREFIX . "projet_task as pt, " . MAIN_DB_PREFIX . "projet_task_time as ptt WHERE pt.rowid = ptt.fk_task AND pt.fk_projet IN (". $ids .")";
+			$sql = "SELECT DISTINCT pt.rowid FROM " . MAIN_DB_PREFIX . "projet_task as pt WHERE pt.fk_projet IN (". $ids .")";
 		}
 		elseif ($type == 'project_task_time')	// Case we want to duplicate line foreach user
 		{
