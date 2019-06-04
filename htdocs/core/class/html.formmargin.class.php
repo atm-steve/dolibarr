@@ -28,8 +28,15 @@
  */
 class FormMargin
 {
-    var $db;
-    var $error;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
     /**
@@ -40,8 +47,6 @@ class FormMargin
     function __construct($db)
     {
         $this->db = $db;
-
-        return 1;
     }
 
 
@@ -91,7 +96,7 @@ class FormMargin
 				$line->pa_ht = $line->subprice * (1 - ($line->remise_percent / 100));
 			}
 
-			$pv = $line->qty * $line->subprice * (1 - $line->remise_percent / 100);
+			$pv = $line->total_ht;
 			$pa_ht = ($pv < 0 ? - $line->pa_ht : $line->pa_ht);      // We choosed to have line->pa_ht always positive in database, so we guess the correct sign
 			$pa = $line->qty * $pa_ht;
 
@@ -275,6 +280,5 @@ class FormMargin
 		print '</table>';
 		print '</div>';
 	}
-
 }
 

@@ -1,9 +1,9 @@
 <?php
 /* Copyright (C) 2001-2004 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2015 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@inodbox.com>
  * Copyright (C) 2012-2016 Juanjo Menent        <jmenent@2byte.es>
- * Copyright (C) 2015-2018 Alexandre Spangaro   <aspangaro@zendsi.com>
+ * Copyright (C) 2015-2019 Alexandre Spangaro   <aspangaro@open-dsi.fr>
  * Copyright (C) 2015      Marcos García        <marcosgdf@gmail.com>
  * Copyright (C) 2016      Josep Lluís Amador   <joseplluis@lliuretic.cat>
  *
@@ -97,6 +97,7 @@ $projectid=$id;	// For backward compatibility
 $object = new Project($db);
 
 include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php';  // Must be include, not include_once
+if(! empty($conf->global->PROJECT_ALLOW_COMMENT_ON_PROJECT) && method_exists($object, 'fetchComments') && empty($object->comments)) $object->fetchComments();
 
 // Security check
 $socid=$object->socid;
@@ -216,6 +217,14 @@ print '<td class="titlefield tdtop">'.$langs->trans("Description").'</td><td>';
 print nl2br($object->description);
 print '</td></tr>';
 
+// Bill time
+if (! empty($conf->global->PROJECT_BILL_TIME_SPENT))
+{
+	print '<tr><td>'.$langs->trans("BillTime").'</td><td>';
+	print yn($object->bill_time);
+	print '</td></tr>';
+}
+
 // Categories
 if($conf->categorie->enabled) {
     print '<tr><td valign="middle">'.$langs->trans("Categories").'</td><td>';
@@ -290,8 +299,8 @@ $listofreferent=array(
 	'title'=>"ListSupplierProposalsAssociatedProject",
 	'class'=>'SupplierProposal',
 	'table'=>'supplier_proposal',
-	'datefieldname'=>'date',
-    'urlnew'=>DOL_URL_ROOT.'/supplier_proposal/card.php?action=create&projectid='.$id.'&socid='.$socid,
+	'datefieldname'=>'date_valid',
+	'urlnew'=>DOL_URL_ROOT.'/supplier_proposal/card.php?action=create&projectid='.$id,	// No socid parameter here, the socid is often the customer and we create a supplier object
     'lang'=>'supplier_proposal',
     'buttonnew'=>'AddSupplierProposal',
     'testnew'=>$user->rights->supplier_proposal->creer,
@@ -410,7 +419,7 @@ $listofreferent=array(
     'name'=>"SocialContribution",
     'title'=>"ListSocialContributionAssociatedProject",
     'class'=>'ChargeSociales',
-    'margin'=>'add',
+    'margin'=>'minus',
     'table'=>'chargesociales',
     'datefieldname'=>'date_ech',
     'disableamount'=>0,
@@ -427,7 +436,7 @@ $listofreferent=array(
 	'table'=>'projet_task',
 	'datefieldname'=>'task_date',
 	'disableamount'=>0,
-    'urlnew'=>DOL_URL_ROOT.'/projet/tasks.php?id='.$id,
+    'urlnew'=>DOL_URL_ROOT.'/projet/tasks/time.php?id='.$id,
     'buttonnew'=>'AddTimeSpent',
     'testnew'=>$user->rights->projet->creer,
     'test'=>($conf->projet->enabled && $user->rights->projet->lire && empty($conf->global->PROJECT_HIDE_TASKS))),
@@ -450,7 +459,7 @@ $listofreferent=array(
 	'disableamount'=>0,
 	'urlnew'=>DOL_URL_ROOT.'/compta/salaries/card.php?action=create&projectid='.$id,
 	'lang'=>'salaries',
-	'buttonnew'=>'AddSalariesPayment',
+	'buttonnew'=>'AddSalaryPayment',
 	'testnew'=>$user->rights->salaries->write,
 	'test'=>$conf->salaries->enabled && $user->rights->salaries->read),
 'variouspayment'=>array(
@@ -461,11 +470,11 @@ $listofreferent=array(
 	'datefieldname'=>'datev',
 	'margin'=>'minus',
 	'disableamount'=>0,
-    'urlnew'=>DOL_URL_ROOT.'/compta/bank/various_payment/card.php?action=create&projectid='.$id.'&socid='.$socid,
+    'urlnew'=>DOL_URL_ROOT.'/compta/bank/various_payment/card.php?action=create&projectid='.$id,
     'lang'=>'banks',
     'buttonnew'=>'AddVariousPayment',
     'testnew'=>$user->rights->banque->modifier,
-    'test'=>$conf->banque->enabled && $user->rights->banque->lire),
+    'test'=>$conf->banque->enabled && $user->rights->banque->lire && empty($conf->global->BANK_USE_OLD_VARIOUS_PAYMENT)),
 /* No need for this, available on dedicated tab "Agenda/Events"
 'agenda'=>array(
 	'name'=>"Agenda",
@@ -488,7 +497,6 @@ $resHook = $hookmanager->executeHooks('completeListOfReferent', $parameters, $ob
 if(!empty($hookmanager->resArray)) {
 
 	$listofreferent = array_merge($listofreferent, $hookmanager->resArray);
-
 }
 
 if ($action=="addelement")
@@ -528,10 +536,10 @@ if (! $showdatefilter)
 	print '<input type="hidden" name="action" value="view">';
 	print '<table class="center"><tr>';
 	print '<td>'.$langs->trans("From").' ';
-	print $form->select_date($dates,'dates',0,0,1,'',1,0,1);
+	print $form->selectDate($dates, 'dates', 0, 0, 1, '', 1, 0);
 	print '</td>';
 	print '<td>'.$langs->trans("to").' ';
-	print $form->select_date($datee,'datee',0,0,1,'',1,0,1);
+	print $form->selectDate($datee, 'datee', 0, 0, 1, '', 1, 0);
 	print '</td>';
 	print '<td>';
 	print '<input type="submit" name="refresh" value="'.$langs->trans("Refresh").'" class="button">';
@@ -547,11 +555,8 @@ if (! $showdatefilter)
 
 // Show balance for whole project
 
-$langs->load("suppliers");
-$langs->load("bills");
-$langs->load("orders");
-$langs->load("proposals");
-$langs->load("margins");
+$langs->loadLangs(array("suppliers", "bills", "orders", "proposals", "margins"));
+
 if (!empty($conf->stock->enabled)) $langs->load('stocks');
 
 print load_fiche_titre($langs->trans("Profit"), '', 'title_accountancy');
@@ -564,8 +569,6 @@ print '<td align="right" width="100">'.$langs->trans("AmountHT").'</td>';
 print '<td align="right" width="100">'.$langs->trans("AmountTTC").'</td>';
 print '</tr>';
 
-$var = false;
-
 foreach ($listofreferent as $key => $value)
 {
 	$name=$langs->trans($value['name']);
@@ -576,7 +579,7 @@ foreach ($listofreferent as $key => $value)
 	$qualified=$value['test'];
 	$margin = $value['margin'];
 	$project_field = $value['project_field'];
-	if ($qualified && isset($margin))		// If this element must be included into profit calculation ($margin is 'minus' or 'plus')
+	if ($qualified && isset($margin))		// If this element must be included into profit calculation ($margin is 'minus' or 'plus' or 'auto')
 	{
 		$element = new $classname($db);
 
@@ -597,11 +600,23 @@ foreach ($listofreferent as $key => $value)
 				$element->fetch($idofelement);
 				if ($idofelementuser) $elementuser->fetch($idofelementuser);
 
-                // Special cases
+				// Define if record must be used for total or not
+				$qualifiedfortotal=true;
+				if ($key == 'invoice')
+				{
+				    if (! empty($element->close_code) && $element->close_code == 'replaced') $qualifiedfortotal=false;	// Replacement invoice, do not include into total
+				}
+				if ($key == 'propal')
+				{
+				    if ($element->statut == Propal::STATUS_NOTSIGNED) $qualifiedfortotal=false;	// Refused proposal must not be included in total
+				}
+
 				if ($tablename != 'expensereport_det' && method_exists($element, 'fetch_thirdparty')) $element->fetch_thirdparty();
-				if ($tablename == 'don' || $tablename == 'chargesociales') $total_ht_by_line=$element->amount;
+
+				// Define $total_ht_by_line
+				if ($tablename == 'don' || $tablename == 'chargesociales' || $tablename == 'payment_various' || $tablename == 'payment_salary') $total_ht_by_line=$element->amount;
+				elseif ($tablename == 'fichinter') $total_ht_by_line=$element->getAmount();
 				elseif ($tablename == 'stock_mouvement') $total_ht_by_line=$element->price*abs($element->qty);
-				else if($tablename == 'fichinter') $total_ht_by_line=$element->getAmount();
 				elseif ($tablename == 'projet_task')
 				{
 					if ($idofelementuser)
@@ -617,16 +632,9 @@ foreach ($listofreferent as $key => $value)
 				}
 				else $total_ht_by_line=$element->total_ht;
 
-				$qualifiedfortotal=true;
-				if ($key == 'invoice')
-				{
-					if (! empty($element->close_code) && $element->close_code == 'replaced') $qualifiedfortotal=false;	// Replacement invoice, do not include into total
-				}
-
-				if ($qualifiedfortotal) $total_ht = $total_ht + $total_ht_by_line;
-
-				if ($tablename == 'don' || $tablename == 'chargesociales') $total_ttc_by_line=$element->amount;
-				else if($tablename == 'fichinter') $total_ttc_by_line=$element->getAmount();
+				// Define $total_ttc_by_line
+				if ($tablename == 'don' || $tablename == 'chargesociales' || $tablename == 'payment_various' || $tablename == 'payment_salary') $total_ttc_by_line=$element->amount;
+				elseif ($tablename == 'fichinter') $total_ttc_by_line=$element->getAmount();
 				elseif ($tablename == 'stock_mouvement') $total_ttc_by_line=$element->price*abs($element->qty);
 				elseif ($tablename == 'projet_task')
 				{
@@ -635,7 +643,22 @@ foreach ($listofreferent as $key => $value)
 				}
 				else $total_ttc_by_line=$element->total_ttc;
 
-				if ($qualifiedfortotal) $total_ttc = $total_ttc + $total_ttc_by_line;
+				// Change sign of $total_ht_by_line and $total_ttc_by_line for some cases
+				if ($tablename == 'payment_various')
+				{
+			        if ($element->sens == 1)
+			        {
+			            $total_ht_by_line = -$total_ht_by_line;
+			            $total_ttc_by_line = -$total_ttc_by_line;
+			        }
+				}
+
+				// Add total if we have to
+				if ($qualifiedfortotal)
+				{
+				    $total_ht = $total_ht + $total_ht_by_line;
+				    $total_ttc = $total_ttc + $total_ttc_by_line;
+				}
 			}
 
 			// Each element with at least one line is output
@@ -646,23 +669,14 @@ foreach ($listofreferent as $key => $value)
 			// Calculate margin
 			if ($qualifiedforfinalprofit)
 			{
-				if ($margin=="add")
-				{
-					$balance_ht+= $total_ht;
-					$balance_ttc+= $total_ttc;
-				}
-				else
-				{
-					$balance_ht-= $total_ht;
-					$balance_ttc-= $total_ttc;
-				}
-
-				// Show $total_ht & $total_ttc -- add a minus when necessary
-				if ($margin!="add")
+			    if ($margin != "add")
 				{
 					$total_ht = -$total_ht;
 					$total_ttc = -$total_ttc;
 				}
+
+				$balance_ht += $total_ht;
+				$balance_ttc += $total_ttc;
 			}
 
 			print '<tr class="oddeven">';
@@ -687,8 +701,8 @@ foreach ($listofreferent as $key => $value)
 // and the final balance
 print '<tr class="liste_total">';
 print '<td align="right" colspan=2 >'.$langs->trans("Profit").'</td>';
-print '<td align="right" >'.price($balance_ht).'</td>';
-print '<td align="right" >'.price($balance_ttc).'</td>';
+print '<td align="right" >'.price(price2num($balance_ht, 'MT')).'</td>';
+print '<td align="right" >'.price(price2num($balance_ttc, 'MT')).'</td>';
 print '</tr>';
 
 print "</table>";
@@ -713,6 +727,9 @@ foreach ($listofreferent as $key => $value)
     $testnew=$value['testnew'];
 	$project_field=$value['project_field'];
 
+	$exclude_select_element = array('payment_various');
+	if (!empty($value['exclude_select_element'])) $exclude_select_element[] = $value['exclude_select_element'];
+
 	if ($qualified)
 	{
 		// If we want the project task array to have details of users
@@ -732,7 +749,7 @@ foreach ($listofreferent as $key => $value)
 		    if (! empty($conf->global->PROJECT_OTHER_THIRDPARTY_ID_TO_ADD_ELEMENTS)) $idtofilterthirdparty.=','.$conf->global->PROJECT_OTHER_THIRDPARTY_ID_TO_ADD_ELEMENTS;
 		}
 
-       	if (empty($conf->global->PROJECT_LINK_ON_OVERWIEW_DISABLED) && $idtofilterthirdparty && !in_array($tablename, array('payment_various')))
+       	if (empty($conf->global->PROJECT_LINK_ON_OVERWIEW_DISABLED) && $idtofilterthirdparty && !in_array($tablename,$exclude_select_element))
        	{
 			$selectList=$formproject->select_element($tablename, $idtofilterthirdparty, 'minwidth300',-2,!empty($project_field)?$project_field:'fk_projet');
 			if (! $selectList || ($selectList<0))
@@ -759,9 +776,9 @@ foreach ($listofreferent as $key => $value)
 		if (empty($conf->global->PROJECT_CREATE_ON_OVERVIEW_DISABLED) && $urlnew)
 		{
 			$addform.='<div class="inline-block valignmiddle">';
-			if ($testnew) $addform.='<a class="buttonxxx" href="'.$urlnew.'">'.($buttonnew?$langs->trans($buttonnew):$langs->trans("Create")).'</a>';
+			if ($testnew) $addform.='<a class="buttonxxx" href="'.$urlnew.'">'.($buttonnew?$langs->trans($buttonnew):$langs->trans("Create")).' <span class="fa fa-plus-circle valignmiddle"></span></a>';
 			elseif (empty($conf->global->MAIN_BUTTON_HIDE_UNAUTHORIZED)) {
-				$addform.='<a class="buttonxxx buttonRefused" disabled="disabled" href="#">'.($buttonnew?$langs->trans($buttonnew):$langs->trans("Create")).'</a>';
+				$addform.='<a class="buttonxxx buttonRefused" disabled="disabled" href="#">'.($buttonnew?$langs->trans($buttonnew):$langs->trans("Create")).' <span class="fa fa-plus-circle valignmiddle"></span></a>';
 			}
             $addform.='<div>';
 		}
@@ -841,8 +858,7 @@ foreach ($listofreferent as $key => $value)
 					$expensereport->fetch($element->fk_expensereport);
 				}
 
-				//print 'xxx'.$tablename;
-				//print $classname;
+				//print 'xxx'.$tablename.'yyy'.$classname;
 
 				if ($breakline && $saved_third_id != $element->thirdparty->id)
 				{
@@ -870,7 +886,9 @@ foreach ($listofreferent as $key => $value)
 				{
 					if (empty($conf->global->PROJECT_DISABLE_UNLINK_FROM_OVERVIEW) || $user->admin)		// PROJECT_DISABLE_UNLINK_FROM_OVERVIEW is empty by defaut, so this test true
 					{
-						print '<a href="' . $_SERVER["PHP_SELF"] . '?id=' . $projectid . '&action=unlink&tablename=' . $tablename . '&elementselect=' . $element->id . '">' . img_picto($langs->trans('Unlink'), 'editdelete') . '</a>';
+						print '<a href="' . $_SERVER["PHP_SELF"] . '?id=' . $projectid . '&action=unlink&tablename=' . $tablename . '&elementselect=' . $element->id . '" class="reposition">';
+						print img_picto($langs->trans('Unlink'), 'unlink');
+						print '</a>';
 					}
 				}
 				print "</td>\n";
@@ -893,16 +911,16 @@ foreach ($listofreferent as $key => $value)
 
 					$element_doc = $element->element;
 					$filename=dol_sanitizeFileName($element->ref);
-					$filedir=$conf->{$element_doc}->dir_output . '/' . dol_sanitizeFileName($element->ref);
+					$filedir=$conf->{$element_doc}->multidir_output[$element->entity] . '/' . dol_sanitizeFileName($element->ref);
 
 					if ($element_doc === 'order_supplier') {
 						$element_doc='commande_fournisseur';
-						$filedir = $conf->fournisseur->commande->dir_output.'/'.dol_sanitizeFileName($element->ref);
+						$filedir = $conf->fournisseur->commande->multidir_output[$element->entity].'/'.dol_sanitizeFileName($element->ref);
 					}
 					else if ($element_doc === 'invoice_supplier') {
 						$element_doc='facture_fournisseur';
 						$filename = get_exdir($element->id,2,0,0,$element,'product').dol_sanitizeFileName($element->ref);
-						$filedir = $conf->fournisseur->facture->dir_output.'/'.get_exdir($element->id,2,0,0,$element,'invoice_supplier').dol_sanitizeFileName($element->ref);
+						$filedir = $conf->fournisseur->facture->multidir_output[$element->entity].'/'.get_exdir($element->id,2,0,0,$element,'invoice_supplier').dol_sanitizeFileName($element->ref);
 					}
 
 					print '<div class="inline-block valignmiddle">'.$formfile->getDocumentsLink($element_doc, $filename, $filedir).'</div>';
@@ -1015,6 +1033,16 @@ foreach ($listofreferent as $key => $value)
 					{
 						$total_ht_by_line=$element->total_ht;
 					}
+
+					// Change sign of $total_ht_by_line and $total_ttc_by_line for some cases
+					if ($tablename == 'payment_various')
+					{
+					    if ($element->sens == 0)
+					    {
+					        $total_ht_by_line = -$total_ht_by_line;
+					    }
+					}
+
 					print '<td align="right">';
 					if ($othermessage) print $othermessage;
 					if (isset($total_ht_by_line))
@@ -1052,6 +1080,16 @@ foreach ($listofreferent as $key => $value)
 					{
 						$total_ttc_by_line=$element->total_ttc;
 					}
+
+					// Change sign of $total_ht_by_line and $total_ttc_by_line for some cases
+					if ($tablename == 'payment_various')
+					{
+					    if ($element->sens == 0)
+					    {
+					        $total_ttc_by_line = -$total_ttc_by_line;
+					    }
+					}
+
 					print '<td align="right">';
 					if ($othermessage) print $othermessage;
 					if (isset($total_ttc_by_line))
@@ -1181,10 +1219,8 @@ if ($conf->use_javascript_ajax)
 	print $comboenhancement;
 }
 
-
-
+// End of page
 llxFooter();
-
 $db->close();
 
 

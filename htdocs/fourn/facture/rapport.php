@@ -26,6 +26,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/modules/rapport/pdf_paiement_fourn.class.p
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 
+$langs->loadLangs(array('bills'));
+
 // Security check
 $socid='';
 if (! empty($user->societe_id)) $socid=$user->societe_id;
@@ -146,6 +148,7 @@ if ($year)
         print '<td align="right">'.$langs->trans("Size").'</td>';
         print '<td align="right">'.$langs->trans("Date").'</td>';
         print '</tr>';
+
         if (is_resource($handle))
         {
             while (($file = readdir($handle))!==false)
@@ -165,6 +168,6 @@ if ($year)
     }
 }
 
+// End of page
 llxFooter();
-
 $db->close();

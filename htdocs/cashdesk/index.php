@@ -28,8 +28,8 @@
 require_once '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
 
-$langs->load("admin");
-$langs->load("cashdesk");
+// Load translation files required by the page
+$langs->loadLangs(array("admin","cashdesk"));
 
 // Test if user logged
 if ( $_SESSION['uid'] > 0 )
@@ -41,6 +41,8 @@ if ( $_SESSION['uid'] > 0 )
 $usertxt=GETPOST('user','',1);
 $err=GETPOST("err");
 
+// Instantiate hooks of thirdparty module only if not already define
+$hookmanager->initHooks(array('cashdeskloginpage'));
 
 /*
  * View
@@ -51,6 +53,15 @@ $formproduct=new FormProduct($db);
 
 $arrayofcss=array('/cashdesk/css/style.css');
 top_htmlhead('','',0,0,'',$arrayofcss);
+
+// Execute hook getLoginPageOptions (for table)
+$parameters=array('entity' => GETPOST('entity','int'));
+$reshook = $hookmanager->executeHooks('getLoginPageOptions',$parameters);    // Note that $action and $object may have been modified by some hooks.
+if (is_array($hookmanager->resArray) && ! empty($hookmanager->resArray)) {
+	$morelogincontent = $hookmanager->resArray; // (deprecated) For compatibility
+} else {
+	$morelogincontent = $hookmanager->resPrint;
+}
 ?>
 
 <body>
@@ -63,7 +74,7 @@ top_htmlhead('','',0,0,'',$arrayofcss);
 <?php
 if (! empty($mysoc->logo_small))
 {
-    print '<img class="logopos" alt="Logo company" src="'.DOL_URL_ROOT.'/viewimage.php?modulepart=mycompany&amp;file='.urlencode('/thumbs/'.$mysoc->logo_small).'">';
+    print '<img class="logopos" alt="Logo company" src="'.DOL_URL_ROOT.'/viewimage.php?modulepart=mycompany&amp;file='.urlencode('logos/thumbs/'.$mysoc->logo_small).'">';
 }
 else
 {
@@ -91,6 +102,24 @@ else
 		<td class="label1"><?php echo $langs->trans("Password"); ?></td>
 		<td><input name="pwdPassword" class="texte_login" type="password" value="" /></td>
 	</tr>
+
+<?php
+if (! empty($morelogincontent)) {
+	if (is_array($morelogincontent)) {
+		foreach ($morelogincontent as $format => $option)
+		{
+			if ($format == 'table') {
+				echo '<!-- Option by hook -->';
+				echo $option;
+			}
+		}
+	}
+	else {
+		echo '<!-- Option by hook -->';
+		echo $morelogincontent;
+	}
+}
+?>
 
 	<tr>
 		<td colspan="2">

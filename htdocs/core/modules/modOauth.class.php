@@ -40,19 +40,19 @@ class modOauth extends DolibarrModules
      *
      *  @param      DoliDB      $db      Database handler
      */
-    function  __construct($db)
+    function __construct($db)
     {
         $this->db = $db ;
         $this->numero = 66000;
         // Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
         // It is used to group modules in module setup page
         $this->family = "interface";
-        $this->module_position = 510;
+        $this->module_position = '31';
         // Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
         $this->name = preg_replace('/^mod/i','',get_class($this));
         // Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
         $this->description = "Enable OAuth authentication";
-		// Possible values for version are: 'development', 'experimental', 'dolibarr' or 'dolibarr_deprecated' or version
+        // Possible values for version are: 'development', 'experimental', 'dolibarr' or 'dolibarr_deprecated' or version
         $this->version = 'dolibarr';
         $this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
         // Name of image file used for this module.
@@ -119,8 +119,6 @@ class modOauth extends DolibarrModules
         //                        'user'=>0);                     // 0=Menu for internal users, 1=external users, 2=both
 
         //$r++;
-
-
     }
 
 

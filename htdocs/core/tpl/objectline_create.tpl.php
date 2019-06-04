@@ -1,11 +1,12 @@
 <?php
-/* Copyright (C) 2010-2012	Regis Houssin		<regis.houssin@capnetworks.com>
+/* Copyright (C) 2010-2012	Regis Houssin		<regis.houssin@inodbox.com>
  * Copyright (C) 2010-2014	Laurent Destailleur	<eldy@users.sourceforge.net>
  * Copyright (C) 2012-2013	Christophe Battarel	<christophe.battarel@altairis.fr>
  * Copyright (C) 2012       Cédric Salvador     <csalvador@gpcsolutions.fr>
  * Copyright (C) 2014		Florian Henry		<florian.henry@open-concept.pro>
  * Copyright (C) 2014       Raphaël Doursenaud  <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2015-2016	Marcos García		<marcosgdf@gmail.com>
+ * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,6 +160,7 @@ if ($nolinesbefore) {
 ?>
 <tr class="pair nodrag nodrop nohoverpair<?php echo ($nolinesbefore || $object->element=='contrat')?'':' liste_titre_create'; ?>">
 <?php
+// Adds a line numbering column
 if (! empty($conf->global->MAIN_VIEW_LINE_NUMBER)) {
 	$coldisplay=2;
 	?>
@@ -260,19 +262,21 @@ else {
 		    if ($senderissupplier != 2)
 		    {
     			$ajaxoptions=array(
-    					'update' => array('qty'=>'qty','remise_percent' => 'discount','idprod' => 'idprod'),	// html id tags that will be edited with which ajax json response key
-    					'option_disabled' => 'idthatdoesnotexists',					// html id to disable once select is done
-    					'warning' => $langs->trans("NoPriceDefinedForThisSupplier") // translation of an error saved into var 'warning' (for exemple shown we select a disabled option into combo)
+    					'update' => array('qty'=>'qty','remise_percent' => 'discount','idprod' => 'idprod'),	// html id tags that will be edited with each ajax json response key
+    					'option_disabled' => 'idthatdoesnotexists',						// html id to disable once select is done
+    					'warning' => $langs->trans("NoPriceDefinedForThisSupplier") 				// translation of an error saved into var 'warning' (for exemple shown we select a disabled option into combo)
     			);
     			$alsoproductwithnosupplierprice=0;
 		    }
 		    else
 		    {
-		        $ajaxoptions = array();
+		        $ajaxoptions = array(
+				'update' => array('remise_percent' => 'discount')				// html id tags that will be edited with each ajax json response key
+			);
 		        $alsoproductwithnosupplierprice=1;
 		    }
 
-			$form->select_produits_fournisseurs($object->socid, GETPOST('idprodfournprice'), 'idprodfournprice', '', '', $ajaxoptions, 1, $alsoproductwithnosupplierprice);
+		    $form->select_produits_fournisseurs($object->socid, GETPOST('idprodfournprice'), 'idprodfournprice', '', '', $ajaxoptions, 1, $alsoproductwithnosupplierprice, 'maxwidth300');
 		}
 		echo '<input type="hidden" name="pbq" id="pbq" value="">';
 		echo '</span>';
@@ -312,7 +316,7 @@ else {
 	if (! empty($conf->global->MAIN_INPUT_DESC_HEIGHT)) $nbrows=$conf->global->MAIN_INPUT_DESC_HEIGHT;
 	$toolbarname='dolibarr_details';
 	if (! empty($conf->global->FCKEDITOR_ENABLE_DETAILS_FULL)) $toolbarname='dolibarr_notes';
-	$doleditor=new DolEditor('dp_desc',GETPOST('dp_desc'),'',100,$toolbarname,'',false,true,$enabled,$nbrows,'98%');
+	$doleditor=new DolEditor('dp_desc', GETPOST('dp_desc'), '', (empty($conf->global->MAIN_DOLEDITOR_HEIGHT)?100:$conf->global->MAIN_DOLEDITOR_HEIGHT), $toolbarname, '', false, true, $enabled, $nbrows, '98%');
 	$doleditor->Create();
 
 	// Show autofill date for recuring invoices
@@ -481,16 +485,16 @@ if ((! empty($conf->service->enabled) || ($object->element == 'contrat')) && $da
 	if (! empty($object->element) && $object->element == 'contrat')
 	{
 		print $langs->trans("DateStartPlanned").' ';
-		$form->select_date($date_start,"date_start",$usehm,$usehm,1,"addproduct");
+		print $form->selectDate($date_start,"date_start",$usehm,$usehm,1,"addproduct");
 		print ' &nbsp; '.$langs->trans("DateEndPlanned").' ';
-		$form->select_date($date_end,"date_end",$usehm,$usehm,1,"addproduct");
+		print $form->selectDate($date_end,"date_end",$usehm,$usehm,1,"addproduct");
 	}
 	else
 	{
 		echo $langs->trans('ServiceLimitedDuration').' '.$langs->trans('From').' ';
-		echo $form->select_date($date_start,'date_start',empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,1,"addproduct",1,0,1);
+		print $form->selectDate($date_start, 'date_start', empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1, empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1, 1, "addproduct", 1, 0);
 		echo ' '.$langs->trans('to').' ';
-		echo $form->select_date($date_end,'date_end',empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1,1,"addproduct",1,0,1);
+		print $form->selectDate($date_end, 'date_end', empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1, empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?0:1, 1, "addproduct", 1, 0);
 	};
 	print '<script type="text/javascript">';
 	if (!$date_start) {

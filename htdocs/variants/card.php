@@ -1,5 +1,6 @@
 <?php
-/* Copyright (C) 2016	Marcos García	<marcosgdf@gmail.com>
+/* Copyright (C) 2016   Marcos García   <marcosgdf@gmail.com>
+ * Copyright (C) 2018   Frédéric France <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +51,7 @@ if ($_POST) {
 		$object->label = $label;
 
 		if ($object->update($user) < 1) {
-			setEventMessages($langs->trans('CoreErrorMessage'), null, 'errors');
+			setEventMessages($langs->trans('CoreErrorMessage'), $object->errors, 'errors');
 		} else {
 			setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
 			header('Location: '.dol_buildpath('/variants/card.php?id='.$id, 2));
@@ -79,7 +80,7 @@ if ($_POST) {
 				if ($objectval->update($user) > 0) {
 					setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
 				} else {
-					setEventMessage($langs->trans('CoreErrorMessage'), null, 'errors');
+					setEventMessage($langs->trans('CoreErrorMessage'), $objectval->errors, 'errors');
 				}
 			}
 		}
@@ -87,7 +88,6 @@ if ($_POST) {
 		header('Location: '.dol_buildpath('/variants/card.php?id='.$object->id, 2));
 		exit();
 	}
-
 }
 
 if ($confirm == 'yes') {
@@ -99,7 +99,7 @@ if ($confirm == 'yes') {
 
 		if ($res < 1 || ($object->delete() < 1)) {
 			$db->rollback();
-			setEventMessages($langs->trans('CoreErrorMessage'), null, 'errors');
+			setEventMessages($langs->trans('CoreErrorMessage'), $object->errors, 'errors');
 			header('Location: '.dol_buildpath('/variants/card.php?id='.$object->id, 2));
 		} else {
 			$db->commit();
@@ -113,7 +113,7 @@ if ($confirm == 'yes') {
 		if ($objectval->fetch($valueid) > 0) {
 
 			if ($objectval->delete() < 1) {
-				setEventMessages($langs->trans('CoreErrorMessage'), null, 'errors');
+				setEventMessages($langs->trans('CoreErrorMessage'), $objectval->errors, 'errors');
 			} else {
 				setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
 			}
@@ -132,11 +132,10 @@ if ($confirm == 'yes') {
 $langs->load('products');
 
 $title = $langs->trans('ProductAttributeName', dol_htmlentities($object->label));
-$var = false;
 
 llxHeader('', $title);
 
-//print_fiche_titre($title);
+//print load_fiche_titre($title);
 
 $h=0;
 $head[$h][0] = DOL_URL_ROOT.'/variants/card.php?id='.$object->id;
@@ -242,7 +241,7 @@ if ($action == 'edit') { ?>
 
 	<?php
 
-	print_fiche_titre($langs->trans("PossibleValues"));
+	print load_fiche_titre($langs->trans("PossibleValues"));
 
 	if ($action == 'edit_value') {
 		print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
@@ -299,5 +298,6 @@ if ($action == 'edit') { ?>
 	<?php
 }
 
+// End of page
 llxFooter();
 $db->close();

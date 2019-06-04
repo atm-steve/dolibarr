@@ -2,7 +2,7 @@
 /* Copyright (C) 2003-2006	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2004-2011	Laurent Destailleur		<eldy@users.sourceforge.net>
  * Copyright (C) 2005		Simon Tosser			<simon@kornog-computing.com>
- * Copyright (C) 2005-2014	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2014	Regis Houssin			<regis.houssin@inodbox.com>
  * Copyright (C) 2016	    Francis Appels       	<francis.appels@yahoo.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,7 @@ if (! $sortorder) $sortorder="DESC";
 $backtopage=GETPOST('backtopage','alpha');
 
 // Security check
+//$result=restrictedArea($user,'stock', $id, 'entrepot&stock');
 $result=restrictedArea($user,'stock');
 
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
@@ -298,12 +299,11 @@ else
 				$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id,$langs->trans("DeleteAWarehouse"),$langs->trans("ConfirmDeleteWarehouse",$object->libelle),"confirm_delete",'',0,2);
 			}
 
-			if (! $formconfirm) {
-			    $parameters = array();
-			    $reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-			    if (empty($reshook)) $formconfirm.=$hookmanager->resPrint;
-			    elseif ($reshook > 0) $formconfirm=$hookmanager->resPrint;
-			}
+			// Call Hook formConfirm
+			$parameters = array();
+			$reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+			if (empty($reshook)) $formconfirm.=$hookmanager->resPrint;
+			elseif ($reshook > 0) $formconfirm=$hookmanager->resPrint;
 
 			// Print form confirm
 			print $formconfirm;
@@ -333,7 +333,6 @@ else
 				print '<tr><td>'.$langs->trans("ParentWarehouse").'</td><td>';
 				print $e->getNomUrl(3);
 				print '</td></tr>';
-
 			}
 
 			// Description
@@ -385,7 +384,7 @@ else
 			if ($lastmovementdate)
 			{
 			    print dol_print_date($lastmovementdate,'dayhour').' ';
-			    print '(<a href="'.DOL_URL_ROOT.'/product/stock/mouvement.php?id='.$object->id.'">'.$langs->trans("FullList").'</a>)';
+			    print '(<a href="'.DOL_URL_ROOT.'/product/stock/movement_list.php?id='.$object->id.'">'.$langs->trans("FullList").'</a>)';
 			}
 			else
 			{
@@ -508,7 +507,7 @@ else
 					print '<td>'.$objp->produit.'</td>';
 
 					print '<td align="right">';
-					$valtoshow=price2num($objp->value, 'MS');
+					$valtoshow=price(price2num($objp->value, 'MS'), 0, '', 0, 0);  // TODO replace with a qty() function
 					print empty($valtoshow)?'0':$valtoshow;
 					print '</td>';
 					$totalunit+=$objp->value;
@@ -568,7 +567,6 @@ else
                 print '<td class="liste_total">&nbsp;</td>';
 				print '<td class="liste_total">&nbsp;</td>';
 				print '</tr>';
-
 			}
 			else
 			{
@@ -659,7 +657,6 @@ else
 			print '</div>';
 
 			print '</form>';
-
 		}
 	}
 }
@@ -707,7 +704,6 @@ if ($conf->global->MAIN_FEATURES_LEVEL >= 2)
 	}
 }
 
-
+// End of page
 llxFooter();
-
 $db->close();

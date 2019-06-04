@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2006-2007	Laurent Destailleur		<eldy@users.sourceforge.net>
  * Copyright (C) 2007		Rodolphe Quiedeville	<rodolphe@quiedeville.org>
- * Copyright (C) 2012		Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2012		Regis Houssin			<regis.houssin@inodbox.com>
  * Copyright (C) 2016		Gilles Poirier 		   <glgpoirier@gmail.com>
  * Copyright (C) 2018		charlene Benke 		   <charlie@patas-monkey.com>
 
@@ -76,11 +76,10 @@ function fichinter_prepare_head($object)
 				foreach($resources as $resource_obj)
 				{
 					$linked_resources = $object->getElementResources('fichinter',$object->id,$resource_obj);
-					
 				}
 			}
 		}
-				
+
    		$head[$h][0] = DOL_URL_ROOT.'/resource/element_resource.php?element=fichinter&element_id='.$object->id;
 		$head[$h][1] = $langs->trans("Resources");
 		if ($nbResource > 0) $head[$h][1].= ' <span class="badge">'.$nbResource.'</span>';
@@ -163,13 +162,19 @@ function fichinter_admin_prepare_head()
 		return $head;
 }
 
-function fichinter_rec_prepare_head ($object)
+/**
+ * Prepare array with list of tabs
+ *
+ * @param   Object  $object     Object related to tabs
+ * @return  array               Array of tabs to show
+ */
+function fichinter_rec_prepare_head($object)
 {
 	global $langs, $conf; //, $user;
-	
+
 	$h = 0;
 	$head = array();
-	
+
 	$head[$h][0] = DOL_URL_ROOT.'/fichinter/card-rec.php?id='.$object->id;
 	$head[$h][1] = $langs->trans("CardFichinter");
 	$head[$h][2] = 'card';
@@ -182,4 +187,3 @@ function fichinter_rec_prepare_head ($object)
 
 	return $head;
 }
-

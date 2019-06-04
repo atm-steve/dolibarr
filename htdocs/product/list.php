@@ -1,9 +1,9 @@
 <?php
 /* Copyright (C) 2001-2006  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2018  Laurent Destailleur     <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@inodbox.com>
  * Copyright (C) 2012-2016  Marcos García           <marcosgdf@gmail.com>
- * Copyright (C) 2013-2016	Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2013-2019	Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2013-2015  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2013       Jean Heimburger         <jean@tiaris.info>
  * Copyright (C) 2013       Cédric Salvador         <csalvador@gpcsolutions.fr>
@@ -50,11 +50,11 @@ $confirm=GETPOST('confirm','alpha');
 $toselect = GETPOST('toselect', 'array');
 
 $sall=trim((GETPOST('search_all', 'alphanohtml')!='')?GETPOST('search_all', 'alphanohtml'):GETPOST('sall', 'alphanohtml'));
-$search_ref=GETPOST("search_ref");
-$search_barcode=GETPOST("search_barcode");
-$search_label=GETPOST("search_label");
-$search_type = GETPOST("search_type",'int');
-$search_sale = GETPOST("search_sale");
+$search_ref=GETPOST("search_ref", 'alpha');
+$search_barcode=GETPOST("search_barcode", 'alpha');
+$search_label=GETPOST("search_label", 'alpha');
+$search_type = GETPOST("search_type", 'int');
+$search_sale = GETPOST("search_sale", 'int');
 $search_categ = GETPOST("search_categ",'int');
 $search_tosell = GETPOST("search_tosell", 'int');
 $search_tobuy = GETPOST("search_tobuy", 'int');
@@ -66,11 +66,11 @@ $search_accountancy_code_buy = GETPOST("search_accountancy_code_buy",'alpha');
 $optioncss = GETPOST('optioncss','alpha');
 $type=GETPOST("type","int");
 
-//Show/hide child products. Hidden by default
-if (!$_POST) {
-	$search_hidechildproducts = 'on';
+//Show/hide child products
+if (!empty($conf->variants->enabled) && ! empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD)) {
+	$show_childproducts = GETPOST('search_show_childproducts');
 } else {
-	$search_hidechildproducts = GETPOST('search_hidechildproducts');
+	$show_childproducts = '';
 }
 
 $diroutputmassaction=$conf->product->dir_output . '/temp/massgeneration/'.$user->id;
@@ -99,7 +99,7 @@ $form=new Form($db);
 
 // fetch optionals attributes and labels
 $extralabels = $extrafields->fetch_name_optionals_label('product');
-$search_array_options=$extrafields->getOptionalsFromPost($extralabels,'','search_');
+$search_array_options=$extrafields->getOptionalsFromPost($object->table_element,'','search_');
 
 if (empty($action)) $action='list';
 
@@ -159,9 +159,13 @@ $arrayfields=array(
 	//'pfp.ref_fourn'=>array('label'=>$langs->trans("RefSupplier"), 'checked'=>1, 'enabled'=>(! empty($conf->barcode->enabled))),
 	'p.label'=>array('label'=>$langs->trans("Label"), 'checked'=>1),
 	'p.fk_product_type'=>array('label'=>$langs->trans("Type"), 'checked'=>0, 'enabled'=>(! empty($conf->produit->enabled) && ! empty($conf->service->enabled))),
-	'p.barcode'=>array('label'=>$langs->trans("Gencod"), 'checked'=>($contextpage != 'servicelist'), 'enabled'=>(! empty($conf->barcode->enabled))),
+	'p.barcode'=>array('label'=>$langs->trans("Gencod"), 'checked'=>1, 'enabled'=>(! empty($conf->barcode->enabled))),
 	'p.duration'=>array('label'=>$langs->trans("Duration"), 'checked'=>($contextpage != 'productlist'), 'enabled'=>(! empty($conf->service->enabled))),
-	'p.sellprice'=>array('label'=>$langs->trans("SellingPrice"), 'checked'=>1, 'enabled'=>empty($conf->global->PRODUIT_MULTIPRICES)),
+    'p.weight'=>array('label'=>$langs->trans("Weight"), 'checked'=>0, 'enabled'=>(! empty($conf->produit->enabled))),
+    'p.length'=>array('label'=>$langs->trans("Length"), 'checked'=>0, 'enabled'=>(! empty($conf->produit->enabled))),
+    'p.surface'=>array('label'=>$langs->trans("Surface"), 'checked'=>0, 'enabled'=>(! empty($conf->produit->enabled))),
+    'p.volume'=>array('label'=>$langs->trans("Volume"), 'checked'=>0, 'enabled'=>(! empty($conf->produit->enabled))),
+    'p.sellprice'=>array('label'=>$langs->trans("SellingPrice"), 'checked'=>1, 'enabled'=>empty($conf->global->PRODUIT_MULTIPRICES)),
 	'p.minbuyprice'=>array('label'=>$langs->trans("BuyingPriceMinShort"), 'checked'=>1, 'enabled'=>(! empty($user->rights->fournisseur->lire))),
 	'p.numbuyprice'=>array('label'=>$langs->trans("BuyingPriceNumShort"), 'checked'=>0, 'enabled'=>(! empty($user->rights->fournisseur->lire))),
 	'p.pmp'=>array('label'=>$langs->trans("PMPValueShort"), 'checked'=>0, 'enabled'=>(! empty($user->rights->fournisseur->lire))),
@@ -219,6 +223,8 @@ if (empty($reshook))
 		$search_tobuy="";
 		$search_tobatch='';
 		//$search_type='';						// There is 2 types of list: a list of product and a list of services. No list with both. So when we clear search criteria, we must keep the filter on type.
+
+		$show_childproducts = '';
 		$search_accountancy_code_sell='';
 		$search_accountancy_code_buy='';
 		$search_array_options=array();
@@ -261,11 +267,11 @@ else
 }
 
 $sql = 'SELECT DISTINCT p.rowid, p.ref, p.label, p.fk_product_type, p.barcode, p.price, p.price_ttc, p.price_base_type, p.entity,';
-$sql.= ' p.fk_product_type, p.duration, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,';
+$sql.= ' p.fk_product_type, p.duration, p.weight, p.length, p.surface, p.volume, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,';
 $sql.= ' p.tobatch, p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, p.accountancy_code_buy,';
-$sql.= ' p.datec as date_creation, p.tms as date_update, p.pmp,';
+$sql.= ' p.datec as date_creation, p.tms as date_update, p.pmp, p.stock,';
 $sql.= ' MIN(pfp.unitprice) as minsellprice';
-if (!empty($conf->variants->enabled) && $search_hidechildproducts && ($search_type === 0)) {
+if (!empty($conf->variants->enabled) && (!empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD) && ! $show_childproducts )) {
 	$sql .= ', pac.rowid prod_comb_id';
 }
 // Add fields from extrafields
@@ -282,9 +288,11 @@ if (! empty($search_categ) || ! empty($catid)) $sql.= ' LEFT JOIN '.MAIN_DB_PREF
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_fournisseur_price as pfp ON p.rowid = pfp.fk_product";
 // multilang
 if (! empty($conf->global->MAIN_MULTILANGS)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_lang as pl ON pl.fk_product = p.rowid AND pl.lang = '".$langs->getDefaultLang() ."'";
-if (!empty($conf->variants->enabled) && $search_hidechildproducts && ($search_type === 0)) {
+
+if (!empty($conf->variants->enabled) && (!empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD) && ! $show_childproducts )) {
 	$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."product_attribute_combination pac ON pac.fk_product_child = p.rowid";
 }
+
 
 $sql.= ' WHERE p.entity IN ('.getEntity('product').')';
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
@@ -294,6 +302,11 @@ if (dol_strlen($search_type) && $search_type != '-1')
 	if ($search_type == 1) $sql.= " AND p.fk_product_type = 1";
 	else $sql.= " AND p.fk_product_type <> 1";
 }
+
+if (!empty($conf->variants->enabled) && (!empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD) && ! $show_childproducts )) {
+	$sql .= " AND pac.rowid IS NULL";
+}
+
 if ($search_ref)     $sql .= natural_search('p.ref', $search_ref);
 if ($search_label)   $sql .= natural_search('p.label', $search_label);
 if ($search_barcode) $sql .= natural_search('p.barcode', $search_barcode);
@@ -308,7 +321,7 @@ if ($fourn_id > 0)  $sql.= " AND pfp.fk_soc = ".$fourn_id;
 if ($search_tobatch != '' && $search_tobatch >= 0)   $sql.= " AND p.tobatch = ".$db->escape($search_tobatch);
 if ($search_accountancy_code_sell) $sql.= natural_search('p.accountancy_code_sell', $search_accountancy_code_sell);
 if ($search_accountancy_code_buy)  $sql.= natural_search('p.accountancy_code_buy', $search_accountancy_code_buy);
-if (!empty($conf->variants->enabled) && $search_hidechildproducts && ($search_type === 0)) $sql .= " AND pac.rowid IS NULL";
+
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 // Add where from hooks
@@ -316,9 +329,12 @@ $parameters=array();
 $reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
 $sql.= " GROUP BY p.rowid, p.ref, p.label, p.barcode, p.price, p.price_ttc, p.price_base_type,";
-$sql.= " p.fk_product_type, p.duration, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,";
-$sql.= ' p.datec, p.tms, p.entity, p.tobatch, p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, p.accountancy_code_buy, p.pmp';
-if (!empty($conf->variants->enabled) && $search_hidechildproducts && ($search_type === 0)) $sql .= ', pac.rowid';
+$sql.= " p.fk_product_type, p.duration, p.weight, p.length, p.surface, p.volume, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,";
+$sql.= ' p.datec, p.tms, p.entity, p.tobatch, p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, p.accountancy_code_buy, p.pmp, p.stock';
+
+if (!empty($conf->variants->enabled) && (!empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD) && ! $show_childproducts )) {
+	$sql .= ', pac.rowid';
+}
 // Add fields from extrafields
 if (! empty($extrafields->attributes[$object->table_element]['label'])) {
 	foreach ($extrafields->attributes[$object->table_element]['label'] as $key => $val) $sql.=($extrafields->attributes[$object->table_element]['type'][$key] != 'separate' ? ", ef.".$key : '');
@@ -345,6 +361,7 @@ if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 $sql.= $db->plimit($limit + 1, $offset);
 
 $resql = $db->query($sql);
+
 if ($resql)
 {
 	$num = $db->num_rows($resql);
@@ -392,6 +409,7 @@ if ($resql)
 	if ($search_tobuy != '') $param.="&search_tobuy=".urlencode($search_tobuy);
 	if ($fourn_id > 0) $param.=($fourn_id?"&fourn_id=".$fourn_id:"");
 	if ($seach_categ) $param.=($search_categ?"&search_categ=".urlencode($search_categ):"");
+	if ($show_childproducts) $param.=($show_childproducts?"&search_show_childproducts=".urlencode($show_childproducts):"");
 	if ($type != '') $param.='&type='.urlencode($type);
 	if ($search_type != '') $param.='&search_type='.urlencode($search_type);
 	if ($optioncss != '') $param.='&optioncss='.urlencode($optioncss);
@@ -467,10 +485,10 @@ if ($resql)
 	}
 
 	//Show/hide child products. Hidden by default
-	if (!empty($conf->variants->enabled) && $search_type === 0) {
+	if (!empty($conf->variants->enabled) && !empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD )) {
 		$moreforfilter.='<div class="divsearchfield">';
-		$moreforfilter.= '<input type="checkbox" id="search_hidechildproducts" name="search_hidechildproducts" value="on"'.($search_hidechildproducts ? 'checked="checked"' : '').'>';
-		$moreforfilter.= ' <label for="search_hidechildproducts">'.$langs->trans('HideChildProducts').'</label>';
+		$moreforfilter.= '<input type="checkbox" id="search_show_childproducts" name="search_show_childproducts"'.($show_childproducts ? 'checked="checked"':'').'>';
+		$moreforfilter.= ' <label for="search_show_childproducts">'.$langs->trans('ShowChildProducts').'</label>';
 		$moreforfilter.='</div>';
 	}
 
@@ -529,12 +547,37 @@ if ($resql)
 		print '</td>';
 	}
 	// Duration
-	if (! empty($arrayfields['p.duration']['checked']))
+	if ((string) $type == '1' && ! empty($arrayfields['p.duration']['checked']))
 	{
 		print '<td class="liste_titre">';
-		print '&nbsp;';
 		print '</td>';
 	}
+
+	// Weight
+	if (! empty($arrayfields['p.weight']['checked']))
+	{
+	    print '<td class="liste_titre">';
+	    print '</td>';
+	}
+	// Length
+	if (! empty($arrayfields['p.length']['checked']))
+	{
+	    print '<td class="liste_titre">';
+	    print '</td>';
+	}
+	// Surface
+	if (! empty($arrayfields['p.surface']['checked']))
+	{
+	    print '<td class="liste_titre">';
+	    print '</td>';
+	}
+	// Volume
+	if (! empty($arrayfields['p.volume']['checked']))
+	{
+	    print '<td class="liste_titre">';
+	    print '</td>';
+	}
+
 	// Sell price
 	if (! empty($arrayfields['p.sellprice']['checked']))
 	{
@@ -629,7 +672,11 @@ if ($resql)
 	if (! empty($arrayfields['p.label']['checked']))  print_liste_field_titre($arrayfields['p.label']['label'], $_SERVER["PHP_SELF"],"p.label","",$param,"",$sortfield,$sortorder);
 	if (! empty($arrayfields['p.fk_product_type']['checked']))  print_liste_field_titre($arrayfields['p.fk_product_type']['label'], $_SERVER["PHP_SELF"],"p.fk_product_type","",$param,"",$sortfield,$sortorder);
 	if (! empty($arrayfields['p.barcode']['checked']))  print_liste_field_titre($arrayfields['p.barcode']['label'], $_SERVER["PHP_SELF"],"p.barcode","",$param,"",$sortfield,$sortorder);
-	if (! empty($arrayfields['p.duration']['checked']))  print_liste_field_titre($arrayfields['p.duration']['label'], $_SERVER["PHP_SELF"],"p.duration","",$param,'align="center"',$sortfield,$sortorder);
+	if ((string) $type == '1' && ! empty($arrayfields['p.duration']['checked']))  print_liste_field_titre($arrayfields['p.duration']['label'], $_SERVER["PHP_SELF"],"p.duration","",$param,'align="center"',$sortfield,$sortorder);
+	if (! empty($arrayfields['p.weight']['checked']))  print_liste_field_titre($arrayfields['p.weight']['label'], $_SERVER["PHP_SELF"], "p.weight", "", $param, 'align="center"', $sortfield, $sortorder);
+	if (! empty($arrayfields['p.length']['checked']))  print_liste_field_titre($arrayfields['p.length']['label'], $_SERVER["PHP_SELF"], "p.length", "", $param, 'align="center"', $sortfield, $sortorder);
+	if (! empty($arrayfields['p.surface']['checked']))  print_liste_field_titre($arrayfields['p.surface']['label'], $_SERVER["PHP_SELF"], "p.surface", "", $param, 'align="center"', $sortfield, $sortorder);
+	if (! empty($arrayfields['p.volume']['checked']))  print_liste_field_titre($arrayfields['p.volume']['label'], $_SERVER["PHP_SELF"], "p.volume", "", $param, 'align="center"', $sortfield, $sortorder);
 	if (! empty($arrayfields['p.sellprice']['checked']))  print_liste_field_titre($arrayfields['p.sellprice']['label'], $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['p.minbuyprice']['checked']))  print_liste_field_titre($arrayfields['p.minbuyprice']['label'], $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['p.numbuyprice']['checked']))  print_liste_field_titre($arrayfields['p.numbuyprice']['label'], $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
@@ -726,7 +773,7 @@ if ($resql)
 		// Label
 		if (! empty($arrayfields['p.label']['checked']))
 		{
-			print '<td class="tdoverflowmax200">'.dol_trunc($obj->label,40).'</td>';
+			print '<td class="tdoverflowmax200">'.dol_trunc($obj->label, 40).'</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
 
@@ -745,20 +792,66 @@ if ($resql)
 		}
 
 		// Duration
-		if (! empty($arrayfields['p.duration']['checked']))
+		if ((string) $type == '1' && ! empty($arrayfields['p.duration']['checked']))
 		{
 			print '<td align="center">';
-			if (preg_match('/([^a-z]+)[a-z]/i',$obj->duration))
+
+			if (preg_match('/([^a-z]+)[a-z]$/i',$obj->duration))
 			{
-				if (preg_match('/([^a-z]+)y/i',$obj->duration,$regs)) print $regs[1].' '.$langs->trans("DurationYear");
-				elseif (preg_match('/([^a-z]+)m/i',$obj->duration,$regs)) print $regs[1].' '.$langs->trans("DurationMonth");
-				elseif (preg_match('/([^a-z]+)w/i',$obj->duration,$regs)) print $regs[1].' '.$langs->trans("DurationWeek");
-				elseif (preg_match('/([^a-z]+)d/i',$obj->duration,$regs)) print $regs[1].' '.$langs->trans("DurationDay");
-				//elseif (preg_match('/([^a-z]+)h/i',$obj->duration,$regs)) print $regs[1].' '.$langs->trans("DurationHour");
-				else print $obj->duration;
+				$duration_value	= substr($obj->duration,0,dol_strlen($obj->duration)-1);
+				$duration_unit	= substr($obj->duration,-1);
+
+				if ((float) $duration_value > 1)
+				{
+				    $dur=array("i"=>$langs->trans("Minutes"),"h"=>$langs->trans("Hours"),"d"=>$langs->trans("Days"),"w"=>$langs->trans("Weeks"),"m"=>$langs->trans("Months"),"y"=>$langs->trans("Years"));
+				}
+				else if ((float) $duration_value > 0)
+				{
+				    $dur=array("i"=>$langs->trans("Minute"),"h"=>$langs->trans("Hour"),"d"=>$langs->trans("Day"),"w"=>$langs->trans("Week"),"m"=>$langs->trans("Month"),"y"=>$langs->trans("Year"));
+				}
+				print $duration_value;
+				print (! empty($duration_unit) && isset($dur[$duration_unit]) ? ' '.$langs->trans($dur[$duration_unit]) : '');
 			}
+			else
+			{
+				print $obj->duration;
+			}
+
 			print '</td>';
 			if (! $i) $totalarray['nbfield']++;
+		}
+
+		// Weight
+		if (! empty($arrayfields['p.weight']['checked']))
+		{
+		    print '<td align="center">';
+		    print $obj->weight;
+		    print '</td>';
+		    if (! $i) $totalarray['nbfield']++;
+		}
+		// Length
+		if (! empty($arrayfields['p.length']['checked']))
+		{
+		    print '<td align="center">';
+		    print $obj->length;
+		    print '</td>';
+		    if (! $i) $totalarray['nbfield']++;
+		}
+		// Surface
+		if (! empty($arrayfields['p.surface']['checked']))
+		{
+		    print '<td align="center">';
+		    print $obj->surface;
+		    print '</td>';
+		    if (! $i) $totalarray['nbfield']++;
+		}
+		// Volume
+		if (! empty($arrayfields['p.volume']['checked']))
+		{
+		    print '<td align="center">';
+		    print $obj->volume;
+		    print '</td>';
+		    if (! $i) $totalarray['nbfield']++;
 		}
 
 		// Sell price
@@ -960,6 +1053,6 @@ else
 	dol_print_error($db);
 }
 
-
+// End of page
 llxFooter();
 $db->close();

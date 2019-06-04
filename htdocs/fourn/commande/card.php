@@ -2,12 +2,13 @@
 /* Copyright (C) 2004-2006 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2015 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2005      Eric	Seigne          <eric.seigne@ryxeo.com>
- * Copyright (C) 2005-2016 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2016 Regis Houssin        <regis.houssin@inodbox.com>
  * Copyright (C) 2010-2015 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2011-2018 Philippe Grand       <philippe.grand@atoo-net.com>
  * Copyright (C) 2012-2016 Marcos García        <marcosgdf@gmail.com>
  * Copyright (C) 2013      Florian Henry        <florian.henry@open-concept.pro>
  * Copyright (C) 2014      Ion Agorria          <ion@agorria.com>
+ * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
  *
  * This	program	is free	software; you can redistribute it and/or modify
  * it under	the	terms of the GNU General Public	License	as published by
@@ -220,7 +221,6 @@ if (empty($reshook))
 				//$newstatus=3;  // Submited
 				// TODO If there is at least one reception, we can set to Received->Received partially
 				$newstatus=4;  // Received partially
-
 			}
 			else if ($object->statut == 6) $newstatus=2;	// Canceled->Approved
 			else if ($object->statut == 7) $newstatus=3;	// Canceled->Process running
@@ -308,7 +308,7 @@ if (empty($reshook))
 		// Extrafields
 		$extrafieldsline = new ExtraFields($db);
 		$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
-		$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline, $predef);
+		$array_options = $extrafieldsline->getOptionalsFromPost($object->table_element_line, $predef);
 		// Unset extrafield
 		if (is_array($extralabelsline)) {
 			// Get extra fields
@@ -350,9 +350,7 @@ if (empty($reshook))
 
 				if ($res = $prodcomb->fetchByProductCombination2ValuePairs($idprod, $combinations)) {
 					$idprod = $res->fk_product_child;
-				} 
-				else 
-				{
+				} else {
 					setEventMessages($langs->trans('ErrorProductCombinationNotFound'), null, 'errors');
 					$error ++;
 				}
@@ -401,7 +399,11 @@ if (empty($reshook))
 			{
 				$label = $productsupplier->label;
 
-				$desc = $productsupplier->description;
+				// if we use supplier description of the products
+				if(!empty($productsupplier->desc_supplier) && !empty($conf->global->PRODUIT_FOURN_TEXTS)) {
+				    $desc = $productsupplier->desc_supplier;
+				} else $desc = $productsupplier->description;
+
 				if (trim($product_desc) != trim($desc)) $desc = dol_concatdesc($desc, $product_desc);
 
 				$type = $productsupplier->type;
@@ -616,7 +618,7 @@ if (empty($reshook))
 			// Extrafields Lines
 			$extrafieldsline = new ExtraFields($db);
 			$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
-			$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline);
+			$array_options = $extrafieldsline->getOptionalsFromPost($object->table_element_line);
 			// Unset extrafield POST Data
 			if (is_array($extralabelsline)) {
 				foreach ($extralabelsline as $key => $value) {
@@ -697,7 +699,6 @@ if (empty($reshook))
 			dol_print_error($db,$object->error);
 			exit;
 			}
-
 	}
 
 	// Remove a product line
@@ -1440,7 +1441,6 @@ if ($action=='create')
 
 		// Object source contacts list
 		$srccontactslist = $objectsrc->liste_contact(- 1, 'external', 1);
-
 	}
 	else
 	{
@@ -1540,7 +1540,7 @@ if ($action=='create')
 	print '<td>';
 	$usehourmin=0;
 	if (! empty($conf->global->SUPPLIER_ORDER_USE_HOUR_FOR_DELIVERY_DATE)) $usehourmin=1;
-	$form->select_date($datelivraison?$datelivraison:-1,'liv_',$usehourmin,$usehourmin,'',"set");
+	print $form->selectDate($datelivraison?$datelivraison:-1, 'liv_', $usehourmin, $usehourmin, '', "set");
 	print '</td></tr>';
 
 	// Bank Account
@@ -1697,7 +1697,6 @@ elseif (! empty($object->id))
 	if ($action	== 'delete')
 	{
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('DeleteOrder'), $langs->trans('ConfirmDeleteOrder'), 'confirm_delete', '', 0, 2);
-
 	}
 
 	// Clone confirmation
@@ -1709,7 +1708,6 @@ elseif (! empty($object->id))
 		);
 		// Paiement incomplet. On demande si motif = escompte ou autre
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id,$langs->trans('CloneOrder'),$langs->trans('ConfirmCloneOrder',$object->ref),'confirm_clone',$formquestion,'yes',1);
-
 	}
 
 	// Confirmation de la validation
@@ -1788,14 +1786,12 @@ elseif (! empty($object->id))
 	if ($action	== 'refuse')
 	{
 		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF']."?id=$object->id",$langs->trans("DenyingThisOrder"),$langs->trans("ConfirmDenyingThisOrder",$object->ref),"confirm_refuse", '', 0, 1);
-
 	}
 
 	// Confirmation de l'annulation
 	if ($action	== 'cancel')
 	{
 		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF']."?id=$object->id",$langs->trans("Cancel"),$langs->trans("ConfirmCancelThisOrder",$object->ref),"confirm_cancel", '', 0, 1);
-
 	}
 
 	// Confirmation de l'envoi de la commande
@@ -1803,7 +1799,6 @@ elseif (! empty($object->id))
 	{
 		$date_com = dol_mktime(GETPOST('rehour'),GETPOST('remin'),GETPOST('resec'),GETPOST("remonth"),GETPOST("reday"),GETPOST("reyear"));
 		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF']."?id=".$object->id."&datecommande=".$date_com."&methode=".$_POST["methodecommande"]."&comment=".urlencode($_POST["comment"]), $langs->trans("MakeOrder"),$langs->trans("ConfirmMakeOrder",dol_print_date($date_com,'day')),"confirm_commande",'',0,2);
-
 	}
 
 	// Confirmation to delete line
@@ -1834,6 +1829,7 @@ elseif (! empty($object->id))
 	$morehtmlref.=$form->editfieldval("RefSupplier", 'ref_supplier', $object->ref_supplier, $object, $user->rights->fournisseur->commande->creer, 'string', '', null, null, '', 1);
 	// Thirdparty
 	$morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $object->thirdparty->getNomUrl(1);
+	if (empty($conf->global->MAIN_DISABLE_OTHER_LINK) && $object->thirdparty->id > 0) $morehtmlref.=' (<a href="'.DOL_URL_ROOT.'/fourn/commande/list.php?socid='.$object->thirdparty->id.'&search_company='.urlencode($object->thirdparty->name).'">'.$langs->trans("OtherOrders").'</a>)';
 	// Project
 	if (! empty($conf->projet->enabled))
 	{
@@ -1953,7 +1949,7 @@ elseif (! empty($object->id))
 	print '</td><td>';
 	if ($action == 'editmode')
 	{
-		$form->form_modes_reglement($_SERVER['PHP_SELF'].'?id='.$object->id,$object->mode_reglement_id,'mode_reglement_id');
+		$form->form_modes_reglement($_SERVER['PHP_SELF'].'?id='.$object->id,$object->mode_reglement_id,'mode_reglement_id','DBIT', 1, 1);
 	}
 	else
 	{
@@ -2042,7 +2038,7 @@ elseif (! empty($object->id))
 		print '<input type="hidden" name="action" value="setdate_livraison">';
 		$usehourmin=0;
 		if (! empty($conf->global->SUPPLIER_ORDER_USE_HOUR_FOR_DELIVERY_DATE)) $usehourmin=1;
-		$form->select_date($object->date_livraison?$object->date_livraison:-1,'liv_',$usehourmin,$usehourmin,'',"setdate_livraison");
+		print $form->selectDate($object->date_livraison?$object->date_livraison:-1, 'liv_', $usehourmin, $usehourmin, '', "setdate_livraison");
 		print '<input type="submit" class="button" value="'.$langs->trans('Modify').'">';
 		print '</form>';
 	}
@@ -2118,7 +2114,7 @@ elseif (! empty($object->id))
 
 	// Total
 	$alert = '';
-	if($object->total_ht < $object->thirdparty->supplier_order_min_amount) {
+	if (! empty($conf->global->ORDER_MANAGE_MIN_AMOUNT) && $object->total_ht < $object->thirdparty->supplier_order_min_amount) {
 		$alert = ' ' . img_warning($langs->trans('OrderMinAmount').': '.price($object->thirdparty->supplier_order_min_amount));
 	}
 	print '<tr><td class="titlefieldmiddle">'.$langs->trans("AmountHT").'</td>';
@@ -2392,14 +2388,11 @@ elseif (! empty($object->id))
 				}
 
 				// Create bill
-				if (! empty($conf->facture->enabled))
+				if (! empty($conf->fournisseur->enabled) && ($object->statut >= 2 && $object->statut != 7 && $object->billed != 1))  // statut 2 means approved, 7 means canceled
 				{
-					if (! empty($conf->fournisseur->enabled) && ($object->statut >= 2 && $object->statut != 7 && $object->billed != 1))  // statut 2 means approved, 7 means canceled
+					if ($user->rights->fournisseur->facture->creer)
 					{
-						if ($user->rights->fournisseur->facture->creer)
-						{
-							print '<a class="butAction" href="'.DOL_URL_ROOT.'/fourn/facture/card.php?action=create&amp;origin='.$object->element.'&amp;originid='.$object->id.'&amp;socid='.$object->socid.'">'.$langs->trans("CreateBill").'</a>';
-						}
+						print '<a class="butAction" href="'.DOL_URL_ROOT.'/fourn/facture/card.php?action=create&amp;origin='.$object->element.'&amp;originid='.$object->id.'&amp;socid='.$object->socid.'">'.$langs->trans("CreateBill").'</a>';
 					}
 				}
 
@@ -2445,7 +2438,6 @@ elseif (! empty($object->id))
 				{
 					print '<a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=delete">'.$langs->trans("Delete").'</a>';
 				}
-
 			}
 
 			print "</div>";
@@ -2466,7 +2458,7 @@ elseif (! empty($object->id))
 			print '<tr><td>'.$langs->trans("OrderDate").'</td><td>';
 			$date_com = dol_mktime(GETPOST('rehour','int'), GETPOST('remin','int'), GETPOST('resec','int'), GETPOST('remonth','int'), GETPOST('reday','int'), GETPOST('reyear','int'));
 			if (empty($date_com)) $date_com=dol_now();
-			print $form->select_date($date_com,'',1,1,'',"commande",1,1,1);
+			print $form->selectDate($date_com, '', 1, 1, '', "commande", 1, 1);
 			print '</td></tr>';
 
 			print '<tr><td>'.$langs->trans("OrderMode").'</td><td>';
@@ -2522,7 +2514,7 @@ elseif (! empty($object->id))
 				//print '<tr class="liste_titre"><td colspan="2">'.$langs->trans("Receive").'</td></tr>';
 				print '<tr><td>'.$langs->trans("DeliveryDate").'</td><td>';
 				$datepreselected = dol_now();
-				print $form->select_date($datepreselected,'',1,1,'',"commande",1,1,1);
+				print $form->selectDate($datepreselected, '', 1, 1, '', "commande", 1, 1);
 				print "</td></tr>\n";
 
 				print "<tr><td class=\"fieldrequired\">".$langs->trans("Delivery")."</td><td>\n";
@@ -2720,7 +2712,6 @@ elseif (! empty($object->id))
 							}
 						}
 					}
-
 				}
 				elseif ($user_status_code == "PERMISSION_DENIED")
 				{
@@ -2770,6 +2761,7 @@ elseif (! empty($object->id))
 		$modelmail='order_supplier_send';
 		$defaulttopic='SendOrderRef';
 		$diroutput = $conf->fournisseur->commande->dir_output;
+		$autocopy='MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO';
 		$trackid = 'sor'.$object->id;
 
 		include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
@@ -2778,5 +2770,4 @@ elseif (! empty($object->id))
 
 // End of page
 llxFooter();
-
 $db->close();

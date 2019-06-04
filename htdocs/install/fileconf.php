@@ -4,7 +4,7 @@
  * Copyright (C) 2004-2012  Laurent Destailleur     <eldy@users.sourceforge.net>
  * Copyright (C) 2004       Benoit Mortier          <benoit.mortier@opensides.be>
  * Copyright (C) 2004       Sebastien DiCintio      <sdicintio@ressource-toi.org>
- * Copyright (C) 2005-2011  Regis Houssin           <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2011  Regis Houssin           <regis.houssin@inodbox.com>
  * Copyright (C) 2016       Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,8 +36,7 @@ $err=0;
 $setuplang=GETPOST("selectlang",'',3)?GETPOST("selectlang",'',3):(isset($_GET["lang"])?$_GET["lang"]:'auto');
 $langs->setDefaultLang($setuplang);
 
-$langs->load("install");
-$langs->load("errors");
+$langs->loadLangs(array("install", "errors"));
 
 dolibarr_install_syslog("- fileconf: entering fileconf.php page");
 
@@ -172,7 +171,7 @@ if (! empty($force_install_message))
 		?>
 		<ul>
 			<li>/var/lib/dolibarr/documents</li>
-			<li>C:/My Documents/dolibarr/</li>
+			<li>C:/My Documents/dolibarr/documents</li>
 		</ul>
 		</td>
 	</tr>
@@ -201,6 +200,7 @@ if (! empty($force_install_message))
 		<ul>
 			<li>http://localhost/</li>
 			<li>http://www.myserver.com:8180/dolibarr</li>
+			<li>https://www.myvirtualfordolibarr.com/</li>
 		</ul>
 		</td>
 	</tr>
@@ -382,7 +382,7 @@ if (! empty($force_install_message))
 				} ?>
 			>
 		</td>
-		<td class="comment"><?php echo $langs->trans("DatabasePrefix"); ?></td>
+		<td class="comment"><?php echo $langs->trans("DatabasePrefixDescription"); ?></td>
 	</tr>
 
 	<tr class="hidesqlite">
@@ -503,19 +503,19 @@ if (! empty($force_install_message))
 			       name="db_pass_root"
 			       class="needroot"
 			       value="<?php
-			       // If $force_install_databaserootpass is on, we don't want to set password here, we just show '***'. Real value will be extracted from the forced install file at step1.
-			       $autofill = ((!empty($force_install_databaserootpass)) ? str_pad('', strlen($force_install_databaserootpass), '*') : @$db_pass_root);
-			       if (!empty($dolibarr_main_prod)) {
-				       $autofill = '';
-			       }
-				   // Do not autofill password if instance is a production instance
-			       if (!empty($_SERVER["SERVER_NAME"]) && !in_array($_SERVER["SERVER_NAME"],
-					       array('127.0.0.1', 'localhost', 'localhostgit'))
-			       ) {
-				       $autofill = '';
-			       }    // Do not autofill password for remote access
-			       print dol_escape_htmltag($autofill);
-			       ?>"
+			        // If $force_install_databaserootpass is on, we don't want to set password here, we just show '***'. Real value will be extracted from the forced install file at step1.
+			        $autofill = ((!empty($force_install_databaserootpass)) ? str_pad('', strlen($force_install_databaserootpass), '*') : @$db_pass_root);
+			        if (!empty($dolibarr_main_prod)) {
+				        $autofill = '';
+			        }
+				    // Do not autofill password if instance is a production instance
+			        if (!empty($_SERVER["SERVER_NAME"]) && !in_array($_SERVER["SERVER_NAME"],
+					    array('127.0.0.1', 'localhost', 'localhostgit'))
+			        ) {
+				        $autofill = '';
+			        }    // Do not autofill password for remote access
+			        print dol_escape_htmltag($autofill);
+			        ?>"
 				<?php if ($force_install_noedit > 0 && ! empty($force_install_databaserootpass)) {
 					print ' disabled';     // May be removed by javascript
 				} ?>

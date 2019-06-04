@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2005		Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2006-2015	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2010-2012	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2010-2012	Regis Houssin			<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -173,9 +173,11 @@ if ($id > 0 || ! empty($ref))
 {
 	if ($object->fetch($id, $ref) > 0)
 	{
+		if(! empty($conf->global->PROJECT_ALLOW_COMMENT_ON_TASK) && method_exists($object, 'fetchComments') && empty($object->comments)) $object->fetchComments();
 	    $id = $object->id;     // So when doing a search from ref, id is also set correctly.
 
 		$result=$projectstatic->fetch($object->fk_project);
+		if(! empty($conf->global->PROJECT_ALLOW_COMMENT_ON_PROJECT) && method_exists($projectstatic, 'fetchComments') && empty($projectstatic->comments)) $projectstatic->fetchComments();
 		if (! empty($projectstatic->socid)) $projectstatic->fetch_thirdparty();
 
 		$object->project = clone $projectstatic;
@@ -324,7 +326,7 @@ if ($id > 0 || ! empty($ref))
 		dol_fiche_end();
 
 		/*
-		 * Lignes de contacts
+		 * Lines of contacts
 		 */
 /*
 		// Contacts lines (modules that overwrite templates must declare this into descriptor)
@@ -338,16 +340,15 @@ if ($id > 0 || ! empty($ref))
 
 		/*
 		 * Add a new contact line
-		 * Non affiche en mode modification de ligne
 		 */
 		print '<table class="noborder" width="100%">';
 
 		if ($action != 'editline' && $user->rights->projet->creer)
 		{
 			print '<tr class="liste_titre">';
-			print '<td>'.$langs->trans("Source").'</td>';
+			print '<td>'.$langs->trans("Nature").'</td>';
 			print '<td>'.$langs->trans("ThirdParty").'</td>';
-			print '<td>'.$langs->trans("TaskContact").'</td>';
+			print '<td>'.$langs->trans("Users").'</td>';
 			print '<td>'.$langs->trans("ContactType").'</td>';
 			print '<td colspan="3">&nbsp;</td>';
 			print "</tr>\n";
@@ -505,7 +506,7 @@ if ($id > 0 || ! empty($ref))
 				{
 					print '&nbsp;';
 					print '<a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=deleteline&lineid='.$tab[$i]['rowid'].($withproject?'&withproject=1':'').'">';
-					print img_delete();
+					print img_picto($langs->trans('Unlink'), 'unlink');
 					print '</a>';
 				}
 				print '</td>';
@@ -516,7 +517,6 @@ if ($id > 0 || ! empty($ref))
 			}
 		}
 		print "</table>";
-
 	}
 	else
 	{
@@ -531,7 +531,6 @@ if (is_object($hookmanager))
 	$reshook=$hookmanager->executeHooks('formContactTpl',$parameters,$object,$action);
 }
 
-
+// End of page
 llxFooter();
-
 $db->close();

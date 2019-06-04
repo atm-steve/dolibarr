@@ -33,6 +33,7 @@ $id = GETPOST('id','int');
 $ref = GETPOST('ref','alpha');
 
 // Security check
+//$result=restrictedArea($user,'stock', $id, 'entrepot&stock');
 $result=restrictedArea($user,'stock');
 
 
@@ -73,6 +74,6 @@ dol_print_object_info($object);
 
 print '</div>';
 
+// End of page
 llxFooter();
-
 $db->close();

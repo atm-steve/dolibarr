@@ -49,7 +49,7 @@ class modAdherent extends DolibarrModules
         $this->numero = 310;
 
         $this->family = "hr";
-        $this->module_position = 20;
+        $this->module_position = '55';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
         $this->description = "Management of members of a foundation or association";
@@ -279,7 +279,7 @@ class modAdherent extends DolibarrModules
 			'a.civility'=>"Text",'a.lastname'=>"Text",'a.firstname'=>"Text",'a.login'=>"Text",'a.morphy'=>'Text','a.societe'=>'Text','a.address'=>"Text",
 			'a.zip'=>"Text",'a.town'=>"Text",'d.nom'=>"Text",'co.code'=>'Text','co.label'=>"Text",'a.phone'=>"Text",'a.phone_perso'=>"Text",'a.phone_mobile'=>"Text",
 			'a.email'=>"Text",'a.birth'=>"Date",'a.statut'=>"Status",'a.note_public'=>"Text",'a.note_private'=>"Text",'a.datec'=>'Date','a.datevalid'=>'Date',
-			'a.tms'=>'Date','a.datefin'=>'Date','ta.rowid'=>'List:adherent_type:libelle','ta.libelle'=>'Text','c.rowid'=>'Numeric','c.dateadh'=>'Date','c.subscription'=>'Numeric'
+			'a.tms'=>'Date','a.datefin'=>'Date','ta.rowid'=>'List:adherent_type:libelle::member_type','ta.libelle'=>'Text','c.rowid'=>'Numeric','c.dateadh'=>'Date','c.subscription'=>'Numeric'
 		);
         $this->export_entities_array[$r]=array(
 			'a.rowid'=>'member','a.civility'=>"member",'a.lastname'=>"member",'a.firstname'=>"member",'a.login'=>"member",'a.morphy'=>'member',
@@ -323,7 +323,7 @@ class modAdherent extends DolibarrModules
 			'a.datec'=>'DateCreation','a.datefin'=>'DateEndSubscription'
 		);
 		// Add extra fields
-		$sql="SELECT name, label, fieldrequired FROM ".MAIN_DB_PREFIX."extrafields WHERE elementtype = 'adherent' AND entity = ".$conf->entity;
+		$sql="SELECT name, label, fieldrequired FROM ".MAIN_DB_PREFIX."extrafields WHERE elementtype = 'adherent' AND entity IN (0,".$conf->entity.")";
 		$resql=$this->db->query($sql);
 		if ($resql)    // This can fail when class is used on old database (during migration for example)
 		{
@@ -347,22 +347,24 @@ class modAdherent extends DolibarrModules
 		);
 
         // Cronjobs
+        $arraydate=dol_getdate(dol_now());
+        $datestart=dol_mktime(22, 0, 0, $arraydate['mon'], $arraydate['mday'], $arraydate['year']);
         $this->cronjobs = array(
 			0=>array(
-				'label'=>'SendReminderForExpiredSubscription',
+				'label'=>'SendReminderForExpiredSubscriptionTitle',
 				'jobtype'=>'method', 'class'=>'adherents/class/adherent.class.php',
 				'objectname'=>'Adherent',
 				'method'=>'sendReminderForExpiredSubscription',
-				'parameters'=>'10',
-				'comment'=>'sendReminderForExpiredSubscription',
+				'parameters'=>'10;0',
+				'comment'=>'SendReminderForExpiredSubscription',
 				'frequency'=>1,
 				'unitfrequency'=> 3600 * 24,
 				'priority'=>50,
-				'status'=>0,
-				'test'=>true,
+				'status'=>1,
+				'test'=>'$conf->adherent->enabled',
+				'datestart'=>$datestart
 			),
         );
-
     }
 
 

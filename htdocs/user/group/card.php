@@ -1,9 +1,10 @@
 <?php
 /* Copyright (C) 2005		Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2005-2015	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2005-2017	Regis Houssin		<regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2017	Regis Houssin		<regis.houssin@inodbox.com>
  * Copyright (C) 2011		Herve Prot			<herve.prot@symeos.com>
  * Copyright (C) 2012		Florian Henry		<florian.henry@open-concept.pro>
+ * Copyright (C) 2018		Juanjo Menent		<jmenent@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,12 +35,15 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 $canreadperms=($user->admin || $user->rights->user->user->lire);
 $caneditperms=($user->admin || $user->rights->user->user->creer);
 $candisableperms=($user->admin || $user->rights->user->user->supprimer);
+$feature2 = 'user';
+
 // Advanced permissions
 if (! empty($conf->global->MAIN_USE_ADVANCED_PERMS))
 {
     $canreadperms=($user->admin || $user->rights->user->group_advance->read);
     $caneditperms=($user->admin || $user->rights->user->group_advance->write);
     $candisableperms=($user->admin || $user->rights->user->group_advance->delete);
+    $feature2 = 'group_advance';
 }
 
 // Load translation files required by page
@@ -54,7 +58,7 @@ $contextpage=GETPOST('contextpage','aZ')?GETPOST('contextpage','aZ'):'groupcard'
 $userid     = GETPOST('user', 'int');
 
 // Security check
-$result = restrictedArea($user, 'user', $id, 'usergroup&usergroup', 'user');
+$result = restrictedArea($user, 'user', $id, 'usergroup&usergroup', $feature2);
 
 // Users/Groups management only in master entity if transverse mode
 if (! empty($conf->multicompany->enabled) && $conf->entity > 1 && $conf->global->MULTICOMPANY_TRANSVERSE_MODE)
@@ -110,7 +114,7 @@ if (empty($reshook)) {
 		{
 			$object->fetch($id);
 			$object->delete();
-			header("Location: index.php?restore_lastsearch_values=1");
+			header("Location: ".DOL_URL_ROOT."/user/group/list.php?restore_lastsearch_values=1");
 			exit;
 		}
 		else
@@ -586,5 +590,6 @@ else
     }
 }
 
+// End of page
 llxFooter();
 $db->close();

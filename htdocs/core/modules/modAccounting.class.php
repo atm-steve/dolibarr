@@ -45,7 +45,7 @@ class modAccounting extends DolibarrModules
 		$this->numero = 50400;
 
 		$this->family = "financial";
-		$this->module_position = 610;
+		$this->module_position = '61';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i', '', get_class($this));
 		$this->description = "Advanced accounting management";
@@ -80,7 +80,7 @@ class modAccounting extends DolibarrModules
 				"MAIN_COMPANY_CODE_ALWAYS_REQUIRED",
 				"chaine",
 				"1",
-				"With this constants on, third party code is always required whatever is numbering module behaviour", 0, 'current', 0
+				"With this constants on, third party code is always required whatever is numbering module behaviour", 0, 'current', 1
 		);
 		$this->const[2] = array(
 				"MAIN_BANK_ACCOUNTANCY_CODE_ALWAYS_REQUIRED",
@@ -281,12 +281,12 @@ class modAccounting extends DolibarrModules
 		$this->import_tables_array[$r]=array('aa'=>MAIN_DB_PREFIX.'accounting_account');
 		$this->import_tables_creator_array[$r]=array('aa'=>'fk_user_author');    // Fields to store import user id
 		$this->import_fields_array[$r]=array('aa.fk_pcg_version'=>"Chartofaccounts*",'aa.account_number'=>"AccountAccounting*",'aa.label'=>"Label*",'aa.account_parent'=>"Accountparent","aa.fk_accounting_category"=>"AccountingCategory","aa.pcg_type"=>"Pcgtype*",'aa.pcg_subtype'=>'Pcgsubtype*','aa.active'=>'Status*','aa.datec'=>"DateCreation");
-		$this->import_regex_array[$r]=array('aa.fk_pcg_version'=>'pcg_version@'.MAIN_DB_PREFIX.'accounting_system','aa.account_number'=>'^\d{1,32}$','aa.label'=>'^.{1,255}$','aa.account_parent'=>'^\d{0,32}$','aa.fk_accounting_category'=>'rowid@'.MAIN_DB_PREFIX.'c_accounting_category','aa.pcg_type'=>'^.{1,20}$','aa.pcg_subtype'=>'^.{1,20}$','aa.active'=>'^0|1$','aa.datec'=>'^\d{4}-\d{2}-\d{2}$');
+		$this->import_regex_array[$r]=array('aa.fk_pcg_version'=>'pcg_version@'.MAIN_DB_PREFIX.'accounting_system','aa.account_number'=>'^.{1,32}$','aa.label'=>'^.{1,255}$','aa.account_parent'=>'^.{0,32}$','aa.fk_accounting_category'=>'rowid@'.MAIN_DB_PREFIX.'c_accounting_category','aa.pcg_type'=>'^.{1,20}$','aa.pcg_subtype'=>'^.{1,20}$','aa.active'=>'^0|1$','aa.datec'=>'^\d{4}-\d{2}-\d{2}$');
 		$this->import_convertvalue_array[$r]=array(
-			'aa.fk_accounting_category'=>array('rule'=>'fetchidfromcodeorlabel','classfile'=>'/accountancy/class/accountancycategory.class.php','class'=>'AccountancyCategory','method'=>'fetch','dict'=>'DictionaryAccountancyCategory'),
-			'aa.account_parent'=>array('rule'=>'zeroifnull'),
+		    'aa.account_parent'=>array('rule'=>'fetchidfromref','classfile'=>'/accountancy/class/accountingaccount.class.php','class'=>'AccountingAccount','method'=>'fetch','element'=>'AccountingAccount'),
+		    'aa.fk_accounting_category'=>array('rule'=>'fetchidfromcodeorlabel','classfile'=>'/accountancy/class/accountancycategory.class.php','class'=>'AccountancyCategory','method'=>'fetch','dict'=>'DictionaryAccountancyCategory'),
 		);
-		$this->import_examplevalues_array[$r]=array('aa.fk_pcg_version'=>"PCG99-ABREGE",'aa.account_number'=>"707",'aa.label'=>"Product sales",'aa.account_parent'=>"1407","aa.fk_accounting_category"=>"","aa.pcg_type"=>"PROD",'aa.pcg_subtype'=>'PRODUCT','aa.active'=>'1','aa.datec'=>"2017-04-28");
-
+		$this->import_examplevalues_array[$r]=array('aa.fk_pcg_version'=>"PCG99-ABREGE",'aa.account_number'=>"707",'aa.label'=>"Product sales",'aa.account_parent'=>"ref:7 or id:1407","aa.fk_accounting_category"=>"","aa.pcg_type"=>"PROD",'aa.pcg_subtype'=>'PRODUCT','aa.active'=>'1','aa.datec'=>"2017-04-28");
+		$this->import_updatekeys_array[$r]=array('aa.fk_pcg_version'=>'Chartofaccounts','aa.account_number'=>'AccountAccounting');
 	}
 }

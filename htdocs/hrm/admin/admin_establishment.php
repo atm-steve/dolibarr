@@ -54,7 +54,7 @@ $sortfield     = GETPOST("sortfield");
 if (!$sortorder) $sortorder="DESC";
 if (!$sortfield) $sortfield="e.rowid";
 
-if ($page == -1) {
+if (empty($page) || $page == -1) {
 	$page = 0 ;
 }
 
@@ -124,7 +124,6 @@ if ($result)
 
             $i++;
         }
-
     }
     else
     {
@@ -145,5 +144,6 @@ print '<div class="tabsAction">';
 print '<a class="butAction" href="../establishment/card.php?action=create">'.$langs->trans("NewEstablishment").'</a>';
 print '</div>';
 
+// End of page
 llxFooter();
 $db->close();

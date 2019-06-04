@@ -42,10 +42,12 @@ class pdf_standard extends CommonStickerGenerator
 	 * @param	array		$param			Associative array containing label content and optional parameters
 	 * @return	void
 	 */
-	function addSticker(&$pdf,$outputlangs,$param) {
+    function addSticker(&$pdf,$outputlangs,$param)
+    {
 		// use this method in future refactoring
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 * Output a sticker on page at position _COUNTX, _COUNTY (_COUNTX and _COUNTY start from 0)
 	 * - __LOGO__ is replace with company logo
@@ -63,6 +65,7 @@ class pdf_standard extends CommonStickerGenerator
 	 */
 	function Add_PDF_card(&$pdf,$textleft,$header,$footer,$outputlangs,$textright='',$idmember=0,$photo='')
 	{
+        // phpcs:enable
 		global $db,$mysoc,$conf,$langs;
 		global $forceimgscalewidth,$forceimgscaleheight;
 
@@ -234,6 +237,7 @@ class pdf_standard extends CommonStickerGenerator
 		}
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *	Function to build PDF on disk, then output on HTTP stream.
 	 *
@@ -246,6 +250,7 @@ class pdf_standard extends CommonStickerGenerator
 	 */
 	function write_file($object, $outputlangs, $srctemplatepath, $mode='member', $nooutput=0)
 	{
+        // phpcs:enable
 		global $user,$conf,$langs,$mysoc,$_Avery_Labels;
 
 		$this->code=$srctemplatepath;
@@ -323,7 +328,7 @@ class pdf_standard extends CommonStickerGenerator
 		if (! is_object($outputlangs)) $outputlangs=$langs;
 		// For backward compatibility with FPDF, force output charset to ISO, because FPDF expect text to be encoded in ISO
 		if (! empty($conf->global->MAIN_USE_FPDF)) $outputlangs->charset_output='ISO-8859-1';
-        
+
 		// Load traductions files requiredby by page
 		$outputlangs->loadLangs(array("main", "dict", "companies", "admin", "members"));
 
@@ -440,5 +445,4 @@ class pdf_standard extends CommonStickerGenerator
 
 		return 1;
 	}
-
 }

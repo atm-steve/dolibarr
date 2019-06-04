@@ -19,14 +19,11 @@
 /**
  * 	\file		admin/multicurrency.php
  * 	\ingroup	multicurrency
- * 	\brief		This file is an example module setup page
- * 				Put some comments here
+ * 	\brief		Page to setup multicurrency module
  */
+
 // Dolibarr environment
-
 require '../main.inc.php';
-
-// Libraries
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/multicurrency.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/multicurrency/class/multicurrency.class.php';
@@ -42,6 +39,8 @@ if (! $user->admin) {
 
 // Parameters
 $action = GETPOST('action', 'alpha');
+
+
 /*
  * Actions
  */
@@ -107,9 +106,7 @@ elseif ($action == 'update_currency')
 {
 	$error = 0;
 
-	$submit = GETPOST('submit', 'alpha');
-
-	if ($submit == $langs->trans('Modify'))
+	if (GETPOST('updatecurrency', 'alpha'))
 	{
 		$fk_multicurrency = GETPOST('fk_multicurrency', 'int');
 		$rate = price2num(GETPOST('rate', 'alpha'));
@@ -128,7 +125,7 @@ elseif ($action == 'update_currency')
 			}
 		}
 	}
-	elseif ($submit == $langs->trans('Delete'))
+	elseif (GETPOST('deletecurrency', 'alpha'))
 	{
 		$fk_multicurrency = GETPOST('fk_multicurrency', 'int');
 		$currency = new MultiCurrency($db);
@@ -164,33 +161,30 @@ if ($resql)
  * View
  */
 
+$form=new Form($db);
+
 $page_name = "MultiCurrencySetup";
 
 llxHeader('', $langs->trans($page_name));
 
 // Subheader
 $linkback = '<a href="' . DOL_URL_ROOT . '/admin/modules.php?restore_lastsearch_values=1">' . $langs->trans("BackToModuleList") . '</a>';
-print_fiche_titre($langs->trans($page_name), $linkback);
+print load_fiche_titre($langs->trans($page_name), $linkback);
 
 // Configuration header
 $head = multicurrencyAdminPrepareHead();
 dol_fiche_head($head, 'settings', $langs->trans("ModuleSetup"), -1, "multicurrency");
 
-// Setup page goes here
-$form=new Form($db);
 
-$var=false;
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
 print '<td>'.$langs->trans("Parameters").'</td>'."\n";
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="center" width="100">'.$langs->trans("Value").'</td>'."\n";
-
+print '<td align="center">'.$langs->trans("Value").'</td>'."\n";
+print '</tr>';
 
 print '<tr class="oddeven">';
 print '<td>'.$langs->transnoentitiesnoconv("MULTICURRENCY_USE_RATE_ON_DOCUMENT_DATE").'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="400">';
+print '<td align="right">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_MULTICURRENCY_USE_RATE_ON_DOCUMENT_DATE">';
@@ -200,11 +194,9 @@ print '</form>';
 print '</td></tr>';
 
 
-
 print '<tr class="oddeven">';
 print '<td>'.$langs->transnoentitiesnoconv("multicurrency_useOriginTx").'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="400">';
+print '<td align="right">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_MULTICURRENCY_USE_ORIGIN_TX">';
@@ -217,8 +209,7 @@ print '</td></tr>';
 
 print '<tr class="oddeven">';
 print '<td>'.$langs->transnoentitiesnoconv("multicurrency_buyPriceInCurrency").'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="400">';
+print '<td align="right">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_MULTICURRENCY_BUY_PRICE_IN_CURRENCY">';
@@ -232,8 +223,7 @@ print '</td></tr>';
 
 print '<tr class="oddeven">';
 print '<td>'.$langs->transnoentitiesnoconv("multicurrency_modifyRateApplication").'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="400">';
+print '<td align="right">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="set_MULTICURRENCY_MODIFY_RATE_APPLICATION">';
@@ -245,16 +235,17 @@ print '</td></tr>';
 */
 
 print '</table>';
+
 print '<br>';
 
 if (!empty($conf->global->MAIN_MULTICURRENCY_ALLOW_SYNCHRONIZATION))
 {
-	$var=false;
+	print '<div class="div-table-responsive-no-min">';
 	print '<table class="noborder" width="100%">';
+
 	print '<tr class="liste_titre">';
 	print '<td>'.$form->textwithpicto($langs->trans("CurrencyLayerAccount"), $langs->trans("CurrencyLayerAccount_help_to_synchronize")).'</td>'."\n";
-	print '<td align="center" width="20">&nbsp;</td>';
-	print '<td align="right" width="100">';
+	print '<td align="right">';
 	print '<form id="form_sync" action="" method="POST">';
 	print '<input type="hidden" name="action" value="synchronize" />';
 	print '<textarea id="response" class="hideobject" name="response"></textarea>';
@@ -263,11 +254,9 @@ if (!empty($conf->global->MAIN_MULTICURRENCY_ALLOW_SYNCHRONIZATION))
 	print '</td></tr>';
 
 
-
 	print '<tr class="oddeven">';
 	print '<td><a target="_blank" href="https://currencylayer.com">'.$langs->transnoentitiesnoconv("multicurrency_appId").'</a></td>';
-	print '<td align="center" width="20">&nbsp;</td>';
-	print '<td align="right" width="400">';
+	print '<td align="right">';
 	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 	print '<input type="hidden" name="action" value="set_MULTICURRENCY_APP_ID">';
@@ -279,8 +268,7 @@ if (!empty($conf->global->MAIN_MULTICURRENCY_ALLOW_SYNCHRONIZATION))
 
 	print '<tr class="oddeven">';
 	print '<td>'.$langs->transnoentitiesnoconv("multicurrency_appCurrencySource").'</td>';
-	print '<td align="center" width="20">&nbsp;</td>';
-	print '<td align="right" width="400">';
+	print '<td align="right">';
 	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 	print '<input type="hidden" name="action" value="set_MULTICURRENCY_APP_SOURCE">';
@@ -291,8 +279,7 @@ if (!empty($conf->global->MAIN_MULTICURRENCY_ALLOW_SYNCHRONIZATION))
 
 	print '<tr class="oddeven">';
 	print '<td>'.$langs->transnoentitiesnoconv("multicurrency_alternateCurrencySource").'</td>';
-	print '<td align="center" width="20">&nbsp;</td>';
-	print '<td align="right" width="400">';
+	print '<td align="right">';
 	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 	print '<input type="hidden" name="action" value="set_MULTICURRENCY_ALTERNATE_SOURCE">';
@@ -302,35 +289,35 @@ if (!empty($conf->global->MAIN_MULTICURRENCY_ALLOW_SYNCHRONIZATION))
 	print '</td></tr>';
 
 	print '</table>';
+	print '</div>';
 	print '<br>';
 }
 
 
+print '<div class="div-table-responsive-no-min">';
 print '<table class="noborder" width="100%">';
 
 print '<tr class="liste_titre">';
 print '<td>'.$form->textwithpicto($langs->trans("CurrenciesUsed"), $langs->transnoentitiesnoconv("CurrenciesUsed_help_to_add")).'</td>'."\n";
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="center" width="100">'.$langs->trans("Rate").'</td>'."\n";
+print '<td align="center">'.$langs->trans("Rate").'</td>'."\n";
+print '</tr>';
 
-
-print '<tr class="oddeven">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<tr class="oddeven">';
+print '<td>'.$form->selectCurrency('', 'code').'</td>';
+print '<td align="right">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="add_currency">';
-print '<td>'.$form->selectCurrency('', 'code').'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="300">';
 print '<input type="text" name="rate" value="" size="13" placeholder="'.$langs->trans('Rate').'" />&nbsp;';
 print '<input type="submit" class="button" value="'.$langs->trans("Add").'">';
-print '</td></form></tr>';
-
+print '</td>';
+print '</tr>';
+print '</form>';
 
 print '<tr class="oddeven">';
 print '<td>'.$conf->currency.$form->textwithpicto(' ', $langs->trans("BaseCurrency")).'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="300">1';
-print '</td></form></tr>';
+print '<td align="right">1</td>';
+print '</tr>';
 
 foreach ($TCurrency as &$currency)
 {
@@ -338,24 +325,21 @@ foreach ($TCurrency as &$currency)
 
 	print '<tr class="oddeven">';
 	print '<td>'.$currency->code.' - '.$currency->name.'</td>';
-	print '<td align="center" width="20">&nbsp;</td>';
-	print '<td align="right" width="400">';
+	print '<td align="right">';
 	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 	print '<input type="hidden" name="action" value="update_currency">';
 	print '<input type="hidden" name="fk_multicurrency" value="'.$currency->id.'">';
 	print '1 '.$conf->currency.' = ';
 	print '<input type="text" name="rate" value="'.($currency->rate->rate ? $currency->rate->rate : '').'" size="13" />&nbsp;'.$currency->code.'&nbsp;';
-	print '<input type="submit" name="submit" class="button" value="'.$langs->trans("Modify").'">&nbsp;';
-	print '<input type="submit" name="submit" class="button" value="'.$langs->trans("Delete").'">';
+	print '<input type="submit" name="updatecurrency" class="button" value="'.$langs->trans("Modify").'">&nbsp;';
+	print '<input type="submit" name="deletecurrency" class="button" value="'.$langs->trans("Delete").'">';
 	print '</form>';
-
 	print '</td></tr>';
 }
 
 print '</table>';
-
-
+print '</div>';
 
 print '
 	<script type="text/javascript">

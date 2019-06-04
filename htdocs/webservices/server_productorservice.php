@@ -617,7 +617,6 @@ function createProductOrService($authentication,$product)
             $errorcode='KO';
             $errorlabel=$newobject->error;
         }
-
     }
 
     if ($error)
@@ -806,7 +805,6 @@ function updateProductOrService($authentication,$product)
             $errorcode='KO';
             $errorlabel=$newobject->error;
         }
-
     }
 
     if ($error)
@@ -1048,11 +1046,11 @@ function getProductsForCategory($authentication,$id,$lang='')
 				$res  = $db->query($sql);
 				if ($res)
 				{
+					$iProduct = 0;
 					while ($rec = $db->fetch_array($res))
 					{
 						$obj = new Product($db);
 						$obj->fetch($rec['fk_'.$field]);
-						$iProduct = 0;
 						if($obj->status > 0 )
 						{
 							$dir = (!empty($conf->product->dir_output)?$conf->product->dir_output:$conf->service->dir_output);
@@ -1105,7 +1103,6 @@ function getProductsForCategory($authentication,$id,$lang='')
 
 							$iProduct++;
 						}
-
 					}
 
 					// Retour
@@ -1113,14 +1110,12 @@ function getProductsForCategory($authentication,$id,$lang='')
 					'result'=>array('result_code'=>'OK', 'result_label'=>''),
 					'products'=> $products
 					);
-
 				}
 				else
 				{
 					$errorcode='NORECORDS_FOR_ASSOCIATION'; $errorlabel='No products associated'.$sql;
 					$objectresp = array('result'=>array('result_code' => $errorcode, 'result_label' => $errorlabel));
 					dol_syslog("getProductsForCategory:: ".$c->error, LOG_DEBUG);
-
 				}
 			}
 			else

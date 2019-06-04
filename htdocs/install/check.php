@@ -2,7 +2,7 @@
 /* Copyright (C) 2004-2005  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2015  Laurent Destailleur     <eldy@users.sourceforge.net>
  * Copyright (C) 2005       Marc Barilley / Ocebo   <marc@ocebo.com>
- * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@inodbox.com>
  * Copyright (C) 2013-2014  Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2014       Marcos García           <marcosgdf@gmail.com>
  * Copyright (C) 2015-2016  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
@@ -554,8 +554,8 @@ else
 
         if (count($notavailable_choices)) {
 
-            print '<div id="AShowChoices">';
-            print '<img src="../theme/eldy/img/1downarrow.png"> <a href="#">'.$langs->trans('ShowNotAvailableOptions').'</a>';
+            print '<br><div id="AShowChoices" style="opacity: 0.5">';
+            print '<img id="availchoice" src="../theme/eldy/img/1downarrow.png"> '.$langs->trans('ShowNotAvailableOptions').'...';
             print '</div>';
 
             print '<div id="navail_choices" style="display:none">';
@@ -568,23 +568,19 @@ else
             print '</table>'."\n";
             print '</div>';
         }
-
 	}
-
 }
 
 print '<script type="text/javascript">
 
-$("div#AShowChoices a").click(function() {
+$("div#AShowChoices").click(function() {
 
     $("div#navail_choices").toggle();
 
     if ($("div#navail_choices").css("display") == "none") {
-        $(this).text("'.$langs->trans('ShowNotAvailableOptions').'");
-        $(this).parent().children("img").attr("src", "../theme/eldy/img/1downarrow.png");
+        $(this).text("'.$langs->trans('ShowNotAvailableOptions').'...");
     } else {
-        $(this).text("'.$langs->trans('HideNotAvailableOptions').'");
-        $(this).parent().children("img").attr("src", "../theme/eldy/img/1uparrow.png");
+        $(this).text("'.$langs->trans('HideNotAvailableOptions').'...");
     }
 
 });

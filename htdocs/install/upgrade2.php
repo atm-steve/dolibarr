@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2005       Marc Barilley / Ocebo   <marc@ocebo.com>
  * Copyright (C) 2005-2018  Laurent Destailleur     <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2011  Regis Houssin           <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2011  Regis Houssin           <regis.houssin@inodbox.com>
  * Copyright (C) 2010       Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2015-2016  Raphaël Doursenaud      <rdoursenaud@gpcsolutions.fr>
  *
@@ -73,10 +73,7 @@ $versionfrom=GETPOST("versionfrom",'alpha',3)?GETPOST("versionfrom",'alpha',3):(
 $versionto=GETPOST("versionto",'alpha',3)?GETPOST("versionto",'alpha',3):(empty($argv[2])?'':$argv[2]);
 $enablemodules=GETPOST("enablemodules",'alpha',3)?GETPOST("enablemodules",'alpha',3):(empty($argv[3])?'':$argv[3]);
 
-$langs->load('admin');
-$langs->load('install');
-$langs->load("bills");
-$langs->load("suppliers");
+$langs->loadLangs(array("admin", "install", "bills", "suppliers"));
 
 if ($dolibarr_main_db_type == 'mysqli') $choix=1;
 if ($dolibarr_main_db_type == 'pgsql')  $choix=2;
@@ -189,7 +186,7 @@ if (! GETPOST('action','aZ09') || preg_match('/upgrade/i',GETPOST('action','aZ09
     {
         // Current version is $conf->global->MAIN_VERSION_LAST_UPGRADE
         // Version to install is DOL_VERSION
-        $dolibarrlastupgradeversionarray=preg_split('/[\.-]/',isset($conf->global->MAIN_VERSION_LAST_UPGRADE)?$conf->global->MAIN_VERSION_LAST_UPGRADE:$conf->global->MAIN_VERSION_LAST_INSTALL);
+        $dolibarrlastupgradeversionarray=preg_split('/[\.-]/',isset($conf->global->MAIN_VERSION_LAST_UPGRADE)?$conf->global->MAIN_VERSION_LAST_UPGRADE:(isset($conf->global->MAIN_VERSION_LAST_INSTALL)?$conf->global->MAIN_VERSION_LAST_INSTALL:''));
 
         // Chaque action de migration doit renvoyer une ligne sur 4 colonnes avec
         // dans la 1ere colonne, la description de l'action a faire
@@ -449,7 +446,7 @@ if (! GETPOST('action','aZ09') || preg_match('/upgrade/i',GETPOST('action','aZ09
         $beforeversionarray=explode('.','9.0.9');
         if (versioncompare($versiontoarray,$afterversionarray) >= 0 && versioncompare($versiontoarray,$beforeversionarray) <= 0)
         {
-        	//migrate_rename_directories($db,$langs,$conf,'/contracts','/contract');
+        	migrate_user_photospath();
         }
     }
 
@@ -466,6 +463,7 @@ if (! GETPOST('action','aZ09') || preg_match('/upgrade/i',GETPOST('action','aZ09
 			'MAIN_MODULE_DEPLACEMENT'=>'newboxdefonly',
 			'MAIN_MODULE_DON'=>'newboxdefonly',
 			'MAIN_MODULE_ECM'=>'newboxdefonly',
+			'MAIN_MODULE_EXTERNALSITE'=>'newboxdefonly',
 			'MAIN_MODULE_FACTURE'=>'newboxdefonly',
 			'MAIN_MODULE_FOURNISSEUR'=>'newboxdefonly',
 			'MAIN_MODULE_HOLIDAY'=>'newboxdefonly',
@@ -701,8 +699,8 @@ function migrate_paiements_orphelins_1($db,$langs,$conf)
         $sql = "SELECT distinct p.rowid, p.datec, p.amount as pamount, bu.fk_bank, b.amount as bamount,";
         $sql.= " bu2.url_id as socid";
         $sql.= " FROM (".MAIN_DB_PREFIX."paiement as p, ".MAIN_DB_PREFIX."bank_url as bu, ".MAIN_DB_PREFIX."bank as b)";
-        $sql.= " LEFT JOIN llx_paiement_facture as pf ON pf.fk_paiement = p.rowid";
-        $sql.= " LEFT JOIN llx_bank_url as bu2 ON (bu.fk_bank=bu2.fk_bank AND bu2.type = 'company')";
+        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON pf.fk_paiement = p.rowid";
+        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_url as bu2 ON (bu.fk_bank=bu2.fk_bank AND bu2.type = 'company')";
         $sql.= " WHERE pf.rowid IS NULL AND (p.rowid=bu.url_id AND bu.type='payment') AND bu.fk_bank = b.rowid";
         $sql.= " AND b.rappro = 1";
         $sql.= " AND (p.fk_facture = 0 OR p.fk_facture IS NULL)";
@@ -828,8 +826,8 @@ function migrate_paiements_orphelins_2($db,$langs,$conf)
         $sql = "SELECT distinct p.rowid, p.datec, p.amount as pamount, bu.fk_bank, b.amount as bamount,";
         $sql.= " bu2.url_id as socid";
         $sql.= " FROM (".MAIN_DB_PREFIX."paiement as p, ".MAIN_DB_PREFIX."bank_url as bu, ".MAIN_DB_PREFIX."bank as b)";
-        $sql.= " LEFT JOIN llx_paiement_facture as pf ON pf.fk_paiement = p.rowid";
-        $sql.= " LEFT JOIN llx_bank_url as bu2 ON (bu.fk_bank = bu2.fk_bank AND bu2.type = 'company')";
+        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON pf.fk_paiement = p.rowid";
+        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_url as bu2 ON (bu.fk_bank = bu2.fk_bank AND bu2.type = 'company')";
         $sql.= " WHERE pf.rowid IS NULL AND (p.fk_bank = bu.fk_bank AND bu.type = 'payment') AND bu.fk_bank = b.rowid";
         $sql.= " AND (p.fk_facture = 0 OR p.fk_facture IS NULL)";
 
@@ -1145,7 +1143,7 @@ function migrate_contracts_date1($db,$langs,$conf)
     print '<br>';
     print '<b>'.$langs->trans('MigrationContractsEmptyDatesUpdate')."</b><br>\n";
 
-    $sql="update llx_contrat set date_contrat=tms where date_contrat is null";
+    $sql="update ".MAIN_DB_PREFIX."contrat set date_contrat=tms where date_contrat is null";
     dolibarr_install_syslog("upgrade2::migrate_contracts_date1");
     $resql = $db->query($sql);
     if (! $resql) dol_print_error($db);
@@ -1154,7 +1152,7 @@ function migrate_contracts_date1($db,$langs,$conf)
     else
     print $langs->trans('MigrationContractsEmptyDatesNothingToUpdate')."<br>\n";
 
-    $sql="update llx_contrat set datec=tms where datec is null";
+    $sql="update ".MAIN_DB_PREFIX."contrat set datec=tms where datec is null";
     dolibarr_install_syslog("upgrade2::migrate_contracts_date1");
     $resql = $db->query($sql);
     if (! $resql) dol_print_error($db);
@@ -1245,7 +1243,7 @@ function migrate_contracts_date3($db,$langs,$conf)
     print '<br>';
     print '<b>'.$langs->trans('MigrationContractsIncoherentCreationDateUpdate')."</b><br>\n";
 
-    $sql="update llx_contrat set datec=date_contrat where datec is null or datec > date_contrat";
+    $sql="update ".MAIN_DB_PREFIX."contrat set datec=date_contrat where datec is null or datec > date_contrat";
     dolibarr_install_syslog("upgrade2::migrate_contracts_date3");
     $resql = $db->query($sql);
     if (! $resql) dol_print_error($db);
@@ -1272,7 +1270,7 @@ function migrate_contracts_open($db,$langs,$conf)
     print '<br>';
     print '<b>'.$langs->trans('MigrationReopeningContracts')."</b><br>\n";
 
-    $sql = "SELECT c.rowid as cref FROM llx_contrat as c, llx_contratdet as cd";
+    $sql = "SELECT c.rowid as cref FROM ".MAIN_DB_PREFIX."contrat as c, ".MAIN_DB_PREFIX."contratdet as cd";
     $sql.= " WHERE cd.statut = 4 AND c.statut=2 AND c.rowid=cd.fk_contrat";
     dolibarr_install_syslog("upgrade2::migrate_contracts_open");
     $resql = $db->query($sql);
@@ -2005,7 +2003,7 @@ function migrate_modeles($db,$langs,$conf)
         if (count($modellist)==0)
         {
             // Aucun model par defaut.
-            $sql=" insert into llx_document_model(nom,type) values('crabe','invoice')";
+            $sql=" insert into ".MAIN_DB_PREFIX."document_model(nom,type) values('crabe','invoice')";
             $resql = $db->query($sql);
             if (! $resql) dol_print_error($db);
         }
@@ -2018,7 +2016,7 @@ function migrate_modeles($db,$langs,$conf)
         if (count($modellist)==0)
         {
             // Aucun model par defaut.
-            $sql=" insert into llx_document_model(nom,type) values('einstein','order')";
+            $sql=" insert into ".MAIN_DB_PREFIX."document_model(nom,type) values('einstein','order')";
             $resql = $db->query($sql);
             if (! $resql) dol_print_error($db);
         }
@@ -2031,7 +2029,7 @@ function migrate_modeles($db,$langs,$conf)
         if (count($modellist)==0)
         {
             // Aucun model par defaut.
-            $sql=" insert into llx_document_model(nom,type) values('rouget','shipping')";
+            $sql=" insert into ".MAIN_DB_PREFIX."document_model(nom,type) values('rouget','shipping')";
             $resql = $db->query($sql);
             if (! $resql) dol_print_error($db);
         }
@@ -2298,7 +2296,6 @@ function migrate_detail_livraison($db,$langs,$conf)
                     print ". ";
                     $i++;
                 }
-
             }
 
             if ($error == 0)
@@ -2386,7 +2383,6 @@ function migrate_stocks($db,$langs,$conf)
                 print ". ";
                 $i++;
             }
-
         }
 
         if ($error == 0)
@@ -2641,7 +2637,6 @@ function migrate_restore_missing_links($db,$langs,$conf)
                 //print ". ";
                 $i++;
             }
-
         }
         else print $langs->trans('AlreadyDone')."<br>\n";
 
@@ -2707,7 +2702,6 @@ function migrate_restore_missing_links($db,$langs,$conf)
                 //print ". ";
                 $i++;
             }
-
         }
         else
         {
@@ -2929,9 +2923,9 @@ function migrate_project_task_actors($db,$langs,$conf)
  * @param	Conf		$conf			Object conf
  * @param	string		$table			Table name
  * @param	int			$fk_source		Id of element source
- * @param	type		$sourcetype		Type of element source
+ * @param	string		$sourcetype		Type of element source
  * @param	int			$fk_target		Id of element target
- * @param	type		$targettype		Type of element target
+ * @param	string		$targettype		Type of element target
  * @return	void
  */
 function migrate_relationship_tables($db,$langs,$conf,$table,$fk_source,$sourcetype,$fk_target,$targettype)
@@ -4432,49 +4426,50 @@ function migrate_rename_directories($db,$langs,$conf,$oldname,$newname)
  */
 function migrate_delete_old_files($db,$langs,$conf)
 {
-    $result=true;
+	$result=true;
 
-    dolibarr_install_syslog("upgrade2::migrate_delete_old_files");
+	dolibarr_install_syslog("upgrade2::migrate_delete_old_files");
 
-    // List of files to delete
-    $filetodeletearray=array(
-    DOL_DOCUMENT_ROOT.'/core/triggers/interface_demo.class.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/barre_left/default.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/barre_top/default.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/modComptabiliteExpert.class.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/modCommercial.class.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/modProduit.class.php',
-    DOL_DOCUMENT_ROOT.'/phenix/inc/triggers/interface_modPhenix_Phenixsynchro.class.php',
-    DOL_DOCUMENT_ROOT.'/webcalendar/inc/triggers/interface_modWebcalendar_webcalsynchro.class.php',
-    DOL_DOCUMENT_ROOT.'/core/triggers/interface_modWebcalendar_Webcalsynchro.class.php',
-    DOL_DOCUMENT_ROOT.'/core/triggers/interface_modCommande_Ecotax.class.php',
-    DOL_DOCUMENT_ROOT.'/core/triggers/interface_modCommande_fraisport.class.php',
-    DOL_DOCUMENT_ROOT.'/core/triggers/interface_modPropale_PropalWorkflow.class.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/smartphone/iphone.lib.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/smartphone/iphone_backoffice.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/smartphone/iphone_frontoffice.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/standard/auguria_backoffice.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/standard/auguria_frontoffice.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/standard/eldy_backoffice.php',
-    DOL_DOCUMENT_ROOT.'/core/menus/standard/eldy_frontoffice.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/contacts2.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/contacts3.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/contacts4.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/framboise.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/dolibarr_services_expired.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/peche.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/poire.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/mailings/kiwi.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/facture/pdf_crabe.modules.php',
-    DOL_DOCUMENT_ROOT.'/core/modules/facture/pdf_oursin.modules.php',
+	// List of files to delete
+	$filetodeletearray=array(
+		DOL_DOCUMENT_ROOT.'/core/triggers/interface_demo.class.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/barre_left/default.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/barre_top/default.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/modComptabiliteExpert.class.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/modCommercial.class.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/modProduit.class.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/modSkype.class.php',
+		DOL_DOCUMENT_ROOT.'/phenix/inc/triggers/interface_modPhenix_Phenixsynchro.class.php',
+		DOL_DOCUMENT_ROOT.'/webcalendar/inc/triggers/interface_modWebcalendar_webcalsynchro.class.php',
+		DOL_DOCUMENT_ROOT.'/core/triggers/interface_modWebcalendar_Webcalsynchro.class.php',
+		DOL_DOCUMENT_ROOT.'/core/triggers/interface_modCommande_Ecotax.class.php',
+		DOL_DOCUMENT_ROOT.'/core/triggers/interface_modCommande_fraisport.class.php',
+		DOL_DOCUMENT_ROOT.'/core/triggers/interface_modPropale_PropalWorkflow.class.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/smartphone/iphone.lib.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/smartphone/iphone_backoffice.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/smartphone/iphone_frontoffice.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/standard/auguria_backoffice.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/standard/auguria_frontoffice.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/standard/eldy_backoffice.php',
+		DOL_DOCUMENT_ROOT.'/core/menus/standard/eldy_frontoffice.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/contacts2.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/contacts3.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/contacts4.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/framboise.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/dolibarr_services_expired.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/peche.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/poire.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/mailings/kiwi.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/facture/pdf_crabe.modules.php',
+		DOL_DOCUMENT_ROOT.'/core/modules/facture/pdf_oursin.modules.php',
 
-    DOL_DOCUMENT_ROOT.'/compta/facture/class/api_invoice.class.php',
-    DOL_DOCUMENT_ROOT.'/commande/class/api_commande.class.php',
-    DOL_DOCUMENT_ROOT.'/user/class/api_user.class.php',
-    DOL_DOCUMENT_ROOT.'/product/class/api_product.class.php',
-    DOL_DOCUMENT_ROOT.'/societe/class/api_contact.class.php',
-    DOL_DOCUMENT_ROOT.'/societe/class/api_thirdparty.class.php'
-
+		DOL_DOCUMENT_ROOT.'/compta/facture/class/api_invoice.class.php',
+		DOL_DOCUMENT_ROOT.'/commande/class/api_commande.class.php',
+		DOL_DOCUMENT_ROOT.'/user/class/api_user.class.php',
+		DOL_DOCUMENT_ROOT.'/product/class/api_product.class.php',
+		DOL_DOCUMENT_ROOT.'/societe/class/api_contact.class.php',
+		DOL_DOCUMENT_ROOT.'/societe/class/api_thirdparty.class.php',
+		DOL_DOCUMENT_ROOT.'/support/online.php'
     );
 
     foreach ($filetodeletearray as $filetodelete)
@@ -4483,7 +4478,7 @@ function migrate_delete_old_files($db,$langs,$conf)
         $result=1;
         if (file_exists($filetodelete))
         {
-            $result=dol_delete_file($filetodelete);
+            $result=dol_delete_file($filetodelete,0,0,0,null,true);
             if (! $result)
             {
                 $langs->load("errors");
@@ -4832,7 +4827,97 @@ function migrate_reload_menu($db,$langs,$conf,$versionto)
     }
 }
 
+/**
+ * Migrate file from old path to new one for users
+ *
+ * @return	void
+ */
+function migrate_user_photospath()
+{
+	global $conf, $db, $langs, $user;
 
+	print '<tr><td colspan="4">';
+
+	print '<b>'.$langs->trans('MigrationUserPhotoPath')."</b><br>\n";
+
+	include_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
+	$fuser = new User($db);
+
+	if (! is_object($user)) $user = $fuser;	// To avoid error during migration
+
+	$sql = "SELECT rowid as uid from ".MAIN_DB_PREFIX."user";	// Get list of all users
+	$resql = $db->query($sql);
+	if ($resql)
+	{
+		while ($obj = $db->fetch_object($resql))
+		{
+			$fuser->fetch($obj->uid);
+			//echo '<hr>'.$fuser->id.' -> '.$fuser->entity;
+			$entity = (empty($fuser->entity) ? 1 : $fuser->entity);
+			if ($entity > 1) {
+				$dir = DOL_DATA_ROOT . '/' . $entity . '/users';
+			} else {
+				$dir = $conf->user->multidir_output[$entity];	// $conf->user->multidir_output[] for each entity is construct by the multicompany module
+			}
+			if ($dir)
+			{
+				//print "Process user id ".$fuser->id."<br>\n";
+				$origin = $dir .'/'. get_exdir($fuser->id,2,0,1,$fuser,'user');	// Use old behaviour to get x/y path
+				$destin = $dir .'/'. $fuser->id;
+
+				$origin_osencoded=dol_osencode($origin);
+
+				dol_mkdir($destin);
+				//echo '<hr>'.$origin.' -> '.$destin;
+				if (dol_is_dir($origin))
+				{
+					$handle=opendir($origin_osencoded);
+			        if (is_resource($handle))
+			        {
+			        	while (($file = readdir($handle)) !== false)
+			    		{
+			    			if ($file == '.' || $file == '..') continue;
+
+			     			if (dol_is_dir($origin.'/'.$file))	// it is a dir (like 'thumbs')
+			    			{
+			    				$thumbs = opendir($origin_osencoded.'/'.$file);
+			    				if (is_resource($thumbs))
+			        			{
+				     				dol_mkdir($destin.'/'.$file);
+				     				while (($thumb = readdir($thumbs)) !== false)
+					    			{
+					    				if (! dol_is_file($destin.'/'.$file.'/'.$thumb))
+					    				{
+					    					if ($thumb == '.' || $thumb == '..') continue;
+
+					    					//print $origin.'/'.$file.'/'.$thumb.' -> '.$destin.'/'.$file.'/'.$thumb.'<br>'."\n";
+					    					print '.';
+					    					dol_copy($origin.'/'.$file.'/'.$thumb, $destin.'/'.$file.'/'.$thumb, 0, 0);
+					    					//var_dump('aaa');exit;
+					    				}
+					    			}
+									// dol_delete_dir($origin.'/'.$file);
+			        			}
+			    			}
+			    			else								// it is a file
+			    			{
+			    				if (! dol_is_file($destin.'/'.$file))
+			    				{
+			    					//print $origin.'/'.$file.' -> '.$destin.'/'.$file.'<br>'."\n";
+			    					print '.';
+			    					dol_copy($origin.'/'.$file, $destin.'/'.$file, 0, 0);
+			    					//var_dump('eee');exit;
+			    				}
+			    			}
+			    		}
+			        }
+				}
+			}
+		}
+	}
+
+	print '</td></tr>';
+}
 
 
 /* A faire egalement: Modif statut paye et fk_facture des factures payes completement

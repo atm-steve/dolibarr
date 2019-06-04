@@ -110,6 +110,7 @@ class mailing_xinputfile extends MailingTargets
 		return $s;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Ajoute destinataires dans table des cibles
 	 *
@@ -119,6 +120,7 @@ class mailing_xinputfile extends MailingTargets
 	 */
 	function add_to_target($mailing_id,$filtersarray=array())
 	{
+        // phpcs:enable
 		global $conf,$langs,$_FILES;
 
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
@@ -179,7 +181,9 @@ class mailing_xinputfile extends MailingTargets
 					        {
 					        	$i++;
 					        	$langs->load("errors");
-					        	$this->error = $langs->trans("ErrorFoundBadEmailInFile",$i,$cpt,$email);
+							$msg = $langs->trans("ErrorFoundBadEmailInFile", $i, $cpt, $email);
+					        	if (!empty($msg)) $this->error = $msg;
+							else $this->error = 'ErrorFoundBadEmailInFile '.$i.' '.$cpt.' '.$email;	// We experience case where $langs->trans return an empty string.
 					        }
 				        }
 				    }
@@ -220,6 +224,4 @@ class mailing_xinputfile extends MailingTargets
 
 		return parent::add_to_target($mailing_id, $cibles);
 	}
-
 }
-

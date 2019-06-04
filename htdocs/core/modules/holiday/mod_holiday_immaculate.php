@@ -1,6 +1,6 @@
 <?php
-/* Copyright (C) 2011      Juanjo Menent	    <jmenent@2byte.es>
- * Copyright (C) 2018      Charlene Benke		<charlie@patas-monkey.com>
+/* Copyright (C) 2011-2019		Juanjo Menent	    <jmenent@2byte.es>
+ * Copyright (C) 2018			Charlene Benke		<charlie@patas-monkey.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,30 @@ require_once DOL_DOCUMENT_ROOT .'/core/modules/holiday/modules_holiday.php';
  */
 class mod_holiday_immaculate extends ModelNumRefHolidays
 {
-	var $version='dolibarr';
-	var $error = '';
-	var $nom = 'Immaculate';
-	var $code_auto=1;
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';
+
+	/**
+	 * @var string Error message
+	 */
+	public $error = '';
+
+	/**
+	 * @var string Nom du modele
+	 * @deprecated
+	 * @see $name
+	 */
+	public $nom='Immaculate';
+
+	/**
+	 * @var string model name
+	 */
+	public $name='Immaculate';
+
+	public $code_auto=1;
 
 	/**
 	 *	Return default description of numbering model
@@ -42,7 +62,7 @@ class mod_holiday_immaculate extends ModelNumRefHolidays
 	 */
 	function info()
     {
-    	global $conf,$langs;
+    	global $conf, $langs;
 
 		$langs->load("bills");
 
@@ -52,7 +72,7 @@ class mod_holiday_immaculate extends ModelNumRefHolidays
 		$texte.= '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 		$texte.= '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 		$texte.= '<input type="hidden" name="action" value="updateMask">';
-		$texte.= '<input type="hidden" name="maskconstcontract" value="HOLIDAY_IMMACULATE_MASK">';
+		$texte.= '<input type="hidden" name="maskconstholiday" value="HOLIDAY_IMMACULATE_MASK">';
 		$texte.= '<table class="nobordernopadding" width="100%">';
 
 		$tooltip=$langs->trans("GenericMaskCodes",$langs->transnoentities("Holiday"),$langs->transnoentities("Holiday"));
@@ -118,15 +138,17 @@ class mod_holiday_immaculate extends ModelNumRefHolidays
 		return  $numFinal;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
-	 *	Return next value
+	 *  Return next value
 	 *
-	 *	@param	User		$fuser     	User object
-	 *	@param	Object		$objforref	Holiday object
-	 *	@return string      			Value if OK, 0 if KO
+	 *  @param  User		$fuser     	User object
+	 *  @param  Object		$objforref	Holiday object
+	 *  @return string      			Value if OK, 0 if KO
 	 */
     function holiday_get_num($fuser, $objforref)
     {
+        // phpcs:enable
         return $this->getNextValue($fuser, $objforref);
     }
 }

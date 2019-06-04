@@ -1,7 +1,8 @@
 <?php
-/* Copyright (C) 2011-2014 Juanjo Menent        <jmenent@2byte.es>
- * Copyright (C) 2014      Ferran Marcet        <fmarcet@2byte.es>
- * Copyright (C) 2018      Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2011-2014  Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2014       Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2018       Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,7 +121,7 @@ function pt($db, $sql, $date)
             if ($obj->mode == 'claimed' && ! empty($previousmode))
             {
             	print '<tr class="oddeven">';
-            	print '<td class="nowrap">'.$obj->dm."</td>\n";
+            	print '<td class="nowrap">'.$previousmonth."</td>\n";
             	print '<td class="nowrap" align="right">'.price($amountclaimed)."</td>\n";
             	print '<td class="nowrap" align="right">'.price($amountpaid)."</td>\n";
             	print "</tr>\n";
@@ -223,7 +224,7 @@ $calcmode.= '('.$langs->trans("TaxModuleSetupToModifyRulesLT",DOL_URL_ROOT.'/adm
 
 //if (! empty($conf->global->MAIN_MODULE_ACCOUNTING)) $description.='<br>'.$langs->trans("ThisIsAnEstimatedValue");
 
-$period=$form->select_date($date_start,'date_start',0,0,0,'',1,0,1).' - '.$form->select_date($date_end,'date_end',0,0,0,'',1,0,1);
+$period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
 
 $builddate=dol_now();
 
@@ -270,7 +271,7 @@ $mend = $tmp['mon'];
 
 $total=0; $subtotalcoll=0; $subtotalpaye=0; $subtotal=0;
 $i=0; $mcursor=0;
-while ((($y < $yend) || ($y == $yend && $m < $mend)) && $mcursor < 1000)	// $mcursor is to avoid too large loop
+while ((($y < $yend) || ($y == $yend && $m <= $mend)) && $mcursor < 1000)	// $mcursor is to avoid too large loop
 {
 	//$m = $conf->global->SOCIETE_FISCAL_MONTH_START + ($mcursor % 12);
 	if ($m == 13) $y++;
@@ -535,7 +536,7 @@ while ((($y < $yend) || ($y == $yend && $m < $mend)) && $mcursor < 1000)	// $mcu
     if ($i > 2)
     {
     	print '<tr class="liste_total">';
-    	print '<td align="right"><a href="quadri_detail.php?leftmenu=tax_vat&q='.($m/3).'&year='.$y.'">'.$langs->trans("SubTotal").'</a>:</td>';
+    	print '<td align="right"><a href="quadri_detail.php?leftmenu=tax_vat&q='.round($m/3).'&year='.$y.'">'.$langs->trans("SubTotal").'</a>:</td>';
     	print '<td class="nowrap" align="right">'.price(price2num($subtotalcoll,'MT')).'</td>';
     	print '<td class="nowrap" align="right">'.price(price2num($subtotalpaye,'MT')).'</td>';
     	print '<td class="nowrap" align="right">'.price(price2num($subtotal,'MT')).'</td>';
@@ -587,5 +588,6 @@ pt($db, $sql, $langs->trans("Month"));
 
 print '</div></div>';
 
+// End of page
 llxFooter();
 $db->close();

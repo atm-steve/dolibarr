@@ -18,8 +18,7 @@
  */
 
 /**
- *     \defgroup    ticket    Ticket module
- *     \brief       Ticket module descriptor.
+ *     \defgroup    ticket    Module Ticket
  *     \file        core/modules/modTicket.class.php
  *     \ingroup     ticket
  *     \brief       Description and activation file for module Ticket
@@ -32,7 +31,6 @@ require_once DOL_DOCUMENT_ROOT . "/core/modules/DolibarrModules.class.php";
  */
 class modTicket extends DolibarrModules
 {
-
     /**
      *     Constructor. Define names, constants, directories, boxes, permissions
      *
@@ -55,7 +53,7 @@ class modTicket extends DolibarrModules
         // It is used to group modules in module setup page
         $this->family = "crm";
         // Module position in the family
-        $this->module_position = 500;
+        $this->module_position = '60';
         // Module label (no space allowed)
         // used if translation string 'ModuleXXXName' not found
         // (where XXX is value of numeric property 'numero' of module)
@@ -194,7 +192,7 @@ class modTicket extends DolibarrModules
             'leftmenu' => '1', // Use 1 if you also want to add left menu entries using this descriptor.
             'url' => '/ticket/index.php',
             'langs' => 'ticket', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-            'position' => 100,
+            'position' => 88,
             'enabled' => '$conf->ticket->enabled', // Define condition to show or hide menu entry. Use '$conf->ticket->enabled' if entry must be visible if module is enabled.
             'perms' => '$user->rights->ticket->read', // Use 'perms'=>'$user->rights->ticket->level1->level2' if you want your menu with a permission rules
             'target' => '',
@@ -305,5 +303,4 @@ class modTicket extends DolibarrModules
 
         return $this->_init($sql, $options);
     }
-
 }
