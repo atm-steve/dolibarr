@@ -392,7 +392,7 @@ if ($resql)
 	if (! empty($arrayfields['f.description']['checked']))
 	{
 		print '<td class="liste_titre">';
-		print '<input type="text" class="flat" name="search_desc" value="'.$search_desc.'" size="12">';
+		print '<input type="text" class="flat" name="search_desc" value="'.$search_desc.'" size="24">';
 		print '</td>';
 	}
 	// Extra fields
@@ -414,20 +414,11 @@ if ($resql)
 		print '<td class="liste_titre">';
 		print '</td>';
 	}
-	// Status
-	if (! empty($arrayfields['f.fk_statut']['checked']))
-	{
-		print '<td class="liste_titre" align="right">';
-		$tmp = $objectstatic->LibStatut(0);		// To load $this->statuts_short
-		$liststatus=$objectstatic->statuts_short;
-		if (empty($conf->global->FICHINTER_CLASSIFY_BILLED)) unset($liststatus[2]);   // Option deprecated. In a future, billed must be managed with a dedicated field to 0 or 1
-		print $form->selectarray('search_status', $liststatus, $search_status, 1, 0, 0, '', 1);
-		print '</td>';
-	}
+
     // Fields of detail line
 	if (! empty($arrayfields['fd.description']['checked']))
 	{
-	    print '<td class="liste_titre">&nbsp;</td>';
+	    print '<td class="liste_titre" width="80%">&nbsp;</td>';
 	}
 	if (! empty($arrayfields['fd.date']['checked']))
 	{
@@ -437,6 +428,16 @@ if ($resql)
 	{
 	    print '<td class="liste_titre">&nbsp;</td>';
 	}
+    // Status
+    if (! empty($arrayfields['f.fk_statut']['checked']))
+    {
+        print '<td class="liste_titre" align="right">';
+        $tmp = $objectstatic->LibStatut(0);		// To load $this->statuts_short
+        $liststatus=$objectstatic->statuts_short;
+        if (empty($conf->global->FICHINTER_CLASSIFY_BILLED)) unset($liststatus[2]);   // Option deprecated. In a future, billed must be managed with a dedicated field to 0 or 1
+        print $form->selectarray('search_status', $liststatus, $search_status, 1, 0, 0, '', 1);
+        print '</td>';
+    }
 	print '<td class="liste_titre" align="right">';
 	$searchpicto=$form->showFilterButtons();
 	print $searchpicto;
@@ -458,10 +459,10 @@ if ($resql)
 	print $hookmanager->resPrint;
 	if (! empty($arrayfields['f.datec']['checked']))     print_liste_field_titre($arrayfields['f.datec']['label'],           $_SERVER["PHP_SELF"],"f.datec","",$param,'align="center" class="nowrap"',$sortfield,$sortorder);
 	if (! empty($arrayfields['f.tms']['checked']))       print_liste_field_titre($arrayfields['f.tms']['label'],             $_SERVER["PHP_SELF"],"f.tms","",$param,'align="center" class="nowrap"',$sortfield,$sortorder);
-	if (! empty($arrayfields['f.fk_statut']['checked'])) print_liste_field_titre($arrayfields['f.fk_statut']['label'],       $_SERVER["PHP_SELF"],"f.fk_statut","",$param,'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['fd.description']['checked'])) print_liste_field_titre($arrayfields['fd.description']['label'], $_SERVER["PHP_SELF"],'');
 	if (! empty($arrayfields['fd.date']['checked']))        print_liste_field_titre($arrayfields['fd.date']['label'],        $_SERVER["PHP_SELF"],"fd.date","",$param,'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['fd.duree']['checked']))       print_liste_field_titre($arrayfields['fd.duree']['label'],       $_SERVER["PHP_SELF"],"fd.duree","",$param,'align="right"',$sortfield,$sortorder);
+    if (! empty($arrayfields['f.fk_statut']['checked'])) print_liste_field_titre($arrayfields['f.fk_statut']['label'],       $_SERVER["PHP_SELF"],"f.fk_statut","",$param,'align="right"',$sortfield,$sortorder);
 	print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"],"",'','','align="center"',$sortfield,$sortorder,'maxwidthsearch ');
 	print "</tr>\n";
 
@@ -578,12 +579,6 @@ if ($resql)
 			print '</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
-		// Status
-		if (! empty($arrayfields['f.fk_statut']['checked']))
-		{
-			print '<td align="right">'.$objectstatic->LibStatut($obj->fk_statut,5).'</td>';
-			if (! $i) $totalarray['nbfield']++;
-		}
 		// Fields of detail of line
 		if (! empty($arrayfields['fd.description']['checked']))
 		{
@@ -602,6 +597,12 @@ if ($resql)
 		    if (! $i) $totalarray['totaldurationfield']=$totalarray['nbfield'];
 		    $totalarray['totalduration']+=$obj->duree;
 		}
+        // Status
+        if (! empty($arrayfields['f.fk_statut']['checked']))
+        {
+            print '<td align="right">'.$objectstatic->LibStatut($obj->fk_statut,5).'</td>';
+            if (! $i) $totalarray['nbfield']++;
+        }
 		// Action column
 		print '<td class="nowrap" align="center">';
 		if ($massactionbutton || $massaction)   // If we are in select mode (massactionbutton defined) or if we have already selected and sent an action ($massaction) defined
