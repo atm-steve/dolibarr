@@ -258,9 +258,20 @@ if (! $error && $massaction == 'confirm_presend')
 				{
 					// TODO Use future field $objectobj->fullpathdoc to know where is stored default file
 					// TODO If not defined, use $objectobj->modelpdf (or defaut invoice config) to know what is template to use to regenerate doc.
-					$filename=dol_sanitizeFileName($objectobj->ref).'.pdf';
-					$filedir=$uploaddir . '/' . dol_sanitizeFileName($objectobj->ref);
+					$filename = dol_sanitizeFileName($objectobj->ref).'.pdf';
+					$subdir = '';
+					// TODO Set subdir to be compatible with multi levels dir trees 
+					// $subdir = get_exdir($objectobj->id, 2, 0, 0, $objectobj, $objectobj->element)
+					$filedir = $uploaddir . '/' . $subdir . dol_sanitizeFileName($objectobj->ref);
 					$file = $filedir . '/' . $filename;
+
+					// For supplier invoices, we use the file provided by supplier, not the one we generate
+					if ($objectobj->element == 'invoice_supplier')
+					{
+						$fileparams = dol_most_recent_file($uploaddir . '/' . get_exdir($objectobj->id,2,0,0,$objectobj,$objectobj->element).$objectobj->ref, preg_quote($objectobj->ref,'/').'([^\-])+');
+						$file = $fileparams['fullname'];
+					}
+
 					$mime = dol_mimetype($file);
 
 	   				if (dol_is_file($file))
@@ -520,13 +531,13 @@ if ($massaction == 'confirm_createbills')
 		else {
 			// Load extrafields of order
 			$cmd->fetch_optionals();
-			
+
 			$objecttmp->socid = $cmd->socid;
 			$objecttmp->type = Facture::TYPE_STANDARD;
 			$objecttmp->cond_reglement_id	= $cmd->cond_reglement_id;
 			$objecttmp->mode_reglement_id	= $cmd->mode_reglement_id;
 			$objecttmp->fk_project			= $cmd->fk_project;
-
+            $objecttmp->multicurrency_code  = $cmd->multicurrency_code;
 			$datefacture = dol_mktime(12, 0, 0, $_POST['remonth'], $_POST['reday'], $_POST['reyear']);
 			if (empty($datefacture))
 			{
@@ -578,6 +589,12 @@ if ($massaction == 'confirm_createbills')
 				for ($i=0;$i<$num;$i++)
 				{
 					$desc=($lines[$i]->desc?$lines[$i]->desc:$lines[$i]->libelle);
+					// If we build one invoice for several order, we must put the invoice of order on the line
+					if (! empty($createbills_onebythird))
+					{
+					    $desc=dol_concatdesc($desc, $langs->trans("Order").' '.$cmd->ref.' - '.dol_print_date($cmd->date, 'day', $langs));
+					}
+
 					if ($lines[$i]->subprice < 0)
 					{
 						// Negative line, we create a discount line

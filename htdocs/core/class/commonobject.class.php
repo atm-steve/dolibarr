@@ -3715,10 +3715,11 @@ abstract class CommonObject
 
 		// Output template part (modules that overwrite templates must declare this into descriptor)
 		// Use global variables + $dateSelector + $seller and $buyer
-		$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+		$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 		foreach($dirtpls as $reldir)
 		{
 			$tpl = dol_buildpath($reldir.'/objectline_create.tpl.php');
+
 			if (empty($conf->file->strict_mode)) {
 				$res=@include $tpl;
 			} else {
@@ -3967,10 +3968,11 @@ abstract class CommonObject
 
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
-			$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+			$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 			foreach($dirtpls as $reldir)
 			{
 				$tpl = dol_buildpath($reldir.'/objectline_view.tpl.php');
+
 				if (empty($conf->file->strict_mode)) {
 					$res=@include $tpl;
 				} else {
@@ -3990,10 +3992,11 @@ abstract class CommonObject
 
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
-			$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+			$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 			foreach($dirtpls as $reldir)
 			{
 				$tpl = dol_buildpath($reldir.'/objectline_edit.tpl.php');
+
 				if (empty($conf->file->strict_mode)) {
 					$res=@include $tpl;
 				} else {
@@ -4186,10 +4189,11 @@ abstract class CommonObject
 
 		// Output template part (modules that overwrite templates must declare this into descriptor)
 		// Use global variables + $dateSelector + $seller and $buyer
-		$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+		$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 		foreach($dirtpls as $reldir)
 		{
 			$tpl = dol_buildpath($reldir.'/originproductline.tpl.php');
+
 			if (empty($conf->file->strict_mode)) {
 				$res=@include $tpl;
 			} else {
@@ -4979,8 +4983,9 @@ abstract class CommonObject
 			$table_element = $this->table_element;
 			if ($table_element == 'categorie') $table_element = 'categories'; // For compatibility
 
+			dol_syslog(get_class($this)."::insertExtraFields delete then insert", LOG_DEBUG);
+
 			$sql_del = "DELETE FROM ".MAIN_DB_PREFIX.$table_element."_extrafields WHERE fk_object = ".$this->id;
-			dol_syslog(get_class($this)."::insertExtraFields delete", LOG_DEBUG);
 			$this->db->query($sql_del);
 
 			$sql = "INSERT INTO ".MAIN_DB_PREFIX.$table_element."_extrafields (fk_object";
@@ -4990,6 +4995,17 @@ abstract class CommonObject
 				// Add field of attribut
 				if ($extrafields->attributes[$this->table_element]['type'][$attributeKey] != 'separate') // Only for other type than separator
 					$sql.=",".$attributeKey;
+			}
+			// We must insert a default value for fields for other entities that are mandatory to avoid not null error
+			if (is_array($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities']))
+			{
+    			foreach($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities'] as  $tmpkey => $tmpval)
+    			{
+    			    if (! isset($extrafields->attributes[$this->table_element]['type'][$tmpkey]))    // If field not already added previously
+    			    {
+    			        $sql.=",".$tmpkey;
+    			    }
+    			}
 			}
 			$sql .= ") VALUES (".$this->id;
 
@@ -5009,10 +5025,23 @@ abstract class CommonObject
 					}
 				}
 			}
+			// We must insert a default value for fields for other entities that are mandatory to avoid not null error
+			if (is_array($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities']))
+			{
+			    foreach($extrafields->attributes[$this->table_element]['mandatoryfieldsofotherentities'] as  $tmpkey => $tmpval)
+    			{
+    			    if (! isset($extrafields->attributes[$this->table_element]['type'][$tmpkey]))    // If field not already added previously
+    			    {
+                        if (in_array($tmpval, array('int', 'double'))) $sql.=", 0";
+                        else $sql.=", ''";
+    			    }
+    			}
+			}
+
 			$sql.=")";
 
-			dol_syslog(get_class($this)."::insertExtraFields insert", LOG_DEBUG);
 			$resql = $this->db->query($sql);
+
 			if (! $resql)
 			{
 				$this->error=$this->db->lasterror();

@@ -1605,7 +1605,7 @@ class Facture extends CommonInvoice
 		$sql.= " import_key=".(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null").",";
 		$sql.= " situation_cycle_ref=".(empty($this->situation_cycle_ref)?"null":$this->db->escape($this->situation_cycle_ref)).",";
 		$sql.= " situation_counter=".(empty($this->situation_counter)?"null":$this->db->escape($this->situation_counter)).",";
-		$sql.= " situation_final=".(empty($this->situation_counter)?"0":$this->db->escape($this->situation_counter));
+		$sql.= " situation_final=".(empty($this->situation_final)?"0":$this->db->escape($this->situation_final));
 		$sql.= " WHERE rowid=".$this->id;
 
 		$this->db->begin();
@@ -3031,6 +3031,12 @@ class Facture extends CommonInvoice
 	{
 	    global $mysoc,$user;
 
+	    // Progress should never be changed for discounts
+	    if(($line->info_bits & 2) == 2)
+	    {
+	    	return;
+	    }
+
 		include_once(DOL_DOCUMENT_ROOT . '/core/lib/price.lib.php');
 
 		// Cap percentages to 100
@@ -3047,7 +3053,6 @@ class Facture extends CommonInvoice
 		$line->multicurrency_total_ttc = $tabprice[18];
 		$line->update($user);
 		$this->update_price(1);
-		$this->db->commit();
 	}
 
 	/**
@@ -4501,7 +4506,7 @@ class FactureLigne extends CommonInvoiceLine
 		$sql.= " '".$this->db->escape($this->localtax1_type)."',";
 		$sql.= " '".$this->db->escape($this->localtax2_type)."',";
 		$sql.= ' '.(! empty($this->fk_product)?$this->fk_product:"null").',';
-		$sql.= " ".$this->product_type.",";
+		$sql.= " ".((int) $this->product_type).",";
 		$sql.= " ".price2num($this->remise_percent).",";
 		$sql.= " ".price2num($this->subprice).",";
 		$sql.= ' '.(! empty($this->fk_remise_except)?$this->fk_remise_except:"null").',';
