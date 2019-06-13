@@ -1,6 +1,7 @@
 <?php
 /* Copyright (C) 2015-2017 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2018 	   Juanjo Menent  <jmenent@2byte.es>
+ * Copyright (C) 2019 	   Ferran Marcet  <fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -510,7 +511,7 @@ if ($massaction == 'confirm_createbills')
 			$objecttmp->cond_reglement_id	= $cmd->cond_reglement_id;
 			$objecttmp->mode_reglement_id	= $cmd->mode_reglement_id;
 			$objecttmp->fk_project			= $cmd->fk_project;
-
+            $objecttmp->multicurrency_code  = $cmd->multicurrency_code;
 			$datefacture = dol_mktime(12, 0, 0, $_POST['remonth'], $_POST['reday'], $_POST['reyear']);
 			if (empty($datefacture))
 			{
@@ -681,6 +682,7 @@ if ($massaction == 'confirm_createbills')
 			}
 
 			$id = $objecttmp->id; // For builddoc action
+			$object = $objecttmp;
 
 			// Builddoc
 			$donotredirect = 1;
