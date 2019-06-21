@@ -1249,8 +1249,8 @@ function sortElementsByClientName($elementarray)
 	return $elementarray;
 }
 
-function printForecastProfitBoard(&$object, &$listofreferent, $dates, $datee) {
-    global $db, $langs, $conf, $mysoc, $form;
+function printForecastProfitBoard(Project &$object, &$listofreferent, $dates, $datee) {
+    global $db, $langs, $user, $conf, $mysoc, $form;
 
     $elementuser = new User($db);
 
@@ -1265,8 +1265,40 @@ function printForecastProfitBoard(&$object, &$listofreferent, $dates, $datee) {
             $element = new $classname($db);
 
             $elementarray = $object->get_element_list($key, $tablename, $datefieldname, $dates, $datee, !empty($project_field)?$project_field:'fk_projet');
+            if(empty($object->lines)) $object->getLinesArray($user);
 
-            if (count($elementarray)>0 && is_array($elementarray))
+            if($key == 'project_task' && ! empty($object->lines)) {
+                $total_ht_by_line = $total_ttc_by_line = 0;
+                $defaultvat = get_default_tva($mysoc, $mysoc);
+                $i = count($object->lines);
+                $thm = $conf->global->PROJECT_FORECAST_DEFAULT_THM;
+
+                foreach($object->lines as $l) {
+                    $total_ht_by_line += price2num(($l->planned_workload / 3600) * $thm, 'MT');
+                    $total_ttc_by_line += price2num($total_ht_by_line * (1 + ($defaultvat / 100)), 'MT');
+                }
+
+                if ($margin != "add") {
+                    $total_ht_by_line *= -1;
+                    $total_ttc_by_line *= -1;
+                }
+
+                print '<tr class="oddeven">';
+                // Module
+                print '<td align="left">'.$name.'</td>';
+                // Nb
+                print '<td align="right">'.$i.'</td>';
+                // Amount HT
+                print '<td align="right">';
+                print price($total_ht_by_line);
+                print '</td>';
+                // Amount TTC
+                print '<td align="right">';
+                print price($total_ttc_by_line);
+                print '</td>';
+                print '</tr>';
+            }
+            else if (count($elementarray)>0 && is_array($elementarray))
             {
                 $total_ht = 0;
                 $total_ttc = 0;
