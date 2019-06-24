@@ -337,3 +337,5 @@ CloneDestinationReference=Référence du produit cible
 ErrorCopyProductCombinations=Une erreur s'est produite lors de la copie des variantes de produit
 ErrorDestinationProductNotFound=Produit destination non trouvé
 ErrorProductCombinationNotFound=Variante du produit non trouvé
+HelpCombinationNewReference=Référence de la nouvelle variante. Si le champ est laissé vide, la référence du produit d’origine sera utilisée et suffixée en fonction des attributs choisis.
+CombinationsSeparator=Séparateur utilisé pour générer les références des nouvelles variantes de produits.
