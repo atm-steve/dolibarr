@@ -1250,7 +1250,7 @@ function sortElementsByClientName($elementarray)
 }
 
 function printForecastProfitBoard(Project &$object, &$listofreferent, $dates, $datee) {
-    global $db, $langs, $user, $conf, $mysoc, $form;
+    global $db, $langs, $user, $conf, $mysoc, $form, $hookmanager;
 
     $elementuser = new User($db);
 
@@ -1269,14 +1269,17 @@ function printForecastProfitBoard(Project &$object, &$listofreferent, $dates, $d
 
             if($key == 'project_task' && ! empty($object->lines)) {
                 $total_ht_by_line = $total_ttc_by_line = 0;
-                $defaultvat = get_default_tva($mysoc, $mysoc);
-                $i = count($object->lines);
                 $thm = $conf->global->PROJECT_FORECAST_DEFAULT_THM;
+                $i = count($object->lines);
 
                 foreach($object->lines as $l) {
+                    $parameters = array('task' => $l);
+                    $resHook = $hookmanager->executeHooks('getForecastTHM', $parameters, $object, $action);
+                    if(! empty($resHook)) $thm = $resHook;
+
                     $total_ht_by_line += price2num(($l->planned_workload / 3600) * $thm, 'MT');
-                    $total_ttc_by_line += price2num($total_ht_by_line * (1 + ($defaultvat / 100)), 'MT');
                 }
+                $total_ttc_by_line += $total_ht_by_line;    // No TVA for tasks
 
                 if ($margin != "add") {
                     $total_ht_by_line *= -1;
