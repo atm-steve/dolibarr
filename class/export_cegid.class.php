@@ -17,7 +17,8 @@ class TExportComptaCegid extends TExportCompta {
 			array('name' => 'sens',					'length' => 1,	'default' => 'D',	'type' => 'text',),
 			array('name' => 'montant',				'length' => 20,	'default' => '0',	'type' => 'text',),
 			array('name' => 'libelle',				'length' => 35,	'default' => '',	'type' => 'text'),
-			array('name' => 'numero_piece',			'length' => 35,	'default' => '',	'type' => 'text')
+			array('name' => 'numero_piece',			'length' => 35,	'default' => '',	'type' => 'text'),
+            array('name' => 'date_lim_reglement',	'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmY'),
 		);
 
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
@@ -156,6 +157,7 @@ class TExportComptaCegid extends TExportCompta {
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_ecriture'			=> $facture['date'],
+                    'date_lim_reglement'	=> $facture['date_lim_reglement'],
 					'code_journal'			=> $codeJournal,
 					'numero_compte'			=> '40100000',
 					'numero_compte_aux'		=> $code_compta,
@@ -175,6 +177,7 @@ class TExportComptaCegid extends TExportCompta {
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_ecriture'			=> $facture['date'],
+                    'date_lim_reglement'	=> $facture['date_lim_reglement'],
 					'code_journal'			=> $codeJournal,
 					'numero_compte'			=> $code_compta,
 					'sens'					=> ($montant > 0 ? 'D' : 'C'),
@@ -196,6 +199,7 @@ class TExportComptaCegid extends TExportCompta {
 				foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 						$ligneFichier = array(
 							'date_ecriture'					=> $facture['date'],
+                            'date_lim_reglement'			=> $facture['date_lim_reglement'],
 							'code_journal'					=> $codeJournal,
 							'numero_compte'					=> $code_compta,
 							'sens'							=> ($montant > 0 ? 'D' : 'C'),
