@@ -3009,13 +3009,18 @@ else
 																									  // modified by hook
 			if (empty($reshook))
 			{
-
-			    // Modify a validated invoice with no payments
-				if ($object->statut == FactureFournisseur::STATUS_VALIDATED && $action != 'confirm_edit' && $object->getSommePaiement() == 0 && $user->rights->fournisseur->facture->creer)
-				{
-					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&amp;action=edit">'.$langs->trans('Modify').'</a></div>';
+				$ventilExportCompta = $object->getVentilExportCompta();
+			    // Modify a validated invoice with no payments  && not exported in compta
+				if (empty($ventilExportCompta)){
+					if ($object->statut == FactureFournisseur::STATUS_VALIDATED && $action != 'confirm_edit' && $object->getSommePaiement() == 0 && $user->rights->fournisseur->facture->creer)
+					{
+						print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&amp;action=edit">'.$langs->trans('Modify').'</a></div>';
+					}
 				}
-
+				else
+				{
+					print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseDispatchedInBookkeeping") . '">' . $langs->trans('Modify') . '</span></div>';
+				}
 				$discount = new DiscountAbsolute($db);
 				$result = $discount->fetch(0, 0, $object->id);
 
@@ -3214,6 +3219,7 @@ else
 		include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
 	}
 }
+
 
 // End of page
 llxFooter();

@@ -35,9 +35,10 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/accounting.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/company.lib.php';
+if (!empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES)) require_once DOL_DOCUMENT_ROOT.'/core/lib/categories.lib.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("bills","compta","accountancy","other","productbatch"));
+$langs->loadLangs(array("bills","compta","accountancy","other","productbatch", "categories"));
 
 $action=GETPOST('action','alpha');
 $massaction=GETPOST('massaction','alpha');
@@ -450,12 +451,33 @@ if ($result) {
 		}
 		if ($objp->code_sell_l == -1) $objp->code_sell_l='';
 
+        $parameters = array('objp' => &$objp);
+        $reshook=$hookmanager->executeHooks('selectlineaccountancycode',$parameters);    // Note that $action and $object may have been modified by hook
+
+		if (!empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES))
+        {
+            if (empty($objp->code_sell))
+            {
+                // get account from categories of the product
+                list($cat_code, $cat_label) = getCategoryAccountancyCode($objp->product_id, 'product');
+                if (!empty($cat_code))
+                {
+                    if ($cat_code < 0) $cat_label = '';
+                    else
+                    {
+                        $objp->aarowid_suggest = $accounting->fetch('', $cat_code, 1);
+                        $objp->aarowid = $objp->aarowid_suggest;
+                    }
+                }
+            }
+        }
+
 		if (! empty($objp->code_sell)) {
 			$objp->code_sell_p = $objp->code_sell;       // Code on product
 		} else {
-			$code_sell_p_notset = 'color:orange';
+			if (empty($cat_code)) $code_sell_p_notset = 'color:orange';
 		}
-		if (empty($objp->code_sell_l) && empty($objp->code_sell_p)) $code_sell_p_notset = 'color:red';
+		if (empty($objp->code_sell_l) && empty($objp->code_sell_p) && empty($cat_code)) $code_sell_p_notset = 'color:red';
 
 		// $objp->code_sell_p is now code of product/service
 		// $objp->code_sell_l is now default code of product/service
@@ -503,6 +525,11 @@ if ($result) {
 	    print (($objp->type_l == 1)?$langs->trans("DefaultForService"):$langs->trans("DefaultForProduct")) . ' = ' . ($objp->code_sell_l > 0 ? length_accountg($objp->code_sell_l) : $langs->trans("Unknown"));
 		if ($objp->product_id > 0)
 		{
+		    if (!empty($cat_code) && $cat_code > 0)
+		    {
+			print '<br>';
+			print (($objp->type_l == 1)?$langs->trans("DefaultForServiceCategorie", $cat_label):$langs->trans("DefaultForProductCategorie", $cat_label)) . ' = ' . ($cat_code > 0 ? length_accountg($cat_code) : $langs->trans("Unknown"));
+		    }
 		    print '<br>';
 		    print (($objp->type_l == 1)?$langs->trans("ThisService"):$langs->trans("ThisProduct")) . ' = ' . (empty($objp->code_sell_p) ? $langs->trans("Unknown") : length_accountg($objp->code_sell_p));
 		}

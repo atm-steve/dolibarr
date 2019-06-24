@@ -453,12 +453,15 @@ if ($result) {
 		}
 		if ($objp->code_buy_l == -1) $objp->code_buy_l='';
 
+        $parameters = array('objp' => &$objp);
+        $reshook=$hookmanager->executeHooks('selectlineaccountancycode',$parameters);    // Note that $action and $object may have been modified by hook
+
 		if (! empty($objp->code_buy)) {
 			$objp->code_buy_p = $objp->code_buy;       // Code on product
 		} else {
-			$code_buy_p_notset = 'color:orange';
+            if (empty($cat_code)) $code_buy_p_notset = 'color:orange';
 		}
-		if (empty($objp->code_buy_l) && empty($objp->code_buy_p)) $code_buy_p_notset = 'color:red';
+		if (empty($objp->code_buy_l) && empty($objp->code_buy_p) && empty($cat_code)) $code_buy_p_notset = 'color:red';
 
 		// $objp->code_buy_p is now code of product/service
 		// $objp->code_buy_l is now default code of product/service
@@ -510,6 +513,11 @@ if ($result) {
 		print (($objp->type_l == 1)?$langs->trans("DefaultForService"):$langs->trans("DefaultForProduct")) . ' = ' . ($objp->code_buy_l > 0 ? length_accountg($objp->code_buy_l) : $langs->trans("Unknown"));
 		if ($objp->product_id > 0)
 		{
+            if (!empty($cat_code) && $cat_code > 0)
+            {
+                print '<br>';
+                print (($objp->type_l == 1)?$langs->trans("DefaultForServiceCategorie", $cat_label):$langs->trans("DefaultForProductCategorie", $cat_label)) . ' = ' . ($cat_code > 0 ? length_accountg($cat_code) : $langs->trans("Unknown"));
+            }
 		    print '<br>';
 		    print (($objp->type_l == 1)?$langs->trans("ThisService"):$langs->trans("ThisProduct")) . ' = ' . (empty($objp->code_buy_p) ? $langs->trans("Unknown") : length_accountg($objp->code_buy_p));
 		}
