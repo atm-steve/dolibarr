@@ -561,4 +561,4 @@ ALTER TABLE llx_advtargetemailing DROP COLUMN fk_mailing;
 
 DROP TABLE llx_ticket_logs;
 
-
+ALTER TABLE llx_actioncomm MODIFY COLUMN code varchar(50);
