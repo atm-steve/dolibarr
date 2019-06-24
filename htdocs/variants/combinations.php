@@ -99,6 +99,7 @@ if ($_POST) {
 
 	if (($action == 'add' || $action == 'create') && empty($massaction) && ! GETPOST('selectvariant', 'alpha'))	// We click on Create all defined combinations
 	{
+        $new_ref = GETPOST('new_ref', 'alpha') ?: '';
 		//$features = GETPOST('features', 'array');
         $features = $_SESSION['addvariant_'.$object->id];
 
@@ -143,7 +144,7 @@ if ($_POST) {
 
 			if (! $prodcomb->fetchByProductCombination2ValuePairs($id, $sanit_features))
 			{
-				$result = $prodcomb->createProductCombination($object, $sanit_features, array(), $price_impact_percent, $price_impact, $weight_impact);
+				$result = $prodcomb->createProductCombination($object, $sanit_features, array(), $price_impact_percent, $price_impact, $weight_impact, $new_ref);
 				if ($result > 0)
 				{
 					setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
@@ -605,6 +606,18 @@ if (! empty($id) || ! empty($ref))
 				print '<td><input type="text" id="weight_impact" name="weight_impact" value="'.price($weight_impact).'"></td>';
 				print '</tr>';
 			}
+			?>
+            <tr>
+                <td>
+                    <label for="new_ref">
+                        <?php echo $langs->trans('Reference') ?>
+                    </label>
+                </td>
+                <td>
+                    <input type="text" name="new_ref"> <?php print $form->textwithpicto('', $langs->trans('HelpCombinationNewReference')) ?>
+                </td>
+            </tr>
+            <?php
 			print '</table>';
 		}
 
