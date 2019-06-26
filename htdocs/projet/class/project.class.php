@@ -1991,10 +1991,12 @@ class Project extends CommonObject
 	 */
 	function getLinesArray($user)
 	{
-	    require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
-	    $taskstatic = new Task($this->db);
+	    if ($this->element == 'project'){
+            require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
+            $taskstatic = new Task($this->db);
 
-	    $this->lines = $taskstatic->getTasksArray(0, $user, $this->id, 0, 0);
+            $this->lines = $taskstatic->getTasksArray(0, $user, $this->id, 0, 0);
+        }
 	}
 
 }

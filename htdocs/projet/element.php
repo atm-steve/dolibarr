@@ -1254,6 +1254,9 @@ function printForecastProfitBoard(Project &$object, &$listofreferent, $dates, $d
 
     $elementuser = new User($db);
 
+    $balance_ht = 0;
+    $balance_ttc = 0;
+
     foreach($listofreferent as $key => $value) {
         $name=$langs->trans($value['name']);
         $classname=$value['class'];
@@ -1265,7 +1268,9 @@ function printForecastProfitBoard(Project &$object, &$listofreferent, $dates, $d
             $element = new $classname($db);
 
             $elementarray = $object->get_element_list($key, $tablename, $datefieldname, $dates, $datee, !empty($project_field)?$project_field:'fk_projet');
-            if(empty($object->lines)) $object->getLinesArray($user);
+            if($key == 'project_task' && empty($object->lines)) {
+                $object->getLinesArray($user);
+            }
 
             if($key == 'project_task' && ! empty($object->lines)) {
                 $total_ht_by_line = $total_ttc_by_line = 0;
@@ -1276,7 +1281,6 @@ function printForecastProfitBoard(Project &$object, &$listofreferent, $dates, $d
                     $parameters = array('task' => $l);
                     $resHook = $hookmanager->executeHooks('getForecastTHM', $parameters, $object, $action);
                     if(! empty($resHook)) $thm = $resHook;
-
                     $total_ht_by_line += price2num(($l->planned_workload / 3600) * $thm, 'MT');
                 }
                 $total_ttc_by_line += $total_ht_by_line;    // No TVA for tasks
@@ -1285,6 +1289,9 @@ function printForecastProfitBoard(Project &$object, &$listofreferent, $dates, $d
                     $total_ht_by_line *= -1;
                     $total_ttc_by_line *= -1;
                 }
+
+                $balance_ht += $total_ht_by_line;
+                $balance_ttc += $total_ttc_by_line;
 
                 print '<tr class="oddeven">';
                 // Module
