@@ -493,6 +493,7 @@ if (! empty($id) || ! empty($ref))
 						});
 					});
 				});
+				jQuery('select[name=value]').select2();
 			});
 		</script>
 
