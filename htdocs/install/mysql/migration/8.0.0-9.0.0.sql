@@ -269,8 +269,8 @@ CREATE TABLE llx_pos_cash_fence(
 
 
 -- Withdrawals / Prelevements
-UPDATE llx_const set name = 'PRELEVEMENT_END_TO_END' where name = 'END_TO_END';
-UPDATE llx_const set name = 'PRELEVEMENT_USTRD' where name = 'USTRD';
+UPDATE llx_const set name = __ENCRYPT('PRELEVEMENT_END_TO_END')__ where name = __ENCRYPT('END_TO_END')__;
+UPDATE llx_const set name = __ENCRYPT('PRELEVEMENT_USTRD')__ where name = __ENCRYPT('USTRD')__;
 
 
 -- Delete duplicate accounting account, but only if not used
@@ -291,3 +291,15 @@ ALTER TABLE llx_accounting_account ADD UNIQUE INDEX uk_accounting_account (accou
 UPDATE llx_projet SET fk_opp_status = NULL WHERE fk_opp_status = -1;
 
 
+ALTER TABLE llx_facture ADD COLUMN retained_warranty real DEFAULT NULL after situation_final;
+ALTER TABLE llx_facture ADD COLUMN retained_warranty_date_limit	date DEFAULT NULL after retained_warranty;
+ALTER TABLE llx_facture ADD COLUMN retained_warranty_fk_cond_reglement	integer  DEFAULT NULL after retained_warranty_date_limit;
+
+
+
+ALTER TABLE llx_product_fournisseur_price ADD COLUMN barcode varchar(180) DEFAULT NULL;
+ALTER TABLE llx_product_fournisseur_price ADD COLUMN fk_barcode_type integer DEFAULT NULL;
+ALTER TABLE llx_product_fournisseur_price ADD INDEX idx_product_barcode (barcode);
+ALTER TABLE llx_product_fournisseur_price ADD INDEX idx_product_fk_barcode_type (fk_barcode_type);
+ALTER TABLE llx_product_fournisseur_price ADD UNIQUE INDEX uk_product_barcode (barcode, fk_barcode_type, entity);
+ALTER TABLE llx_product_fournisseur_price ADD CONSTRAINT fk_product_fournisseur_price_barcode_type FOREIGN KEY (fk_barcode_type) REFERENCES  llx_c_barcode_type (rowid);

@@ -1993,6 +1993,43 @@ abstract class CommonObject
 			return -2;
 		}
 	}
+	
+	/**
+	 *  Change the retained warranty payments terms
+	 *
+	 *  @param		int		$id		Id of new payment terms
+	 *  @return		int				>0 if OK, <0 if KO
+	 */
+	function setRetainedWarrantyPaymentTerms($id)
+	{
+	    dol_syslog(get_class($this).'::setRetainedWarrantyPaymentTerms('.$id.')');
+	    if ($this->statut >= 0 || $this->element == 'societe')
+	    {
+	        $fieldname = 'retained_warranty_fk_cond_reglement';
+	        
+	        $sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element;
+	        $sql .= ' SET '.$fieldname.' = '.$id;
+	        $sql .= ' WHERE rowid='.$this->id;
+	        
+	        if ($this->db->query($sql))
+	        {
+	            $this->retained_warranty_fk_cond_reglement = $id;
+	            return 1;
+	        }
+	        else
+	        {
+	            dol_syslog(get_class($this).'::setRetainedWarrantyPaymentTerms Erreur '.$sql.' - '.$this->db->error());
+	            $this->error=$this->db->error();
+	            return -1;
+	        }
+	    }
+	    else
+	    {
+	        dol_syslog(get_class($this).'::setRetainedWarrantyPaymentTerms, status of the object is incompatible');
+	        $this->error='Status of the object is incompatible '.$this->statut;
+	        return -2;
+	    }
+	}
 
 	/**
 	 *	Define delivery address
@@ -3806,10 +3843,11 @@ abstract class CommonObject
 
 		// Output template part (modules that overwrite templates must declare this into descriptor)
 		// Use global variables + $dateSelector + $seller and $buyer
-		$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+		$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 		foreach($dirtpls as $reldir)
 		{
 			$tpl = dol_buildpath($reldir.'/objectline_create.tpl.php');
+
 			if (empty($conf->file->strict_mode)) {
 				$res=@include $tpl;
 			} else {
@@ -4059,10 +4097,11 @@ abstract class CommonObject
 
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
-			$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+			$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 			foreach($dirtpls as $reldir)
 			{
 				$tpl = dol_buildpath($reldir.'/objectline_view.tpl.php');
+
 				if (empty($conf->file->strict_mode)) {
 					$res=@include $tpl;
 				} else {
@@ -4082,10 +4121,11 @@ abstract class CommonObject
 
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
-			$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+			$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 			foreach($dirtpls as $reldir)
 			{
 				$tpl = dol_buildpath($reldir.'/objectline_edit.tpl.php');
+
 				if (empty($conf->file->strict_mode)) {
 					$res=@include $tpl;
 				} else {
@@ -4278,10 +4318,11 @@ abstract class CommonObject
 
 		// Output template part (modules that overwrite templates must declare this into descriptor)
 		// Use global variables + $dateSelector + $seller and $buyer
-		$dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
+		$dirtpls=array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
 		foreach($dirtpls as $reldir)
 		{
 			$tpl = dol_buildpath($reldir.'/originproductline.tpl.php');
+
 			if (empty($conf->file->strict_mode)) {
 				$res=@include $tpl;
 			} else {
