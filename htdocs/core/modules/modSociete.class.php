@@ -355,11 +355,23 @@ class modSociete extends DolibarrModules
         include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
         $keyforselect='societe'; $keyforelement='company'; $keyforaliasextra='extrasoc';
         include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
+
+        // Spécifique Travail Associé : ajout du commercial dans l'export des contacts
+		$this->export_fields_array[$r]+=array('u.login'=>'SaleRepresentativeLogin','u.firstname'=>'SaleRepresentativeFirstname', 'u.lastname'=>'SaleRepresentativeLastname');
+		$this->export_entities_array[$r]+=array('u.login'=>'user','u.firstname'=>'user','u.lastname'=>'user');	// We define here only fields that use another picto
+		$this->export_TypeFields_array[$r]+=array('u.login'=>'Text','u.firstname'=>'Text','u.lastname'=>'Text');
+		// Fin Spécifique
+
         $this->export_sql_start[$r]='SELECT DISTINCT ';
 		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'socpeople as c';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe as s ON c.fk_soc = s.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_extrafields as extrasoc ON s.rowid = extrasoc.fk_object';
-		if (is_object($user) && empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
+
+		// Spécifique Travail Associé : ajout du commercial dans l'export des contacts
+		// if (is_object($user) && empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid LEFT JOIN '.MAIN_DB_PREFIX.'user as u ON sc.fk_user = u.rowid';
+		// Fin spécifique
+
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_departements as d ON c.fk_departement = d.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as co ON c.fk_pays = co.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'socpeople_extrafields as extra ON extra.fk_object = c.rowid';
