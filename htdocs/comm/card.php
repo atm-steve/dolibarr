@@ -716,6 +716,14 @@ if ($object->id > 0)
                 $propal_static->total_tva = $objp->total_tva;
                 $propal_static->total_ttc = $objp->total_ttc;
                 print $propal_static->getNomUrl(1);
+
+				// Spécifique Travail Associé : afficher la référence client des propales et factures
+				if(! empty($propal_static->ref_client))
+				{
+					print ' - ' . $propal_static->ref_client;
+				}
+				// Fin spécifique
+
                 if ( ($db->jdate($objp->datelimite) < ($now - $conf->propal->cloture->warning_delay)) && $objp->fk_statut == 1 ) {
                     print " ".img_warning();
                 }
@@ -1148,6 +1156,11 @@ if ($object->id > 0)
 		$sql.= ', f.datef as df, f.datec as dc, f.paye as paye, f.fk_statut as statut';
 		$sql.= ', s.nom, s.rowid as socid';
 		$sql.= ', SUM(pf.amount) as am';
+
+		// Spécifique Travail Associé : afficher la référence client des propales et factures
+		$sql.= ', f.ref_client';
+		// Fin spécifique
+
 		$sql.= " FROM ".MAIN_DB_PREFIX."societe as s,".MAIN_DB_PREFIX."facture as f";
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement_facture as pf ON f.rowid=pf.fk_facture';
 		$sql.= " WHERE f.fk_soc = s.rowid AND s.rowid = ".$object->id;
@@ -1182,6 +1195,11 @@ if ($object->id > 0)
 
 				$facturestatic->id = $objp->facid;
 				$facturestatic->ref = $objp->facnumber;
+
+				// Spécifique Travail Associé : afficher la référence client des propales et factures
+				$facturestatic->ref_client = $objp->ref_client;
+				// Fin spécifique
+
 				$facturestatic->type = $objp->type;
 				$facturestatic->total_ht = $objp->total_ht;
 				$facturestatic->total_tva = $objp->total_tva;
@@ -1190,6 +1208,15 @@ if ($object->id > 0)
 				print '<tr class="oddeven">';
 				print '<td class="nowrap">';
 				print $facturestatic->getNomUrl(1);
+
+				// Spécifique Travail Associé : afficher la référence client des propales et factures
+				if(! empty($facturestatic->ref_client))
+				{
+					print ' - ' . $facturestatic->ref_client;
+				}
+				// Fin spécifique
+
+
 				print '</td>';
 				if ($objp->df > 0)
 				{
