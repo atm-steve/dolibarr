@@ -1345,7 +1345,7 @@ if (empty($reshook))
 										0,
 										'HT',
 										0,
-										0, 						// product_type
+										1, 						// product_type - Spécifique Travail associé : les acomptes sont des services non des produits (pour calcul correct de TVA)
 										1,
 										$lines[$i]->special_code,
 										$object->origin,
