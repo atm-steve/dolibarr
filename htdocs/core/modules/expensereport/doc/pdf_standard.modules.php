@@ -311,16 +311,19 @@ class pdf_standard extends ModeleExpenseReport
 					$pdf->SetXY($this->posxpiece, $curY);
 					$pdf->writeHTMLCell($this->posxcomment-$this->posxpiece-0.8, 4, $this->posxpiece-1, $curY, $piece_comptable, 0, 1);
 					
+					// fix TK9807 probleme pdf
+					// correction déjà présente en standard commit b3d58e95109b615b9e5471f24fdaa36277bb2902
+					//nexY
+                                        $nexY = $pdf->GetY();
+                                        $pageposafter=$pdf->getPage();
+                                        $pdf->setPage($pageposbefore);
+                                        $pdf->setTopMargin($this->marge_haute);
+                                        $pdf->setPageOrientation('', 1, 0);     // The only function to edit the bottom margin of current page to set it.
+
+
 					// Comments
 					$pdf->SetXY($this->posxcomment, $curY);
 					$pdf->writeHTMLCell($this->posxdate-$this->posxcomment-0.8, 4, $this->posxcomment-1, $curY, $object->lines[$i]->comments, 0, 1);
-
-					//nexY
-					$nexY = $pdf->GetY();
-					$pageposafter=$pdf->getPage();
-					$pdf->setPage($pageposbefore);
-					$pdf->setTopMargin($this->marge_haute);
-					$pdf->setPageOrientation('', 1, 0);	// The only function to edit the bottom margin of current page to set it.
 
 					// Date
 					$pdf->SetXY($this->posxdate, $curY);
