@@ -1543,7 +1543,7 @@ function show_day_events($db, $day, $month, $year, $monthshown, $style, &$eventa
                         }
 
                         // Show title
-                        $titletoshow = $daterange;
+                        $titletoshow = $daterange.'<br>';
                         $titletoshow.=($titletoshow?' ':'').$event->libelle;
 
                         if ($event->type_code == 'ICALEVENT') print $titletoshow;
