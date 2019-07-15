@@ -307,7 +307,36 @@ if (empty($reshook))
 		if ($result < 0)
 			dol_print_error($db, $object->error);
 	}
+    else if ($action == 'setretainedwarrantyconditions' && $user->rights->facture->creer)
+    {
+        $object->fetch($id);
+        $object->retained_warranty_fk_cond_reglement = 0; // To clean property
+        $result = $object->setRetainedWarrantyPaymentTerms(GETPOST('retained_warranty_fk_cond_reglement', 'int'));
+        if ($result < 0) dol_print_error($db, $object->error);
 
+        $old_rw_date_lim_reglement = $object->retained_warranty_date_limit;
+        $new_rw_date_lim_reglement = $object->calculate_date_lim_reglement($object->retained_warranty_fk_cond_reglement);
+        if ($new_rw_date_lim_reglement > $old_rw_date_lim_reglement) $object->retained_warranty_date_limit = $new_rw_date_lim_reglement;
+        if ($object->retained_warranty_date_limit < $object->date) $object->retained_warranty_date_limit = $object->date;
+        $result = $object->update($user);
+        if ($result < 0) dol_print_error($db, $object->error);
+    }
+
+    else if ($action == 'setretainedwarranty' && $user->rights->facture->creer)
+    {
+        $object->fetch($id);
+        $result = $object->setRetainedWarranty(GETPOST('retained_warranty', 'float'));
+        if ($result < 0)
+            dol_print_error($db, $object->error);
+    }
+
+    else if ($action == 'setretainedwarrantydatelimit' && $user->rights->facture->creer)
+    {
+        $object->fetch($id);
+        $result = $object->setRetainedWarrantyDateLimit(GETPOST('retained_warranty_date_limit', 'float'));
+        if ($result < 0)
+            dol_print_error($db, $object->error);
+    }
 	// Multicurrency Code
 	else if ($action == 'setmulticurrencycode' && $usercancreate) {
 		$result = $object->setMulticurrencyCode(GETPOST('multicurrency_code', 'alpha'));
@@ -3197,17 +3226,28 @@ if ($action == 'create')
 	        if(GETPOST('type', 'int') == Facture::TYPE_SITUATION){
 	            $rwStyle = '';
 	        }
-	        
+
+
+            $default_retained_warranty = $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_PERCENT;
+            $default_retained_warranty_fk_cond_reglement = $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_COND_ID;
+            if ($origin == 'facture' && ! empty($originid)) {
+                $originObject = new Facture($db);
+                if($originObject->fetch($originid)>0)
+                {
+                    $default_retained_warranty = $originObject->retained_warranty;
+                    $default_retained_warranty_fk_cond_reglement = $originObject->retained_warranty_fk_cond_reglement;
+                }
+            }
 	        
 	        $retained_warranty = GETPOST('retained_warranty', 'int');
-	        $retained_warranty = !empty($retained_warranty)?$retained_warranty:$conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_PERCENT;
+	        $retained_warranty = !empty($retained_warranty)?$retained_warranty:$default_retained_warranty;
 	        print '<tr class="retained-warranty-line" style="'.$rwStyle.'" ><td class="nowrap">' . $langs->trans('RetainedWarranty') . '</td><td colspan="2">';
 	        print '<input id="new-situation-invoice-retained-warranty" name="retained_warranty" type="number" value="'.$retained_warranty.'" step="0.01" min="0" max="100" />%';
 	    
 	        // Retained warranty payment term
 	        print '<tr class="retained-warranty-line" style="'.$rwStyle.'" ><td class="nowrap">' . $langs->trans('PaymentConditionsShortRetainedWarranty') . '</td><td colspan="2">';
 	        $retained_warranty_fk_cond_reglement = GETPOST('retained_warranty_fk_cond_reglement', 'int');
-	        $retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_COND_ID;
+	        $retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $default_retained_warranty_fk_cond_reglement;
 	        $form->select_conditions_paiements($retained_warranty_fk_cond_reglement, 'retained_warranty_fk_cond_reglement', -1, 1);
 	        print '</td></tr>';
 	        
