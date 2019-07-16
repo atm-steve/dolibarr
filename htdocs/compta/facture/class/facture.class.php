@@ -940,12 +940,6 @@ class Facture extends CommonInvoice
 		// Loop on each line of new invoice
 		foreach($facture->lines as $i => $tmpline)
 		{
-            if (!empty($conf->global->INVOICE_USE_SITUATION) && $this->type == self::TYPE_SITUATION && !empty($tmpline->fk_remise_except) && $facture->situation_counter > 1)
-            {
-                unset($facture->lines[$i]);
-                continue;
-            }
-
 			$facture->lines[$i]->fk_prev_id = $this->lines[$i]->rowid;
 			if ($invertdetail)
 			{
@@ -957,7 +951,6 @@ class Facture extends CommonInvoice
 				$facture->lines[$i]->total_ttc = -$facture->lines[$i]->total_ttc;
 			}
 		}
-		sort($facture->lines); // use sort here to re-index key from 0, because in 'create' method a test is done on '[0]'
 
 		dol_syslog(get_class($this)."::createFromCurrent invertdetail=".$invertdetail." socid=".$this->socid." nboflines=".count($facture->lines));
 
