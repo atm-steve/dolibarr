@@ -1640,7 +1640,7 @@ if (empty($reshook))
 				$object->mode_reglement_id = GETPOST('mode_reglement_id','int');
 				$object->remise_absolue = GETPOST('remise_absolue','int');
 				$object->remise_percent = GETPOST('remise_percent','int');
-
+                $object->retained_warranty = GETPOST('retained_warranty', 'int');
 				// Proprietes particulieres a facture de remplacement
 
 				$object->situation_counter = $object->situation_counter + 1;
