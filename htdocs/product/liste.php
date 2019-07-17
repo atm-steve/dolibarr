@@ -474,7 +474,7 @@ else
     					$product_static->load_stock();
     					print '<td align="right">';
                         if ($product_static->stock_reel < $objp->seuil_stock_alerte) print img_warning($langs->trans("StockTooLow")).' ';
-        				print $product_static->stock_reel;
+        				print price2num($product_static->stock_reel);
     					print '</td>';
     				}
     				else
