@@ -830,7 +830,7 @@ if (! $variants) {
 	$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON p.rowid = ps.fk_product";
 	$sql .= " WHERE ps.reel != 0";
 	$sql .= " AND ps.fk_entrepot = e.rowid";
-	$sql .= " AND e.entity IN (" . getEntity('stock') . ")";
+//	$sql .= " AND e.entity IN (" . getEntity('stock') . ")";
 	$sql .= " AND ps.fk_product = " . $object->id;
 	$sql .= " ORDER BY e.ref";
 
