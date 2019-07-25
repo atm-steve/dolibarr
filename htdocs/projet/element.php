@@ -434,7 +434,7 @@ $listofreferent=array(
 	'class'=>'Task',
 	'margin'=>'minus',
 	'table'=>'projet_task',
-	'datefieldname'=>'task_date',
+	'datefieldname'=>'dateo',
 	'disableamount'=>0,
     'urlnew'=>DOL_URL_ROOT.'/projet/tasks/time.php?id='.$id,
     'buttonnew'=>'AddTimeSpent',
