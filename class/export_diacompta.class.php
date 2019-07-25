@@ -811,7 +811,7 @@ class TExportComptaDiacompta extends TExportCompta {
 				$ligneFichier = array(
 					'code_journal'					=> $bank['ref']
 					,'numero_lot_ecriture'			=> $numEcriture
-					,'numero_compte'				=> !empty($this->TCodeComptaRglt[$bankline['fk_type']]) ? $this->TCodeComptaRglt[$bankline['fk_type']] : $code_compta 
+					,'numero_compte'				=> (!empty($this->TCodeComptaRglt[$bankline['fk_type']]) && empty($conf->global->EXPORT_COMPTA_DIAFORMAT_FORCE_CODE_COMPTA_BANK)) ? $this->TCodeComptaRglt[$bankline['fk_type']] : $code_compta 
 					,'sens'							=> ($montant < 0) ? 'C' : 'D'
 					,'montant'						=> abs($montant*100)
 					,'code_libelle'					=> ''

@@ -26,6 +26,9 @@ class TExportComptaSage extends TExportCompta {
 
 		$this->_format_ecritures_comptables_banque = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_banque[1]['default'] = '';
+
+		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_vente;
+		$this->_format_ecritures_comptables_ndf[1]['default'] = 'AC';
 		
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
@@ -239,7 +242,7 @@ class TExportComptaSage extends TExportCompta {
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		$compte_general_user = $conf->global->EXPORT_COMPTA_GENERAL_USER_ACCOUNT;
 		if(empty($compte_general_user)) $compte_general_user = '40100000';
 		

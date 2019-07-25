@@ -42,6 +42,7 @@ class TExportCompta extends TObjetStd {
 			'quadratus' => 'Quadratus'
 			,'sage' => 'Sage'
 			,'sage30' => 'Sage 30'
+		    ,'sage1000' => 'Sage 1000'
 			,'ciel' => 'Ciel'
 			,'opensi' => 'Open SI'
 			,'etag' => 'eTag'
@@ -52,8 +53,9 @@ class TExportCompta extends TObjetStd {
 			,'diacompta' => 'Diacompta'
 			,'orma' => 'Orma'
 			,'comptor' => 'Comptor'
-			,'winfic' => 'Winfic'
-			,'agiris' => 'Agiris'
+		    ,'winfic' => 'Winfic'
+		    ,'agiris' => 'Agiris'
+		    ,'ld' => 'LD Compta'
 		);
 		$this->TDatesFacCli = array(
 			'datef' => 'Date de facture'
@@ -87,7 +89,7 @@ class TExportCompta extends TObjetStd {
 		if(!empty($conf->facture->enabled)) $this->TTypeExport['ecritures_comptables_vente'] = 'Ecritures comptables vente';
 		if(!empty($conf->fournisseur->enabled)) $this->TTypeExport['ecritures_comptables_achat'] = 'Ecritures comptables achats';
 		if(!empty($conf->banque->enabled)) $this->TTypeExport['ecritures_comptables_banque'] = 'Écritures comptables banque';
-		if(!empty($conf->ndfp->enabled)) {
+		if(!empty($conf->ndfp->enabled) || ! empty($conf->expensereport->enabled)) {
 			dol_include_once('/ndfp/class/ndfp.class.php');
 			$this->TTypeExport['ecritures_comptables_ndf'] = 'Ecritures comptables notes de frais';
 		}
@@ -157,8 +159,13 @@ class TExportCompta extends TObjetStd {
 		// Requête de récupération des factures
 		$sql = "SELECT f.rowid, f.entity";
 		if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER)) $sql.= ", ee.fk_source";
+		if ($conf->agefodd->enabled) $sql .= ", agfs.type_session";
 		$sql.= " FROM ".MAIN_DB_PREFIX."facture f LEFT JOIN ".MAIN_DB_PREFIX."facture_extrafields fex ON (fex.fk_object=f.rowid)";
 		if(!empty($conf->global->EXPORTCOMPTA_USE_PROPAL_THIRD_ACOUNTING_NUMBER)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."element_element ee ON (ee.fk_target = f.rowid AND ee.targettype = 'facture' AND ee.sourcetype = 'propal')";
+		if ($conf->agefodd->enabled) {
+		    $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."agefodd_session_element as agfse ON agfse.fk_element = f.rowid AND agfse.element_type = 'invoice'";
+		    $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."agefodd_session as agfs ON agfse.fk_session_agefodd = agfs.rowid";
+		}
 		$sql.= " WHERE f.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
 		if(!$allEntities) $sql.= " AND f.entity = {$conf->entity}";
 		if(!empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type <> 3";
@@ -193,11 +200,15 @@ class TExportCompta extends TObjetStd {
 		// Construction du tableau de données
 		$TIdFactures = array();
 		while($obj = $db->fetch_object($resql)) {
-			$TIdFactures[] = array(
-				'rowid' => $obj->rowid
-				,'entity' => $obj->entity
-				,'id_propal_origin' => $obj->fk_source
-			);
+		    $tmparray = array(
+		        'rowid' => $obj->rowid
+		        ,'entity' => $obj->entity
+		        ,'id_propal_origin' => $obj->fk_source
+		    );
+		    
+		    if ($conf->agefodd->enabled)  $tmparray['type_session'] = $obj->type_session;
+		    
+            $TIdFactures[] = $tmparray;
 		}
 
 		if (!empty($conf->global->EXPORT_COMPTA_CODE_COMPTABLE_ACOMPTE_NOT_USED) && !empty($conf->caisse->enabled))
@@ -247,6 +258,7 @@ class TExportCompta extends TObjetStd {
 
 			// Récupération en-tête facture
 			$TFactures[$facture->id]['facture'] = get_object_vars($facture);
+			if ($conf->agefodd->enabled) $TFactures[$facture->id]['facture']['type_session'] = $idFacture['type_session'];
 
 			// Récupération client
 			$facture->fetch_thirdparty();
@@ -800,16 +812,158 @@ class TExportCompta extends TObjetStd {
 	}
 
 	/*
-	 * Récupération dans Dolibarr de la liste des notes de frais
+	 * Récupération dans Dolibarr de la liste des notes de frais, version standard
 	 */
-	function get_notes_de_frais($dt_deb, $dt_fin) {
+	function get_notes_de_frais($dt_deb, $dt_fin)
+	{
+		global $db, $conf, $user;
+
+		if(! empty($conf->ndfp->enabled))
+		{
+			return $this->get_notes_de_frais_ndfp($dt_deb, $dt_fin);
+		}
+
+		if(empty($conf->expensereport->enabled))
+		{
+			return array();
+		}
+
+		require_once DOL_DOCUMENT_ROOT . '/expensereport/class/expensereport.class.php';
+
+		$PDOdb = new TPDOdb();
+		$sql = 'SELECT id, accountancy_code FROM ' . MAIN_DB_PREFIX . 'c_type_fees';
+		$TCodesCompta = TRequeteCore::get_keyval_by_sql($PDOdb, $sql, 'id', 'accountancy_code');
+		$PDOdb->close();
+
+		$defaultSupplierConfKey = (float) DOL_VERSION < 3.7 ? 'COMPTA_ACCOUNT_SUPPLIER' : 'ACCOUNTING_ACCOUNT_SUPPLIER';
+		$defaultVATBuyConfKey = (float) DOL_VERSION < 3.7 ? 'COMPTA_VAT_BUY_ACCOUNT' : 'ACCOUNTING_VAT_BUY_ACCOUNT';
+
+		$datefield = $conf->global->EXPORT_COMPTA_DATE_NDF;
+
+		if($datefield == 'dates') $datefield = 'date_debut';
+		if($datefield == 'datee') $datefield = 'date_fin';
+		if(empty($datefield)) $datefield = 'date_debut';
+
+		$p = explode(':', $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
+		$idpays = $p[0];
+
+		// Requête de récupération des notes de frais
+		$sql = 'SELECT er.rowid, er.entity
+				FROM ' . MAIN_DB_PREFIX . 'expensereport er
+				WHERE er.' . $datefield . ' BETWEEN "' . $db->escape($dt_deb) . '" AND "' . $db->escape($dt_fin) . '"
+				AND er.fk_statut IN (' . ExpenseReport::STATUS_APPROVED . ', ' . ExpenseReport::STATUS_CLOSED . ')';
+
+		if (empty($conf->global->EXPORT_COMPTA_ALL_ENTITIES))
+		{
+			$sql.= '
+				AND er.entity = ' . $conf->entity;
+		}
+
+		$sql.= '
+				ORDER BY er.' . $datefield . ', er.ref ASC';
+
+		$resql = $db->query($sql);
+		if (! $resql)
+		{
+			dol_print_error($db);
+			return array();
+		}
+
+		$num = $db->num_rows($resql);
+
+		$trueEntity = $conf->entity;
+
+		$TNDF = array();
+
+		for($i = 0; $i < $num; $i++)
+		{
+			$obj = $db->fetch_object($resql);
+
+			$conf->entity = $obj->entity; // Le fetch ne marche pas si pas dans la bonne entity
+			$expenseReport = new ExpenseReport($db);
+			$expenseReport->fetch($obj->rowid);
+
+			if(empty($expenseReport->lines)) continue;
+
+			$TNDF[$expenseReport->id] = array();
+			$TNDF[$expenseReport->id]['compteur']['piece'] = $i;
+
+			$TObjNDF = get_object_vars($expenseReport);
+
+			// Récupération en-tête ndf
+			$TNDF[$expenseReport->id]['ndf'] = $TObjNDF;
+			$TNDF[$expenseReport->id]['ndf']['datee'] = $TObjNDF['date_fin'];
+
+			// Récupération client
+			if($expenseReport->fetch_thirdparty() > 0)
+			{
+				$TNDF[$expenseReport->id]['tiers'] = get_object_vars($expenseReport->thirdparty);
+			}
+
+			// Récupération user
+			if($expenseReport->fetch_user($expenseReport->fk_user_author) > 0)
+			{
+				$TNDF[$expenseReport->id]['user'] = get_object_vars($expenseReport->user);
+			}
+
+			// Récupération entity
+			if (! empty($conf->multicompany->enabled))
+			{
+				$entity = new DaoMulticompany($db);
+				$entity->fetch($obj->entity);
+				$TNDF[$expenseReport->id]['entity'] = get_object_vars($entity);
+			}
+
+			// Définition des codes comptables
+			$codeComptableClient = !empty($expenseReport->thirdparty->code_compta) ? $expenseReport->thirdparty->code_compta : $conf->global->{ $defaultSupplierConfKey };
+			$codeCompta = $expenseReport->user->accountancy_code;
+
+			// Récupération lignes de notes de frais
+
+			foreach ($expenseReport->lines as $ligne)
+			{
+				// Code compta produit
+				if (! empty($ligne->fk_c_type_fees))
+				{
+					$codeComptableProduit = $TCodesCompta[$ligne->fk_c_type_fees];
+				}
+
+				if (empty($codeComptableProduit))
+				{
+					$codeComptableProduit = $conf->global->COMPTA_EXP_ACCOUNT;
+				}
+
+				// Code compta TVA
+				$codeComptableTVA = !empty($this->TTVA[$idpays][$ligne->tva_tx]['buy']) ? $this->TTVA[$idpays][$ligne->tva_tx]['buy'] : $conf->global->{ $defaultVATBuyConfKey };
+
+				if(empty($TNDF[$expenseReport->id]['ligne_tiers'][$codeCompta])) $TNDF[$expenseReport->id]['ligne_tiers'][$codeCompta] = 0;
+				if(empty($TNDF[$expenseReport->id]['ligne_produit'][$codeComptableProduit])) $TNDF[$expenseReport->id]['ligne_produit'][$codeComptableProduit] = 0;
+				if(empty($TNDF[$expenseReport->id]['ligne_tva'][$codeComptableTVA]) && $ligne->total_tva > 0) $TNDF[$expenseReport->id]['ligne_tva'][$codeComptableTVA] = 0;
+				$TNDF[$expenseReport->id]['ligne_tiers'][$codeCompta] += $ligne->total_ttc;
+				$TNDF[$expenseReport->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
+				if($ligne->total_tva != 0) $TNDF[$expenseReport->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+			}
+		}
+
+		$conf->entity = $trueEntity;
+
+		return $TNDF;
+	}
+
+
+	/*
+	 * Récupération dans Dolibarr de la liste des notes de frais, version NDFP
+	 */
+	function get_notes_de_frais_ndfp($dt_deb, $dt_fin)
+	{
 		global $db, $conf, $user;
 
 		$ATMdb = new TPDOdb();
 		$sql = 'SELECT rowid, accountancy_code FROM '.MAIN_DB_PREFIX.'c_exp';
 		$TCodesCompta = TRequeteCore::get_keyval_by_sql($ATMdb, $sql, 'rowid', 'accountancy_code');
 
-		if(!$conf->ndfp->enabled) return array();
+		$defaultSupplierConfKey = (float) DOL_VERSION < 3.7 ? 'COMPTA_ACCOUNT_SUPPLIER' : 'ACCOUNTING_ACCOUNT_SUPPLIER';
+		$defaultVATBuyConfKey = (float) DOL_VERSION < 3.7 ? 'COMPTA_VAT_BUY_ACCOUNT' : 'ACCOUNTING_VAT_BUY_ACCOUNT';
 
 		$datefield=$conf->global->EXPORT_COMPTA_DATE_NDF;
 		$allEntities=$conf->global->EXPORT_COMPTA_ALL_ENTITIES;
@@ -874,7 +1028,7 @@ class TExportCompta extends TObjetStd {
 			}
 
 			// Définition des codes comptables
-			$codeComptableClient = !empty($ndfp->thirdparty->code_compta) ? $ndfp->thirdparty->code_compta : $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+			$codeComptableClient = !empty($ndfp->thirdparty->code_compta) ? $ndfp->thirdparty->code_compta : $conf->global->{ $defaultSupplierConfKey };
 			$codeCompta = $ndfp->user->array_options['options_COMPTE_TIERS'];
 
 			// Récupération lignes de notes de frais
@@ -890,7 +1044,7 @@ class TExportCompta extends TObjetStd {
 				}
 
 				// Code compta TVA
-				$codeComptableTVA = !empty($this->TTVAbyId[$idpays][$ligne->fk_tva]['buy']) ? $this->TTVAbyId[$idpays][$ligne->fk_tva]['buy'] : $conf->global->COMPTA_VAT_BUY_ACCOUNT;
+				$codeComptableTVA = !empty($this->TTVAbyId[$idpays][$ligne->fk_tva]['buy']) ? $this->TTVAbyId[$idpays][$ligne->fk_tva]['buy'] : $conf->global->{ $defaultVATBuyConfKey };
 
 				if(empty($TNDF[$ndfp->id]['ligne_tiers'][$codeCompta])) $TNDF[$ndfp->id]['ligne_tiers'][$codeCompta] = 0;
 				if(empty($TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit])) $TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] = 0;
