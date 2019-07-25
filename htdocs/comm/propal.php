@@ -494,6 +494,27 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 			}
 		}
 
+		if ($_POST['sendtocc'])
+		{
+			// Le destinataire a ete fourni via le champ libre
+			$sendtocc = $_POST['sendtocc'];
+			$sendtoccid = 0;
+		}
+		elseif ($_POST['receivercc'] != '-1')
+		{
+			// Recipient was provided from combo list
+			if ($_POST['receivercc'] == 'thirdparty') // Id of third party
+			{
+				$sendtocc = $object->client->email;
+				$sendtoccid = 0;
+			}
+			else    // Id du contact
+			{
+				$sendtocc = $object->client->contact_get_property($_POST['receivercc'],'email');
+				$sendtoccid = $_POST['receivercc'];
+			}
+		}
+
 		if (dol_strlen($sendto))
 		{
 			$langs->load("commercial");
@@ -501,14 +522,6 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 			$from = $_POST['fromname'] . ' <' . $_POST['frommail'] .'>';
 			$replyto = $_POST['replytoname']. ' <' . $_POST['replytomail'].'>';
 			$message = $_POST['message'];
-			
-			$receivercc = $_POST['receivercc'];
-			if($_POST ['sendtocc']!=='') {
-				$sendtocc = $_POST ['sendtocc']  ;	
-			}
-			elseif($receivercc!=-1) {
-				$sendtocc = $object->client->contact_get_property($receivercc, 'email');
-			}
 
 			$deliveryreceipt = $_POST['deliveryreceipt'];
 

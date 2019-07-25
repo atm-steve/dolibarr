@@ -442,7 +442,7 @@ class Product extends CommonObject
 		$this->ref = dol_string_nospecial(trim($this->ref));
 		$this->libelle = trim($this->libelle);
 		$this->description = trim($this->description);
-		$this->note = (isset($this->note)? trim($this->note):"null");
+		$this->note = (isset($this->note)? trim($this->note):null);
 		$this->weight = price2num($this->weight);
 		$this->weight_units = trim($this->weight_units);
 		$this->length = price2num($this->length);
@@ -2662,7 +2662,7 @@ class Product extends CommonObject
 		$sql = "SELECT ps.reel, ps.fk_entrepot, ps.pmp";
 		$sql.= " FROM ".MAIN_DB_PREFIX."product_stock as ps";
 		$sql.= ", ".MAIN_DB_PREFIX."entrepot as w";
-		$sql.= " WHERE w.entity IN (".getEntity('warehouse', 1).")";
+		$sql.= " WHERE w.entity IN (".getEntity('stock', 1).")";
 		$sql.= " AND w.rowid = ps.fk_entrepot";
 		$sql.= " AND ps.fk_product = ".$this->id;
 
@@ -2856,7 +2856,7 @@ class Product extends CommonObject
 
     				if (! utf8_check($file)) $file=utf8_encode($file);	// To be sure file is stored in UTF8 in memory
 
-    				if (dol_is_file($dir.$file) && preg_match('/(\.jpg|\.bmp|\.gif|\.png|\.tiff)$/i', $dir.$file))
+    				if (dol_is_file($dir.$file) && preg_match('/(\.jp(e?)g|\.bmp|\.gif|\.png|\.tiff)$/i', $dir.$file))
     				{
     					$nbphoto++;
     					$photo = $file;
