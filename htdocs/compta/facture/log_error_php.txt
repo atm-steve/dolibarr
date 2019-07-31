@@ -1,0 +1,2 @@
+[04-Dec-2017 13:53:42 UTC] PHP Notice:  Use of undefined constant e_all - assumed 'e_all' in /var/www/dolibarr/htdocs/compta/facture/import.php on line 9
+[04-Dec-2017 13:53:52 UTC] PHP Fatal error:  Call to undefined function dol_now() in /var/www/dolibarr/htdocs/compta/facture/import.php on line 12

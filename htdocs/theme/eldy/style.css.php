@@ -399,6 +399,173 @@ th .button {
 }
 
 
+
+table.facture{border:1px solid #ccc !important; border-collapse: collapse !important;box-shadow:none !important;/*margin-top: 65px !important;*/}
+
+table.facture tr{height:45px !important}
+
+table.facture td{background:#fff;line-height: 28px;}
+
+
+table.facture td.date-col{font-style:italic;}
+
+.ico-pdf{float: left;
+margin-right: 10px !important; }
+
+table.facture th.fact{
+text-align: center;
+color: #333333;
+border-bottom:1px solid #ccc !important;
+text-transform: uppercase;
+font-size: 18px;
+background: #fff;
+text-shadow: none !important;
+font-weight: normal !important;
+}
+
+<?php if($_SERVER['HTTP_REFERER'] == 'http://gestion.net-referencement.net/custom/clinetreferencement/external.php' || $_SERVER['HTTP_REFERER'] == 'http://gestion.net-referencement.net/custom/clinetreferencement/external.php?mainmenu=home') { ?>
+body{background: url("img/bg-body.png") repeat-x top left transparent;}
+#id-left .vmenu .blockvmenupair{display:none;}
+
+a.top-mail{color:#fff}
+a.top-mail:hover{color:#fff;text-decoration:underline;}
+
+.faq-part{
+    background: none repeat scroll 0% 0% #F2F2F2;
+    max-width: 200px;
+    padding: 20px;
+    margin-left: 5px;
+    margin-top: -29px;
+    z-index: 9;
+    position: relative;
+}
+
+
+.faq-part span.title{
+    color: #336dd0;
+    font-size: 18px;
+    text-transform: uppercase;
+    background: url("img/ico-title-faq.png") no-repeat left top transparent;
+    padding-left: 65px;
+    min-height: 55px;
+    display: block;
+    line-height: 25px;
+}
+
+
+.faq-part p{
+    font-size: 13px;
+    font-style: italic;
+}
+
+.faq-part a.view-faq{
+    font-size: 15px;
+    color: #000;
+}
+
+.infoclient{position: absolute;
+top: 0px;
+width: 1170px !important;
+display: block;
+height: 84px;
+background: #a60913;
+border-radius: 0 0 5px 5px !important;
+border: 1px solid #a60913 !important;
+border-collapse: collapse !important;
+color: #fff !important;}
+
+#id-container {
+    display: table;
+    table-layout: fixed;
+    max-width: 1170px;
+    margin: 8px auto;
+    width: 100%;
+}
+
+.infoclient td{
+    border:none !important;
+    vertical-align:middle
+}
+.mainmenuaspan {
+    padding-left: 10px !important;
+    display: block !important;
+    max-width: 220px !important;
+    white-space: normal !important;
+}
+div.fiche {
+    margin: 100px auto 0 !important;
+    <?php if (! empty($conf->dol_hide_leftmenu) && ! empty($conf->dol_hide_topmenu)) print 'margin-top: 4px;'; ?>
+        max-width: 1170px;
+}
+
+a#mainmenua_home{padding : 0 !important}
+
+.vmenu{padding-top:100px !important}
+
+.other{
+    max-width: 910px;
+    float: right;
+}
+
+.part-tableau{
+    max-width: 910px;
+    float: right;
+}
+
+td.logo{width: 395px;text-align: center;}
+
+td.ico-chat{
+    width: 80px;
+    padding-right: 19px !important;
+    text-align: right;
+}
+
+td.contenu-top{width:305px;}
+td.contenu-top b{font-weight:bold; font-size:14px;}
+td.right{padding-left: 60px !important;}
+
+.question{display: none;
+margin-top: 75px;}
+.tableau-client{width: 32%;}
+
+
+.infoclient,.infoclient tbody,.infoclient td{height:84px;border:none !important}
+
+#mainbody{max-width:1170px;margin:0 auto}
+
+#tmenu_tooltip{
+padding: 0px !important;
+position: relative;
+z-index: 1;
+float: right;
+box-shadow:none !important;
+display: block;
+max-width: 240px;
+background: none repeat scroll 0% 0% transparent !important;
+width: 100%;
+margin-top: 10px;
+}
+
+div.login_block {
+    position: relative !important;
+font-weight: bold !important;
+max-width: 110px !important;
+z-index: 9 !important;
+float: right !important;
+margin-right: -91px !important;
+margin-top: 47px !important;
+top: 0 !important;
+right: 0 !important;
+    }
+
+div.tmenudiv {
+    white-space: normal !important;
+    }
+div.tmenuleft{height:0!important}
+div.login_block a{color:#ccc; font-style:italic;font-size:13px; text-decoration:underline}
+
+.tmenudiv, ul.tmenu, ul.tmenu li,.tmenuleft{background:none !important; box-shadow:none !important}
+<?php } ?>
 /* ============================================================================== */
 /* Styles to hide objects                                                         */
 /* ============================================================================== */
@@ -438,9 +605,9 @@ td.showDragHandle {
 
 #id-container {
 	margin-top: 8px;
-	margin-bottom: 8px;
-	display: table;
-	table-layout: fixed;
+margin-bottom: 8px;
+display: table;
+table-layout: fixed;
 }
 #id-right, #id-left {
 	display: table-cell;
@@ -451,10 +618,12 @@ td.showDragHandle {
 	width: 100%;
 }
 
+
 div.fiche {
 	margin-<?php print $left; ?>: <?php print (GETPOST("optioncss") == 'print'?6:((empty($conf->global->MAIN_MENU_USE_JQUERY_LAYOUT))?($dol_hide_leftmenu?'4':'20'):'24')); ?>px;
 	margin-<?php print $right; ?>: <?php print (GETPOST("optioncss") == 'print'?8:(empty($conf->dol_optimize_smallscreen)?'12':'4')); ?>px;
 	<?php if (! empty($conf->dol_hide_leftmenu) && ! empty($conf->dol_hide_topmenu)) print 'margin-top: 4px;'; ?>
+     
 }
 
 div.fichecenter {
@@ -515,7 +684,7 @@ div#tmenu_tooltip {
 	height: <?php print ($heightmenu2+1); ?>px;
 	padding-<?php echo $right; ?>: 100px;
 	background: <?php echo $colorbackvmenu; ?>;
-	box-shadow: 0 0 6px rgba(0, 0, 0, .4) !important;
+	box-shadow: 0 0 6px rgba(0, 0, 0, .4);
     <?php if ($usecss3) { ?>
 	background-image: linear-gradient(top, rgba(255,255,255,.3) 0%, rgba(128,128,128,.3) 100%);
 	background-image: -o-linear-gradient(top, rgba(255,255,255,.3) 0%, rgba(128,128,128,.3) 100%);
@@ -931,6 +1100,8 @@ img.login, img.printer, img.entity {
 /* ============================================================================== */
 /* Menu gauche                                                                    */
 /* ============================================================================== */
+
+
 
 div.vmenu, td.vmenu {
     margin-<?php print $right; ?>: 2px;
