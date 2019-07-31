@@ -29,10 +29,13 @@
 
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/paiement/class/paiement.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+
 
 $langs->load("mails");
 $langs->load("bills");
@@ -44,6 +47,11 @@ $option = GETPOST('option');
 $mode=GETPOST('mode');
 $builddoc_generatebutton=GETPOST('builddoc_generatebutton');
 
+$day	= GETPOST('day','int');
+$month	= GETPOST('month','int');
+$year	= GETPOST('year','int');
+$filtre	= GETPOST('filtre');
+$formother = new FormOther($db);
 
 // Security check
 if ($user->societe_id) $socid=$user->societe_id;
@@ -335,7 +343,8 @@ if ($action == 'remove_file')
 /*
  * View
  */
-
+//ini_set('display_errors','on');
+//error_reporting(E_ALL);
 $form = new Form($db);
 $formfile = new FormFile($db);
 
@@ -367,6 +376,7 @@ $now=dol_now();
 
 $search_ref = GETPOST("search_ref");
 $search_refcustomer=GETPOST('search_refcustomer');
+$search_cat=GETPOST('search_cat');
 $search_societe = GETPOST("search_societe");
 $search_mode_rglt = GETPOST("search_mode_rglt");
 $search_montant_ht = GETPOST("search_montant_ht");
@@ -380,16 +390,26 @@ if ($page == -1) { $page = 0; }
 $offset = $conf->liste_limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
-if (! $sortfield) $sortfield="f.date_lim_reglement";
-if (! $sortorder) $sortorder="ASC";
+/*if (! $sortfield) $sortfield="f.datef";
+if (! $sortorder) $sortorder="DESC";*/
+if (! $sortorder) $sortorder='ASC';
+if (! $sortfield) $sortfield='s.nom';
 
 $limit = $conf->liste_limit;
+
+	if($_POST['submitxml'])
+		{
+			$xmlfile = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>'
+			.'<impayee>';
+		}
+
 
 $sql = "SELECT s.nom, s.rowid as socid, s.email";
 $sql.= ", f.rowid as facid, f.facnumber, f.ref_client, f.increment, f.total as total_ht, f.tva as total_tva, f.total_ttc, f.localtax1, f.localtax2, f.revenuestamp";
 $sql.= ", f.datef as df, f.date_lim_reglement as datelimite,SUBSTRING(f.facnumber,-4) as numero";
 $sql.= ", f.paye as paye, f.fk_statut, f.type";
 $sql.= ", dic_p.libelle as mode_rglt";
+$sql.= ', fex.categorie as categorie,fex.fk_object as numcategorie'; /* Add Categorie */ 
 $sql.= ", sum(pf.amount) as am";
 if (! $user->rights->societe->client->voir && ! $socid) $sql .= ", sc.fk_soc, sc.fk_user ";
 $sql.= " FROM ".MAIN_DB_PREFIX."societe as s";
@@ -397,6 +417,7 @@ if (! $user->rights->societe->client->voir && ! $socid) $sql .= ", ".MAIN_DB_PRE
 $sql.= ",".MAIN_DB_PREFIX."facture as f";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON f.rowid=pf.fk_facture ";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as dic_p ON f.fk_mode_reglement=dic_p.id ";
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facture_extrafields as fex ON fex.fk_object = f.rowid'; /* Add Categorie */ 
 $sql.= " WHERE f.fk_soc = s.rowid";
 $sql.= " AND f.entity = ".$conf->entity;
 $sql.= " AND f.type IN (0,1,3) AND f.fk_statut = 1";
@@ -413,8 +434,22 @@ if (GETPOST('filtre'))
 		$sql .= " AND " . $filt[0] . " = " . $filt[1];
 	}
 }
+if ($month > 0)
+{
+    if ($year > 0 && empty($day))
+    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
+    else if ($year > 0 && ! empty($day))
+    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month, $day, $year))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month, $day, $year))."'";
+    else
+    $sql.= " AND date_format(f.datef, '%m') = '".$month."'";
+}
+else if ($year > 0)
+{
+    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,1,false))."' AND '".$db->idate(dol_get_last_day($year,12,false))."'";
+}
 if ($search_ref)         $sql .= " AND f.facnumber LIKE '%".$db->escape($search_ref)."%'";
 if ($search_refcustomer) $sql .= " AND f.ref_client LIKE '%".$db->escape($search_refcustomer)."%'";
+if ($search_cat) $sql .= " AND fex.categorie LIKE '%".$db->escape($search_cat)."%'";
 if ($search_societe)     $sql .= " AND s.nom LIKE '%".$db->escape($search_societe)."%'";
 if ($search_mode_rglt)   $sql .= " AND dic_p.libelle LIKE '%".$search_mode_rglt."%'";
 if ($search_montant_ht)  $sql .= " AND f.total = '".$db->escape($search_montant_ht)."'";
@@ -441,10 +476,13 @@ if ($resql)
 	}
 
 	$param="";
+	if ($month)              $param.='&month='.$month;
+    if ($year)               $param.='&year=' .$year;
 	$param.=(! empty($socid)?"&amp;socid=".$socid:"");
 	$param.=(! empty($option)?"&amp;option=".$option:"");
 	if ($search_ref)         $param.='&amp;search_ref='.urlencode($search_ref);
-    	if ($search_refcustomer) $param.='&amp;search_ref='.urlencode($search_refcustomer);
+    if ($search_refcustomer) $param.='&amp;search_ref='.urlencode($search_refcustomer);
+    if ($search_cat) $param.='&amp;search_cat='.urlencode($search_cat);
 	if ($search_societe)     $param.='&amp;search_societe='.urlencode($search_societe);
 	if ($search_mode_rglt)     $param.='&amp;search_mode_rglt='.urlencode($search_mode_rglt);
 	if ($search_montant_ht)  $param.='&amp;search_montant_ht='.urlencode($search_montant_ht);
@@ -535,6 +573,7 @@ if ($resql)
 	print '<tr class="liste_titre">';
 	print_liste_field_titre($langs->trans("Ref"),$_SERVER["PHP_SELF"],"f.facnumber","",$param,"",$sortfield,$sortorder);
     print_liste_field_titre($langs->trans('RefCustomer'),$_SERVER["PHP_SELF"],'f.ref_client','',$param,'',$sortfield,$sortorder);
+  	print_liste_field_titre($langs->trans('Categorie'),$_SERVER["PHP_SELF"],'fex.categorie','',$param,'',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("Numéro"),$_SERVER["PHP_SELF"],"numero","",$param,"",$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("Date"),$_SERVER["PHP_SELF"],"f.datef","",$param,'align="center"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("DateDue"),$_SERVER["PHP_SELF"],"f.date_lim_reglement","",$param,'align="center"',$sortfield,$sortorder);
@@ -564,13 +603,25 @@ if ($resql)
 	// Ref
 	print '<td class="liste_titre">';
 	print '<input class="flat" size="10" type="text" name="search_ref" value="'.$search_ref.'"></td>';
-        print '<td class="liste_titre">';
-        print '<input class="flat" size="6" type="text" name="search_refcustomer" value="'.$search_refcustomer.'">';
-        print '</td>';
+    
+    print '<td class="liste_titre">';
+    print '<input class="flat" size="6" type="text" name="search_refcustomer" value="'.$search_refcustomer.'">';
+    print '</td>';
+
+
+    print '<td class="liste_titre">';
+    print '<input class="flat" size="6" type="text" name="search_cat" value="'.$search_cat.'">';
+    print '</td>';
+	
 	print '<td class="liste_titre">&nbsp;</td>';
-	print '<td class="liste_titre">&nbsp;</td>';
-	print '<td class="liste_titre">&nbsp;</td>';
+	 print '<td class="liste_titre" align="center">';
+    if (! empty($conf->global->MAIN_LIST_FILTER_ON_DAY)) print '<input class="flat" type="text" size="1" maxlength="2" name="day" value="'.$day.'">';
+    print '<input class="flat" type="text" size="1" maxlength="2" name="month" value="'.$month.'">';
+    $formother->select_year($year?$year:-1,'year',1, 20, 5);
+    print '</td>';
+    print '<td class="liste_titre">&nbsp;</td>';
 	print '<td class="liste_titre" align="left"><input class="flat" type="text" size="10" name="search_societe" value="'.dol_escape_htmltag($search_societe).'"></td>';
+	print '<td class="liste_titre">&nbsp;</td>';
 	print '<td class="liste_titre" align="right"><input class="flat" type="text" size="8" name="search_montant_ht" value="'.dol_escape_htmltag($search_montant_ht).'"></td>';
 	print '<td class="liste_titre">&nbsp;</td>';
 	print '<td class="liste_titre" align="right"><input class="flat" type="text" size="8" name="search_montant_ttc" value="'.dol_escape_htmltag($search_montant_ttc).'"></td>';
@@ -598,8 +649,13 @@ if ($resql)
 	}
 	print "</tr>\n";
 
+
+	
 	if ($num > 0)
 	{
+
+	
+
 		$var=True;
 		$total_ht=0;
 		$total_tva=0;
@@ -610,8 +666,30 @@ if ($resql)
 
 		while ($i < $num)
 		{
+			
+
+
 			$objp = $db->fetch_object($resql);
+
+			/* ADDED By Bichoï */
+			$filtre_req = $objp->facnumber.' envoyée par EMail';
+			//echo $filtre_req;
+			$sql3 = "SELECT id,	DATE_FORMAT(datec, '%d/%m/%Y') AS datec";
+	        $sql3.= " FROM ".MAIN_DB_PREFIX."actioncomm";
+	        $sql3.= " WHERE label LIKE '%".$filtre_req;
+	        $sql3.= "%' LIMIT 0 , 30;";
+	        $resql3 = $db->query($sql3);
+	        /* ADDED By Bichoï */
+			/* ADDED By Bichoï */
+			$objp3 = $db->fetch_object($resql3);
+			/* ADDED By Bichoï */
+
 			$date_limit=$db->jdate($objp->datelimite);
+
+
+			
+	        //print($sql3);
+
 
 			$var=!$var;
 
@@ -628,7 +706,9 @@ if ($resql)
 
 			// Ref
 			print '<td class="nobordernopadding nowrap">';
+			print "<span style='display:inline-block;width:95px'>";
 			print $facturestatic->getNomUrl(1);
+			print "</span>";
 			print '</td>';
 
 			// Warning picto
@@ -641,6 +721,20 @@ if ($resql)
             $filename=dol_sanitizeFileName($objp->facnumber);
 			$filedir=$conf->facture->dir_output . '/' . dol_sanitizeFileName($objp->facnumber);
 			print $formfile->getDocumentsLink($facturestatic->element, $filename, $filedir);
+			
+			/* ADDED By Bichoï */
+			if(isset($objp->facnumber))
+			{	
+				//print_r($objp3);
+				if(isset($objp3->id))
+				{
+					print "<img src='".dol_buildpath('/theme/amarok/img/ico-mail.png',2)."''>";
+					print "<span style='margin-left: 4px;'>".($objp3->datec)."</span>";
+					//print($sql3);
+				}
+			}
+			/* ADDED By Bichoï */
+
             print '</td>';
 
 			print '</tr></table>';
@@ -652,6 +746,16 @@ if ($resql)
             print $objp->ref_client;
             print '</td>';
 			
+			// Categorie
+			print '<td class="nobordernopadding nowrap">';
+			if(isset($objp->facnumber))
+                if($objp->categorie == 'NEW')
+                    print 'CREA';
+                else 
+                    print($objp->categorie);
+			print '</td>';
+			
+
 			// Numéro
 			print '<td class="nobordernopadding nowrap">';
 			print (int)substr($facturestatic->ref, -4);
@@ -718,13 +822,17 @@ if ($resql)
 			print '<td align="right">'.price($objp->total_ttc).'</td>';
 			print '<td align="right">';
 			$cn=$facturestatic->getSumCreditNotesUsed();
+			$deposit = $facturestatic->getSumDepositsUsed();
 			if (! empty($objp->am)) print price($objp->am);
 			if (! empty($objp->am) && ! empty($cn)) print '+';
 			if (! empty($cn)) print price($cn);
+			// Affichage acomptes
+			if (! empty($cn) && ! empty($deposit)) print '+';
+			if (! empty($deposit)) print price($deposit);
 			print '</td>';
 
 			// Remain to receive
-			print '<td align="right">'.((! empty($objp->am) || ! empty($cn))?price($objp->total_ttc-$objp->am-$cn):'&nbsp;').'</td>';
+			print '<td align="right">'. price($objp->total_ttc-$objp->am-$cn-$deposit) . '</td>';
 
 			// Status of invoice
 			print '<td align="right" class="nowrap">';
@@ -759,13 +867,26 @@ if ($resql)
 			$total_ht+=$objp->total_ht;
 			$total_tva+=($objp->total_tva + $tx1 + $tx2 + $revenuestamp);
 			$total_ttc+=$objp->total_ttc;
-			$total_paid+=$objp->am + $cn;
+			$total_paid+=$objp->am + $cn + $deposit;
 
 			$i++;
+
+
+
+
+			if($_POST['submitxml'])
+			{
+				$xmlfile .= '<client>';
+			    $xmlfile .= '<nom>'.dol_trunc($objp->nom,28).'</nom>';
+			    $xmlfile .= '<date>'.dol_print_date($db->jdate($objp->df),'day').'</date>';
+			    $xmlfile .= '<montant>'.price($objp->total_ht).'</montant>';
+			    $xmlfile .= '</client>';
+			}
+
 		}
 
 		print '<tr class="liste_total">';
-		print '<td colspan="7" align="left">'.$langs->trans("Total").'</td>';
+		print '<td colspan="8" align="left">'.$langs->trans("Total").'</td>';
 		print '<td align="right"><b>'.price($total_ht).'</b></td>';
 		print '<td align="right"><b>'.price($total_tva).'</b></td>';
 		print '<td align="right"><b>'.price($total_ttc).'</b></td>';
@@ -815,6 +936,23 @@ if ($resql)
 
 	print '</form>';
 
+	print '<form action="" method="post" name="submitxml">
+        <input type="submit" name="submitxml" value="Télécharger XML" />
+    </form>';
+
+
+	//print_r($resql);
+
+	if($_POST['submitxml'])
+	{
+	    $xmlfile .= '</impayee>';
+	    //$xmlfile .= '</xml>';
+	    $xmlfile = str_replace("&", "&amp;", $xmlfile);
+	    $fp = fopen("export.xml", 'w+');
+	    fputs($fp, $xmlfile);
+	    fclose($fp);
+	    echo 'Export XML effectue !<br><a href="export.xml">Voir le fichier</a>';
+	}
 	$db->free($resql);
 }
 else dol_print_error($db,'');

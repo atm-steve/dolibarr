@@ -792,7 +792,8 @@ function pdf_pagefoot(&$pdf,$outputlangs,$paramfreetext,$fromcompany,$marge_bass
 		if (! empty($conf->global->MAIN_USE_AUTOWRAP_ON_FREETEXT)) {
 			$width=200; $align='C';
 		}
-		$freetextheight=$pdf->getStringHeight($width,$line);
+		//$freetextheight=$pdf->getStringHeight($width,$line);
+		$freetextheight=$pdf->getStringHeight($width,$line)+ 5;
 	}
 
 	$marginwithfooter=$marge_basse + $freetextheight + (! empty($line1)?3:0) + (! empty($line2)?3:0) + (! empty($line3)?3:0) + (! empty($line4)?3:0);
@@ -869,6 +870,30 @@ function pdf_pagefoot(&$pdf,$outputlangs,$paramfreetext,$fromcompany,$marge_bass
 function pdf_writeLinkedObjects(&$pdf,$object,$outputlangs,$posx,$posy,$w,$h,$align,$default_font_size)
 {
 	$linkedobjects = pdf_getLinkedObjects($object,$outputlangs);
+	if (! empty($linkedobjects))
+	{
+		foreach($linkedobjects as $linkedobject)
+		{
+			$posy+=3;
+			$pdf->SetXY($posx,$posy);
+			$pdf->SetFont('','', $default_font_size - 2);
+			$pdf->MultiCell($w, $h, $linkedobject["ref_title"].' : '.$linkedobject["ref_value"], '', $align);
+
+			if (! empty($linkedobject["date_title"]) && ! empty($linkedobject["date_value"]))
+			{
+				$posy+=3;
+				$pdf->SetXY($posx,$posy);
+				$pdf->MultiCell($w, $h, $linkedobject["date_title"].' : '.$linkedobject["date_value"], '', $align);
+			}
+		}
+	}
+
+	return $pdf->getY();
+}
+
+function pdf_writeLinkedObjectsEn(&$pdf,$object,$outputlangs,$posx,$posy,$w,$h,$align,$default_font_size)
+{
+	$linkedobjects = pdf_getLinkedObjectsEn($object,$outputlangs);
 	if (! empty($linkedobjects))
 	{
 		foreach($linkedobjects as $linkedobject)
@@ -1571,6 +1596,86 @@ function pdf_getLinkedObjects($object,$outputlangs)
 				$linkedobjects[$objecttype]['ref_title'] = $outputlangs->transnoentities("RefProposal");
 				$linkedobjects[$objecttype]['ref_value'] = $outputlangs->transnoentities($objects[$i]->ref);
 				$linkedobjects[$objecttype]['date_title'] = $outputlangs->transnoentities("DatePropal");
+				$linkedobjects[$objecttype]['date_value'] = dol_print_date($objects[$i]->date,'day','',$outputlangs);
+			}
+		}
+		else if ($objecttype == 'commande')
+		{
+			$outputlangs->load('orders');
+			$num=count($objects);
+			for ($i=0;$i<$num;$i++)
+			{
+				$linkedobjects[$objecttype]['ref_title'] = $outputlangs->transnoentities("RefOrder");
+				$linkedobjects[$objecttype]['ref_value'] = $outputlangs->transnoentities($objects[$i]->ref) . ($objects[$i]->ref_client ? ' ('.$objects[$i]->ref_client.')' : '');
+				$linkedobjects[$objecttype]['date_title'] = $outputlangs->transnoentities("OrderDate");
+				$linkedobjects[$objecttype]['date_value'] = dol_print_date($objects[$i]->date,'day','',$outputlangs);
+			}
+		}
+		else if ($objecttype == 'shipping')
+		{
+			$outputlangs->load('orders');
+			$outputlangs->load('sendings');
+
+			$num=count($objects);
+			for ($i=0;$i<$num;$i++)
+			{
+				$objects[$i]->fetchObjectLinked();
+				$order = $objects[$i]->linkedObjects['commande'][0];
+
+				$linkedobjects[$objecttype]['ref_title'] = $outputlangs->transnoentities("RefOrder") . ' / ' . $outputlangs->transnoentities("RefSending");
+				$linkedobjects[$objecttype]['ref_value'] = $outputlangs->transnoentities($order->ref) . ($order->ref_client ? ' ('.$order->ref_client.')' : '');
+				$linkedobjects[$objecttype]['ref_value'].= ' / ' . $outputlangs->transnoentities($objects[$i]->ref);
+				$linkedobjects[$objecttype]['date_title'] = $outputlangs->transnoentities("OrderDate") . ' / ' . $outputlangs->transnoentities("DateSending");
+				$linkedobjects[$objecttype]['date_value'] = dol_print_date($order->date,'day','',$outputlangs);
+				$linkedobjects[$objecttype]['date_value'].= ' / ' . dol_print_date($objects[$i]->date_delivery,'day','',$outputlangs);
+			}
+		}
+		else if ($objecttype == 'contrat')
+		{
+			$outputlangs->load('contracts');
+			$num=count($objects);
+			for ($i=0;$i<$num;$i++)
+			{
+				$linkedobjects[$objecttype]['ref_title'] = $outputlangs->transnoentities("RefContract");
+				$linkedobjects[$objecttype]['ref_value'] = $outputlangs->transnoentities($objects[$i]->ref);
+				$linkedobjects[$objecttype]['date_title'] = $outputlangs->transnoentities("DateContract");
+				$linkedobjects[$objecttype]['date_value'] = dol_print_date($objects[$i]->date_contrat,'day','',$outputlangs);
+			}
+		}
+	}
+
+	// For add external linked objects
+	if (is_object($hookmanager))
+	{
+		$parameters = array('linkedobjects' => $linkedobjects, 'outputlangs'=>$outputlangs);
+		$action='';
+		$hookmanager->executeHooks('pdf_getLinkedObjects',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
+		if (! empty($hookmanager->resArray)) $linkedobjects = $hookmanager->resArray;
+	}
+
+	return $linkedobjects;
+}
+
+
+function pdf_getLinkedObjectsEn($object,$outputlangs)
+{
+	global $hookmanager;
+
+	$linkedobjects=array();
+
+	$object->fetchObjectLinked();
+
+	foreach($object->linkedObjects as $objecttype => $objects)
+	{
+		if ($objecttype == 'propal')
+		{
+			$outputlangs->load('propal');
+			$num=count($objects);
+			for ($i=0;$i<$num;$i++)
+			{
+				$linkedobjects[$objecttype]['ref_title'] = $outputlangs->transnoentities("Proposal number");
+				$linkedobjects[$objecttype]['ref_value'] = $outputlangs->transnoentities($objects[$i]->ref);
+				$linkedobjects[$objecttype]['date_title'] = $outputlangs->transnoentities("Proposal date");
 				$linkedobjects[$objecttype]['date_value'] = dol_print_date($objects[$i]->date,'day','',$outputlangs);
 			}
 		}
