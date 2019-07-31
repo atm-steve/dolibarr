@@ -54,6 +54,7 @@ class AccountancyExport
 	public static $EXPORT_TYPE_COGILOG = 8;
 	public static $EXPORT_TYPE_AGIRIS = 9;
 	public static $EXPORT_TYPE_CONFIGURABLE = 10;
+	public static $EXPORT_TYPE_CHARLEMAGNE = 11;
 
 	/**
 	 *
@@ -105,6 +106,7 @@ class AccountancyExport
 				self::$EXPORT_TYPE_COGILOG => $langs->trans('Modelcsv_cogilog'),
 				self::$EXPORT_TYPE_AGIRIS => $langs->trans('Modelcsv_agiris'),
 				self::$EXPORT_TYPE_CONFIGURABLE => $langs->trans('Modelcsv_configurable'),
+				self::$EXPORT_TYPE_CHARLEMAGNE => $langs->trans('Modelcsv_charlemagne'),
 			);
 	}
 
@@ -150,6 +152,10 @@ class AccountancyExport
 				),
 				self::$EXPORT_TYPE_AGIRIS => array(
 					'label' => $langs->trans('Modelcsv_agiris'),
+				),
+				self::$EXPORT_TYPE_CHARLEMAGNE => array(
+					'label' => $langs->trans('Modelcsv_charlemagne'),
+					'ACCOUNTING_EXPORT_FORMAT' => 'txt',
 				),
 				self::$EXPORT_TYPE_CONFIGURABLE => array(
 					'label' => $langs->trans('Modelcsv_configurable'),
@@ -221,6 +227,9 @@ class AccountancyExport
 				break;
 			case self::$EXPORT_TYPE_CONFIGURABLE :
 				$this->exportConfigurable($TData);
+				break;
+			case self::$EXPORT_TYPE_CHARLEMAGNE :
+				$this->exportCharlemagne($TData);
 				break;
 			default:
 				$this->errors[] = $langs->trans('accountancy_error_modelnotfound');
@@ -601,7 +610,119 @@ class AccountancyExport
 			print implode($separator, $tab) . $this->end_line;
 		}
 	}
+	/**
+	 * Export format : Charlemagne
+	 *
+	 * @param array $objectLines data
+	 *
+	 * @return void
+	 */
+	//Spécfique ISETA
+	//Si on a un compte auxiliaire, pas de traitement ligne à ligne
+	public function exportCharlemagne($objectLines) {
+		global $langs;
+		$langs->load('compta');
+		dol_include_once('/compta/facture/class/facture.class.php');
+		dol_include_once('/accountancy/class/accountingaccount.class.php');
+		$separator = "\t";
+		$end_line = "\n";
 
+		/*
+		 * Charlemagne export need header
+		 */
+		print $langs->transnoentitiesnoconv('Date') . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('Journal'), 6) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('Account'), 15) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('LabelAccount'), 60) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('Piece'), 20) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('LabelOperation'), 60) . $separator;
+		print $langs->transnoentitiesnoconv('Amount') . $separator;
+		print 'S' . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 1', 15) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 1', 60) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 2', 15) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 2', 60) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 3', 15) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 3', 60) . $separator;
+		print $end_line;
+		$extrafields = new ExtraFields($this->db);
+		$extrafields->fetch_name_optionals_label('facturedet');
+		foreach($objectLines as $line) {
+			$fac = new Facture($this->db);
+			$fac->fetch(0, $line->doc_ref);
+			$accountingAccount = new AccountingAccount($this->db);
+			$accountingAccount->fetch(null, $line->numero_compte);
+			$account_label = $accountingAccount->label;
+			$TDataByAnalytic = array();
+			foreach($fac->lines as $facline) {// L'export n'est pas gérer ligne à ligne donc obliger de refaire le boulot pour traiter ça par code analytique
+				//On veut uniquement les lignes qui ont le même code
+				if($accountingAccount->id == $facline->fk_accounting_account) $TDataByAnalytic[$facline->array_options['options_cd_analytique']] += $facline->total_ht;
+			}
+
+			//TODO Faire la vérif de la longueur de la chaine + TRAD
+			if(!empty($TDataByAnalytic)) {
+
+				foreach($TDataByAnalytic as $code_analytique => $amountByAnalytique) {
+					$date = dol_print_date($line->doc_date, '%Y%m%d');
+					print $date . $separator; //Date
+					print self::trunc($line->code_journal, 6) . $separator; //Journal code
+
+					if(!empty($line->subledger_account)) $account = $line->subledger_account;
+					else  $account = $line->numero_compte;
+					print self::trunc($account, 15) . $separator;//Account number
+
+					if(!empty($line->label_compte)) $account_label = $line->label_compte;
+
+					print  self::trunc($account_label, 60) . $separator;//Account label
+					print self::trunc($line->doc_ref, 20) . $separator;//Piece
+					print self::trunc($line->label_operation, 60) . $separator;//Operation label
+					print price(abs($amountByAnalytique)) . $separator;//Amount
+					print $line->sens . $separator;//Direction
+					if(!empty($code_analytique)) {
+						print self::trunc($code_analytique, 15) . $separator;//Analytic
+						print self::trunc($extrafields->attributes['facturedet']['param']['cd_analytique']['options'][$code_analytique], 60) . $separator;//Label analytic
+					}
+					else {
+						print $separator;//Analytic
+						print $separator;//Analytic
+					}
+					print $separator;//Analytic
+					print $separator;//Analytic
+					print $separator;//Analytic
+					print $separator;//Analytic
+					print $separator;//Analytic
+
+					print $end_line;
+				}
+			}
+			else {
+				//Dans le cas d'un compte commençant par un 4
+				$date = dol_print_date($line->doc_date, '%Y%m%d');
+				print $date . $separator; //Date
+				print self::trunc($line->code_journal, 6) . $separator; //Journal code
+
+				if(!empty($line->subledger_account)) $account = $line->subledger_account;
+				else  $account = $line->numero_compte;
+				print self::trunc($account, 15) . $separator;//Account number
+
+				if(!empty($line->label_compte)) $account_label = $line->label_compte;
+
+				print self::trunc($account_label, 60) . $separator;//Account label
+				print self::trunc($line->doc_ref, 20) . $separator;//Piece
+				print self::trunc($line->label_operation, 60) . $separator;//Operation label
+				print price(abs($line->montant)) . $separator;//Amount
+				print $line->sens . $separator;//Direction
+
+				print $separator;//Analytic
+				print $separator;//Analytic
+				print $separator;//Analytic
+				print $separator;//Analytic
+				print $separator;//Analytic
+				print $separator;//Analytic
+				print $end_line;
+			}
+		}
+	}
 
 	/**
 	 *

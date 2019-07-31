@@ -263,6 +263,7 @@ Modelcsv_ebp=Export vers EBP
 Modelcsv_cogilog=Export vers Cogilog
 Modelcsv_agiris=Export vers Agiris
 Modelcsv_configurable=Export configurable
+Modelcsv_charlemagne=Export vers Charlemagne
 ChartofaccountsId=Id plan comptable
 
 ## Tools - Init accounting account on product / service
@@ -304,3 +305,5 @@ ImportAccountingEntries=Écritures comptables
 WarningReportNotReliable=Attention : ce rapport n'est pas basé sur le grand livre et ne contient donc pas les écritures manuelles qui lui ont été ajoutées. Si votre journalisation est à jour, la vue depuis le grand livre sera plus précise.
 ExpenseReportJournal=Journal des notes de frais
 InventoryJournal=Journal d'inventaire
+Analytic=Analytique
+AnalyticLabel=Libellé Analytique
