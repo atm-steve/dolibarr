@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2004-2007 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2006      Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
  * Copyright (C) 2011	   Juanjo Menent		<jmenent@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,8 @@ require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
  */
 class Fournisseur extends Societe
 {
-	var $db;
+	var $next_prev_filter="te.fournisseur = 1";		// Used to add a filter in Form::showrefnav method
+
 
 	/**
 	 *	Constructor
@@ -43,10 +44,9 @@ class Fournisseur extends Societe
 	function __construct($db)
 	{
 		$this->db = $db;
+
 		$this->client = 0;
-		$this->fournisseur = 0;
-		$this->effectif_id  = 0;
-		$this->forme_juridique_code  = 0;
+		$this->fournisseur = 1;
 	}
 
 
@@ -102,6 +102,7 @@ class Fournisseur extends Societe
 		}
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 * Load statistics indicators
 	 *
@@ -109,6 +110,7 @@ class Fournisseur extends Societe
 	 */
 	function load_state_board()
 	{
+        // phpcs:enable
 		global $conf, $user;
 
 		$this->nb=array();
@@ -123,7 +125,7 @@ class Fournisseur extends Societe
 			$clause = "AND";
 		}
 		$sql.= " ".$clause." s.fournisseur = 1";
-		$sql.= " AND s.entity IN (".getEntity('societe', 1).")";
+		$sql.= " AND s.entity IN (".getEntity('societe').")";
 
 		$resql=$this->db->query($sql);
 		if ($resql)
@@ -141,9 +143,9 @@ class Fournisseur extends Societe
 			$this->error=$this->db->error();
 			return -1;
 		}
-
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Create a supplier category
 	 *
@@ -153,11 +155,12 @@ class Fournisseur extends Societe
 	 */
 	function CreateCategory($user, $name)
 	{
+        // phpcs:enable
 		$sql = "INSERT INTO ".MAIN_DB_PREFIX."categorie (label,visible,type)";
 		$sql.= " VALUES ";
 		$sql.= " ('".$this->db->escape($name)."',1,1)";
 
-		dol_syslog("Fournisseur::CreateCategory sql=".$sql);
+		dol_syslog("Fournisseur::CreateCategory", LOG_DEBUG);
 		$resql = $this->db->query($sql);
 		if ($resql)
 		{
@@ -172,6 +175,7 @@ class Fournisseur extends Societe
 		}
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 * 	Return the suppliers list
 	 *
@@ -179,16 +183,17 @@ class Fournisseur extends Societe
 	 */
 	function ListArray()
 	{
+        // phpcs:enable
 		global $conf;
 		global $user;
 
 		$arr = array();
 
-		$sql = "SELECT s.rowid, s.nom";
+		$sql = "SELECT s.rowid, s.nom as name";
 		$sql.= " FROM ".MAIN_DB_PREFIX."societe as s";
 		if (!$user->rights->societe->client->voir && !$user->societe_id) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		$sql.= " WHERE s.fournisseur = 1";
-		$sql.= " AND s.entity IN (".getEntity('societe', 1).")";
+		$sql.= " AND s.entity IN (".getEntity('societe').")";
 		if (!$user->rights->societe->client->voir && !$user->societe_id) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
 
 		$resql=$this->db->query($sql);
@@ -196,19 +201,15 @@ class Fournisseur extends Societe
 		if ($resql)
 		{
 			while ($obj=$this->db->fetch_object($resql))
-	  {
-	  	$arr[$obj->rowid] = stripslashes($obj->nom);
-	  }
-
+			{
+				$arr[$obj->rowid] = $obj->name;
+			}
 		}
 		else
 		{
 			dol_print_error($this->db);
-			$this->error=$this->db->error();
-
+			$this->error=$this->db->lasterror();
 		}
 		return $arr;
 	}
-
 }
-

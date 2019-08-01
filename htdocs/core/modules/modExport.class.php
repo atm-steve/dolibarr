@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2005-2007 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
 
 
 /**
- *	Classe de description et activation du module export
+ *	Class to describe and enable module export
  */
 class modExport extends DolibarrModules
 {
@@ -44,27 +44,28 @@ class modExport extends DolibarrModules
 		$this->numero = 240;
 
 		$this->family = "technic";
-		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
+		$this->module_position = '72';
+        // Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		$this->description = "Outils d'exports de donnees Dolibarr (via un assistant)";
-		$this->version = 'dolibarr';                        // 'experimental' or 'dolibarr' or version
+		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
+		$this->version = 'dolibarr';
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->special = 0;
-		$this->picto='technic';
+		$this->picto = 'technic';
 
 		// Data directories to create when module is enabled
 		$this->dirs = array("/export/temp");
 
 		// Config pages
-		$this->config_page_url = array();
+		$this->config_page_url = array("export.php");
 
-		// Dependances
+		// Dependencies
 		$this->depends = array();
 		$this->requiredby = array();
 		$this->phpmin = array(4,2,0);
 		$this->phpmax = array();
 
-		// Constantes
+		// Constants
 		$this->const = array();
 
 		// Boxes
@@ -79,7 +80,7 @@ class modExport extends DolibarrModules
 		$this->rights[$r][0] = 1201;
 		$this->rights[$r][1] = 'Lire les exports';
 		$this->rights[$r][2] = 'r';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'lire';
 
 		$r++;
@@ -88,36 +89,10 @@ class modExport extends DolibarrModules
 		$this->rights[$r][2] = 'w';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'creer';
+
+
+		// Menus
+		//-------
+		$this->menu = 1;        // This module add menu entries. They are coded into menu manager.
 	}
-
-	/**
-	 *		Function called when module is enabled.
-	 *		The init function add constants, boxes, permissions and menus (defined in constructor) into Dolibarr database.
-	 *		It also creates data directories
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-	 */
-	function init($options='')
-	{
-		$sql = array();
-
-		return $this->_init($sql,$options);
-	}
-
-    /**
-	 *		Function called when module is disabled.
-	 *      Remove from database constants, boxes and permissions from Dolibarr database.
-	 *		Data directories are not deleted
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-    function remove($options='')
-    {
-		$sql = array();
-
-		return $this->_remove($sql,$options);
-    }
-
 }

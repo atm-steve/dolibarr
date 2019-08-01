@@ -1,5 +1,5 @@
-// Copyright (C) 2011-2012	Regis Houssin		<regis.houssin@capnetworks.com>
-// Copyright (C) 2011		Laurent Destailleur	<eldy@users.sourceforge.net>
+// Copyright (C) 2011-2014	Regis Houssin		<regis.houssin@inodbox.com>
+// Copyright (C) 2011-2017	Laurent Destailleur	<eldy@users.sourceforge.net>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,6 +25,50 @@ $(document).ready(function() {
 	var element = $('#jeditable_element').html();
 	var table_element = $('#jeditable_table_element').html();
 	var fk_element = $('#jeditable_fk_element').html();
+	
+	
+	if ($('.editval_string').length > 0) {
+		$('.editval_string').editable(urlSaveInPlace, {
+			type		: 'text',
+			id			: 'field',
+			width		: withInPlace,				/* Size of string area in px ? */
+			tooltip		: tooltipInPlace,
+			placeholder	: placeholderInPlace,
+			cancel		: cancelInPlace,
+			submit		: submitInPlace,
+			indicator	: indicatorInPlace,
+			submitdata	: function(result, settings) {
+				return getParameters(this, 'string');
+			},
+			callback	: function(result, settings) {
+				getResult(this, result);
+			},
+			onreset		: function(result, settings) {
+				getDefault(settings);
+			}
+		});
+		$('.editkey_string').hover(
+				function () {
+					console.log("We are hover (entry) an editkey_string");
+					$('#viewval_' + $(this).attr('id')).addClass("viewval_hover");
+				},
+				function () {
+					console.log("We are no more hover an editkey_string");
+					$('#viewval_' + $(this).attr('id')).removeClass("viewval_hover");
+				}
+		);
+		$('.editkey_string').click(function() {
+			console.log("We click on the edit field");
+			$('#viewval_' + $(this).attr('id')).click();
+			$('#viewval_' + $(this).attr('id')).hide();
+			$('#editval_' + $(this).attr('id')).show().click();
+		});
+		$('.viewval_string.active').click(function() {
+			console.log("We click on the viewed value");
+			$('#viewval_' + $(this).attr('id').substr(8)).hide();
+			$('#editval_' + $(this).attr('id').substr(8)).show().click();
+		});
+	}
 	
 	if ($('.editval_textarea').length > 0) {
 		$('.editval_textarea').editable(urlSaveInPlace, {
@@ -53,9 +97,11 @@ $(document).ready(function() {
 		});
 		$('.editkey_textarea').hover(
 				function () {
+					console.log("We are hover (entry) an editkey_textarea");
 					$('#viewval_' + $(this).attr('id')).addClass("viewval_hover");
 				},
 				function () {
+					console.log("We are no more hover (exit) an editkey_textarea");
 					$('#viewval_' + $(this).attr('id')).removeClass("viewval_hover");
 				}
 		);
@@ -104,9 +150,11 @@ $(document).ready(function() {
 		});
 		$('.editkey_ckeditor').hover(
 				function () {
+					console.log("We are hover (entry) an editkey_ckeditor");
 					$('#viewval_' + $(this).attr('id')).addClass("viewval_hover");
 				},
 				function () {
+					console.log("We are no more hover (exit) an editkey_ckeditor");
 					$('#viewval_' + $(this).attr('id')).removeClass("viewval_hover");
 				}
 		);
@@ -118,47 +166,6 @@ $(document).ready(function() {
 			$('#editval_' + $(this).attr('id').substr(8)).show().click();
 		});
 		$('.editkey_ckeditor').click(function() {
-			$('#viewval_' + $(this).attr('id')).hide();
-			$('#editval_' + $(this).attr('id')).show().click();
-		});
-	}
-	
-	if ($('.editval_string').length > 0) {
-		$('.editval_string').editable(urlSaveInPlace, {
-			type		: 'text',
-			id			: 'field',
-			width		: 300,
-			tooltip		: tooltipInPlace,
-			placeholder	: placeholderInPlace,
-			cancel		: cancelInPlace,
-			submit		: submitInPlace,
-			indicator	: indicatorInPlace,
-			submitdata	: function(result, settings) {
-				return getParameters(this, 'string');
-			},
-			callback	: function(result, settings) {
-				getResult(this, result);
-			},
-			onreset		: function(result, settings) {
-				getDefault(settings);
-			}
-		});
-		$('.editkey_string').hover(
-				function () {
-					$('#viewval_' + $(this).attr('id')).addClass("viewval_hover");
-				},
-				function () {
-					$('#viewval_' + $(this).attr('id')).removeClass("viewval_hover");
-				}
-		);
-		$('.editkey_string').click(function() {
-			$( '#viewval_' + $(this).attr('id') ).click();
-		});
-		$('.viewval_string.active').click(function() {
-			$('#viewval_' + $(this).attr('id').substr(8)).hide();
-			$('#editval_' + $(this).attr('id').substr(8)).show().click();
-		});
-		$('.editkey_string').click(function() {
 			$('#viewval_' + $(this).attr('id')).hide();
 			$('#editval_' + $(this).attr('id')).show().click();
 		});
@@ -186,9 +193,11 @@ $(document).ready(function() {
 		});
 		$('.editkey_numeric').hover(
 				function () {
+					console.log("We are hover an editkey_numeric");
 					$( '#viewval_' + $(this).attr('id') ).addClass("viewval_hover");
 				},
 				function () {
+					console.log("We are no more hover (exit) an editkey_textarea");
 					$( '#viewval_' + $(this).attr('id') ).removeClass("viewval_hover");
 				}
 		);
@@ -227,9 +236,11 @@ $(document).ready(function() {
 		});
 		$('.editkey_datepicker').hover(
 				function () {
+					console.log("We are hover (entry) editkey_datepicker");
 					$('#viewval_' + $(this).attr('id')).addClass("viewval_hover");
 				},
 				function () {
+					console.log("We are no more hover (exit) an editkey_datepicker");
 					$('#viewval_' + $(this).attr('id')).removeClass("viewval_hover");
 				}
 		);
@@ -270,9 +281,11 @@ $(document).ready(function() {
 		});
 		$('.editkey_select').hover(
 				function () {
+					console.log("We are hover (entry) an editkey_select");
 					$('#viewval_' + $(this).attr('id')).addClass("viewval_hover");
 				},
 				function () {
+					console.log("We are no more hover (exit) an editkey_select");
 					$('#viewval_' + $(this).attr('id')).removeClass("viewval_hover");
 				}
 		);
@@ -316,6 +329,7 @@ $(document).ready(function() {
 		});
 		$('.editkey_autocomplete').hover(
 				function () {
+					console.log("We are no more hover (exit) an editkey_autocomplete");
 					$('#viewval_' + $(this).attr('id')).addClass("viewval_hover");
 				},
 				function () {
@@ -358,12 +372,19 @@ $(document).ready(function() {
 		var res = $.parseJSON(result);
 		if (res.error) {
 			$(obj).html(obj.revert);
-			$.jnotify(res.error, "error", true);
+			var htmlname = $(obj).attr('id').substr(8);
+			var errormsg = $( '#errormsg_' + htmlname ).val();
+			if (errormsg != undefined) {
+				$.jnotify(errormsg, "error", true);
+			} else {
+				$.jnotify(res.error, "error", true);
+			}
+			
 		} else {
 			var htmlname = $(obj).attr('id').substr(8);
-			var success = $( '#success_' + htmlname ).val();
-			if (success != undefined) {
-				$.jnotify(success, "ok");
+			var successmsg = $( '#successmsg_' + htmlname ).val();
+			if (successmsg != undefined) {
+				$.jnotify(successmsg, "ok");
 			}
 			$(obj).html(res.value);
 			$(obj).hide();

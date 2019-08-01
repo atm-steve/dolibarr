@@ -7,6 +7,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/modules/syslog/logHandler.php';
  */
 class mod_syslog_syslog extends LogHandler implements LogHandlerInterface
 {
+	var $code = 'syslog';
+
 	/**
 	 * 	Return name of logger
 	 *
@@ -42,17 +44,16 @@ class mod_syslog_syslog extends LogHandler implements LogHandlerInterface
 	/**
 	 * Is the module active ?
 	 *
-	 * @return boolean
+	 * @return int
 	 */
 	public function isActive()
 	{
-		// This function does not exists on some ISP (Ex: Free in France)
-		if (!function_exists('openlog'))
-		{
-			return 0;
-		}
+	    global $conf;
 
-		return 1;
+		// This function does not exists on some ISP (Ex: Free in France)
+		if (!function_exists('openlog')) return 0;
+
+		return empty($conf->global->SYSLOG_DISABLE_LOGHANDLER_SYSLOG)?1:0;    // Set SYSLOG_DISABLE_LOGHANDLER_SYSLOG to 1 to disable this loghandler
 	}
 
 	/**
@@ -76,19 +77,19 @@ class mod_syslog_syslog extends LogHandler implements LogHandlerInterface
 	/**
 	 * 	Return if configuration is valid
 	 *
-	 * 	@return	boolean		True if configuration ok
+	 * 	@return	array		Array of errors. Empty array if ok.
 	 */
 	public function checkConfiguration()
 	{
-		global $langs;
+		global $conf, $langs;
 
 		$errors = array();
 
-	    $facility = SYSLOG_FACILITY;
+	    $facility = constant($conf->global->SYSLOG_FACILITY);
 	    if ($facility)
 		{
 			// Only LOG_USER supported on Windows
-			if (! empty($_SERVER["WINDIR"])) $facility='LOG_USER';
+			if (! empty($_SERVER["WINDIR"])) $facility=constant('LOG_USER');
 
 			dol_syslog("admin/syslog: facility ".$facility);
 		}
@@ -112,15 +113,11 @@ class mod_syslog_syslog extends LogHandler implements LogHandlerInterface
 
 		if (! empty($conf->global->MAIN_SYSLOG_DISABLE_SYSLOG)) return;	// Global option to disable output of this handler
 
-		if (defined("SYSLOG_FACILITY") && constant("SYSLOG_FACILITY"))
+		if (! empty($conf->global->SYSLOG_FACILITY))  // Example LOG_USER
 		{
-			if (constant(constant('SYSLOG_FACILITY')))
-			{
-				$facility = constant(constant("SYSLOG_FACILITY"));
-			}
-			else $facility = LOG_USER;
+			$facility = constant($conf->global->SYSLOG_FACILITY);
 		}
-		else $facility = LOG_USER;
+		else $facility = constant('LOG_USER');
 
 		// (int) is required to avoid error parameter 3 expected to be long
 		openlog('dolibarr', LOG_PID | LOG_PERROR, (int) $facility);

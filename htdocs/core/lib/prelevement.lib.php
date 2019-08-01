@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2010-2011 	Juanjo Menent		<jmenent@2byte.es>
  * Copyright (C) 2010		Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2011      	Regis Houssin		<regis.houssin@capnetworks.com>
+ * Copyright (C) 2011      	Regis Houssin		<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,10 +28,10 @@
 /**
  * Prepare array with list of tabs
  *
- * @param   Object	$object		Object related to tabs
- * @return  array				Array of tabs to shoc
+ * @param   BonPrelevement	$object		Object related to tabs
+ * @return  array				Array of tabs to show
  */
-function prelevement_prepare_head($object)
+function prelevement_prepare_head(BonPrelevement $object)
 {
 	global $langs, $conf, $user;
 	$langs->load("withdrawals");
@@ -39,22 +39,9 @@ function prelevement_prepare_head($object)
 	$h = 0;
 	$head = array();
 
-	$head[$h][0] = DOL_URL_ROOT.'/compta/prelevement/fiche.php?id='.$object->id;
+	$head[$h][0] = DOL_URL_ROOT.'/compta/prelevement/card.php?id='.$object->id;
 	$head[$h][1] = $langs->trans("Card");
 	$head[$h][2] = 'prelevement';
-	$h++;
-
-	if (! empty($conf->global->MAIN_USE_PREVIEW_TABS))
-	{
-		$head[$h][0] = DOL_URL_ROOT.'/compta/prelevement/bon.php?id='.$object->id;
-		$head[$h][1] = $langs->trans("Preview");
-		$head[$h][2] = 'preview';
-		$h++;
-	}
-
-	$head[$h][0] = DOL_URL_ROOT.'/compta/prelevement/lignes.php?id='.$object->id;
-	$head[$h][1] = $langs->trans("Lines");
-	$head[$h][2] = 'lines';
 	$h++;
 
 	$head[$h][0] = DOL_URL_ROOT.'/compta/prelevement/factures.php?id='.$object->id;
@@ -91,9 +78,9 @@ function prelevement_prepare_head($object)
 function prelevement_check_config()
 {
 	global $conf;
-    if(empty($conf->global->PRELEVEMENT_USER)) return -1;
 	if(empty($conf->global->PRELEVEMENT_ID_BANKACCOUNT)) return -1;
-	if(empty($conf->global->PRELEVEMENT_NUMERO_NATIONAL_EMETTEUR)) return -1;
+	if(empty($conf->global->PRELEVEMENT_ICS)) return -1;
+    if(empty($conf->global->PRELEVEMENT_USER)) return -1;
 	return 0;
 }
 

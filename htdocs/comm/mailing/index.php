@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2005      Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2005-2009 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2010      Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2010      Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@ require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT .'/comm/mailing/class/mailing.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
-$langs->load("commercial");
-$langs->load("orders");
+// Load translation files required by the page
+$langs->loadLangs(array('commercial', 'orders'));
 
 
 // Security check
@@ -42,26 +42,28 @@ $result=restrictedArea($user,'mailing');
 $help_url='EN:Module_EMailing|FR:Module_Mailing|ES:M&oacute;dulo_Mailing';
 llxHeader('','EMailing',$help_url);
 
-print_fiche_titre($langs->trans("MailingArea"));
+print load_fiche_titre($langs->trans("MailingArea"));
 
 //print '<table class="notopnoleftnoright" width="100%">';
 //print '<tr><td valign="top" width="30%" class="notopnoleft">';
 print '<div class="fichecenter"><div class="fichethirdleft">';
 
 
-// Recherche emails
-$var=false;
-print '<form method="post" action="'.DOL_URL_ROOT.'/comm/mailing/liste.php">';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<table class="noborder nohover" width="100%">';
-print '<tr class="liste_titre"><td colspan="3">'.$langs->trans("SearchAMailing").'</td></tr>';
-print '<tr '.$bc[$var].'><td class="nowrap">';
-print $langs->trans("Ref").':</td><td><input type="text" class="flat" name="sref" size="18"></td>';
-print '<td rowspan="2"><input type="submit" value="'.$langs->trans("Search").'" class="button"></td></tr>';
-print '<tr '.$bc[$var].'><td class="nowrap">';
-print $langs->trans("Other").':</td><td><input type="text" class="flat" name="sall" size="18"></td>';
+//if (! empty($conf->global->MAIN_SEARCH_FORM_ON_HOME_AREAS))     // This is useless due to the global search combo
+//{
+    // Recherche emails
+    print '<form method="post" action="'.DOL_URL_ROOT.'/comm/mailing/list.php">';
+    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<table class="noborder nohover" width="100%">';
+    print '<tr class="liste_titre"><td colspan="3">'.$langs->trans("SearchAMailing").'</td></tr>';
+    print '<tr class="oddeven"><td class="nowrap">';
+    print $langs->trans("Ref").':</td><td><input type="text" class="flat inputsearch" name="sref"></td>';
+    print '<td rowspan="2"><input type="submit" value="'.$langs->trans("Search").'" class="button"></td></tr>';
+    print '<tr class="oddeven"><td class="nowrap">';
+    print $langs->trans("Other").':</td><td><input type="text" class="flat inputsearch" name="sall"></td>';
 
-print "</table></form><br>\n";
+    print "</table></form><br>\n";
+//}
 
 
 // Affiche stats de tous les modules de destinataires mailings
@@ -71,7 +73,6 @@ print '<tr class="liste_titre"><td colspan="3">'.$langs->trans("TargetsStatistic
 $dir=DOL_DOCUMENT_ROOT."/core/modules/mailings";
 $handle=opendir($dir);
 
-$var=True;
 if (is_resource($handle))
 {
     while (($file = readdir($handle))!==false)
@@ -83,7 +84,7 @@ if (is_resource($handle))
                 $modulename=$reg[1];
        			if ($modulename == 'example') continue;
 
-                // Chargement de la classe
+                // Loading Class
                 $file = $dir."/".$modulename.".modules.php";
                 $classname = "mailing_".$modulename;
                 require_once $file;
@@ -103,11 +104,9 @@ if (is_resource($handle))
                 // Si le module mailing est qualifi�
                 if ($qualified)
                 {
-                    $var = !$var;
-
                     foreach ($mailmodule->getSqlArrayForStats() as $sql)
                     {
-                        print '<tr '.$bc[$var].'>';
+                        print '<tr class="oddeven">';
 
                         $result=$db->query($sql);
                         if ($result)
@@ -162,21 +161,19 @@ if ($result)
   print '<td colspan="2">'.$langs->trans("LastMailings",$limit).'</td>';
   print '<td align="center">'.$langs->trans("DateCreation").'</td>';
   print '<td align="center">'.$langs->trans("NbOfEMails").'</td>';
-  print '<td align="right"><a href="'.DOL_URL_ROOT.'/comm/mailing/liste.php">'.$langs->trans("AllEMailings").'</a></td></tr>';
+  print '<td align="right"><a href="'.DOL_URL_ROOT.'/comm/mailing/list.php">'.$langs->trans("AllEMailings").'</a></td></tr>';
 
   $num = $db->num_rows($result);
   if ($num > 0)
-    {
-      $var = true;
+  {
       $i = 0;
 
-      while ($i < $num )
+    while ($i < $num )
 	{
 	  $obj = $db->fetch_object($result);
-	  $var=!$var;
 
-	  print "<tr ".$bc[$var].">";
-	  print '<td class="nowrap"><a href="fiche.php?id='.$obj->rowid.'">'.img_object($langs->trans("ShowEMail"),"email").' '.$obj->rowid.'</a></td>';
+	  print '<tr class="oddeven">';
+	  print '<td class="nowrap"><a href="card.php?id='.$obj->rowid.'">'.img_object($langs->trans("ShowEMail"),"email").' '.$obj->rowid.'</a></td>';
 	  print '<td>'.dol_trunc($obj->titre,38).'</td>';
 	  print '<td align="center">'.dol_print_date($db->jdate($obj->date_creat),'day').'</td>';
 	  print '<td align="center">'.($obj->nbemail?$obj->nbemail:"0").'</td>';
@@ -185,11 +182,10 @@ if ($result)
       print '</tr>';
 	  $i++;
 	}
-
     }
   else
     {
-     print '<tr><td>'.$langs->trans("None").'</td></tr>';
+     print '<tr><td class="opacitymedium">'.$langs->trans("None").'</td></tr>';
     }
   print "</table><br>";
   $db->free($result);
@@ -213,7 +209,6 @@ if ($langs->file_exists("html/spam.html",0)) {
     print '<br>';
  }
 
-
+// End of page
 llxFooter();
-
 $db->close();

@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2005      Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2005-2008 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
 
 
 /**
- *	Classe de description et activation du module Mailing
+ *	Class to describe and enable module Mailing
  */
 class modMailing extends DolibarrModules
 {
@@ -44,30 +44,38 @@ class modMailing extends DolibarrModules
 		$this->db = $db;
 		$this->numero = 22;
 
-		$this->family = "technic";
+		// Family can be 'base' (core modules),'crm','financial','hr','projects','products','ecm','technic' (transverse modules),'interface' (link with external tools),'other','...'
+		// It is used to group modules by family in module setup page
+		$this->family = "interface";
+		// Module position in the family on 2 digits ('01', '10', '20', ...)
+		$this->module_position = '11';
+
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		$this->description = "Gestion des EMailings";
-		$this->version = 'dolibarr';    // 'experimental' or 'dolibarr' or version
+		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
+		$this->version = 'dolibarr';
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->special = 0;
 		$this->picto='email';
 
 		// Data directories to create when module is enabled
 		$this->dirs = array("/mailing/temp");
 
-		// Dependances
-		$this->depends = array();
-		$this->requiredby = array();
+		// Dependencies
+		$this->hidden = false;			// A condition to hide module
+		$this->depends = array();		// List of module class names as string that must be enabled if this module is enabled
+		$this->requiredby = array();	// List of module ids to disable if this one is disabled
+		$this->conflictwith = array();	// List of module class names as string this module is in conflict with
+		$this->phpmin = array(5,4);		// Minimum version of PHP required by module
 		$this->langfiles = array("mails");
 
 		// Config pages
 		$this->config_page_url = array("mailing.php");
 
-		// Constantes
+		// Constants
 		$this->const = array();
 
-		// Boites
+		// Boxes
 		$this->boxes = array();
 
 		// Permissions
@@ -79,7 +87,7 @@ class modMailing extends DolibarrModules
 		$this->rights[$r][0] = 221; // id de la permission
 		$this->rights[$r][1] = 'Consulter les mailings'; // libelle de la permission
 		$this->rights[$r][2] = 'r'; // type de la permission (deprecie a ce jour)
-		$this->rights[$r][3] = 1; // La permission est-elle une permission par defaut
+		$this->rights[$r][3] = 0; // La permission est-elle une permission par defaut
 		$this->rights[$r][4] = 'lire';
 
 		$r++;
@@ -127,6 +135,9 @@ class modMailing extends DolibarrModules
 		$this->rights[$r][4] = 'mailing_advance';		// Visible if option MAIN_USE_ADVANCED_PERMS is on
 		$this->rights[$r][5] = 'delete';
 
+		// Menus
+		//-------
+		$this->menu = 1;        // This module add menu entries. They are coded into menu manager.
 	}
 
 
@@ -147,20 +158,4 @@ class modMailing extends DolibarrModules
 
 		return $this->_init($sql,$options);
 	}
-
-    /**
-	 *		Function called when module is disabled.
-	 *      Remove from database constants, boxes and permissions from Dolibarr database.
-	 *		Data directories are not deleted
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-    function remove($options='')
-    {
-		$sql = array();
-
-		return $this->_remove($sql,$options);
-    }
-
 }

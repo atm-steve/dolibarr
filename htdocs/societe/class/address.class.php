@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2002-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2014 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2011 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2011 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,27 +31,47 @@
  */
 class Address
 {
-	var $db;
-
-	var $id;
-	var $type;
-	var $label;
-	var $socid;
-	var $name;
-	var $address;
-	var $zip;
-	var $town;
-	var $country_id;
-	var $country_code;
-	var $phone;
-	var $fax;
-	var $note;
-
+	protected $db;
 
 	/**
-	 *  Constructor
+	 * @var int ID
+	 */
+	public $id;
+
+	public $type;
+
+	/**
+     * @var string Address label
+     */
+    public $label;
+
+	public $socid;
+	public $name;
+
+	/**
+	 * @var string Address
+	 */
+	public $address;
+
+	public $zip;
+	public $town;
+	public $country_id;
+	public $country_code;
+	public $phone;
+	public $fax;
+	public $note;
+
+	/**
+	 * Adresses liees a la societe
+	 * @var array
+	 */
+	public $lines;
+
+	/**
+	 * Constructor
 	 *
-	 *  @param	DoliDB		$db     Database handler
+	 * @param DoliDB $db Database handler
+	 * @deprecated
 	 */
 	function __construct($db)
 	{
@@ -112,16 +132,12 @@ class Address
 				if ($this->db->errno() == 'DB_ERROR_RECORD_ALREADY_EXISTS')
 				{
 
-					$this->error=$langs->trans("ErrorCompanyNameAlreadyExists",$this->nom);
+					$this->error=$langs->trans("ErrorCompanyNameAlreadyExists",$this->name);
 				}
-				else
-				{
-					dol_syslog(get_class($this)."::create echec insert sql=$sql");
-				}
+
 				$this->db->rollback();
 				return -2;
 			}
-
 		}
 		else
 		{
@@ -179,7 +195,7 @@ class Address
 		$this->fax			= preg_replace("/\./","",$this->fax);
 		$this->note			= trim($this->note);
 
-		$result = $this->verify();		// Verifie que nom et label obligatoire
+		$result = $this->verify();		// Verifie que name et label obligatoire
 
 		if ($result >= 0)
 		{
@@ -200,7 +216,7 @@ class Address
 			if ($user) $sql .= ",fk_user_modif = '".$user->id."'";
 			$sql .= " WHERE fk_soc = '" . $socid ."' AND rowid = '" . $this->db->escape($id) ."'";
 
-			dol_syslog(get_class($this)."::Update sql=".$sql, LOG_DEBUG);
+			dol_syslog(get_class($this)."::Update", LOG_DEBUG);
 			$resql=$this->db->query($sql);
 			if ($resql)
 			{
@@ -219,16 +235,15 @@ class Address
 				else
 				{
 					$this->error=$this->db->lasterror();
-					dol_syslog(get_class($this)."::Update error sql=".$sql, LOG_ERR);
 					$result=-2;
 				}
 				$this->db->rollback();
 				return $result;
 			}
 		}
-
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Charge depuis la base toutes les adresses d'une societe
 	 *
@@ -236,11 +251,12 @@ class Address
 	 *  @param  User	$user        Objet de l'utilisateur
 	 *  @return int 			     >0 si ok, <0 si ko
 	 */
-	function fetch_lines($socid, $user=0)
+	function fetch_lines($socid, $user=null)
 	{
+        // phpcs:enable
 		global $langs, $conf;
 
-		$sql = 'SELECT rowid, nom, client, fournisseur';
+		$sql = 'SELECT rowid, nom as name, client, fournisseur';
 		$sql .= ' FROM '.MAIN_DB_PREFIX.'societe';
 		$sql .= ' WHERE rowid = '.$socid;
 
@@ -251,7 +267,7 @@ class Address
 			{
 				$obj = $this->db->fetch_object($resqlsoc);
 
-				$this->socname 		= $obj->nom;
+				$this->socname 		= $obj->name;
 				$this->socid		= $obj->rowid;
 				$this->id			= $obj->rowid;
 				$this->client		= $obj->client;
@@ -267,9 +283,9 @@ class Address
 			{
 				$sql = 'SELECT a.rowid as id, a.label, a.name, a.address, a.datec as date_creation, a.tms as date_modification, a.fk_soc';
 				$sql .= ', a.zip, a.town, a.note, a.fk_pays as country_id, a.phone, a.fax';
-				$sql .= ', p.code as country_code, p.libelle as country';
+				$sql .= ', c.code as country_code, c.label as country';
 				$sql .= ' FROM '.MAIN_DB_PREFIX.'societe_address as a';
-				$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_pays as p ON a.fk_pays = p.rowid';
+				$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c ON a.fk_pays = c.rowid';
 				$sql .= ' WHERE a.fk_soc = '.$this->socid;
 
 				$resql=$this->db->query($sql);
@@ -318,11 +334,11 @@ class Address
 		}
 		else
 		{
-			dol_syslog(get_class($this).'::Fetch '.$this->db->error(), LOG_ERR);
 			$this->error=$this->db->error();
 		}
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Charge depuis la base l'objet adresse
 	 *
@@ -330,16 +346,17 @@ class Address
 	 *  @param  User	$user       Objet de l'utilisateur
 	 *  @return int 				>0 si ok, <0 si ko
 	 */
-	function fetch_address($id, $user=0)
+	function fetch_address($id, $user=null)
 	{
+        // phpcs:enable
 		global $langs;
 		global $conf;
 
 		$sql = 'SELECT a.rowid, a.fk_soc, a.label, a.name, a.address, a.datec as date_creation, a.tms as date_modification';
 		$sql .= ', a.zip, a.town, a.note, a.fk_pays as country_id, a.phone, a.fax';
-		$sql .= ', p.code as country_code, p.libelle as country';
+		$sql .= ', c.code as country_code, c.label as country';
 		$sql .= ' FROM '.MAIN_DB_PREFIX.'societe_address as a';
-		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_pays as p ON a.fk_pays = p.rowid';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c ON a.fk_pays = c.rowid';
 		$sql .= ' WHERE a.rowid = '.$id;
 		$resql=$this->db->query($sql);
 		if ($resql)
@@ -381,7 +398,7 @@ class Address
 		}
 		else
 		{
-			dol_syslog('Erreur Societe::Fetch echec sql='.$sql);
+			dol_syslog('Erreur Societe::Fetch echec', LOG_DEBUG);
 			dol_syslog('Erreur Societe::Fetch '.$this->db->error());
 			$this->error=$this->db->error();
 			$result = -3;
@@ -396,7 +413,7 @@ class Address
 	 *
 	 *  @param	int		$id      id de la societe a supprimer
 	 *  @param	int		$socid	id third party
-	 *  @return	void
+	 *  @return	<0 KO >0 OK
 	 */
 	function delete($id,$socid)
 	{
@@ -408,10 +425,11 @@ class Address
 
 		$result = $this->db->query($sql);
 
-		if (!$result)
-		{
-			print $this->db->error() . '<br>' . $sql;
+		if (!$result) {
+			return -1;
 		}
+
+		return 1;
 	}
 
 	/**
@@ -427,12 +445,13 @@ class Address
 		global $langs;
 
 		$result='';
+        $label = $langs->trans("ShowAddress").': '.$this->label;
 
-		$lien = '<a href="'.DOL_URL_ROOT.'/comm/address.php?id='.$this->id.'&socid='.$this->socid.'">';
-		$lienfin='</a>';
+        $link = '<a href="'.DOL_URL_ROOT.'/comm/address.php?id='.$this->id.'&socid='.$this->socid.'" title="'.dol_escape_htmltag($label, 1).'" class="classfortooltip">';
+		$linkend='</a>';
 
-		if ($withpicto) $result.=($lien.img_object($langs->trans("ShowAddress").': '.$this->label,'address').$lienfin.' ');
-		$result.=$lien.$this->label.$lienfin;
+        if ($withpicto) $result.=($link.img_object($langs->trans("ShowAddress").': '.$this->label, 'address', 'class="classfortooltip"').$linkend.' ');
+		$result.=$link.$this->label.$linkend;
 		return $result;
 	}
 
@@ -445,7 +464,7 @@ class Address
 	 */
 	function info($id)
 	{
-		$sql = "SELECT s.rowid, s.nom, datec as date_creation, tms as date_modification,";
+		$sql = "SELECT s.rowid, s.nom as name, datec as date_creation, tms as date_modification,";
 		$sql.= " fk_user_creat, fk_user_modif";
 		$sql.= " FROM ".MAIN_DB_PREFIX."societe as s";
 		$sql.= " WHERE s.rowid = ".$id;
@@ -470,20 +489,18 @@ class Address
 					$muser->fetch($obj->fk_user_modif);
 					$this->user_modification = $muser;
 				}
-				$this->ref			     = $obj->nom;
+				$this->ref			     = $obj->name;
 				$this->date_creation     = $this->db->jdate($obj->date_creation);
 				$this->date_modification = $this->db->jdate($obj->date_modification);
 			}
 
 			$this->db->free($result);
-
 		}
 		else
 		{
 			dol_print_error($this->db);
 		}
 	}
-
 }
 
 
@@ -492,21 +509,36 @@ class Address
  */
 class AddressLine
 {
+	protected $db;
 
-	var $id;
-	var $date_creation;
-	var $date_modification;
-	var $label;
-	var $name;
-	var $address;
-	var $zip;
-	var $town;
-	var $country_id;
-	var $country_code;
-	var $country;
-	var $phone;
-	var $fax;
-	var $note;
+	/**
+	 * @var int ID
+	 */
+	public $id;
+
+	public $date_creation;
+	public $date_modification;
+
+	/**
+     * @var string stock movements label
+     */
+    public $label;
+
+	public $name;
+
+	/**
+	 * @var string Address
+	 */
+	public $address;
+
+	public $zip;
+	public $town;
+	public $country_id;
+	public $country_code;
+	public $country;
+	public $phone;
+	public $fax;
+	public $note;
 
 
 	/**

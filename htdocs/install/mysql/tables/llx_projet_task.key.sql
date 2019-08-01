@@ -1,6 +1,6 @@
 -- ============================================================================
 -- Copyright (C) 2009 Laurent Destailleur  <eldy@users.sourceforge.net>
--- Copyright (C) 2010 Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2010 Regis Houssin        <regis.houssin@inodbox.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 --
 -- ============================================================================
 
+ALTER TABLE llx_projet_task ADD UNIQUE INDEX uk_projet_task_ref (ref, entity);
 
 ALTER TABLE llx_projet_task ADD INDEX idx_projet_task_fk_projet (fk_projet);
 ALTER TABLE llx_projet_task ADD INDEX idx_projet_task_fk_user_creat (fk_user_creat);

@@ -1,8 +1,9 @@
 <?php
-/* Copyright (C) 2001-2003 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2004-2011 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
- * Copyright (C) 2013      Antoine Iauch        <aiauch@gpcsolutions.fr>
+/* Copyright (C) 2001-2003  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
+ * Copyright (C) 2004-2016  Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2005-2009  Regis Houssin           <regis.houssin@inodbox.com>
+ * Copyright (C) 2013       Antoine Iauch           <aiauch@gpcsolutions.fr>
+ * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +29,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/report.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/tax.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
+// Load translation files required by the page
+$langs->load("accountancy");
+
 $socid = GETPOST('socid','int');
 
 // Security check
@@ -36,7 +40,7 @@ if (! empty($conf->comptabilite->enabled)) $result=restrictedArea($user,'compta'
 if (! empty($conf->accounting->enabled)) $result=restrictedArea($user,'accounting','','','comptarapport');
 
 // Define modecompta ('CREANCES-DETTES' or 'RECETTES-DEPENSES')
-$modecompta = $conf->global->COMPTA_MODE;
+$modecompta = $conf->global->ACCOUNTING_MODE;
 if (GETPOST("modecompta")) $modecompta=GETPOST("modecompta");
 
 $sortorder=isset($_GET["sortorder"])?$_GET["sortorder"]:$_POST["sortorder"];
@@ -97,6 +101,12 @@ else
 {
 	// TODO We define q
 }
+// $date_start and $date_end are defined. We force $year_start and $nbofyear
+$tmps=dol_getdate($date_start);
+$year_start = $tmps['year'];
+$tmpe=dol_getdate($date_end);
+$year_end = $tmpe['year'];
+$nbofyear = ($year_end - $year_start) + 1;
 
 $commonparams=array();
 $commonparams['modecompta']=$modecompta;
@@ -131,37 +141,59 @@ foreach($allparams as $key => $value) {
 
 llxHeader();
 
-
 $form=new Form($db);
+
+// TODO Report from bookkeeping not yet available, so we switch on report on business events
+if ($modecompta=="BOOKKEEPING") $modecompta="CREANCES-DETTES";
+if ($modecompta=="BOOKKEEPINGCOLLECTED") $modecompta="RECETTES-DEPENSES";
 
 // Show report header
 if ($modecompta=="CREANCES-DETTES") {
-    $nom=$langs->trans("SalesTurnover").', '.$langs->trans("ByUserAuthorOfInvoice");
+    $name=$langs->trans("Turnover").', '.$langs->trans("ByUserAuthorOfInvoice");
     $calcmode=$langs->trans("CalcModeDebt");
-    $calcmode.='<br>('.$langs->trans("SeeReportInInputOutputMode",'<a href="'.$_SERVER["PHP_SELF"].'?year='.$year.'&modecompta=RECETTES-DEPENSES">','</a>').')';
-	$period=$form->select_date($date_start,'date_start',0,0,0,'',1,0,1).' - '.$form->select_date($date_end,'date_end',0,0,0,'',1,0,1);
-    //$periodlink="<a href='".$_SERVER["PHP_SELF"]."?year=".($year-1)."&modecompta=".$modecompta."'>".img_previous()."</a> <a href='".$_SERVER["PHP_SELF"]."?year=".($year+1)."&modecompta=".$modecompta."'>".img_next()."</a>";
+    //$calcmode.='<br>('.$langs->trans("SeeReportInInputOutputMode",'<a href="'.$_SERVER["PHP_SELF"].'?year='.$year_start.'&modecompta=RECETTES-DEPENSES">','</a>').')';
     $description=$langs->trans("RulesCADue");
 	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $description.= $langs->trans("DepositsAreNotIncluded");
 	else  $description.= $langs->trans("DepositsAreIncluded");
-    $builddate=time();
-    //$exportlink=$langs->trans("NotYetAvailable");
-} else {
-    $nom=$langs->trans("SalesTurnover").', '.$langs->trans("ByUserAuthorOfInvoice");
-	$calcmode=$langs->trans("CalcModeEngagement");
-    $calcmode.='<br>('.$langs->trans("SeeReportInDueDebtMode",'<a href="'.$_SERVER["PHP_SELF"].'?year='.$year.'&modecompta=CREANCES-DETTES">','</a>').')';
-	$period=$form->select_date($date_start,'date_start',0,0,0,'',1,0,1).' - '.$form->select_date($date_end,'date_end',0,0,0,'',1,0,1);
-    //$periodlink="<a href='".$_SERVER["PHP_SELF"]."?year=".($year-1)."&modecompta=".$modecompta."'>".img_previous()."</a> <a href='".$_SERVER["PHP_SELF"]."?year=".($year+1)."&modecompta=".$modecompta."'>".img_next()."</a>";
-    $description=$langs->trans("RulesCAIn");
-	$description.= $langs->trans("DepositsAreIncluded");
-    $builddate=time();
+    $builddate=dol_now();
     //$exportlink=$langs->trans("NotYetAvailable");
 }
+else if ($modecompta=="RECETTES-DEPENSES")
+{
+	$name=$langs->trans("TurnoverCollected").', '.$langs->trans("ByUserAuthorOfInvoice");
+	$calcmode=$langs->trans("CalcModeEngagement");
+	//$calcmode.='<br>('.$langs->trans("SeeReportInDueDebtMode",'<a href="'.$_SERVER["PHP_SELF"].'?year='.$year_start.'&modecompta=CREANCES-DETTES">','</a>').')';
+    $description=$langs->trans("RulesCAIn");
+	$description.= $langs->trans("DepositsAreIncluded");
+    $builddate=dol_now();
+    //$exportlink=$langs->trans("NotYetAvailable");
+}
+else if ($modecompta=="BOOKKEEPING")
+{
+
+
+}
+else if ($modecompta=="BOOKKEEPINGCOLLECTED")
+{
+
+
+}
+$period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
+if ($date_end == dol_time_plus_duree($date_start, 1, 'y') - 1) $periodlink='<a href="'.$_SERVER["PHP_SELF"].'?year='.($year_start-1).'&modecompta='.$modecompta.'">'.img_previous().'</a> <a href="'.$_SERVER["PHP_SELF"].'?year='.($year_start+1).'&modecompta='.$modecompta.'">'.img_next().'</a>';
+else $periodlink = '';
+
 $moreparam=array();
 if (! empty($modecompta)) $moreparam['modecompta']=$modecompta;
 
-report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportlink,$moreparam,$calcmode);
+report_header($name,$namelink,$period,$periodlink,$description,$builddate,$exportlink,$moreparam,$calcmode);
 
+if (! empty($conf->accounting->enabled) && $modecompta != 'BOOKKEEPING')
+{
+    print info_admin($langs->trans("WarningReportNotReliable"), 0, 0, 1);
+}
+
+
+$name=array();
 
 // Show array
 print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
@@ -178,9 +210,9 @@ if ($modecompta == 'CREANCES-DETTES') {
     $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture as f ON f.fk_user_author = u.rowid";
     $sql.= " WHERE f.fk_statut in (1,2)";
 	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
-	    $sql.= " AND f.type IN (0,1,2)";
+	    $sql.= " AND f.type IN (0,1,2,5)";
 	    } else {
-	    $sql.= " AND f.type IN (0,1,2,3)";
+	    $sql.= " AND f.type IN (0,1,2,3,5)";
 	}
 	if ($date_start && $date_end) {
 	    $sql.= " AND f.datef >= '".$db->idate($date_start)."' AND f.datef <= '".$db->idate($date_end)."'";
@@ -232,7 +264,7 @@ if ($modecompta != 'CREANCES-DETTES') {
     $sql.= " WHERE pf.rowid IS NULL";
     $sql.= " AND p.fk_bank = b.rowid";
     $sql.= " AND b.fk_account = ba.rowid";
-    $sql.= " AND ba.entity = ".$conf->entity;
+    $sql.= " AND ba.entity IN (".getEntity('bank_account').")";
 	if ($date_start && $date_end) {
 	    $sql.= " AND p.datep >= '".$db->idate($date_start)."' AND p.datep <= '".$db->idate($date_end)."'";
 	}
@@ -255,8 +287,11 @@ if ($modecompta != 'CREANCES-DETTES') {
     }
 }
 
-$i = 0;
-print "<table class=\"noborder\" width=\"100%\">";
+$morefilter='';
+
+print '<div class="div-table-responsive">';
+print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">'."\n";
+
 print "<tr class=\"liste_titre\">";
 print_liste_field_titre(
 	$langs->trans("User"),
@@ -280,7 +315,7 @@ if ($modecompta == 'CREANCES-DETTES') {
            $sortorder
 	   );
     } else {
-	print '<td colspan="1"></td>';
+	print_liste_field_titre('');
 }
 print_liste_field_titre(
 	$langs->trans("AmountTTC"),
@@ -310,7 +345,6 @@ print_liste_field_titre(
 	'align="center" width="20%"'
 	);
 print "</tr>\n";
-$var=true;
 
 if (count($amount)) {
     $arrayforsort=$name;
@@ -341,14 +375,16 @@ if (count($amount)) {
         $arrayforsort=$amount;
     }
 
+    $i = 0;
+
     foreach($arrayforsort as $key => $value) {
-        $var=!$var;
-        print "<tr ".$bc[$var].">";
+
+        print '<tr class="oddeven">';
 
         // Third party
         $fullname=$name[$key];
         if ($key >= 0) {
-            $linkname='<a href="'.DOL_URL_ROOT.'/user/fiche.php?id='.$key.'">'.img_object($langs->trans("ShowUser"),'user').' '.$fullname.'</a>';
+            $linkname='<a href="'.DOL_URL_ROOT.'/user/card.php?id='.$key.'">'.img_object($langs->trans("ShowUser"),'user').' '.$fullname.'</a>';
         } else {
             $linkname=$langs->trans("PaymentsNotLinkedToUser");
         }
@@ -359,9 +395,9 @@ if (count($amount)) {
         if ($modecompta != 'CREANCES-DETTES')
         {
             if ($key > 0) {
-		print '<a href="'.DOL_URL_ROOT.'/compta/paiement/liste.php?userid='.$key.'">';
+		print '<a href="'.DOL_URL_ROOT.'/compta/paiement/list.php?userid='.$key.'">';
 		} else {
-		    print '<a href="'.DOL_URL_ROOT.'/compta/paiement/liste.php?userid=-1">';
+		    print '<a href="'.DOL_URL_ROOT.'/compta/paiement/list.php?userid=-1">';
 		}
         } else {
             if ($key > 0) {
@@ -377,9 +413,9 @@ if (count($amount)) {
         print '<td align="right">';
         if ($modecompta != 'CREANCES-DETTES') {
             if ($key > 0) {
-		print '<a href="'.DOL_URL_ROOT.'/compta/paiement/liste.php?userid='.$key.'">';
+		print '<a href="'.DOL_URL_ROOT.'/compta/paiement/list.php?userid='.$key.'">';
 		} else {
-		    print '<a href="'.DOL_URL_ROOT.'/compta/paiement/liste.php?userid=-1">';
+		    print '<a href="'.DOL_URL_ROOT.'/compta/paiement/list.php?userid=-1">';
 		}
         } else {
             if ($key > 0) {
@@ -427,8 +463,9 @@ if (count($amount)) {
 }
 
 print "</table>";
+print '</div>';
+print '</form>';
 
-
+// End of page
 llxFooter();
-
 $db->close();

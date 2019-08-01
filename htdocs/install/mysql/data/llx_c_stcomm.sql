@@ -3,7 +3,7 @@
 -- Copyright (C) 2004-2009 Laurent Destailleur  <eldy@users.sourceforge.net>
 -- Copyright (C) 2004      Benoit Mortier       <benoit.mortier@opensides.be>
 -- Copyright (C) 2004      Guillaume Delecourt  <guillaume.delecourt@opensides.be>
--- Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
 -- Copyright (C) 2007 	   Patrick Raguin       <patrick.raguin@gmail.com>
 --
 -- This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,8 @@
 --
 
 delete from llx_c_stcomm;
-insert into llx_c_stcomm (id,code,libelle) values (-1, 'ST_NO',    'Ne pas contacter');
-insert into llx_c_stcomm (id,code,libelle) values ( 0, 'ST_NEVER', 'Jamais contacté');
-insert into llx_c_stcomm (id,code,libelle) values ( 1, 'ST_TODO',  'A contacter');
-insert into llx_c_stcomm (id,code,libelle) values ( 2, 'ST_PEND',  'Contact en cours');
-insert into llx_c_stcomm (id,code,libelle) values ( 3, 'ST_DONE',  'Contactée');
+insert into llx_c_stcomm (id,code,libelle) values (-1, 'ST_NO',    'Do not contact');
+insert into llx_c_stcomm (id,code,libelle) values ( 0, 'ST_NEVER', 'Never contacted');
+insert into llx_c_stcomm (id,code,libelle) values ( 1, 'ST_TODO',  'To contact');
+insert into llx_c_stcomm (id,code,libelle) values ( 2, 'ST_PEND',  'Contact in progress');
+insert into llx_c_stcomm (id,code,libelle) values ( 3, 'ST_DONE',  'Contacted');

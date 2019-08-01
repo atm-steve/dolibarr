@@ -60,6 +60,8 @@ class EntrepotTest extends PHPUnit_Framework_TestCase
 	 */
 	function __construct()
 	{
+		parent::__construct();
+
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
 		$this->savconf=$conf;
@@ -83,6 +85,8 @@ class EntrepotTest extends PHPUnit_Framework_TestCase
 
     	print __METHOD__."\n";
     }
+
+    // tear down after class
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -231,7 +235,7 @@ class EntrepotTest extends PHPUnit_Framework_TestCase
 		$localobject=new Entrepot($this->savdb);
     	$result=$localobject->fetch($id);
 
-    	$result=$localobject->delete($id);
+    	$result=$localobject->delete($user);
 		print __METHOD__." id=".$id." result=".$result."\n";
     	$this->assertLessThan($result, 0);
 
@@ -252,7 +256,6 @@ class EntrepotTest extends PHPUnit_Framework_TestCase
         $db=$this->savdb;
 
         $localobject=new Entrepot($db);
-
 
         return;
     }

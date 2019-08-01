@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2006-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2006-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2006-2017 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,56 +27,60 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/usergroups.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/ldap.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/ldap.lib.php';
 
-$langs->load("users");
-$langs->load("admin");
-$langs->load("companies");
-$langs->load("ldap");
+// Load translation files required by page
+$langs->loadLangs(array('users', 'admin', 'companies', 'ldap'));
 
 $id = GETPOST('id', 'int');
+$contextpage=GETPOST('contextpage','aZ')?GETPOST('contextpage','aZ'):'userldap';   // To manage different context of search
 
 // Security check
 $socid=0;
 if ($user->societe_id > 0) $socid = $user->societe_id;
 $feature2 = (($socid && $user->rights->user->self->creer)?'':'user');
 if ($user->id == $id) $feature2=''; // A user can always read its own card
-$result = restrictedArea($user, 'user', $id, '&user', $feature2);
+$result = restrictedArea($user, 'user', $id, 'user&user', $feature2);
 
-$fuser = new User($db);
-$fuser->fetch($id);
-$fuser->getrights();
+$object = new User($db);
+$object->fetch($id, '', '', 1);
+$object->getrights();
+
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
+$hookmanager->initHooks(array('usercard','userldap','globalcard'));
 
 
 /*
  * Actions
  */
 
-if ($_GET["action"] == 'dolibarr2ldap')
+
+$parameters=array('id'=>$socid);
+$reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+
+if (empty($reshook))
 {
-    $message="";
+	if ($_GET["action"] == 'dolibarr2ldap')
+	{
+		$ldap = new Ldap();
+		$result = $ldap->connect_bind();
 
-    $db->begin();
+		if ($result > 0)
+		{
+			$info = $object->_load_ldap_info();
+			$dn = $object->_load_ldap_dn($info);
+			$olddn = $dn;    // We can say that old dn = dn as we force synchro
 
-    $ldap=new Ldap();
-    $result=$ldap->connect_bind();
+			$result = $ldap->update($dn, $info, $user, $olddn);
+		}
 
-    $info=$fuser->_load_ldap_info();
-    $dn=$fuser->_load_ldap_dn($info);
-    $olddn=$dn;	// We can say that old dn = dn as we force synchro
-
-    $result=$ldap->update($dn,$info,$user,$olddn);
-
-    if ($result >= 0)
-    {
-        $message.='<div class="ok">'.$langs->trans("UserSynchronized").'</div>';
-        $db->commit();
-    }
-    else
-    {
-        $message.='<div class="error">'.$ldap->error.'</div>';
-        $db->rollback();
-    }
+		if ($result >= 0) {
+			setEventMessages($langs->trans("UserSynchronized"), null, 'mesgs');
+		}
+		else {
+			setEventMessages($ldap->error, $ldap->errors, 'errors');
+		}
+	}
 }
-
 
 /*
  * View
@@ -86,53 +90,47 @@ llxHeader();
 
 $form = new Form($db);
 
-$head = user_prepare_head($fuser);
+$head = user_prepare_head($object);
 
 $title = $langs->trans("User");
 dol_fiche_head($head, 'ldap', $title, 0, 'user');
 
+$linkback = '';
+
+if ($user->rights->user->user->lire || $user->admin) {
+	$linkback = '<a href="'.DOL_URL_ROOT.'/user/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
+}
+
+dol_banner_tab($object,'id',$linkback,$user->rights->user->user->lire || $user->admin);
+
+print '<div class="fichecenter">';
+print '<div class="underbanner clearboth"></div>';
+
 print '<table class="border" width="100%">';
 
-// Ref
-print '<tr><td width="25%" valign="top">'.$langs->trans("Ref").'</td>';
-print '<td>';
-print $form->showrefnav($fuser,'id','',$user->rights->user->user->lire || $user->admin);
-print '</td>';
-print '</tr>';
-
-// Lastname
-print '<tr><td width="25%" valign="top">'.$langs->trans("Lastname").'</td>';
-print '<td>'.$fuser->lastname.'</td>';
-print "</tr>\n";
-
-// Firstname
-print '<tr><td width="25%" valign="top">'.$langs->trans("Firstname").'</td>';
-print '<td>'.$fuser->firstname.'</td>';
-print "</tr>\n";
-
 // Login
-print '<tr><td width="25%" valign="top">'.$langs->trans("Login").'</td>';
-if ($fuser->ldap_sid)
+print '<tr><td class="titlefield">'.$langs->trans("Login").'</td>';
+if ($object->ldap_sid)
 {
-    print '<td class="warning">'.$langs->trans("LoginAccountDisableInDolibarr").'</td>';
+	print '<td class="warning">'.$langs->trans("LoginAccountDisableInDolibarr").'</td>';
 }
 else
 {
-    print '<td>'.$fuser->login.'</td>';
+	print '<td>'.$object->login.'</td>';
 }
 print '</tr>';
 
 if ($conf->global->LDAP_SERVER_TYPE == "activedirectory")
 {
-    $ldap = new Ldap();
-    $result = $ldap->connect_bind();
-    if ($result > 0)
-    {
-        $userSID = $ldap->getObjectSid($fuser->login);
-    }
-    print '<tr><td width="25%" valign="top">'.$langs->trans("SID").'</td>';
-    print '<td>'.$userSID.'</td>';
-    print "</tr>\n";
+	$ldap = new Ldap();
+	$result = $ldap->connect_bind();
+	if ($result > 0)
+	{
+		$userSID = $ldap->getObjectSid($object->login);
+	}
+	print '<tr><td class="valigntop">'.$langs->trans("SID").'</td>';
+	print '<td>'.$userSID.'</td>';
+	print "</tr>\n";
 }
 
 // LDAP DN
@@ -152,9 +150,7 @@ print '</table>';
 
 print '</div>';
 
-
-dol_htmloutput_mesg($message);
-
+dol_fiche_end();
 
 /*
  * Barre d'actions
@@ -164,7 +160,7 @@ print '<div class="tabsAction">';
 
 if ($conf->global->LDAP_SYNCHRO_ACTIVE == 'dolibarr2ldap')
 {
-    print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$fuser->id.'&amp;action=dolibarr2ldap">'.$langs->trans("ForceSynchronize").'</a>';
+	print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=dolibarr2ldap">'.$langs->trans("ForceSynchronize").'</a>';
 }
 
 print "</div>\n";
@@ -174,7 +170,7 @@ if ($conf->global->LDAP_SYNCHRO_ACTIVE == 'dolibarr2ldap') print "<br>\n";
 
 
 // Affichage attributs LDAP
-print_titre($langs->trans("LDAPInformationsForThisUser"));
+print load_fiche_titre($langs->trans("LDAPInformationsForThisUser"));
 
 print '<table width="100%" class="noborder">';
 
@@ -188,43 +184,40 @@ $ldap=new Ldap();
 $result=$ldap->connect_bind();
 if ($result > 0)
 {
-    $info=$fuser->_load_ldap_info();
-    $dn=$fuser->_load_ldap_dn($info,1);
-    $search = "(".$fuser->_load_ldap_dn($info,2).")";
-    $records=$ldap->getAttribute($dn,$search);
+	$info=$object->_load_ldap_info();
+	$dn=$object->_load_ldap_dn($info,1);
+	$search = "(".$object->_load_ldap_dn($info,2).")";
+	$records = $ldap->getAttribute($dn,$search);
 
-    //print_r($records);
+	//print_r($records);
 
-    // Affichage arbre
-    if (count($records) && $records != false && (! isset($records['count']) || $records['count'] > 0))
-    {
-        if (! is_array($records))
-        {
-            print '<tr '.$bc[false].'><td colspan="2"><font class="error">'.$langs->trans("ErrorFailedToReadLDAP").'</font></td></tr>';
-        }
-        else
-        {
-            $result=show_ldap_content($records,0,$records['count'],true);
-        }
-    }
-    else
-    {
-        print '<tr '.$bc[false].'><td colspan="2">'.$langs->trans("LDAPRecordNotFound").' (dn='.$dn.' - search='.$search.')</td></tr>';
-    }
+	// Affichage arbre
+	if ((! is_numeric($records) || $records != 0) && (! isset($records['count']) || $records['count'] > 0))
+	{
+		if (! is_array($records))
+		{
+			print '<tr '.$bc[false].'><td colspan="2"><font class="error">'.$langs->trans("ErrorFailedToReadLDAP").'</font></td></tr>';
+		}
+		else
+		{
+			$result=show_ldap_content($records,0,$records['count'],true);
+		}
+	}
+	else
+	{
+		print '<tr '.$bc[false].'><td colspan="2">'.$langs->trans("LDAPRecordNotFound").' (dn='.$dn.' - search='.$search.')</td></tr>';
+	}
 
-    $ldap->unbind();
-    $ldap->close();
+	$ldap->unbind();
+	$ldap->close();
 }
 else
 {
-    dol_print_error('',$ldap->error);
+	setEventMessages($ldap->error, $ldap->errors, 'errors');
 }
 
 print '</table>';
 
-
-
-
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

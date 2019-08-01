@@ -2,7 +2,7 @@
 /* Copyright (C) 2003-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2004      Eric Seigne          <eric.seigne@ryxeo.com>
- * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,28 +33,32 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/commondocgenerator.class.php';
  */
 abstract class ModeleThirdPartyDoc extends CommonDocGenerator
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      *  Return list of active generation modules
      *
-	 * 	@param	DoliDB		$db					Database handler
-     *  @param	string		$maxfilenamelength  Max length of value to show
+     * 	@param	DoliDB		$db					Database handler
+     *  @param	integer		$maxfilenamelength  Max length of value to show
      * 	@return	array							List of templates
      */
     static function liste_modeles($db,$maxfilenamelength=0)
     {
+        // phpcs:enable
         global $conf;
 
         $type='company';
         $liste=array();
 
         include_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-        $liste=getListOfModels($db,$type,$maxfilenamelength);
+        $liste = getListOfModels($db,$type,$maxfilenamelength);
 
         return $liste;
     }
-
 }
 
 /**
@@ -63,7 +67,10 @@ abstract class ModeleThirdPartyDoc extends CommonDocGenerator
  */
 abstract class ModeleThirdPartyCode
 {
-    var $error='';
+    /**
+     * @var string Error code (or message)
+	 */
+	public $error='';
 
     /**     Renvoi la description par defaut du modele de numerotation
      *
@@ -134,18 +141,21 @@ abstract class ModeleThirdPartyCode
         if ($this->version == 'development') return $langs->trans("VersionDevelopment");
         if ($this->version == 'experimental') return $langs->trans("VersionExperimental");
         if ($this->version == 'dolibarr') return DOL_VERSION;
+        if ($this->version) return $this->version;
         return $langs->trans("NotAvailable");
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
-     *  Renvoi la liste des modeles de numéroation
+     *  Renvoie la liste des modeles de numérotation
      *
      *  @param	DoliDB	$db     			Database handler
-     *  @param  string	$maxfilenamelength  Max length of value to show
+     *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of numbers
      */
     static function liste_modeles($db,$maxfilenamelength=0)
     {
+        // phpcs:enable
         $liste=array();
         $sql ="";
 
@@ -169,12 +179,12 @@ abstract class ModeleThirdPartyCode
     }
 
     /**
-     *      Return description of module parameters
+     *  Return description of module parameters
      *
-     *      @param	Translate	$langs      Output language
-     *		@param	Societe		$soc		Third party object
-     *		@param	int			$type		-1=Nothing, 0=Customer, 1=Supplier
-     *		@return	string					HTML translated description
+     *  @param	Translate	$langs      Output language
+     *  @param	Societe		$soc		Third party object
+     *  @param	int			$type		-1=Nothing, 0=Customer, 1=Supplier
+     *  @return	string					HTML translated description
      */
     function getToolTip($langs,$soc,$type)
     {
@@ -183,7 +193,7 @@ abstract class ModeleThirdPartyCode
         $langs->load("admin");
 
         $s='';
-        if ($type == -1) $s.=$langs->trans("Name").': <b>'.$this->nom.'</b><br>';
+        if ($type == -1) $s.=$langs->trans("Name").': <b>'.$this->getNom($langs).'</b><br>';
         if ($type == -1) $s.=$langs->trans("Version").': <b>'.$this->getVersion().'</b><br>';
         if ($type == 0)  $s.=$langs->trans("CustomerCodeDesc").'<br>';
         if ($type == 1)  $s.=$langs->trans("SupplierCodeDesc").'<br>';
@@ -235,16 +245,17 @@ abstract class ModeleThirdPartyCode
         return $s;
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *   Check if mask/numbering use prefix
 	 *
-	 *   @return	int		0=no, 1=yes
-	 */
+	 *   @return    int	    0=no, 1=yes
+     */
     function verif_prefixIsUsed()
     {
+        // phpcs:enable
         return 0;
     }
-
 }
 
 
@@ -254,7 +265,10 @@ abstract class ModeleThirdPartyCode
  */
 abstract class ModeleAccountancyCode
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
     /**		Return description of module
@@ -303,6 +317,7 @@ abstract class ModeleAccountancyCode
         if ($this->version == 'development') return $langs->trans("VersionDevelopment");
         if ($this->version == 'experimental') return $langs->trans("VersionExperimental");
         if ($this->version == 'dolibarr') return DOL_VERSION;
+        if ($this->version) return $this->version;
         return $langs->trans("NotAvailable");
     }
 
@@ -343,6 +358,7 @@ abstract class ModeleAccountancyCode
         return $s;
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      *  Set accountancy account code for a third party into this->code
      *
@@ -353,7 +369,8 @@ abstract class ModeleAccountancyCode
      */
     function get_code($db, $societe, $type='')
     {
-	    global $langs;
+        // phpcs:enable
+        global $langs;
 
         return $langs->trans("NotAvailable");
     }
@@ -361,89 +378,26 @@ abstract class ModeleAccountancyCode
 
 
 
-
+// phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 /**
- *	Create a document for third party
+ *  Create a document onto disk according to template module.
  *
  *	@param	DoliDB		$db  			Database handler
- *	@param  Societe		$object			Object of third party to use
- *	@param	string		$message		Message
- *	@param	string		$modele			Force model to use ('' to not force). model can be a model name or a template file.
- *	@param	Translate	$outputlangs	Object lang to use for translation
+ *	@param  Facture		$object			Object invoice
+ *  @param  string      $message        Message (not used, deprecated)
+ *	@param	string		$modele			Force template to use ('' to not force)
+ *	@param	Translate	$outputlangs	objet lang a utiliser pour traduction
+ *  @param  int			$hidedetails    Hide details of lines
+ *  @param  int			$hidedesc       Hide description
+ *  @param  int			$hideref        Hide ref
  *	@return int        					<0 if KO, >0 if OK
+ *  @deprecated Use the new function generateDocument of Facture class
+ *  @see Societe::generateDocument()
  */
-function thirdparty_doc_create($db, $object, $message, $modele, $outputlangs)
+function thirdparty_doc_create(DoliDB $db, Societe $object, $message, $modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0)
 {
-    global $conf,$langs,$user;
-    $langs->load("bills");
-	$error=0;
+    // phpcs:enable
+	dol_syslog(__METHOD__ . " is deprecated", LOG_WARNING);
 
-    $dir = DOL_DOCUMENT_ROOT . "/core/modules/societe/doc";
-    $srctemplatepath='';
-
-    // Positionne modele sur le nom du modele a utiliser
-    if (! dol_strlen($modele))
-    {
-        if (! empty($conf->global->COMPANY_ADDON_PDF))
-        {
-            $modele = $conf->global->COMPANY_ADDON_PDF;
-        }
-        else
-        {
-            print $langs->trans("Error")." ".$langs->trans("Error_COMPANY_ADDON_PDF_NotDefined");
-            return 0;
-        }
-    }
-
-    // If selected modele is a filename template (then $modele="modelname:filename")
-    $tmp=explode(':',$modele,2);
-    if (! empty($tmp[1]))
-    {
-        $modele=$tmp[0];
-        $srctemplatepath=$tmp[1];
-    }
-
-    // Search template
-    $file = "doc_".$modele.".modules.php";
-    if (file_exists($dir.'/'.$file))
-    {
-        $classname = "doc_".$modele;
-        require_once $dir.'/'.$file;
-
-        $obj = new $classname($db);
-        $obj->message = $message;
-
-        // We save charset_output to restore it because write_file can change it if needed for
-        // output format that does not support UTF8.
-        $sav_charset_output=$outputlangs->charset_output;
-        if ($obj->write_file($object, $outputlangs, $srctemplatepath) > 0)
-        {
-            $outputlangs->charset_output=$sav_charset_output;
-
-            // Appel des triggers
-            include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
-            $interface=new Interfaces($db);
-            $result=$interface->run_triggers('COMPANY_BUILDDOC',$object,$user,$langs,$conf);
-            if ($result < 0) {
-            	$error++; $obj->errors=$interface->errors;
-            }
-            // Fin appel triggers
-
-            return 1;
-        }
-        else
-        {
-            $outputlangs->charset_output=$sav_charset_output;
-            dol_print_error($db,"thirdparty_doc_create Error: ".$obj->error);
-            return -1;
-        }
-
-    }
-    else
-    {
-        dol_print_error('',$langs->trans("Error")." ".$langs->trans("ErrorFileDoesNotExists",$dir.'/'.$file));
-        return -1;
-    }
+	return $object->generateDocument($modele, $outputlangs, $hidedetails, $hidedesc, $hideref);
 }
-
-

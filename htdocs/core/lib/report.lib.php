@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2008-2012	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2012		Regis Houssin		<regis.houssin@capnetworks.com>
+ * Copyright (C) 2012		Regis Houssin		<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,96 +24,102 @@
 
 
 /**
-*    Show header of a VAT report
-*
-*    @param		string	$nom            Name of report
-*    @param 	string	$variante       Link for alternate report
-*    @param 	string	$period         Period of report
-*    @param 	string	$periodlink     Link to switch period
-*    @param 	string	$description    Description
-*    @param 	date	$builddate      Date generation
-*    @param 	string	$exportlink     Link for export or ''
-*    @param		array	$moreparam		Array with list of params to add into form
-*    @param		string	$calcmode		Calculation mode
-*    @return	void
-*/
-function report_header($nom,$variante,$period,$periodlink,$description,$builddate,$exportlink='',$moreparam=array(),$calcmode='')
+ *	Show header of a report
+ *
+ *	@param	string				$reportname     Name of report
+ *	@param 	string				$notused        Not used
+ *	@param 	string				$period         Period of report
+ *	@param 	string				$periodlink     Link to switch period
+ *	@param 	string				$description    Description
+ *	@param 	timestamp|integer	$builddate      Date generation
+ *	@param 	string				$exportlink     Link for export or ''
+ *	@param	array				$moreparam		Array with list of params to add into form
+ *	@param	string				$calcmode		Calculation mode
+ *  @param  string              $varlink        Add a variable into the address of the page
+ *	@return	void
+ */
+function report_header($reportname,$notused,$period,$periodlink,$description,$builddate,$exportlink='',$moreparam=array(),$calcmode='', $varlink='')
 {
-	global $langs, $hselected;
+	global $langs;
 
-	print "\n\n<!-- debut cartouche rapport -->\n";
+	if (empty($hselected)) $hselected='report';
+
+	print "\n\n<!-- start banner of report -->\n";
+
+	if(! empty($varlink)) $varlink = '?'.$varlink;
 
 	$h=0;
-	$head[$h][0] = $_SERVER["PHP_SELF"];
+	$head[$h][0] = $_SERVER["PHP_SELF"].$varlink;
 	$head[$h][1] = $langs->trans("Report");
 	$head[$h][2] = 'report';
 
-	dol_fiche_head($head, $hselected);
+	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].$varlink.'">';
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+	dol_fiche_head($head, 'report');
+
 	foreach($moreparam as $key => $value)
 	{
-	     print '<input type="hidden" name="'.$key.'" value="'.$value.'">';
+		 print '<input type="hidden" name="'.$key.'" value="'.$value.'">';
 	}
 	print '<table width="100%" class="border">';
 
+	$variante = ($periodlink || $exportlink);
+
 	// Ligne de titre
 	print '<tr>';
-	print '<td valign="top" width="110">'.$langs->trans("ReportName").'</td>';
-	if (! $variantexxx) print '<td colspan="3">';
-	else print '<td>';
-	print $nom;
-	if ($variantexxx) print '</td><td colspan="2">'.$variantexxx;
+	print '<td width="110">'.$langs->trans("ReportName").'</td>';
+	print '<td>';
+	print $reportname;
 	print '</td>';
+	if ($variante) print '<td></td>';
 	print '</tr>';
 
 	// Calculation mode
 	if ($calcmode)
 	{
 		print '<tr>';
-		print '<td valign="top" width="110">'.$langs->trans("CalculationMode").'</td>';
-		if (! $variante) print '<td colspan="3">';
-		else print '<td>';
+		print '<td width="110">'.$langs->trans("CalculationMode").'</td>';
+		print '<td>';
 		print $calcmode;
-		if ($variante) print '</td><td colspan="2">'.$variante;
+		if ($variante) print '<td></td>';
 		print '</td>';
 		print '</tr>';
 	}
-		
+
 	// Ligne de la periode d'analyse du rapport
 	print '<tr>';
 	print '<td>'.$langs->trans("ReportPeriod").'</td>';
-	if (! $periodlink) print '<td colspan="3">';
-	else print '<td>';
+	print '<td>';
 	if ($period) print $period;
-	if ($periodlink) print '</td><td colspan="2">'.$periodlink;
+	if ($variante) print '<td class="nowraponall">'.$periodlink.'</td>';
 	print '</td>';
 	print '</tr>';
 
 	// Ligne de description
 	print '<tr>';
-	print '<td valign="top">'.$langs->trans("ReportDescription").'</td>';
-	print '<td colspan="3">'.$description.'</td>';
+	print '<td>'.$langs->trans("ReportDescription").'</td>';
+	print '<td>'.$description.'</td>';
+	if ($variante) print '<td></td>';
 	print '</tr>';
 
 	// Ligne d'export
 	print '<tr>';
 	print '<td>'.$langs->trans("GeneratedOn").'</td>';
-	if (! $exportlink) print '<td colspan="3">';
-	else print '<td>';
-	print dol_print_date($builddate);
-	if ($exportlink) print '</td><td>'.$langs->trans("Export").'</td><td>'.$exportlink;
-	print '</td></tr>';
-
-	print '<tr>';
-	print '<td colspan="4" align="center"><input type="submit" class="button" name="submit" value="'.$langs->trans("Refresh").'"></td>';
+	print '<td>';
+	print dol_print_date($builddate, 'dayhour');
+	print '</td>';
+	if ($variante) print '<td>'.($exportlink ? $langs->trans("Export").': '.$exportlink : '').'</td>';
 	print '</tr>';
 
 	print '</table>';
 
-	print '</form>';
+	dol_fiche_end();
 
-	print '</div>';
-	print "\n<!-- fin cartouche rapport -->\n\n";
+	print '<div class="center"><input type="submit" class="button" name="submit" value="'.$langs->trans("Refresh").'"></div>';
+
+	print '</form>';
+	print '<br>';
+
+	print "\n<!-- end banner of report -->\n\n";
 }
 

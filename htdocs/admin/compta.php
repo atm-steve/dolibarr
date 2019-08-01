@@ -1,9 +1,9 @@
 <?php
 /* Copyright (C) 2004      Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2008 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
  * Copyright (C) 2011-2013 Juanjo Menent	    <jmenent@2byte.es>
- * Copyright (C) 2013      Philippe Grand	    <philippe.grand@atoo-net.com>
+ * Copyright (C) 2013-2017 Philippe Grand	    <philippe.grand@atoo-net.com>
  * Copyright (C) 2014      Marcos García        <marcosgdf@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,47 +29,47 @@
 require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
-$langs->load('admin');
-$langs->load('compta');
+// Load translation files required by the page
+$langs->loadLangs(array('admin', 'compta', 'accountancy'));
 
 if (!$user->admin)
 accessforbidden();
 
 $action = GETPOST('action','alpha');
 
-// Other parameters COMPTA_*
+// Other parameters ACCOUNTING_*
 $list = array(
-    'COMPTA_PRODUCT_BUY_ACCOUNT',
-    'COMPTA_PRODUCT_SOLD_ACCOUNT',
-    'COMPTA_SERVICE_BUY_ACCOUNT',
-    'COMPTA_SERVICE_SOLD_ACCOUNT',
-    'COMPTA_VAT_ACCOUNT',
-    'COMPTA_VAT_BUY_ACCOUNT',
-    'COMPTA_ACCOUNT_CUSTOMER',
-    'COMPTA_ACCOUNT_SUPPLIER'
+    'ACCOUNTING_PRODUCT_BUY_ACCOUNT',
+    'ACCOUNTING_PRODUCT_SOLD_ACCOUNT',
+    'ACCOUNTING_SERVICE_BUY_ACCOUNT',
+    'ACCOUNTING_SERVICE_SOLD_ACCOUNT',
+    'ACCOUNTING_VAT_SOLD_ACCOUNT',
+    'ACCOUNTING_VAT_BUY_ACCOUNT',
+    'ACCOUNTING_ACCOUNT_CUSTOMER',
+    'ACCOUNTING_ACCOUNT_SUPPLIER'
 );
 
 /*
  * Actions
  */
 
-$compta_mode = defined('COMPTA_MODE')?COMPTA_MODE:'RECETTES-DEPENSES';
+$accounting_mode = empty($conf->global->ACCOUNTING_MODE) ? 'RECETTES-DEPENSES' : $conf->global->ACCOUNTING_MODE;
 
 if ($action == 'update')
 {
     $error = 0;
 
-    $compta_modes = array(
+    $accounting_modes = array(
         'RECETTES-DEPENSES',
         'CREANCES-DETTES'
     );
 
-    $compta_mode = GETPOST('compta_mode','alpha');
+    $accounting_mode = GETPOST('accounting_mode','alpha');
 
 
-    if (in_array($compta_mode,$compta_modes)) {
+    if (in_array($accounting_mode,$accounting_modes)) {
 
-        if (!dolibarr_set_const($db, 'COMPTA_MODE', $compta_mode, 'chaine', 0, '', $conf->entity)) {
+        if (!dolibarr_set_const($db, 'ACCOUNTING_MODE', $accounting_mode, 'chaine', 0, '', $conf->entity)) {
             $error++;
         }
     } else {
@@ -86,11 +86,11 @@ if ($action == 'update')
 
     if (! $error)
     {
-        setEventMessage($langs->trans("SetupSaved"));
+        setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
     }
     else
     {
-        setEventMessage($langs->trans("Error"),'errors');
+        setEventMessages($langs->trans("Error"), null, 'errors');
     }
 }
 
@@ -102,8 +102,8 @@ llxHeader();
 
 $form=new Form($db);
 
-$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
-print_fiche_titre($langs->trans('ComptaSetup'),$linkback,'setup');
+$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
+print load_fiche_titre($langs->trans('ComptaSetup'),$linkback,'title_setup');
 
 print '<br>';
 
@@ -113,12 +113,12 @@ print '<input type="hidden" name="action" value="update">';
 
 print '<table class="noborder" width="100%">';
 
-// Cas du parametre COMPTA_MODE
+// case of the parameter ACCOUNTING_MODE
 
 print '<tr class="liste_titre">';
 print '<td>'.$langs->trans('OptionMode').'</td><td>'.$langs->trans('Description').'</td>';
 print "</tr>\n";
-print '<tr '.$bc[false].'><td width="200"><input type="radio" name="compta_mode" value="RECETTES-DEPENSES"'.($compta_mode != 'CREANCES-DETTES' ? ' checked' : '').'> '.$langs->trans('OptionModeTrue').'</td>';
+print '<tr class="oddeven"><td width="200"><input type="radio" name="accounting_mode" value="RECETTES-DEPENSES"'.($accounting_mode != 'CREANCES-DETTES' ? ' checked' : '').'> '.$langs->trans('OptionModeTrue').'</td>';
 print '<td colspan="2">'.nl2br($langs->trans('OptionModeTrueDesc'));
 // Write info on way to count VAT
 //if (! empty($conf->global->MAIN_MODULE_COMPTABILITE))
@@ -132,9 +132,8 @@ print '<td colspan="2">'.nl2br($langs->trans('OptionModeTrueDesc'));
 //	//	print nl2br($langs->trans('OptionModeTrueInfoExpert'));
 //}
 print "</td></tr>\n";
-print '<tr '.$bc[true].'><td width="200"><input type="radio" name="compta_mode" value="CREANCES-DETTES"'.($compta_mode == 'CREANCES-DETTES' ? ' checked' : '').'> '.$langs->trans('OptionModeVirtual').'</td>';
+print '<tr class="oddeven"><td width="200"><input type="radio" name="accounting_mode" value="CREANCES-DETTES"'.($accounting_mode == 'CREANCES-DETTES' ? ' checked' : '').'> '.$langs->trans('OptionModeVirtual').'</td>';
 print '<td colspan="2">'.nl2br($langs->trans('OptionModeVirtualDesc'))."</td></tr>\n";
-print '</form>';
 
 print "</table>\n";
 
@@ -148,12 +147,10 @@ print "</tr>\n";
 
 foreach ($list as $key)
 {
-	$var=!$var;
-
-	print '<tr '.$bc[$var].' class="value">';
+	print '<tr class="oddeven value">';
 
 	// Param
-	$libelle = $langs->trans($key); 
+	$libelle = $langs->trans($key);
 	print '<td><label for="'.$key.'">'.$libelle.'</label></td>';
 
 	// Value
@@ -162,11 +159,11 @@ foreach ($list as $key)
 	print '</td></tr>';
 }
 
-print '</form>';
 print "</table>\n";
 
-print '<br /><br /><div style="text-align:center"><input type="submit" class="button" value="'.$langs->trans('Modify').'" name="button"></div>';
+print '<br><br><div style="text-align:center"><input type="submit" class="button" value="'.$langs->trans('Modify').'" name="button"></div>';
+print '</form>';
 
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

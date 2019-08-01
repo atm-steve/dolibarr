@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /*
  * Copyright (C) 2005		Rodolphe Quiedeville <rodolphe@quiedeville.org>
@@ -50,8 +50,8 @@ $mode=$argv[1];
 $targettype=$argv[2];
 
 
-require($path."../../htdocs/master.inc.php");
-require_once (DOL_DOCUMENT_ROOT."/core/class/CMailFile.class.php");
+require $path."../../htdocs/master.inc.php";
+require_once DOL_DOCUMENT_ROOT."/core/class/CMailFile.class.php";
 
 $langs->load('main');
 
@@ -66,7 +66,7 @@ $error=0;
  */
 
 @set_time_limit(0);
-print "***** ".$script_file." (".$version.") pid=".getmypid()." *****\n";
+print "***** ".$script_file." (".$version.") pid=".dol_getmypid()." *****\n";
 dol_syslog($script_file." launched with arg ".join(',',$argv));
 
 $now=dol_now('tzserver');
@@ -151,8 +151,9 @@ if ($resql)
             // Define line content
             $outputlangs=new Translate('',$conf);
             $outputlangs->setDefaultLang(empty($obj->default_lang)?$langs->defaultlang:$obj->default_lang);	// By default language of customer
-            $outputlangs->load("bills");
-            $outputlangs->load("main");
+
+            // Load translation files required by the page
+            $outputlangs->loadLangs(array("main", "bills"));
 
             if (dol_strlen($newemail))
             {

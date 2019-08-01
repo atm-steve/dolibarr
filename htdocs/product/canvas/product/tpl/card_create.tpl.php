@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2010 Regis Houssin <regis.houssin@capnetworks.com>
+/* Copyright (C) 2010-2018 Regis Houssin <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Protection to avoid direct call of template
+if (empty($conf) || ! is_object($conf))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
+
 $object=$GLOBALS['object'];
 
 $statutarray=array('1' => $langs->trans("OnSell"), '0' => $langs->trans("NotOnSell"));
@@ -22,7 +30,10 @@ $statutarray=array('1' => $langs->trans("OnSell"), '0' => $langs->trans("NotOnSe
 
 <!-- BEGIN PHP TEMPLATE -->
 
-<?php print_fiche_titre($langs->trans("Product")); ?>
+<?php
+print load_fiche_titre($langs->trans("NewProduct"),'','title_products.png');
+dol_fiche_head('');
+?>
 
 <?php dol_htmloutput_errors((is_numeric($object->error)?'':$object->error),$object->errors); ?>
 
@@ -42,12 +53,12 @@ $statutarray=array('1' => $langs->trans("OnSell"), '0' => $langs->trans("NotOnSe
 <tr>
 <td class="fieldrequired" width="20%"><?php echo $langs->trans("Ref"); ?></td>
 <td><input name="ref" size="40" maxlength="32" value="<?php echo $object->ref; ?>">
-<?php if ($_error == 1) echo $langs->trans("RefAlreadyExists"); ?>
+<?php if ($refalreadyexists == 1) echo $langs->trans("RefAlreadyExists"); ?>
 </td></tr>
 
 <tr>
 <td class="fieldrequired"><?php echo $langs->trans("Label"); ?></td>
-<td><input name="libelle" size="40" value="<?php echo $object->label; ?>"></td>
+<td><input name="label" size="40" value="<?php echo $object->label; ?>"></td>
 </tr>
 
 <tr>
@@ -57,7 +68,7 @@ $statutarray=array('1' => $langs->trans("OnSell"), '0' => $langs->trans("NotOnSe
 
 <tr>
 <td class="fieldrequired"><?php echo $langs->trans("Status").' ('.$langs->trans("Buy").')'; ?></td>
-<td><?php echo $form->selectarray('statut_buy',$statutarray,$object->status_tobuy); ?></td>
+<td><?php echo $form->selectarray('statut_buy',$statutarray,$object->status_buy); ?></td>
 </tr>
 
 <?php if (! empty($conf->stock->enabled)) { ?>
@@ -90,10 +101,7 @@ $statutarray=array('1' => $langs->trans("OnSell"), '0' => $langs->trans("NotOnSe
 <?php echo $object->volume_units; ?>
 </td></tr>
 
-<tr><td><?php echo $langs->trans("Hidden"); ?></td>
-<td><?php echo $object->hidden; ?></td></tr>
-
-<tr><td valign="top"><?php echo $langs->trans("NoteNotVisibleOnBill"); ?></td><td>
+<tr><td class="tdtop"><?php echo $langs->trans("NoteNotVisibleOnBill"); ?></td><td>
 <?php echo $object->textarea_note; ?>
 </td></tr>
 </table>

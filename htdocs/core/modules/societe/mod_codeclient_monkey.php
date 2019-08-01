@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2004		Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2006-2007	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2006-2012	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2006-2012	Regis Houssin			<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,22 +28,43 @@ require_once DOL_DOCUMENT_ROOT.'/core/modules/societe/modules_societe.class.php'
 
 
 /**
- *	\class 		mod_codeclient_monkey
- *	\brief 		Classe permettant la gestion monkey des codes tiers
+ *	Classe permettant la gestion monkey des codes tiers
  */
 class mod_codeclient_monkey extends ModeleThirdPartyCode
 {
-	var $nom='Monkey';					// Nom du modele
-	var $code_modifiable;				// Code modifiable
-	var $code_modifiable_invalide;		// Code modifiable si il est invalide
-	var $code_modifiable_null;			// Code modifiables si il est null
-	var $code_null;						// Code facultatif
-	var $version='dolibarr';	    	// 'development', 'experimental', 'dolibarr'
-	var $code_auto;                     // Numerotation automatique
+	/**
+	 * @var string Nom du modele
+	 * @deprecated
+	 * @see name
+	 */
+	public $nom='Monkey';
 
-	var $prefixcustomer='CU';
-	var $prefixsupplier='SU';
-	var $prefixIsRequired; // Le champ prefix du tiers doit etre renseigne quand on utilise {pre}
+	/**
+	 * @var string model name
+	 */
+	public $name='Monkey';
+
+	public $code_modifiable;				// Code modifiable
+
+	public $code_modifiable_invalide;		// Code modifiable si il est invalide
+
+	public $code_modifiable_null;			// Code modifiables si il est null
+
+	public $code_null;						// Code facultatif
+
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';	    	// 'development', 'experimental', 'dolibarr'
+
+	public $code_auto;                     // Numerotation automatique
+
+	public $prefixcustomer='CU';
+
+	public $prefixsupplier='SU';
+
+	public $prefixIsRequired; // Le champ prefix du tiers doit etre renseigne quand on utilise {pre}
 
 
 	/**
@@ -52,6 +73,7 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 	function __construct()
 	{
 		$this->nom = "Monkey";
+		$this->name = "Monkey";
 		$this->version = "dolibarr";
 		$this->code_null = 1;
 		$this->code_modifiable = 1;
@@ -100,29 +122,29 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 
 		$return='000001';
 
-		$field='';$where='';
-		if ($type == 0)
-		{
+		$field='';
+        $where='';
+        $prefix = '';
+		if ($type == 0) {
 			$field = 'code_client';
+            $prefix = $this->prefixcustomer;
 			//$where = ' AND client in (1,2)';
-		}
-		else if ($type == 1)
-		{
+		} elseif ($type == 1) {
 			$field = 'code_fournisseur';
+            $prefix = $this->prefixsupplier;
 			//$where = ' AND fournisseur = 1';
-		}
-		else return -1;
+		} else {
+            return -1;
+        }
 
-
-		if ($type == 0) $prefix=$this->prefixcustomer;
-		if ($type == 1) $prefix=$this->prefixsupplier;
-
-		// D'abord on recupere la valeur max (reponse immediate car champ indexe)
+        // D'abord on recupere la valeur max (reponse immediate car champ indexe)
 		$posindice=8;
         $sql = "SELECT MAX(CAST(SUBSTRING(".$field." FROM ".$posindice.") AS SIGNED)) as max";   // This is standard SQL
 		$sql.= " FROM ".MAIN_DB_PREFIX."societe";
 		$sql.= " WHERE ".$field." LIKE '".$prefix."____-%'";
-		$sql.= " AND entity IN (".getEntity('societe', 1).")";
+		$sql.= " AND entity IN (".getEntity('societe').")";
+
+		dol_syslog(get_class($this)."::getNextValue", LOG_DEBUG);
 
 		$resql=$db->query($sql);
 		if ($resql)
@@ -133,7 +155,6 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 		}
 		else
 		{
-			dol_syslog(get_class($this)."::getNextValue sql=".$sql, LOG_ERR);
 			return -1;
 		}
 
@@ -180,7 +201,7 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 		{
 			if ($this->verif_syntax($code) >= 0)
 			{
-				$is_dispo = $this->verif_dispo($db, $code, $soc);
+				$is_dispo = $this->verif_dispo($db, $code, $soc, $type);
 				if ($is_dispo <> 0)
 				{
 					$result=-3;
@@ -203,29 +224,33 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 			}
 		}
 
-		dol_syslog(get_class($this)."::verif type=".$type." result=".$result);
+		dol_syslog(get_class($this)."::verif code=".$code." type=".$type." result=".$result);
 		return $result;
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *		Renvoi si un code est pris ou non (par autre tiers)
 	 *
 	 *		@param	DoliDB		$db			Handler acces base
 	 *		@param	string		$code		Code a verifier
 	 *		@param	Societe		$soc		Objet societe
+	 *		@param  int		  	$type   	0 = customer/prospect , 1 = supplier
 	 *		@return	int						0 if available, <0 if KO
 	 */
-	function verif_dispo($db, $code, $soc)
+	function verif_dispo($db, $code, $soc, $type=0)
 	{
+        // phpcs:enable
 		global $conf, $mc;
 
-		$sql = "SELECT code_client FROM ".MAIN_DB_PREFIX."societe";
-		$sql.= " WHERE code_client = '".$code."'";
-		$sql.= " AND entity IN (".getEntity('societe', 1).")";
+		$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."societe";
+		if ($type == 1) $sql.= " WHERE code_fournisseur = '".$code."'";
+		else $sql.= " WHERE code_client = '".$code."'";
+		$sql.= " AND entity IN (".getEntity('societe').")";
 		if ($soc->id > 0) $sql.= " AND rowid <> ".$soc->id;
 
-		dol_syslog(get_class($this)."::verif_dispo sql=".$sql, LOG_DEBUG);
+		dol_syslog(get_class($this)."::verif_dispo", LOG_DEBUG);
 		$resql=$db->query($sql);
 		if ($resql)
 		{
@@ -242,10 +267,10 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 		{
 			return -2;
 		}
-
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *	Renvoi si un code respecte la syntaxe
 	 *
@@ -254,6 +279,7 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 	 */
 	function verif_syntax($code)
 	{
+        // phpcs:enable
 		$res = 0;
 
 		if (dol_strlen($code) < 11)
@@ -266,6 +292,4 @@ class mod_codeclient_monkey extends ModeleThirdPartyCode
 		}
 		return $res;
 	}
-
 }
-

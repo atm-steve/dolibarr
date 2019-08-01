@@ -48,7 +48,7 @@ if (! isset($statut))
 
 if (! isset($cotis))
 {
-  // par defaut les adherents doivent etre a jour de cotisation
+  // by default, members must be up to date of subscription
   $cotis=1;
 }
 
@@ -86,7 +86,6 @@ else
 	dol_print_error($db);
 }
 
-
+// End of page
 llxFooter();
-
 $db->close();

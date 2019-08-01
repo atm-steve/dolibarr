@@ -1,6 +1,7 @@
 -- ========================================================================
 -- Copyright (C) 2001-2002,2004 Rodolphe Quiedeville <rodolphe@quiedeville.org>
 -- Copyright (C) 2004           Laurent Destailleur  <eldy@users.sourceforge.net>
+-- Copyright (C) 2014           Alexandre Spangaro   <aspangaro.dolibarr@gmail.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -15,13 +16,17 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 --
+-- Type of expense report
 -- ========================================================================
 
 create table llx_c_type_fees
 (
-  id        integer      AUTO_INCREMENT PRIMARY KEY,
-  code      varchar(12)  NOT NULL,
-  libelle   varchar(30),
-  active    tinyint DEFAULT 1   NOT NULL,
-  module    varchar(32) NULL
+  id        		integer      AUTO_INCREMENT PRIMARY KEY,
+  code      		varchar(12)  NOT NULL,
+  label				varchar(30),
+  type				integer DEFAULT 0,		-- 0=type product, 1=type service
+  accountancy_code	varchar(32) NULL,
+  active    		tinyint DEFAULT 1   NOT NULL,
+  module    		varchar(32) NULL,
+  position          integer NOT NULL DEFAULT 0
 )ENGINE=innodb;

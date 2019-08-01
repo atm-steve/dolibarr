@@ -1,8 +1,9 @@
 <?php
 /* Copyright (C) 2005      Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2005-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2011 Regis Houssin        <regis.houssin@capnetworks.com>
- * Copyright (C) 2013      Florian Henry		  	<florian.henry@open-concept.pro>
+ * Copyright (C) 2005-2015 Laurent Destailleur  <eldy@users.sourceforge.net>
+ * Copyright (C) 2005-2011 Regis Houssin        <regis.houssin@inodbox.com>
+ * Copyright (C) 2013      Florian Henry		<florian.henry@open-concept.pro>
+ * Copyright (C) 2015      Marcos García       <marcosgdf@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,11 +33,82 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
 
 
 /**
- *	Classe permettant de generer les borderaux envoi au modele Merou
+ *	Class to build sending documents with model Merou
  */
 class pdf_merou extends ModelePdfExpedition
 {
-	var $emetteur;	// Objet societe qui emet
+    /**
+     * @var DoliDb Database handler
+     */
+    public $db;
+
+	/**
+     * @var string model name
+     */
+    public $name;
+
+	/**
+     * @var string model description (short text)
+     */
+    public $description;
+
+	/**
+     * @var string document type
+     */
+    public $type;
+
+	/**
+     * @var array() Minimum version of PHP required by module.
+	 * e.g.: PHP ≥ 5.4 = array(5, 4)
+     */
+	public $phpmin = array(5, 4);
+
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';
+
+	/**
+     * @var int page_largeur
+     */
+    public $page_largeur;
+
+	/**
+     * @var int page_hauteur
+     */
+    public $page_hauteur;
+
+	/**
+     * @var array format
+     */
+    public $format;
+
+	/**
+     * @var int marge_gauche
+     */
+	public $marge_gauche;
+
+	/**
+     * @var int marge_droite
+     */
+	public $marge_droite;
+
+	/**
+     * @var int marge_haute
+     */
+	public $marge_haute;
+
+	/**
+     * @var int marge_basse
+     */
+	public $marge_basse;
+
+	/**
+	 * Issuer
+	 * @var Societe
+	 */
+	public $emetteur;
 
 
 	/**
@@ -64,12 +136,13 @@ class pdf_merou extends ModelePdfExpedition
 
 		$this->option_logo = 1;
 
-		// Recupere emmetteur
+		// Get source company
 		$this->emetteur=$mysoc;
 		if (! $this->emetteur->country_code) $this->emetteur->country_code=substr($langs->defaultlang,-2);    // By default if not defined
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *	Function to build pdf onto disk
 	 *
@@ -83,6 +156,7 @@ class pdf_merou extends ModelePdfExpedition
 	 */
 	function write_file(&$object,$outputlangs,$srctemplatepath='',$hidedetails=0,$hidedesc=0,$hideref=0)
 	{
+        // phpcs:enable
 		global $user,$conf,$langs,$mysoc,$hookmanager;
 
 		$object->fetch_thirdparty();
@@ -91,14 +165,8 @@ class pdf_merou extends ModelePdfExpedition
 		// For backward compatibility with FPDF, force output charset to ISO, because FPDF expect text to be encoded in ISO
 		if (! empty($conf->global->MAIN_USE_FPDF)) $outputlangs->charset_output='ISO-8859-1';
 
-		$outputlangs->load("main");
-		$outputlangs->load("dict");
-		$outputlangs->load("companies");
-		$outputlangs->load("bills");
-		$outputlangs->load("products");
-		$outputlangs->load("propal");
-		$outputlangs->load("deliveries");
-		$outputlangs->load("sendings");
+		// Load traductions files requiredby by page
+		$outputlangs->loadLangs(array("main", "bills", "products", "dict", "companies", "propal", "deliveries", "sendings", "productbatch"));
 
 		if ($conf->expedition->dir_output)
 		{
@@ -143,6 +211,17 @@ class pdf_merou extends ModelePdfExpedition
 
 			if (file_exists($dir))
 			{
+				// Add pdfgeneration hook
+				if (! is_object($hookmanager))
+				{
+					include_once DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php';
+					$hookmanager=new HookManager($this->db);
+				}
+				$hookmanager->initHooks(array('pdfgeneration'));
+				$parameters=array('file'=>$file,'object'=>$object,'outputlangs'=>$outputlangs);
+				global $action;
+				$reshook=$hookmanager->executeHooks('beforePDFCreation',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
+
 				$nblignes = count($object->lines);
 
 				$pdf=pdf_getInstance($this->format,'mm','l');
@@ -150,6 +229,7 @@ class pdf_merou extends ModelePdfExpedition
 				$heightforinfotot = 0;	// Height reserved to output the info and total part
 		        $heightforfreetext= (isset($conf->global->MAIN_PDF_FREETEXT_HEIGHT)?$conf->global->MAIN_PDF_FREETEXT_HEIGHT:5);	// Height reserved to output the free text on last page
 	            $heightforfooter = $this->marge_basse + 8;	// Height reserved to output the footer (value include bottom margin)
+	            if ($conf->global->MAIN_GENERATE_DOCUMENTS_SHOW_FOOT_DETAILS >0) $heightforfooter+= 6;
                 $pdf->SetAutoPageBreak(1,0);
 
 			    if (class_exists('TCPDF'))
@@ -159,7 +239,7 @@ class pdf_merou extends ModelePdfExpedition
                 }
                 $pdf->SetFont(pdf_getPDFFont($outputlangs));
                 // Set path to the background PDF File
-                if (empty($conf->global->MAIN_DISABLE_FPDI) && ! empty($conf->global->MAIN_ADD_PDF_BACKGROUND))
+                if (! empty($conf->global->MAIN_ADD_PDF_BACKGROUND))
                 {
                     $pagecount = $pdf->setSourceFile($conf->mycompany->dir_output.'/'.$conf->global->MAIN_ADD_PDF_BACKGROUND);
                     $tplidx = $pdf->importPage(1);
@@ -250,9 +330,11 @@ class pdf_merou extends ModelePdfExpedition
 
 					$pdf->SetFont('','', $default_font_size - 3);
 
-					//Creation des cases a cocher
+					// Check boxes
+					$pdf->SetDrawColor(120,120,120);
 					$pdf->Rect(10+3, $curY, 3, 3);
 					$pdf->Rect(20+3, $curY, 3, 3);
+
 					//Insertion de la reference du produit
 					$pdf->SetXY(30, $curY);
 					$pdf->SetFont('','B', $default_font_size - 3);
@@ -268,7 +350,7 @@ class pdf_merou extends ModelePdfExpedition
 					if (! empty($conf->global->MAIN_PDF_DASH_BETWEEN_LINES) && $i < ($nblignes - 1))
 					{
 						$pdf->setPage($pageposafter);
-						$pdf->SetLineStyle(array('dash'=>'1,1','color'=>array(210,210,210)));
+						$pdf->SetLineStyle(array('dash'=>'1,1','color'=>array(80,80,80)));
 						//$pdf->SetDrawColor(190,190,200);
 						$pdf->line($this->marge_gauche, $nexY+1, $this->page_largeur - $this->marge_droite, $nexY+1);
 						$pdf->SetLineStyle(array('dash'=>0));
@@ -329,8 +411,22 @@ class pdf_merou extends ModelePdfExpedition
 				$pdf->Close();
 
 				$pdf->Output($file,'F');
+
+				// Add pdfgeneration hook
+				if (! is_object($hookmanager))
+				{
+					include_once DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php';
+					$hookmanager=new HookManager($this->db);
+				}
+				$hookmanager->initHooks(array('pdfgeneration'));
+				$parameters=array('file'=>$file,'object'=>$object,'outputlangs'=>$outputlangs);
+				global $action;
+				$reshook=$hookmanager->executeHooks('afterPDFCreation',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
+
                 if (! empty($conf->global->MAIN_UMASK))
                     @chmod($file, octdec($conf->global->MAIN_UMASK));
+
+				$this->result = array('fullpath'=>$file);
 
 				return 1;
 			}
@@ -345,9 +441,6 @@ class pdf_merou extends ModelePdfExpedition
 			$this->error=$outputlangs->transnoentities("ErrorConstantNotDefined","EXP_OUTPUTDIR");
 			return 0;
 		}
-		$this->error=$outputlangs->transnoentities("ErrorUnknown");
-		return 0;   // Erreur par defaut
-
 	}
 
 	/**
@@ -367,8 +460,8 @@ class pdf_merou extends ModelePdfExpedition
 		global $langs;
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 
-		$langs->load("main");
-		$langs->load("bills");
+		// Translations
+		$langs->loadLangs(array("main", "bills"));
 
 		if (empty($hidetop))
 		{
@@ -498,7 +591,7 @@ class pdf_merou extends ModelePdfExpedition
 		$origin_id 	= $object->origin_id;
 
 		// Add list of linked elements
-		$posy = pdf_writeLinkedObjects($pdf, $object, $outputlangs, $posx, $posy, 100, 3, 'R', $default_font_size, $hookmanager);
+		$posy = pdf_writeLinkedObjects($pdf, $object, $outputlangs, $posx, $posy, 100, 3, 'R', $default_font_size - 1, $hookmanager);
 
 		//$this->Code39($Xoff+43, $Yoff+1, $object->commande->ref,$ext = true, $cks = false, $w = 0.4, $h = 4, $wide = true);
 		//Definition Emplacement du bloc Societe
@@ -516,32 +609,38 @@ class pdf_merou extends ModelePdfExpedition
 		$pdf->SetTextColor(0,0,0);
 
 		// Sender properties
-		$carac_emetteur = pdf_build_address($outputlangs, $this->emetteur, $object->client);
+		$carac_emetteur = pdf_build_address($outputlangs, $this->emetteur, $object->thirdparty, '', 0, 'source', $object);
 
 		$pdf->SetFont('','', $default_font_size - 3);
 		$pdf->SetXY($blSocX,$blSocY+4);
 		$pdf->MultiCell(80, 2, $carac_emetteur, 0, 'L');
 
 
-		if ($object->client->code_client)
+		if ($object->thirdparty->code_client)
 		{
 			$Yoff+=3;
 			$posy=$Yoff;
 			$pdf->SetXY(100,$posy);
 			$pdf->SetTextColor(0,0,0);
-			$pdf->MultiCell(100, 3, $outputlangs->transnoentities("CustomerCode")." : " . $outputlangs->transnoentities($object->client->code_client), '', 'R');
+			$pdf->MultiCell(100, 3, $outputlangs->transnoentities("CustomerCode")." : " . $outputlangs->transnoentities($object->thirdparty->code_client), '', 'R');
 		}
 
 		// Date Expedition
 		$Yoff = $Yoff+7;
-		$pdf->SetXY($blSocX-80,$blSocY+20);
-		$pdf->SetFont('','B', $default_font_size - 2);
+		$pdf->SetXY($blSocX-80,$blSocY+17);
+
+		$pdf->SetFont('','B', $default_font_size - 3);
 		$pdf->SetTextColor(0,0,0);
-		$pdf->MultiCell(50, 8, $outputlangs->transnoentities("Date")." : " . dol_print_date($object->date_delivery,'day',false,$outputlangs,true), '', 'L');
+		$pdf->MultiCell(50, 8, $outputlangs->transnoentities("DateDeliveryPlanned")." : " . dol_print_date($object->date_delivery,'day',false,$outputlangs,true), '', 'L');
+
+		$pdf->SetXY($blSocX-80,$blSocY+20);
+		$pdf->SetFont('','B', $default_font_size - 3);
+		$pdf->SetTextColor(0,0,0);
+		$pdf->MultiCell(50, 8, $outputlangs->transnoentities("TrackingNumber")." : " . $object->tracking_number, '', 'L');
 
 		// Deliverer
 		$pdf->SetXY($blSocX-80,$blSocY+23);
-		$pdf->SetFont('','', $default_font_size - 2);
+		$pdf->SetFont('','', $default_font_size - 3);
 		$pdf->SetTextColor(0,0,0);
 
 		if (! empty($object->tracking_number))
@@ -553,14 +652,18 @@ class pdf_merou extends ModelePdfExpedition
 				{
 					// Get code using getLabelFromKey
 					$code=$outputlangs->getLabelFromKey($this->db,$object->shipping_method_id,'c_shipment_mode','rowid','code');
-					$label=$outputlangs->trans("SendingMethod".strtoupper($code))." :";
-				}
-				else
-				{
-					$label=$outputlangs->transnoentities("Deliverer");
-				}
 
-				$pdf->writeHTMLCell(50, 8, '', '', $label." ".$object->tracking_url, '', 'L');
+					$label='';
+					$label.=$outputlangs->trans("SendingMethod").": ".$outputlangs->trans("SendingMethod".strtoupper($code));
+					//var_dump($object->tracking_url != $object->tracking_number);exit;
+					if ($object->tracking_url != $object->tracking_number)
+					{
+						$label.=" : ";
+						$label.=$object->tracking_url;
+					}
+					$pdf->SetFont('','B', $default_font_size - 3);
+					$pdf->writeHTMLCell(50, 8, '', '', $label, '', 'L');
+				}
 			}
 		}
 		else
@@ -569,9 +672,7 @@ class pdf_merou extends ModelePdfExpedition
 		}
 
 
-		/**********************************/
-		//Emplacement Informations Expediteur (My Company)
-		/**********************************/
+		// Shipping company (My Company)
 		$Yoff = $blSocY;
 		$blExpX=$Xoff-20;
 		$blW=52;
@@ -590,25 +691,22 @@ class pdf_merou extends ModelePdfExpedition
 		}
 
 		// Recipient name
-		if (! empty($usecontact))
-		{
-			// On peut utiliser le nom de la societe du contact
-			if (! empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT)) $socname = $object->contact->socname;
-			else $socname = $object->client->nom;
-			$carac_client_name=$outputlangs->convToOutputCharset($socname);
-		}
-		else
-		{
-			$carac_client_name=$outputlangs->convToOutputCharset($object->client->nom);
+		// On peut utiliser le nom de la societe du contact
+		if ($usecontact && !empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT)) {
+			$thirdparty = $object->contact;
+		} else {
+			$thirdparty = $object->thirdparty;
 		}
 
-		$carac_client=pdf_build_address($outputlangs,$this->emetteur,$object->client,((!empty($object->contact))?$object->contact:null),$usecontact,'targetwithdetails');
+		$carac_client_name=pdfBuildThirdpartyName($thirdparty, $outputlangs);
+
+		$carac_client=pdf_build_address($outputlangs,$this->emetteur,$object->thirdparty,((!empty($object->contact))?$object->contact:null),$usecontact,'targetwithdetails',$object);
 
 		$blDestX=$blExpX+55;
-		$blW=50;
+		$blW=54;
 		$Yoff = $Ydef +1;
 
-		// Show recipient frame
+		// Show Recipient frame
 		$pdf->SetFont('','B', $default_font_size - 3);
 		$pdf->SetXY($blDestX,$Yoff-4);
 		$pdf->MultiCell($blW,3, $outputlangs->transnoentities("Recipient"), 0, 'L');
@@ -619,9 +717,11 @@ class pdf_merou extends ModelePdfExpedition
 		$pdf->SetXY($blDestX,$Yoff);
 		$pdf->MultiCell($blW,3, $carac_client_name, 0, 'L');
 
+		$posy = $pdf->getY();
+
 		// Show recipient information
 		$pdf->SetFont('','', $default_font_size - 3);
-		$pdf->SetXY($blDestX,$Yoff+(dol_nboflines_bis($carac_client_name,50)*4));
-		$pdf->MultiCell($blW,2, $carac_client, 0, 'L');
+		$pdf->SetXY($blDestX,$posy);
+		$pdf->MultiCell($widthrecbox, 4, $carac_client, 0, 'L');
 	}
 }

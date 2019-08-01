@@ -1,5 +1,6 @@
 <?php
-/* Copyright (C) 2011 Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2011       Laurent Destailleur <eldy@users.sourceforge.net>
+ * Copyright (C) 2016       Raphaël Doursenaud  <rdoursenaud@gpcsolutions.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +23,7 @@
  */
 
 /**
- *	\class 		Import
- *	\brief 		Class to manage imports
+ *	Class to manage imports
  */
 class Import
 {
@@ -33,11 +33,25 @@ class Import
 	var $array_import_code;
 	var $array_import_label;
 	var $array_import_tables;
+	var $array_import_tables_creator;
 	var $array_import_fields;
+	var $array_import_fieldshidden;
 	var $array_import_entities;
 	var $array_import_regex;
+	var $array_import_updatekeys;
 	var $array_import_examplevalues;
 	var $array_import_convertvalue;
+	var $array_import_run_sql_after;
+
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
 
 
 	/**
@@ -51,6 +65,7 @@ class Import
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Load description int this->array_import_module, this->array_import_fields, ... of an importable dataset
 	 *
@@ -60,11 +75,11 @@ class Import
 	 */
 	function load_arrays($user,$filter='')
 	{
+        // phpcs:enable
 		global $langs,$conf;
 
 		dol_syslog(get_class($this)."::load_arrays user=".$user->id." filter=".$filter);
 
-        $var=true;
         $i=0;
 
         require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
@@ -107,11 +122,11 @@ class Import
 						//print_r("$perm[0]-$perm[1]-$perm[2]<br>");
 						if ($perm[2])
 						{
-						$bool=$user->rights->$perm[0]->$perm[1]->$perm[2];
+						$bool=$user->rights->{$perm[0]}->{$perm[1]}->{$perm[2]};
 						}
 						else
 						{
-						$bool=$user->rights->$perm[0]->$perm[1];
+						$bool=$user->rights->{$perm[0]}->{$perm[1]};
 						}
 						if ($perm[0]=='user' && $user->admin) $bool=true;
 						//print $bool." $perm[0]"."<br>";
@@ -137,7 +152,7 @@ class Import
 						$this->array_import_label[$i]=$module->getImportDatasetLabel($r);
 						// Array of tables to import (key=alias, value=tablename)
 						$this->array_import_tables[$i]=$module->import_tables_array[$r];
-						// Array of tables creator field to import (key=alias, value=creator field)
+						// Array of tables creator field to import (key=alias, value=creator field name)
 						$this->array_import_tables_creator[$i]=(isset($module->import_tables_creator_array[$r])?$module->import_tables_creator_array[$r]:'');
 						// Array of fields to import (key=field, value=label)
 						$this->array_import_fields[$i]=$module->import_fields_array[$r];
@@ -147,10 +162,14 @@ class Import
 						$this->array_import_entities[$i]=$module->import_entities_array[$r];
 						// Tableau des alias a exporter (cle=champ, valeur=alias)
 						$this->array_import_regex[$i]=$module->import_regex_array[$r];
-						// Tableau des alias a exporter (cle=champ, valeur=exemple)
+						// Array of columns allowed as UPDATE options
+						$this->array_import_updatekeys[$i]=$module->import_updatekeys_array[$r];
+						// Array of examples
 						$this->array_import_examplevalues[$i]=$module->import_examplevalues_array[$r];
 						// Tableau des regles de conversion d'une valeur depuis une autre source (cle=champ, valeur=tableau des regles)
 						$this->array_import_convertvalue[$i]=(isset($module->import_convertvalue_array[$r])?$module->import_convertvalue_array[$r]:'');
+						// Sql request to run after import
+						$this->array_import_run_sql_after[$i]=(isset($module->import_run_sql_after_array[$r])?$module->import_run_sql_after_array[$r]:'');
 						// Module
 						$this->array_import_module[$i]=$module;
 
@@ -166,6 +185,7 @@ class Import
 
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Build an import example file.
 	 *  Arrays this->array_export_xxx are already loaded for required datatoexport
@@ -178,6 +198,7 @@ class Import
 	 */
 	function build_example_file($model, $headerlinefields, $contentlinevalues,$datatoimport)
 	{
+        // phpcs:enable
 		global $conf,$langs;
 
 		$indice=0;
@@ -231,9 +252,9 @@ class Import
 		$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'import_model (';
 		$sql.= 'fk_user, label, type, field';
 		$sql.= ')';
-		$sql.= " VALUES (".($user->id > 0 ? $user->id : 0).", '".$this->db->escape($this->model_name)."', '".$this->datatoimport."', '".$this->hexa."')";
+		$sql.= " VALUES (".($user->id > 0 ? $user->id : 0).", '".$this->db->escape($this->model_name)."', '".$this->db->escape($this->datatoimport)."', '".$this->db->escape($this->hexa)."')";
 
-		dol_syslog(get_class($this)."::create sql=".$sql, LOG_DEBUG);
+		dol_syslog(get_class($this)."::create", LOG_DEBUG);
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
@@ -244,7 +265,6 @@ class Import
 		{
 			$this->error=$this->db->lasterror();
 			$this->errno=$this->db->lasterrno();
-			dol_syslog(get_class($this)."::create error ".$this->error, LOG_ERR);
 			$this->db->rollback();
 			return -1;
 		}
@@ -262,7 +282,7 @@ class Import
 		$sql.= ' FROM '.MAIN_DB_PREFIX.'import_model as em';
 		$sql.= ' WHERE em.rowid = '.$id;
 
-		dol_syslog(get_class($this)."::fetch sql=".$sql, LOG_DEBUG);
+		dol_syslog(get_class($this)."::fetch", LOG_DEBUG);
 		$result = $this->db->query($sql);
 		if ($result)
 		{
@@ -306,7 +326,7 @@ class Import
 
 		$this->db->begin();
 
-		dol_syslog(get_class($this)."::delete sql=".$sql);
+		dol_syslog(get_class($this)."::delete", LOG_DEBUG);
 		$resql = $this->db->query($sql);
 		if (! $resql) { $error++; $this->errors[]="Error ".$this->db->lasterror(); }
 
@@ -314,12 +334,12 @@ class Import
 		{
 			if (! $notrigger)
 			{
-				// Call triggers
-				include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
-				$interface=new Interfaces($this->db);
-				$result=$interface->run_triggers('IMPORT_DELETE',$this,$user,$langs,$conf);
-				if ($result < 0) { $error++; $this->errors=$interface->errors; }
-				// End call triggers
+				/* Not used. This is not a business object. To convert it we must herit from CommonObject
+                // Call trigger
+                $result=$this->call_trigger('IMPORT_DELETE',$user);
+                if ($result < 0) $error++;
+                // End call triggers
+                 */
 			}
 		}
 
@@ -340,5 +360,4 @@ class Import
 			return 1;
 		}
 	}
-
 }

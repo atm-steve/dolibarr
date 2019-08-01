@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2006-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2006-2016 Laurent Destailleur  <eldy@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,7 @@
  *       \brief      File that is entry point to call Dolibarr WebServices
  */
 
-// This is to make Dolibarr working with Plesk
-set_include_path($_SERVER['DOCUMENT_ROOT'].'/htdocs');
+if (! defined("NOCSRFCHECK"))    define("NOCSRFCHECK",'1');
 
 require_once '../master.inc.php';
 require_once NUSOAP_PATH.'/nusoap.php';        // Include SOAP
@@ -121,11 +120,12 @@ $thirdparty_fields= array(
     	'vat_used' => array('name'=>'vat_used','type'=>'xsd:string'),
     	'vat_number' => array('name'=>'vat_number','type'=>'xsd:string'));
 
-//Retreive all extrafield for thirdsparty
+// Retrieve all extrafields for thirdsparty
 // fetch optionals attributes and labels
 $extrafields=new ExtraFields($db);
 $extralabels=$extrafields->fetch_name_optionals_label('societe',true);
-if (count($extrafields)>0) {
+$extrafield_array=null;
+if (is_array($extrafields) && count($extrafields)>0) {
 	$extrafield_array = array();
 }
 foreach($extrafields->attribute_label as $key=>$label)
@@ -138,7 +138,7 @@ foreach($extrafields->attribute_label as $key=>$label)
 	$extrafield_array['options_'.$key]=array('name'=>'options_'.$key,'type'=>$type);
 }
 
-$thirdparty_fields=array_merge($thirdparty_fields,$extrafield_array);
+if (is_array($extrafield_array)) $thirdparty_fields=array_merge($thirdparty_fields,$extrafield_array);
 
 // Define other specific objects
 $server->wsdl->addComplexType(
@@ -258,8 +258,31 @@ $server->register(
     'WS to get list of thirdparties id and ref'
 );
 
+// Register WSDL
+$server->register(
+		'deleteThirdParty',
+		// Entry values
+		array('authentication'=>'tns:authentication','id'=>'xsd:string','ref'=>'xsd:string','ref_ext'=>'xsd:string'),
+		// Exit values
+		array('result'=>'tns:result','id'=>'xsd:string'),
+		$ns,
+		$ns.'#deleteThirdParty',
+		$styledoc,
+		$styleuse,
+		'WS to delete a thirdparty from its id, ref or ref_ext'
+);
+
 
 // Full methods code
+/**
+ * Get a thirdparty
+ *
+ * @param	array		$authentication		Array of authentication information
+ * @param	string		$id		    		internal id
+ * @param	string		$ref		    	internal reference
+ * @param	string		$ref_ext	   		external reference
+ * @return	array							Array result
+ */
 function getThirdParty($authentication,$id='',$ref='',$ref_ext='')
 {
 	global $db,$conf,$langs;
@@ -329,12 +352,12 @@ function getThirdParty($authentication,$id='',$ref='',$ref_ext='')
 						'note_private' => $thirdparty->note_private,
 						'note_public' => $thirdparty->note_public);
 
-				//Retreive all extrafield for thirdsparty
+				// Retrieve all extrafields for thirdsparty
 				// fetch optionals attributes and labels
 				$extrafields=new ExtraFields($db);
 				$extralabels=$extrafields->fetch_name_optionals_label('societe',true);
 				//Get extrafield values
-				$thirdparty->fetch_optionals($thirdparty->id,$extralabels);
+				$thirdparty->fetch_optionals();
 
 				foreach($extrafields->attribute_label as $key=>$label)
 				{
@@ -445,7 +468,7 @@ function createThirdParty($authentication,$thirdparty)
         $newobject->canvas=$thirdparty['canvas'];
         $newobject->particulier=$thirdparty['individual'];
 
-        //Retreive all extrafield for thirdsparty
+        // Retrieve all extrafields for thirdsparty
         // fetch optionals attributes and labels
         $extrafields=new ExtraFields($db);
         $extralabels=$extrafields->fetch_name_optionals_label('societe',true);
@@ -471,6 +494,11 @@ function createThirdParty($authentication,$thirdparty)
         if (! $error)
         {
             $db->commit();
+
+            // Patch to add capability to associate (one) sale representative
+            if($thirdparty['commid'] && $thirdparty['commid']>0)
+                $newobject->add_commercial($fuser, $thirdparty["commid"]);
+
             $objectresp=array('result'=>array('result_code'=>'OK', 'result_label'=>''),'id'=>$newobject->id,'ref'=>$newobject->ref);
         }
         else
@@ -571,7 +599,7 @@ function updateThirdParty($authentication,$thirdparty)
 
 			$object->canvas=$thirdparty['canvas'];
 
-			//Retreive all extrafield for thirdsparty
+			// Retrieve all extrafields for thirdsparty
 			// fetch optionals attributes and labels
 			$extrafields=new ExtraFields($db);
 			$extralabels=$extrafields->fetch_name_optionals_label('societe',true);
@@ -624,7 +652,7 @@ function updateThirdParty($authentication,$thirdparty)
  * getListOfThirdParties
  *
  * @param	array		$authentication		Array of authentication information
- * @param	array		$filterthirdparty	Filter fields
+ * @param	array		$filterthirdparty	Filter fields (key=>value to filer on. For example 'client'=>2, 'supplier'=>1, 'category'=>idcateg, 'name'=>'searchstring', ...)
  * @return	array							Array result
  */
 function getListOfThirdParties($authentication,$filterthirdparty)
@@ -648,19 +676,20 @@ function getListOfThirdParties($authentication,$filterthirdparty)
 
     if (! $error)
     {
-        $sql ="SELECT s.rowid as socRowid, s.nom as ref, s.ref_ext, s.address, s.zip, s.town, p.libelle as country, s.phone, s.fax, s.url, extra.*";
-        $sql.=" FROM ".MAIN_DB_PREFIX."societe as s";
-        $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_pays as p ON s.fk_pays = p.rowid';
-        $sql.=" LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields as extra ON s.rowid=fk_object";
+        $sql  = "SELECT s.rowid as socRowid, s.nom as ref, s.ref_ext, s.address, s.zip, s.town, c.label as country, s.phone, s.fax, s.url, extra.*";
+        $sql .= " FROM ".MAIN_DB_PREFIX."societe as s";
+        $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON s.fk_pays = c.rowid";
+        $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields as extra ON s.rowid=fk_object";
 
         $sql.=" WHERE entity=".$conf->entity;
         foreach($filterthirdparty as $key => $val)
         {
-            if ($key == 'client'   && $val != '')  $sql.=" AND s.client = ".$db->escape($val);
-            if ($key == 'supplier' && $val != '')  $sql.=" AND s.fournisseur = ".$db->escape($val);
-            if ($key == 'category'   && $val != '')  $sql.=" AND s.rowid IN (SELECT fk_societe FROM ".MAIN_DB_PREFIX."categorie_societe WHERE fk_categorie=".$db->escape($val).") ";
+            if ($key == 'name'     && $val != '')  $sql.=" AND s.name LIKE '%".$db->escape($val)."%'";
+        	if ($key == 'client'   && (int) $val > 0)  $sql.=" AND s.client = ".$db->escape($val);
+            if ($key == 'supplier' && (int) $val > 0)  $sql.=" AND s.fournisseur = ".$db->escape($val);
+            if ($key == 'category' && (int) $val > 0)  $sql.=" AND s.rowid IN (SELECT fk_soc FROM ".MAIN_DB_PREFIX."categorie_societe WHERE fk_categorie=".$db->escape($val).") ";
         }
-        dol_syslog("Function: getListOfThirdParties sql=".$sql);
+        dol_syslog("Function: getListOfThirdParties", LOG_DEBUG);
 
         $extrafields=new ExtraFields($db);
         $extralabels=$extrafields->fetch_name_optionals_label('societe',true);
@@ -722,5 +751,87 @@ function getListOfThirdParties($authentication,$filterthirdparty)
     return $objectresp;
 }
 
+/**
+ * Delete a thirdparty
+ *
+ * @param	array		$authentication		Array of authentication information
+ * @param	string		$id		    		internal id
+ * @param	string		$ref		    	internal reference
+ * @param	string		$ref_ext	   		external reference
+ * @return	array							Array result
+ */
+function deleteThirdParty($authentication,$id='',$ref='',$ref_ext='')
+{
+	global $db,$conf,$langs;
+
+	dol_syslog("Function: deleteThirdParty login=".$authentication['login']." id=".$id." ref=".$ref." ref_ext=".$ref_ext);
+
+	if ($authentication['entity']) $conf->entity=$authentication['entity'];
+
+	// Init and check authentication
+	$objectresp=array();
+	$errorcode='';$errorlabel='';
+	$error=0;
+	$fuser=check_authentication($authentication,$error,$errorcode,$errorlabel);
+	// Check parameters
+	if (! $error && (($id && $ref) || ($id && $ref_ext) || ($ref && $ref_ext)))
+	{
+		dol_syslog("Function: deleteThirdParty checkparam");
+		$error++;
+		$errorcode='BAD_PARAMETERS'; $errorlabel="Parameter id, ref and ref_ext can't be both provided. You must choose one or other but not both.";
+	}
+	dol_syslog("Function: deleteThirdParty 1");
+
+	if (! $error)
+	{
+		$fuser->getrights();
+
+		if ($fuser->rights->societe->lire && $fuser->rights->societe->supprimer)
+		{
+			$thirdparty=new Societe($db);
+			$result=$thirdparty->fetch($id,$ref,$ref_ext);
+
+			if ($result > 0)
+			{
+				$db->begin();
+
+				$result=$thirdparty->delete($thirdparty->id, $fuser);
+
+				if ($result > 0)
+				{
+					$db->commit();
+
+					$objectresp = array('result'=>array('result_code'=>'OK', 'result_label'=>''));
+				}
+				else
+				{
+					$db->rollback();
+					$error++;
+					$errorcode='KO';
+					$errorlabel=$thirdparty->error;
+					dol_syslog("Function: deleteThirdParty cant delete");
+				}
+			}
+			else
+			{
+				$error++;
+				$errorcode='NOT_FOUND'; $errorlabel='Object not found for id='.$id.' nor ref='.$ref.' nor ref_ext='.$ref_ext;
+			}
+		}
+		else
+		{
+			$error++;
+			$errorcode='PERMISSION_DENIED'; $errorlabel='User does not have permission for this request';
+		}
+	}
+
+	if ($error)
+	{
+		$objectresp = array('result'=>array('result_code' => $errorcode, 'result_label' => $errorlabel));
+	}
+
+	return $objectresp;
+}
+
 // Return the results.
-$server->service($HTTP_RAW_POST_DATA);
+$server->service(file_get_contents("php://input"));

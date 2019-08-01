@@ -60,6 +60,8 @@ class FactureTestRounding extends PHPUnit_Framework_TestCase
 	 */
 	function __construct()
 	{
+		parent::__construct();
+
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
 		$this->savconf=$conf;
@@ -80,6 +82,8 @@ class FactureTestRounding extends PHPUnit_Framework_TestCase
 
     	print __METHOD__."\n";
     }
+
+    // tear down after class
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -331,5 +335,4 @@ class FactureTestRounding extends PHPUnit_Framework_TestCase
     	$this->assertEquals(20.03, $localobject3->total_tva);
     	$this->assertEquals(115.43, $localobject3->total_ttc);
     }
-
 }

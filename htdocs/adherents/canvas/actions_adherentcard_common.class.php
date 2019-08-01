@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2010-2012 Regis Houssin  <regis.houssin@capnetworks.com>
+/* Copyright (C) 2010-2012 Regis Houssin  <regis.houssin@inodbox.com>
  * Copyright (C) 2012      Philippe Grand <philippe.grand@atoo-net.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,11 @@
  */
 abstract class ActionsAdherentCardCommon
 {
-    var $db;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
     var $dirmodule;
     var $targetmodule;
     var $canvas;
@@ -37,37 +41,17 @@ abstract class ActionsAdherentCardCommon
 	var $tpl = array();
 	//! Object container
 	var $object;
-	//! Error string
-	var $error;
-	//! Error array
-	var $errors=array();
-
 
 	/**
-	 * 	Instantiation of DAO class
-	 *
-	 * 	@return	int		0
-	 *  @deprecated		Using getInstanceDao should not be used.
+	 * @var string Error code (or message)
 	 */
-	private function getInstanceDao()
-	{
-		if (! is_object($this->object))
-		{
-			$modelclassfile = dol_buildpath('/'.$this->dirmodule.'/canvas/'.$this->canvas.'/dao_'.$this->targetmodule.'_'.$this->canvas.'.class.php');
-	        if (file_exists($modelclassfile))
-	        {
-	            // Include dataservice class (model)
-	            $ret = require_once $modelclassfile;
-	            if ($ret)
-	            {
-	            	// Instantiate dataservice class (model)
-	            	$modelclassname = 'Dao'.ucfirst($this->targetmodule).ucfirst($this->canvas);
-	            	$this->object = new $modelclassname($this->db);
-	            }
-	        }
-		}
-		return 0;
-	}
+	public $error='';
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
+
 
 	/**
      *  Get object
@@ -77,155 +61,22 @@ abstract class ActionsAdherentCardCommon
      */
     function getObject($id)
     {
-    	$ret = $this->getInstanceDao();
+    	//$ret = $this->getInstanceDao();
 
-    	if (is_object($this->object) && method_exists($this->object,'fetch'))
+    	/*if (is_object($this->object) && method_exists($this->object,'fetch'))
     	{
     		if (! empty($id)) $this->object->fetch($id);
     	}
     	else
-    	{
+    	{*/
     		$object = new Adherent($this->db);
     		if (! empty($id)) $object->fetch($id);
             $this->object = $object;
-    	}
+    	//}
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
-     *  Load data control
-     *
-	 *  @param	string	$action    Type of action
-	 *  @param	int		$id			Id of object
-     *	@return	void
-     */
-    function doActions(&$action, $id)
-    {
-        global $conf, $user, $langs;
-
-        // Creation utilisateur depuis Adherent
-        if ($action == 'confirm_create_user' && GETPOST("confirm") == 'yes')
-        {
-            // Recuperation adherent actuel
-            $result = $this->object->fetch($id);
-
-            if ($result > 0)
-            {
-                $this->db->begin();
-
-                // Creation user
-                $nuser = new User($this->db);
-                $result=$nuser->create_from_member($this->object,$_POST["login"]);
-
-                if ($result > 0)
-                {
-                    $result2=$nuser->setPassword($user,$_POST["password"],0,1,1);
-                    if ($result2)
-                    {
-                        $this->db->commit();
-                    }
-                    else
-                    {
-                        $this->db->rollback();
-                    }
-                }
-                else
-                {
-                    $this->errors=$nuser->error;
-
-                    $this->db->rollback();
-                }
-            }
-            else
-            {
-                $this->errors=$this->object->errors;
-            }
-        }
-
-        // Creation adherent
-        if ($action == 'add')
-        {
-            $this->assign_post();
-
-            if (! $_POST["name"])
-            {
-                array_push($this->errors,$langs->trans("ErrorFieldRequired",$langs->transnoentities("Lastname").' / '.$langs->transnoentities("Label")));
-                $action = 'create';
-            }
-
-            if ($_POST["name"])
-            {
-                $id =  $this->object->create($user);
-                if ($id > 0)
-                {
-                    header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
-                    exit;
-                }
-                else
-                {
-                    $this->errors=$this->object->errors;
-                    $action = 'create';
-                }
-            }
-        }
-
-        if ($action == 'confirm_delete' && GETPOST("confirm") == 'yes')
-        {
-            $result=$this->object->fetch($id);
-
-            $this->object->old_name = $_POST["old_name"];
-            $this->object->old_firstname = $_POST["old_firstname"];
-
-            $result = $this->object->delete();
-            if ($result > 0)
-            {
-                header("Location: list.php");
-                exit;
-            }
-            else
-            {
-                $this->errors=$this->object->errors;
-            }
-        }
-
-        if ($action == 'update')
-        {
-        	if ($_POST["cancel"])
-        	{
-        		header("Location: ".$_SERVER["PHP_SELF"]."?id=".$this->object->id);
-        		exit;
-        	}
-
-            if (empty($_POST["name"]))
-            {
-                $this->error=array($langs->trans("ErrorFieldRequired",$langs->transnoentities("Name").' / '.$langs->transnoentities("Label")));
-                $action = 'edit';
-            }
-
-            if (empty($this->error))
-            {
-                $this->object->fetch($_POST["adherentid"]);
-
-                $this->object->oldcopy=dol_clone($this->object);
-
-                $this->assign_post();
-
-                $result = $this->object->update($_POST["adherentid"], $user);
-
-                if ($result > 0)
-                {
-                    header("Location: ".$_SERVER["PHP_SELF"]."?id=".$this->object->id);
-                    exit;
-                }
-                else
-                {
-                    $this->errors=$this->object->errors;
-                    $action = 'edit';
-                }
-            }
-        }
-    }
-
-	/**
      *  Set content of ->tpl array, to use into template
      *
      *  @param	string		$action    Type of action
@@ -234,6 +85,7 @@ abstract class ActionsAdherentCardCommon
      */
     function assign_values(&$action, $id)
     {
+        // phpcs:enable
         global $conf, $langs, $user, $canvas;
         global $form, $formcompany, $objsoc;
 
@@ -382,6 +234,7 @@ abstract class ActionsAdherentCardCommon
         }
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
     /**
      *  Assign POST values into object
      *
@@ -389,6 +242,7 @@ abstract class ActionsAdherentCardCommon
      */
     private function assign_post()
     {
+        // phpcs:enable
         global $langs, $mysoc;
 
         $this->object->old_name 			= 	$_POST["old_name"];
@@ -412,20 +266,19 @@ abstract class ActionsAdherentCardCommon
         // We set country_id, and country_code label of the chosen country
         if ($this->object->country_id)
         {
-            $sql = "SELECT code, libelle FROM ".MAIN_DB_PREFIX."c_pays WHERE rowid = ".$this->object->country_id;
+            $sql = "SELECT code, label FROM ".MAIN_DB_PREFIX."c_country WHERE rowid = ".$this->object->country_id;
             $resql=$this->db->query($sql);
             if ($resql)
             {
                 $obj = $this->db->fetch_object($resql);
+
+                $this->object->country_code	=	$obj->code;
+                $this->object->country		=	$langs->trans("Country".$obj->code)?$langs->trans("Country".$obj->code):$obj->libelle;
             }
             else
             {
                 dol_print_error($this->db);
             }
-            $this->object->country_code	=	$obj->code;
-            $this->object->country		=	$langs->trans("Country".$obj->code)?$langs->trans("Country".$obj->code):$obj->libelle;
         }
     }
-
 }
-

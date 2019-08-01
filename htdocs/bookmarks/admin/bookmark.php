@@ -25,6 +25,7 @@
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
+// Load translation files required by the page
 $langs->load("admin");
 
 if (!$user->admin)
@@ -42,12 +43,12 @@ if ($action == 'setvalue')
 	if (! $error)
 	{
 		$db->commit();
-		$mesg = "<font class=\"ok\">".$langs->trans("SetupSaved")."</font>";
+		setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
 	}
 	else
 	{
 		$db->rollback();
-		$mesg = "<font class=\"error\">".$langs->trans("Error")."</font>";
+		setEventMessages($langs->trans("Error"), null, 'errors');
 	}
 }
 
@@ -58,8 +59,8 @@ if ($action == 'setvalue')
 
 llxHeader();
 
-$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
-print_fiche_titre($langs->trans("BookmarkSetup"),$linkback,'setup');
+$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
+print load_fiche_titre($langs->trans("BookmarkSetup"),$linkback,'title_setup');
 
 print $langs->trans("BookmarkDesc")."<br>\n";
 
@@ -68,22 +69,18 @@ print '<form method="post" action="'.$_SERVER["PHP_SELF"].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="setvalue">';
 
-$var=true;
-
 print '<table summary="bookmarklist" class="noborder" width="100%">';
 print '<tr class="liste_titre">';
 print '<td>'.$langs->trans("Name").'</td>';
 print '<td>'.$langs->trans("Value").'</td>';
 print "</tr>\n";
-$var=!$var;
-print '<tr '.$bc[$var].'><td>';
+
+print '<tr class="oddeven"><td>';
 print $langs->trans("NbOfBoomarkToShow").'</td><td>';
 print '<input size="3" type="text" name="BOOKMARKS_SHOW_IN_MENU" value="'.$conf->global->BOOKMARKS_SHOW_IN_MENU.'">';
 print '</td></tr>';
-print '</table><br /><center><input type="submit" class="button" value="'.$langs->trans("Modify").'"></center></form>';
+print '</table><br><div class="center"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></div></form>';
 
-dol_htmloutput_mesg($mesg);
-
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

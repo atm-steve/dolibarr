@@ -3,7 +3,7 @@
 -- Copyright (C) 2004-2009 Laurent Destailleur  <eldy@users.sourceforge.net>
 -- Copyright (C) 2004      Benoit Mortier       <benoit.mortier@opensides.be>
 -- Copyright (C) 2004      Guillaume Delecourt  <guillaume.delecourt@opensides.be>
--- Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@inodbox.com>
 -- Copyright (C) 2007 	   Patrick Raguin       <patrick.raguin@gmail.com>
 --
 -- This program is free software; you can redistribute it and/or modify
@@ -55,3 +55,15 @@ insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays
 insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (220, 'Prime existence',    		1,1,'TAXBEPRIEXI' ,'2');
 insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (230, 'Precompte immobilier',      1,1,'TAXBEPREIMMO','2');
 
+--
+-- Austria
+--
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4101, 'Krankenversicherung',				1,1,'TAXATKV'   ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4102, 'Unfallversicherung',				1,1,'TAXATUV'   ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4103, 'Pensionsversicherung',				1,1,'TAXATPV'   ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4104, 'Arbeitslosenversicherung',			1,1,'TAXATAV'   ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4105, 'Insolvenzentgeltsicherungsfond',   1,1,'TAXATIESG' ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4106, 'Wohnbauförderung',					1,1,'TAXATWF'   ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4107, 'Arbeiterkammerumlage',				1,1,'TAXATAK'   ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4108, 'Mitarbeitervorsorgekasse',			1,1,'TAXATMVK'  ,'41');
+insert into llx_c_chargesociales (id, libelle, deductible, active, code, fk_pays) values (4109, 'Familienlastenausgleichsfond',		1,1,'TAXATFLAF' ,'41');

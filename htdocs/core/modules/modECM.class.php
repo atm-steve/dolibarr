@@ -48,6 +48,7 @@ class modECM extends DolibarrModules
 		// Family can be 'crm','financial','hr','projects','product','ecm','technic','other'
 		// It is used to sort modules in module setup page
 		$this->family = "ecm";
+		$this->module_position = '10';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		// Module description used if translation string 'ModuleXXXDesc' not found (XXX is id value)
@@ -56,8 +57,6 @@ class modECM extends DolibarrModules
 		$this->version = 'dolibarr';
 		// Key used in llx_const table to save module status enabled/disabled (XXX is id value)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		// Where to store the module in setup page (0=common,1=interface,2=other)
-		$this->special = 0;
 		// Name of png file (without png) used for this module
 		$this->picto='dir';
 
@@ -100,21 +99,21 @@ class modECM extends DolibarrModules
 		$this->rights[$r][0] = 2501;
 		$this->rights[$r][1] = 'Consulter/Télécharger les documents';
 		$this->rights[$r][2] = 'r';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'read';
 
 		$r++;
 		$this->rights[$r][0] = 2503;
 		$this->rights[$r][1] = 'Soumettre ou supprimer des documents';
 		$this->rights[$r][2] = 'w';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'upload';
 
 		$r++;
 		$this->rights[$r][0] = 2515;
 		$this->rights[$r][1] = 'Administrer les rubriques de documents';
 		$this->rights[$r][2] = 'w';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'setup';
 
 
@@ -130,7 +129,7 @@ class modECM extends DolibarrModules
 							  'mainmenu'=>'ecm',
 							  'url'=>'/ecm/index.php',
 							  'langs'=>'ecm',
-							  'position'=>100,
+							  'position'=>82,
 							  'perms'=>'$user->rights->ecm->read || $user->rights->ecm->upload || $user->rights->ecm->setup',
 							  'enabled'=>'$conf->ecm->enabled',
 							  'target'=>'',
@@ -174,41 +173,10 @@ class modECM extends DolibarrModules
 							  'langs'=>'ecm',
 							  'position'=>103,
 							  'perms'=>'$user->rights->ecm->read || $user->rights->ecm->upload',
-							  'enabled'=>'$user->rights->ecm->read || $user->rights->ecm->upload',
+							  'enabled'=>'($user->rights->ecm->read || $user->rights->ecm->upload) && ! empty($conf->global->ECM_AUTO_TREE_ENABLED)',
 							  'target'=>'',
 							  'user'=>2);			// 0=Menu for internal users, 1=external users, 2=both
 		$r++;
 	}
-
-	/**
-	 *		Function called when module is enabled.
-	 *		The init function add constants, boxes, permissions and menus (defined in constructor) into Dolibarr database.
-	 *		It also creates data directories
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-	function init($options='')
-  	{
-    	$sql = array();
-
-    	return $this->_init($sql,$options);
-  	}
-
-    /**
-	 *		Function called when module is disabled.
-	 *      Remove from database constants, boxes and permissions from Dolibarr database.
-	 *		Data directories are not deleted
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-    function remove($options='')
-    {
-		$sql = array();
-
-		return $this->_remove($sql,$options);
-    }
-
 }
 

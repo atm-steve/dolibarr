@@ -22,11 +22,11 @@
  *		\brief      Page de bilan
  */
 
-require('../../main.inc.php');
+require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 
-$langs->load("banks");
-$langs->load("categories");
+// Load translation files required by the page
+$langs->loadLangs(array('banks', 'categories'));
 
 if (!$user->rights->banque->lire)
   accessforbidden();
@@ -41,6 +41,9 @@ if (!$user->rights->banque->lire)
 function valeur($sql)
 {
 	global $db;
+
+	$valeur = 0;
+
 	$resql=$db->query($sql);
 	if ($resql)
 	{
@@ -58,7 +61,7 @@ function valeur($sql)
 
 llxHeader();
 
-print_titre("Bilan");
+print load_fiche_titre("Bilan");
 print '<br>';
 
 print '<table class="noborder" width="100%" cellspacing="0" cellpadding="2">';
@@ -66,29 +69,29 @@ print "<tr class=\"liste_titre\">";
 echo '<td colspan="2">'.$langs->trans("Summary").'</td>';
 print "</tr>\n";
 
-$var=!$var;
+
 $sql = "SELECT sum(amount) as amount FROM ".MAIN_DB_PREFIX."paiement";
 $paiem = valeur($sql);
-print "<tr ".$bc[$var]."><td>Somme des paiements (associes a une facture)</td><td align=\"right\">".price($paiem)."</td></tr>";
+print "<tr class=\"oddeven\"><td>Somme des paiements (associes a une facture)</td><td align=\"right\">".price($paiem)."</td></tr>";
 
-$var=!$var;
+
 $sql = "SELECT sum(amount) as amount FROM ".MAIN_DB_PREFIX."bank WHERE amount > 0";
 $credits = valeur($sql);
-print "<tr ".$bc[$var]."><td>Somme des credits</td><td align=\"right\">".price($credits)."</td></tr>";
+print "<tr class=\"oddeven\"><td>Somme des credits</td><td align=\"right\">".price($credits)."</td></tr>";
 
-$var=!$var;
+
 $sql = "SELECT sum(amount) as amount FROM ".MAIN_DB_PREFIX."bank WHERE amount < 0";
 $debits = valeur($sql);
-print "<tr ".$bc[$var]."><td>Somme des debits</td><td align=\"right\">".price($debits)."</td></tr>";
+print "<tr class=\"oddeven\"><td>Somme des debits</td><td align=\"right\">".price($debits)."</td></tr>";
 
-$var=!$var;
+
 $sql = "SELECT sum(amount) as amount FROM ".MAIN_DB_PREFIX."bank ";
 $solde = valeur($sql);
-print "<tr ".$bc[$var]."><td>".$langs->trans("BankBalance")."</td><td align=\"right\">".price($solde)."</td></tr>";
+print "<tr class=\"oddeven\"><td>".$langs->trans("BankBalance")."</td><td align=\"right\">".price($solde)."</td></tr>";
 
 
 print "</table>";
 
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

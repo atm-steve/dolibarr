@@ -1,11 +1,8 @@
 # Dolibarr language file - Source file is en_US - contracts
 ContractsArea=Контракты области
 ListOfContracts=Список контрактов
-LastContracts=Последнее изменение %s контрактов
 AllContracts=Все контракты
 ContractCard=Договор карты
-ContractStatus=Договор статус
-ContractStatusRunning=Работающий
 ServiceStatusLate=Бег, истек
 ServiceStatusLateShort=Истекший
 ServiceStatusClosed=Закрыто
@@ -22,8 +19,7 @@ ListOfServices=Перечень услуг
 ListOfInactiveServices=Список услуг не активны
 ListOfExpiredServices=Список истек активные службы
 ListOfClosedServices=Список закрытых услуг
-ListOfRunningContractsLines=Список бегущие строки контракта
-NbOfServices=Кол-услуг
+LastContracts=Последнее изменение %s контрактов
 DeleteContractLine=Удалить контракт линии
 ConfirmDeleteContractLine=Вы действительно хотите удалить этот контракт линии?
 MoveToAnotherContract=Перемещение службы в другой контракт.

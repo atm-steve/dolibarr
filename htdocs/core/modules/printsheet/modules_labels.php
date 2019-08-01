@@ -2,7 +2,7 @@
 /* Copyright (C) 2003-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2009 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2004      Eric Seigne          <eric.seigne@ryxeo.com>
- * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,22 +30,27 @@ require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 
 
 /**
- *	Parent class of document generator for address sheet.
+ *  Parent class of document generator for address sheet.
  */
 class ModelePDFLabels
 {
-	var $error='';
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Return list of active generation modules
 	 *
-     *  @param	DoliDB	$db     			Database handler
-     *  @param  string	$maxfilenamelength  Max length of value to show
+     *  @param  DoliDB	$db     			Database handler
+     *  @param  integer	$maxfilenamelength  Max length of value to show
      *  @return	array						List of templates
 	 */
 	function liste_modeles($db,$maxfilenamelength=0)
 	{
+        // phpcs:enable
 		global $conf;
 
 		$type='members_labels';
@@ -59,18 +64,22 @@ class ModelePDFLabels
 }
 
 
+// phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 /**
- *  Create a document onto disk accordign to template module
+ *  Create a document onto disk according to template module.
  *
  *	@param  DoliDB		$db					Database handler
  *	@param  array		$arrayofrecords		Array of records
  *	@param	string		$modele				Force le modele a utiliser ('' to not force)
  *	@param	Translate	$outputlangs		Objet lang a utiliser pour traduction
  *	@param	string		$outputdir			Output directory
+ *  @param  string      $template           pdf generenate document class to use default 'standardlabel'
+ *  @param  string      $filename           Short file name of PDF output file
  *	@return int        						<0 if KO, >0 if OK
  */
-function members_label_pdf_create($db, $arrayofrecords, $modele, $outputlangs, $outputdir='')
+function doc_label_pdf_create($db, $arrayofrecords, $modele, $outputlangs, $outputdir='', $template='standardlabel', $filename='tmp_address_sheet.pdf')
 {
+    // phpcs:enable
 	global $conf,$langs;
 	$langs->load("members");
 
@@ -98,16 +107,17 @@ function members_label_pdf_create($db, $arrayofrecords, $modele, $outputlangs, $
 		}
 	}
 	else $code=$modele;
-	$modele='standardlabel';
 
 	// If selected modele is a filename template (then $modele="modelname:filename")
-	$tmp=explode(':',$modele,2);
+	$tmp=explode(':',$template,2);
 	if (! empty($tmp[1]))
 	{
-		$modele=$tmp[0];
+		$template=$tmp[0];
 		$srctemplatepath=$tmp[1];
 	}
 	else $srctemplatepath=$code;
+
+	dol_syslog("modele=".$modele." outputdir=".$outputdir." template=".$template." code=".$code." srctemplatepath=".$srctemplatepath." filename=".$filename, LOG_DEBUG);
 
 	// Search template files
 	$file=''; $classname=''; $filefound=0;
@@ -117,14 +127,14 @@ function members_label_pdf_create($db, $arrayofrecords, $modele, $outputlangs, $
 	{
 		foreach(array('doc','pdf') as $prefix)
 		{
-			$file = $prefix."_".$modele.".class.php";
+			$file = $prefix."_".$template.".class.php";
 
 			// On verifie l'emplacement du modele
 			$file=dol_buildpath($reldir."core/modules/printsheet/doc/".$file,0);
 			if (file_exists($file))
 			{
 				$filefound=1;
-				$classname=$prefix.'_'.$modele;
+				$classname=$prefix.'_'.$template;
 				break;
 			}
 		}
@@ -141,7 +151,7 @@ function members_label_pdf_create($db, $arrayofrecords, $modele, $outputlangs, $
 		// We save charset_output to restore it because write_file can change it if needed for
 		// output format that does not support UTF8.
 		$sav_charset_output=$outputlangs->charset_output;
-		if ($obj->write_file($arrayofrecords, $outputlangs, $srctemplatepath, $outputdir) > 0)
+		if ($obj->write_file($arrayofrecords, $outputlangs, $srctemplatepath, $outputdir, $filename) > 0)
 		{
 			$outputlangs->charset_output=$sav_charset_output;
 			return 1;
@@ -149,7 +159,7 @@ function members_label_pdf_create($db, $arrayofrecords, $modele, $outputlangs, $
 		else
 		{
 			$outputlangs->charset_output=$sav_charset_output;
-			dol_print_error($db,"members_label_pdf_create Error: ".$obj->error);
+			dol_print_error($db,"doc_label_pdf_create Error: ".$obj->error);
 			return -1;
 		}
 	}
@@ -158,7 +168,4 @@ function members_label_pdf_create($db, $arrayofrecords, $modele, $outputlangs, $
 		dol_print_error('',$langs->trans("Error")." ".$langs->trans("ErrorFileDoesNotExists",$file));
 		return -1;
 	}
-
-
 }
-

@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /**
  * Copyright (C) 2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
@@ -40,9 +40,9 @@ if (! isset($argv[1]) || ! $argv[1]) {
 }
 $now=$argv[1];
 
-require_once($path."../../htdocs/master.inc.php");
-require_once(DOL_DOCUMENT_ROOT."/core/class/ldap.class.php");
-require_once(DOL_DOCUMENT_ROOT."/user/class/user.class.php");
+require_once $path."../../htdocs/master.inc.php";
+require_once DOL_DOCUMENT_ROOT."/core/class/ldap.class.php";
+require_once DOL_DOCUMENT_ROOT."/user/class/user.class.php";
 
 // Global variables
 $version=DOL_VERSION;
@@ -54,7 +54,7 @@ $error=0;
  */
 
 @set_time_limit(0);
-print "***** ".$script_file." (".$version.") pid=".getmypid()." *****\n";
+print "***** ".$script_file." (".$version.") pid=".dol_getmypid()." *****\n";
 dol_syslog($script_file." launched with arg ".join(',',$argv));
 
 /*

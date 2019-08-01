@@ -61,6 +61,8 @@ class PaypalTest extends PHPUnit_Framework_TestCase
 	 */
 	function __construct()
 	{
+		parent::__construct();
+
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
 		$this->savconf=$conf;
@@ -84,6 +86,8 @@ class PaypalTest extends PHPUnit_Framework_TestCase
 
     	print __METHOD__."\n";
     }
+
+    // tear down after class
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -133,13 +137,12 @@ class PaypalTest extends PHPUnit_Framework_TestCase
 
 		$urltotest=getPaypalPaymentUrl(1,'free');
 		print "urltotest=".$urltotest."\n";
-		
+
 		$result=getURLContent($urltotest, 'GET');
-		
+
         print __METHOD__." result=".$result."\n";
     	$this->assertLessThanOrEqual($result, 0);
 
     	return $result;
     }
-
 }

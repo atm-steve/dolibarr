@@ -29,7 +29,8 @@
  * @param Opensurveysondage $object Current viewing poll
  * @return array Tabs for the opensurvey section
  */
-function opensurvey_prepare_head(Opensurveysondage $object) {
+function opensurvey_prepare_head(Opensurveysondage $object)
+{
 
 	global $langs, $conf;
 
@@ -70,10 +71,25 @@ function opensurvey_prepare_head(Opensurveysondage $object) {
  */
 function llxHeaderSurvey($title, $head="", $disablejs=0, $disablehead=0, $arrayofjs='', $arrayofcss='')
 {
+	global $conf, $mysoc;
+
 	top_htmlhead($head, $title, $disablejs, $disablehead, $arrayofjs, $arrayofcss); // Show html headers
 	print '<body id="mainbody" class="publicnewmemberform" style="margin-top: 10px;">';
 
-	showlogo();
+	// Print logo
+	if ($mysoc->logo) {
+		if (file_exists($conf->mycompany->dir_output.'/logos/thumbs/'.$mysoc->logo_small)) {
+			$urllogo=DOL_URL_ROOT.'/viewimage.php?cache=1&amp;modulepart=mycompany&amp;file='.urlencode('logos/thumbs/'.$mysoc->logo_small);
+		}
+	}
+
+	if (!$urllogo && (is_readable(DOL_DOCUMENT_ROOT.'/theme/dolibarr_logo.png')))
+	{
+		$urllogo=DOL_URL_ROOT.'/theme/dolibarr_logo.png';
+	}
+
+	print '<div style="text-align:center"><img alt="Logo" id="logosubscribe" title="" src="'.$urllogo.'"/></div>';
+	print '<br>';
 
 	print '<div style="margin-left: 50px; margin-right: 50px;">';
 }
@@ -93,32 +109,6 @@ function llxFooterSurvey()
 
 	print "</body>\n";
 	print "</html>\n";
-}
-
-
-/**
- * Show logo
- *
- * @return	void
- */
-function showlogo()
-{
-	global $conf, $mysoc;
-
-	// Print logo
-	if ($mysoc->logo) {
-		if (file_exists($conf->mycompany->dir_output.'/logos/thumbs/'.$mysoc->logo_small)) {
-			$urllogo=DOL_URL_ROOT.'/viewimage.php?cache=1&amp;modulepart=companylogo&amp;file=thumbs/'.urlencode($mysoc->logo_small);
-		}
-	}
-
-	if (!$urllogo && (is_readable(DOL_DOCUMENT_ROOT.'/theme/dolibarr_logo.png')))
-	{
-		$urllogo=DOL_URL_ROOT.'/theme/dolibarr_logo.png';
-	}
-
-	print '<div style="text-align:center"><img alt="Logo" id="logosubscribe" title="" src="'.$urllogo.'"/></div>';
-	print '<br>';
 }
 
 
@@ -184,15 +174,15 @@ function getUrlSondage($id, $admin = false)
  * 	Generate a random id
  *
  *	@param	string	$car	Char to generate key
- * 	@return	void
+ * 	@return	string
  */
 function dol_survey_random($car)
 {
 	$string = "";
 	$chaine = "abcdefghijklmnopqrstuvwxyz123456789";
-	srand((double) microtime()*1000000);
+	mt_srand((double) microtime()*1000000);
 	for($i=0; $i<$car; $i++) {
-		$string .= $chaine[rand()%strlen($chaine)];
+		$string .= $chaine[mt_rand() % strlen($chaine)];
 	}
 	return $string;
 }
@@ -249,4 +239,3 @@ function ajouter_sondage()
 	header("Location: ".$urlback);
 	exit();
 }
-

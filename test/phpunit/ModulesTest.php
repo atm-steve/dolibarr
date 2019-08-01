@@ -59,6 +59,8 @@ class ModulesTest extends PHPUnit_Framework_TestCase
 	 */
 	function __construct()
 	{
+		parent::__construct();
+
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
 		$this->savconf=$conf;
@@ -79,6 +81,8 @@ class ModulesTest extends PHPUnit_Framework_TestCase
 
     	print __METHOD__."\n";
     }
+
+    // tear down after class
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -125,24 +129,29 @@ class ModulesTest extends PHPUnit_Framework_TestCase
 		$langs=$this->savlangs;
 		$db=$this->savdb;
 
-		$modulelist=array('Accounting','Adherent','Agenda','Banque','Barcode','Bookmark','Boutique',
-		'CashDesk','Categorie','ClickToDial','Commande','Comptabilite','Contrat','Cron','Deplacement','Document','Don',
-		'ECM','Expedition','Export','ExternalRss','ExternalSite','Facture',
-		'Fckeditor','Ficheinter','Fournisseur','FTP','GeoIPMaxmind','Gravatar','Holiday','Import','Label','Ldap','Mailing',
-		'Notification','OpenSurvey','Paybox','Paypal','Prelevement','Product','Projet','Propale',
-		'Service','Societe','Stock','Syslog','Tax','User','WebServices','Workflow');
+		$modulelist=array('Accounting','Adherent','Agenda','Api','Asset','Banque','Barcode','BlockedLog','Bookmark',
+		'CashDesk','Categorie','ClickToDial','Collab','Commande','Comptabilite','Contrat','Cron','DataPolicy','Dav','Deplacement','DocumentGeneration','Don','DynamicPrices',
+		'ECM','EmailCollector','Expedition','ExpenseReport','Export','ExternalRss','ExternalSite',
+		'Facture','Fckeditor','Ficheinter','Fournisseur','FTP','GeoIPMaxmind','Gravatar','Holiday','HRM','Import','Incoterm','Label','Ldap','Loan',
+		'Mailing','MailmanSpip','Margin','ModuleBuilder','MultiCurrency',
+		'Notification','Oauth','OpenSurvey','Paybox','Paypal','Prelevement','Printing','Product','ProductBatch','Projet','Propale','ReceiptPrinter','Resource',
+		'Salaries','Service','SocialNetworks','Societe','Stock','Stripe','SupplierProposal','Syslog','TakePos','Tax','Ticket','User','Variants','WebServices','WebServicesClient','Website','Workflow');
 		foreach($modulelist as $modlabel)
 		{
-    		require_once(DOL_DOCUMENT_ROOT.'/core/modules/mod'.$modlabel.'.class.php');
+    		require_once DOL_DOCUMENT_ROOT.'/core/modules/mod'.$modlabel.'.class.php';
             $class='mod'.$modlabel;
     		$mod=new $class($db);
             $result=$mod->remove();
             $result=$mod->init();
         	$this->assertLessThan($result, 0, $modlabel);
-        	print __METHOD__." result=".$result."\n";
+        	print __METHOD__." test remove/init for module ".$modlabel.", result=".$result."\n";
+
+        	if (in_array($modlabel, array('Ldap', 'MailmanSpip')))
+        	{
+        	    $result=$mod->remove();
+        	}
 		}
 
         return 0;
     }
-
 }

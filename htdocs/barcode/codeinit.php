@@ -1,5 +1,6 @@
 <?php
-/* Copyright (C) 2014 Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2014-2015 Laurent Destailleur  <eldy@users.sourceforge.net>
+ * Copyright (C) 2018  	   Ferran Marcet 		<fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +25,8 @@ require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 
-$langs->load("admin");
-$langs->load("members");
-$langs->load("errors");
+// Load translation files required by the page
+$langs->loadLangs(array('admin', 'members', 'errors', 'other'));
 
 // Choice of print year or current year.
 $now = dol_now();
@@ -37,9 +37,7 @@ $forbarcode=GETPOST('forbarcode');
 $fk_barcode_type=GETPOST('fk_barcode_type');
 $eraseallbarcode=GETPOST('eraseallbarcode');
 
-$mesg='';
-
-$action=GETPOST('action');
+$action=GETPOST('action','aZ09');
 
 $producttmp=new Product($db);
 $thirdpartytmp=new Societe($db);
@@ -93,7 +91,7 @@ if ($action == 'initbarcodeproducts')
 	if (! is_object($modBarCodeProduct))
 	{
 		$error++;
-		setEventMessage($langs->trans("NoBarcodeNumberingTemplateDefined"),'errors');
+		setEventMessages($langs->trans("NoBarcodeNumberingTemplateDefined"), null, 'errors');
 	}
 
 	if (! $error)
@@ -110,7 +108,7 @@ if ($action == 'initbarcodeproducts')
 			$resql=$db->query($sql);
 			if ($resql)
 			{
-				setEventMessage($langs->trans("AllBarcodeReset"),'mesgs');
+				setEventMessages($langs->trans("AllBarcodeReset"), null, 'mesgs');
 			}
 			else
 			{
@@ -126,7 +124,7 @@ if ($action == 'initbarcodeproducts')
 			$sql.=$db->order("datec","ASC");
 			$sql.=$db->plimit($maxperinit);
 
-			dol_syslog("codeinit sql=".$sql, LOG_DEBUG);
+			dol_syslog("codeinit", LOG_DEBUG);
 			$resql=$db->query($sql);
 			if ($resql)
 			{
@@ -144,7 +142,7 @@ if ($action == 'initbarcodeproducts')
 						$nextvalue=$modBarCodeProduct->getNextValue($productstatic,'');
 
 						//print 'Set value '.$nextvalue.' to product '.$productstatic->id." ".$productstatic->ref." ".$productstatic->type."<br>\n";
-						$result=$productstatic->setValueFrom('barcode', $nextvalue);
+						$result=$productstatic->setValueFrom('barcode', $nextvalue, '', '', 'text', '', $user, 'PRODUCT_MODIFY');
 
 						$nbtry++;
 						if ($result > 0) $nbok++;
@@ -161,7 +159,7 @@ if ($action == 'initbarcodeproducts')
 
 			if (! $error)
 			{
-				setEventMessage($langs->trans("RecordsModified",$nbok),'mesgs');
+				setEventMessages($langs->trans("RecordsModified",$nbok), null, 'mesgs');
 			}
 		}
 
@@ -192,13 +190,11 @@ $form=new Form($db);
 
 llxHeader('',$langs->trans("MassBarcodeInit"));
 
-print_fiche_titre($langs->trans("MassBarcodeInit"));
+print load_fiche_titre($langs->trans("MassBarcodeInit"), '', 'title_setup.png');
 print '<br>';
 
 print $langs->trans("MassBarcodeInitDesc").'<br>';
 print '<br>';
-
-dol_htmloutput_errors($mesg);
 
 //print img_picto('','puce').' '.$langs->trans("PrintsheetForOneBarCode").'<br>';
 //print '<br>';
@@ -214,7 +210,9 @@ if ($conf->societe->enabled)
 {
 	$nbno=$nbtotal=0;
 
-	print_fiche_titre($langs->trans("BarcodeInitForThirdparties"),'','').'<br>'."\n";
+	print load_fiche_titre($langs->trans("BarcodeInitForThirdparties"),'','title_companies');
+
+	print '<br>'."\n";
 	$sql="SELECT count(rowid) as nb FROM ".MAIN_DB_PREFIX."societe where barcode IS NULL or barcode = ''";
 	$resql=$db->query($sql);
 	if ($resql)
@@ -233,12 +231,12 @@ if ($conf->societe->enabled)
 	}
 	else dol_print_error($db);
 
-	print $langs->trans("CurrentlyNWithoutBarCode", $nbno, $nbtotal, $langs->transnoentitiesnoconv("Thirdparties")).'<br>'."\n";
+	print $langs->trans("CurrentlyNWithoutBarCode", $nbno, $nbtotal, $langs->transnoentitiesnoconv("ThirdParties")).'<br>'."\n";
 
-	print '<br><input class="button" type="submit" id="submitformbarcodethirdpartygen" '.((GETPOST("selectorforbarcode") && GETPOST("selectorforbarcode"))?'':'disabled="checked" ').'value="'.$langs->trans("InitEmptyBarCode",$nbno).'"';
-	print ' title="'.dol_escape_htmltag($langs->trans("FeatureNotYetAvailable")).'" disabled="disabled"';
+	print '<br><input class="button" type="submit" id="submitformbarcodethirdpartygen" '.((GETPOST("selectorforbarcode") && GETPOST("selectorforbarcode"))?'':'disabled ').'value="'.$langs->trans("InitEmptyBarCode",$nbno).'"';
+	print ' title="'.dol_escape_htmltag($langs->trans("FeatureNotYetAvailable")).'" disabled';
 	print '>';
-	print '<br><br><br>';
+	print '<br><br><br><br>';
 }
 
 
@@ -254,11 +252,13 @@ if ($conf->product->enabled || $conf->product->service)
 
 	$nbno=$nbtotal=0;
 
-	print_fiche_titre($langs->trans("BarcodeInitForProductsOrServices"),'','').'<br>'."\n";
-	$sql ="SELECT count(rowid) as nb, fk_product_type";
+	print load_fiche_titre($langs->trans("BarcodeInitForProductsOrServices"),'','title_products');
+	print '<br>'."\n";
+
+	$sql ="SELECT count(rowid) as nb, fk_product_type, datec";
 	$sql.=" FROM ".MAIN_DB_PREFIX."product";
 	$sql.=" WHERE barcode IS NULL OR barcode = ''";
-	$sql.=" GROUP BY fk_product_type";
+	$sql.=" GROUP BY fk_product_type, datec";
 	$sql.=" ORDER BY datec";
 	$resql=$db->query($sql);
 	if ($resql)
@@ -291,14 +291,14 @@ if ($conf->product->enabled || $conf->product->service)
 	{
 		print $langs->trans("BarCodeNumberManager").": ";
 		$objproduct=new Product($db);
-		print '<b>'.$modBarCodeProduct->nom.'</b> - '.$langs->trans("NextValue").': <b>'.$modBarCodeProduct->getNextValue($objproduct).'</b><br>';
+		print '<b>'.(isset($modBarCodeProduct->name)?$modBarCodeProduct->name:$modBarCodeProduct->nom).'</b> - '.$langs->trans("NextValue").': <b>'.$modBarCodeProduct->getNextValue($objproduct).'</b><br>';
 		$disabled=0;
 	}
 	else
 	{
 		$disabled=1;
 		$titleno=$langs->trans("NoBarcodeNumberingTemplateDefined");
-		print '<font class="warning">'.$langs->trans("NoBarcodeNumberingTemplateDefined").'</font><br>';
+		print '<font class="warning">'.$langs->trans("NoBarcodeNumberingTemplateDefined").'</font> (<a href="'.DOL_URL_ROOT.'/admin/barcode.php">'.$langs->trans("ToGenerateCodeDefineAutomaticRuleFirst").'</a>)<br>';
 	}
 	if (empty($nbno))
 	{
@@ -307,18 +307,18 @@ if ($conf->product->enabled || $conf->product->service)
 
 	print '<br>';
 	//print '<input type="checkbox" id="erasealreadyset" name="erasealreadyset"> '.$langs->trans("ResetBarcodeForAllRecords").'<br>';
-	$moretags1=(($disabled||$disabled1)?' disabled="disabled" title="'.dol_escape_htmltag($titleno).'"':'');
+	$moretags1=(($disabled||$disabled1)?' disabled title="'.dol_escape_htmltag($titleno).'"':'');
 	print '<input class="button" type="submit" name="submitformbarcodeproductgen" id="submitformbarcodeproductgen" value="'.$langs->trans("InitEmptyBarCode",min($maxperinit,$nbno)).'"'.$moretags1.'>';
-	$moretags2=(($nbno == $nbtotal)?' disabled="disabled"':'');
+	$moretags2=(($nbno == $nbtotal)?' disabled':'');
 	print ' &nbsp; ';
 	print '<input class="button" type="submit" name="eraseallbarcode" id="eraseallbarcode" value="'.$langs->trans("EraseAllCurrentBarCode").'"'.$moretags2.' onClick="return confirm_erase();">';
-	print '<br><br><br>';
+	print '<br><br><br><br>';
 }
 
 
 print '</form>';
 print '<br>';
 
+// End of page
 llxFooter();
-
 $db->close();

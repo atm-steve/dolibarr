@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2010 Regis Houssin <regis.houssin@capnetworks.com>
+/* Copyright (C) 2010 Regis Houssin <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,8 +13,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
+
+// Protection to avoid direct call of template
+if (empty($conf) || ! is_object($conf))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
 
 $contact = $GLOBALS['objcanvas']->control->object;
 
@@ -23,7 +30,7 @@ $contact = $GLOBALS['objcanvas']->control->object;
 <!-- BEGIN PHP TEMPLATE CONTACTCARD_EDIT.TPL.PHP DEFAULT -->
 
 <?php
-print_fiche_titre($this->control->tpl['title']);
+print load_fiche_titre($this->control->tpl['title']);
 
 dol_htmloutput_errors($this->control->tpl['error'],$this->control->tpl['errors']);
 
@@ -59,7 +66,7 @@ echo $this->control->tpl['ajax_selectcountry'];
 </tr>
 
 <tr>
-	<td><?php echo $langs->trans("Company"); ?></td>
+	<td><?php echo $langs->trans("ThirdParty"); ?></td>
 	<td colspan="3"><?php echo $this->control->tpl['company']; ?></td>
 </tr>
 
@@ -129,7 +136,7 @@ echo $this->control->tpl['ajax_selectcountry'];
 </tr>
 
 <tr>
-	<td valign="top"><?php echo $langs->trans("Note"); ?></td>
+	<td class="tdtop"><?php echo $langs->trans("Note"); ?></td>
 	<td colspan="3" valign="top"><textarea name="note" cols="70" rows="<?php echo ROWS_3; ?>"><?php echo $this->control->tpl['note']; ?></textarea></td>
 </tr>
 

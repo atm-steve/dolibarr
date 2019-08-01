@@ -3,7 +3,7 @@
 -- Copyright (C) 2004-2009 Laurent Destailleur  <eldy@users.sourceforge.net>
 -- Copyright (C) 2004      Benoit Mortier       <benoit.mortier@opensides.be>
 -- Copyright (C) 2004      Guillaume Delecourt  <guillaume.delecourt@opensides.be>
--- Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
 -- Copyright (C) 2007 	   Patrick Raguin       <patrick.raguin@gmail.com>
 --
 -- This program is free software; you can redistribute it and/or modify
@@ -27,12 +27,12 @@
 --
 
 --
--- Civilites
+-- Civilities
 --
 
-delete from llx_c_civilite;
-insert into llx_c_civilite (rowid, code, civilite, active) values (1 , 'MME',  'Madame', 1);
-insert into llx_c_civilite (rowid, code, civilite, active) values (3 , 'MR',   'Monsieur', 1);
-insert into llx_c_civilite (rowid, code, civilite, active) values (5 , 'MLE',  'Mademoiselle', 1);
-insert into llx_c_civilite (rowid, code, civilite, active) values (7 , 'MTRE', 'Maître', 1);
-insert into llx_c_civilite (rowid, code, civilite, active) values (8 , 'DR',   'Docteur', 1);
+delete from llx_c_civility;
+insert into llx_c_civility (rowid, code, label, active) values (1 , 'MME',  'Madame', 1);
+insert into llx_c_civility (rowid, code, label, active) values (3 , 'MR',   'Monsieur', 1);
+insert into llx_c_civility (rowid, code, label, active) values (5 , 'MLE',  'Mademoiselle', 1);
+insert into llx_c_civility (rowid, code, label, active) values (7 , 'MTRE', 'Maître', 1);
+insert into llx_c_civility (rowid, code, label, active) values (8 , 'DR',   'Docteur', 1);

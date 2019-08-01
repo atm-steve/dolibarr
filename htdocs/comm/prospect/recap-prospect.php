@@ -26,8 +26,8 @@ require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 
-$langs->load("companies");
-$langs->load('other');
+// Load translation files required by the page
+$langs->loadLangs(array('companies', 'other'));
 if (! empty($conf->facture->enabled)) $langs->load("bills");
 
 // Security check
@@ -64,8 +64,8 @@ if ($socid > 0)
 
     print '<table class="border" width="100%">';
 
-    // Nom
-    print '<tr><td width="20%">'.$langs->trans("Name").'</td><td width="80%" colspan="3">'.$societe->nom.'</td></tr>';
+    // Name
+    print '<tr><td width="20%">'.$langs->trans("Thirdpary").'</td><td width="80%" colspan="3">'.$societe->getNomUrl(1).'</td></tr>';
 
 	// Prefix
     if (! empty($conf->global->SOCIETE_USEPREFIX))  // Old not used prefix field
@@ -89,7 +89,6 @@ else
   	dol_print_error($db);
 }
 
-
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

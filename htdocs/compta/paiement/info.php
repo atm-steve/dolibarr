@@ -28,39 +28,54 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/paiement/class/paiement.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/payments.lib.php';
 
-$langs->load("bills");
-$langs->load("companies");
+// Load translation files required by the page
+$langs->loadLangs(array('bills', 'companies'));
+
+$id=GETPOST('id');
+$ref=GETPOST('ref', 'alpha');
+$action=GETPOST('action','alpha');
+$confirm=GETPOST('confirm','alpha');
+
+/*
+ * Actions
+ */
+
+// None
 
 
 /*
  * View
  */
 
-llxHeader();
+llxHeader('', $langs->trans("Payment"));
 
-$paiement = new Paiement($db);
-$paiement->fetch($_GET["id"], $user);
-$paiement->info($_GET["id"]);
+$object = new Paiement($db);
+$object->fetch($id, $ref);
+$object->info($object->id);
 
-$head = payment_prepare_head($paiement);
+$head = payment_prepare_head($object);
 
-dol_fiche_head($head, 'info', $langs->trans("PaymentCustomerInvoice"), 0, 'payment');
+dol_fiche_head($head, 'info', $langs->trans("PaymentCustomerInvoice"), -1, 'payment');
 
-print '<table class="border" width="100%">';
 
-// Ref
-print '<tr><td valign="top" width="140">'.$langs->trans('Ref').'</td><td colspan="3">'.$paiement->id.'</td></tr>';
+$linkback = '<a href="' . DOL_URL_ROOT . '/compta/paiement/list.php">' . $langs->trans("BackToList") . '</a>';
 
-print '</table>';
+dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', '');
+
+
+print '<div class="fichecenter">';
+print '<div class="underbanner clearboth"></div>';
 
 print '<br>';
 
 print '<table width="100%"><tr><td>';
-dol_print_object_info($paiement);
+dol_print_object_info($object);
 print '</td></tr></table>';
 
 print '</div>';
 
-$db->close();
+dol_fiche_end();
 
+// End of page
 llxFooter();
+$db->close();

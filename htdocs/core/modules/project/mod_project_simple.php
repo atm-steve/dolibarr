@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2010-2012	Regis Houssin		<regis.houssin@capnetworks.com>
+/* Copyright (C) 2010-2012	Regis Houssin		<regis.houssin@inodbox.com>
  * Copyright (C) 2010		Laurent Destailleur	<eldy@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,15 +31,35 @@ require_once DOL_DOCUMENT_ROOT .'/core/modules/project/modules_project.php';
  */
 class mod_project_simple extends ModeleNumRefProjects
 {
-	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
-	var $prefix='PJ';
-    var $error='';
-	var $nom = "Simple";
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';		// 'development', 'experimental', 'dolibarr'
+
+	public $prefix='PJ';
+
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+	/**
+	 * @var string Nom du modele
+	 * @deprecated
+	 * @see name
+	 */
+	public $nom='Simple';
+
+	/**
+	 * @var string model name
+	 */
+	public $name='Simple';
 
 
-    /** 
+    /**
      *  Return description of numbering module
-     * 
+     *
      *  @return     string      Text with description
      */
     function info()
@@ -49,9 +69,9 @@ class mod_project_simple extends ModeleNumRefProjects
     }
 
 
-    /** 
+    /**
      *  Return an example of numbering module values
-     * 
+     *
      * 	@return     string      Example
      */
     function getExample()
@@ -62,7 +82,7 @@ class mod_project_simple extends ModeleNumRefProjects
 
     /**  Test si les numeros deja en vigueur dans la base ne provoquent pas de
      *   de conflits qui empechera cette numerotation de fonctionner.
-     * 
+     *
      *   @return     boolean     false si conflit, true si ok
      */
     function canBeActivated()
@@ -74,7 +94,7 @@ class mod_project_simple extends ModeleNumRefProjects
 		$posindice=8;
 		$sql = "SELECT MAX(CAST(SUBSTRING(ref FROM ".$posindice.") AS SIGNED)) as max";
         $sql.= " FROM ".MAIN_DB_PREFIX."projet";
-		$sql.= " WHERE ref LIKE '".$this->prefix."____-%'";
+		$sql.= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
         $sql.= " AND entity = ".$conf->entity;
         $resql=$db->query($sql);
         if ($resql)
@@ -97,12 +117,12 @@ class mod_project_simple extends ModeleNumRefProjects
 
    /**
 	*  Return next value
-	* 
+	*
 	*  @param   Societe	$objsoc		Object third party
 	*  @param   Project	$project	Object project
 	*  @return	string				Value if OK, 0 if KO
 	*/
-    function getNextValue($objsoc,$project)
+    function getNextValue($objsoc, $project)
     {
 		global $db,$conf;
 
@@ -110,7 +130,7 @@ class mod_project_simple extends ModeleNumRefProjects
 		$posindice=8;
 		$sql = "SELECT MAX(CAST(SUBSTRING(ref FROM ".$posindice.") AS SIGNED)) as max";
 		$sql.= " FROM ".MAIN_DB_PREFIX."projet";
-		$sql.= " WHERE ref like '".$this->prefix."____-%'";
+		$sql.= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		$sql.= " AND entity = ".$conf->entity;
 
 		$resql=$db->query($sql);
@@ -122,7 +142,7 @@ class mod_project_simple extends ModeleNumRefProjects
 		}
 		else
 		{
-			dol_syslog("mod_project_simple::getNextValue sql=".$sql);
+			dol_syslog("mod_project_simple::getNextValue", LOG_DEBUG);
 			return -1;
 		}
 
@@ -130,7 +150,7 @@ class mod_project_simple extends ModeleNumRefProjects
 
 		//$yymm = strftime("%y%m",time());
 		$yymm = strftime("%y%m",$date);
-		
+
 		if ($max >= (pow(10, 4) - 1)) $num=$max+1;	// If counter > 9999, we do not format on 4 chars, we take number as it is
 		else $num = sprintf("%04s",$max+1);
 
@@ -139,16 +159,17 @@ class mod_project_simple extends ModeleNumRefProjects
     }
 
 
-    /** 
-     * 	Return next reference not yet used as a reference
-     * 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    /**
+     *  Return next reference not yet used as a reference
+     *
      *  @param	Societe	$objsoc     Object third party
      *  @param  Project	$project	Object project
      *  @return string      		Next not used reference
      */
-    function project_get_num($objsoc=0,$project='')
+    function project_get_num($objsoc=0, $project='')
     {
-        return $this->getNextValue($objsoc,$project);
+        // phpcs:enable
+        return $this->getNextValue($objsoc, $project);
     }
 }
-

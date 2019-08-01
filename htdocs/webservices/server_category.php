@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2006-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2006-2016 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2012      JF FERRY             <jfefe@aternatik.fr>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,13 +21,12 @@
  *       \brief      File that is entry point to call Dolibarr WebServices
  */
 
-// This is to make Dolibarr working with Plesk
-set_include_path($_SERVER['DOCUMENT_ROOT'].'/htdocs');
+if (! defined("NOCSRFCHECK"))    define("NOCSRFCHECK",'1');
 
-require_once("../master.inc.php");
-require_once(NUSOAP_PATH.'/nusoap.php');		// Include SOAP
+require "../master.inc.php";
+require_once NUSOAP_PATH.'/nusoap.php';		// Include SOAP
 require_once DOL_DOCUMENT_ROOT.'/core/lib/ws.lib.php';
-require_once(DOL_DOCUMENT_ROOT."/categories/class/categorie.class.php");
+require_once DOL_DOCUMENT_ROOT."/categories/class/categorie.class.php";
 
 
 dol_syslog("Call Dolibarr webservices interfaces");
@@ -93,7 +92,7 @@ $server->wsdl->addComplexType(
 /*
  * Les catégories filles, sous tableau dez la catégorie
  */
- $server->wsdl->addComplexType(
+$server->wsdl->addComplexType(
     'FillesArray',
     'complexType',
     'array',
@@ -109,38 +108,38 @@ $server->wsdl->addComplexType(
  /*
   * Image of product
  */
- $server->wsdl->addComplexType(
- 		'PhotosArray',
- 		'complexType',
- 		'array',
- 		'sequence',
- 		'',
- 		array(
- 				'image' => array(
- 						'name' => 'image',
- 						'type' => 'tns:image',
- 						'minOccurs' => '0',
- 						'maxOccurs' => 'unbounded'
- 				)
- 		)
- );
- 
+$server->wsdl->addComplexType(
+		'PhotosArray',
+		'complexType',
+		'array',
+		'sequence',
+		'',
+		array(
+				'image' => array(
+						'name' => 'image',
+						'type' => 'tns:image',
+						'minOccurs' => '0',
+						'maxOccurs' => 'unbounded'
+				)
+		)
+);
+
  /*
   * An image
  */
- $server->wsdl->addComplexType(
- 		'image',
- 		'complexType',
- 		'struct',
- 		'all',
- 		'',
- 		array(
- 				'photo' => array('name'=>'photo','type'=>'xsd:string'),
- 				'photo_vignette' => array('name'=>'photo_vignette','type'=>'xsd:string'),
- 				'imgWidth' => array('name'=>'imgWidth','type'=>'xsd:string'),
- 				'imgHeight' => array('name'=>'imgHeight','type'=>'xsd:string')
- 		)
- );
+$server->wsdl->addComplexType(
+		'image',
+		'complexType',
+		'struct',
+		'all',
+		'',
+		array(
+				'photo' => array('name'=>'photo','type'=>'xsd:string'),
+				'photo_vignette' => array('name'=>'photo_vignette','type'=>'xsd:string'),
+				'imgWidth' => array('name'=>'imgWidth','type'=>'xsd:string'),
+				'imgHeight' => array('name'=>'imgHeight','type'=>'xsd:string')
+		)
+);
 
 /*
  * Retour
@@ -217,7 +216,7 @@ function getCategory($authentication,$id)
 			if ($result > 0)
 			{
 					$dir = (!empty($conf->categorie->dir_output)?$conf->categorie->dir_output:$conf->service->dir_output);
-					$pdir = get_exdir($categorie->id,2) . $categorie->id ."/photos/";
+					$pdir = get_exdir($categorie->id,2,0,0,$categorie,'category') . $categorie->id ."/photos/";
 					$dir = $dir . '/'. $pdir;
 
 					$cat = array(
@@ -238,7 +237,7 @@ function getCategory($authentication,$id)
 					 	foreach($cats as $fille)
 						{
 							$dir = (!empty($conf->categorie->dir_output)?$conf->categorie->dir_output:$conf->service->dir_output);
-							$pdir = get_exdir($fille->id,2) . $fille->id ."/photos/";
+							$pdir = get_exdir($fille->id,2,0,0,$categorie,'category') . $fille->id ."/photos/";
 							$dir = $dir . '/'. $pdir;
 							$cat['filles'][] = array(
 								'id'=>$fille->id,
@@ -251,9 +250,7 @@ function getCategory($authentication,$id)
 								'dir' => $pdir,
 								'photos' => $fille->liste_photos($dir,$nbmax=10)
 							);
-
 						}
-
 					}
 
 			    // Create
@@ -283,7 +280,5 @@ function getCategory($authentication,$id)
 	return $objectresp;
 }
 
-
 // Return the results.
-$server->service($HTTP_RAW_POST_DATA);
-
+$server->service(file_get_contents("php://input"));

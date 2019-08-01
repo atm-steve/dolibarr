@@ -27,17 +27,33 @@
  */
 class Ctypent // extends CommonObject
 {
-	var $db;							//!< To store db handler
-	var $error;							//!< To return error code (or message)
-	var $errors=array();				//!< To return several error codes (or messages)
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
+
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+	/**
+	 * @var string[] Error codes (or messages)
+	 */
+	public $errors = array();
+
 	//var $element='ctypent';			//!< Id that identify managed objects
 	//var $table_element='ctypent';	//!< Name of table without prefix where object is stored
 
-    var $id;
-	var $code;
-	var $libelle;
-	var $active;
-	var $module;
+    /**
+	 * @var int ID
+	 */
+	public $id;
+
+	public $code;
+	public $libelle;
+	public $active;
+	public $module;
 
 
 
@@ -50,7 +66,6 @@ class Ctypent // extends CommonObject
     function __construct($db)
     {
         $this->db = $db;
-        return 1;
     }
 
 
@@ -91,10 +106,10 @@ class Ctypent // extends CommonObject
 
         $sql.= ") VALUES (";
 
-		$sql.= " ".(! isset($this->id)?'NULL':"'".$this->id."'").",";
+		$sql.= " ".(! isset($this->id)?'NULL':"'".$this->db->escape($this->id)."'").",";
 		$sql.= " ".(! isset($this->code)?'NULL':"'".$this->db->escape($this->code)."'").",";
 		$sql.= " ".(! isset($this->libelle)?'NULL':"'".$this->db->escape($this->libelle)."'").",";
-		$sql.= " ".(! isset($this->active)?'NULL':"'".$this->active."'").",";
+		$sql.= " ".(! isset($this->active)?'NULL':"'".$this->db->active($this->active)."'").",";
 		$sql.= " ".(! isset($this->module)?'NULL':"'".$this->db->escape($this->module)."'")."";
 
 
@@ -102,7 +117,7 @@ class Ctypent // extends CommonObject
 
 		$this->db->begin();
 
-	   	dol_syslog(get_class($this)."::create sql=".$sql, LOG_DEBUG);
+	   	dol_syslog(get_class($this)."::create", LOG_DEBUG);
         $resql=$this->db->query($sql);
     	if (! $resql) { $error++; $this->errors[]="Error ".$this->db->lasterror(); }
 
@@ -148,22 +163,24 @@ class Ctypent // extends CommonObject
      *
      *  @param      int		$id    	Id object
      *  @param		string	$code	Code
+     *  @param		string	$label	Label
      *  @return     int          	<0 if KO, >0 if OK
      */
-    function fetch($id,$code='')
+    function fetch($id,$code='',$label='')
     {
     	global $langs;
         $sql = "SELECT";
 		$sql.= " t.id,";
 		$sql.= " t.code,";
-		$sql.= " t.libelle,";
+		$sql.= " t.libelle as label,";
+		$sql.= " t.fk_country as country_id,";
 		$sql.= " t.active,";
 		$sql.= " t.module";
         $sql.= " FROM ".MAIN_DB_PREFIX."c_typent as t";
         if ($id)   $sql.= " WHERE t.id = ".$id;
         elseif ($code) $sql.= " WHERE t.code = '".$this->db->escape($code)."'";
+        elseif ($label) $sql.= " WHERE t.libelle = '".$this->db->escape($label)."'";
 
-    	dol_syslog(get_class($this)."::fetch sql=".$sql, LOG_DEBUG);
         $resql=$this->db->query($sql);
         if ($resql)
         {
@@ -173,7 +190,8 @@ class Ctypent // extends CommonObject
 
                 $this->id    = $obj->id;
 				$this->code = $obj->code;
-				$this->libelle = $obj->libelle;
+				$this->libelle = $obj->label;
+				$this->country_id = $obj->country_id;
 				$this->active = $obj->active;
 				$this->module = $obj->module;
             }
@@ -184,7 +202,6 @@ class Ctypent // extends CommonObject
         else
         {
       	    $this->error="Error ".$this->db->lasterror();
-            dol_syslog(get_class($this)."::fetch ".$this->error, LOG_ERR);
             return -1;
         }
     }
@@ -197,7 +214,7 @@ class Ctypent // extends CommonObject
      *  @param      int		$notrigger	 0=launch triggers after, 1=disable triggers
      *  @return     int     		   	 <0 if KO, >0 if OK
      */
-    function update($user=0, $notrigger=0)
+    function update($user=null, $notrigger=0)
     {
     	global $conf, $langs;
 		$error=0;
@@ -222,7 +239,7 @@ class Ctypent // extends CommonObject
 
 		$this->db->begin();
 
-		dol_syslog(get_class($this)."::update sql=".$sql, LOG_DEBUG);
+		dol_syslog(get_class($this)."::update", LOG_DEBUG);
         $resql = $this->db->query($sql);
     	if (! $resql) { $error++; $this->errors[]="Error ".$this->db->lasterror(); }
 
@@ -278,7 +295,7 @@ class Ctypent // extends CommonObject
 
 		$this->db->begin();
 
-		dol_syslog(get_class($this)."::delete sql=".$sql);
+		dol_syslog(get_class($this)."::delete", LOG_DEBUG);
 		$resql = $this->db->query($sql);
     	if (! $resql) { $error++; $this->errors[]="Error ".$this->db->lasterror(); }
 
@@ -315,5 +332,4 @@ class Ctypent // extends CommonObject
 			return 1;
 		}
 	}
-
 }

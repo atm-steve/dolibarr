@@ -1,6 +1,6 @@
 -- ============================================================================
 -- Copyright (C) 2010	Laurent Destailleur	<eldy@users.sourceforge.net>
--- Copyright (C) 2012	Regis Houssin		<regis.houssin@capnetworks.com>
+-- Copyright (C) 2012	Regis Houssin		<regis.houssin@inodbox.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -18,7 +18,8 @@
 -- ============================================================================
 
 
-ALTER TABLE llx_ecm_directories ADD UNIQUE INDEX idx_ecm_directories (label, fk_parent, entity);
+ALTER TABLE llx_ecm_directories ADD UNIQUE INDEX uk_ecm_directories (label, fk_parent, entity);
+--ALTER TABLE llx_ecm_directories ADD UNIQUE INDEX uk_ecm_directories_fullpath(fullpath); Disabled, mysql limits size of index
 ALTER TABLE llx_ecm_directories ADD INDEX idx_ecm_directories_fk_user_c (fk_user_c);
 ALTER TABLE llx_ecm_directories ADD INDEX idx_ecm_directories_fk_user_m (fk_user_m);
 

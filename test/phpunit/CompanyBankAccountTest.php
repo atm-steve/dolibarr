@@ -60,6 +60,8 @@ class CompanyBankAccountTest extends PHPUnit_Framework_TestCase
 	 */
 	function __construct()
 	{
+		parent::__construct();
+
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
 		$this->savconf=$conf;
@@ -80,6 +82,8 @@ class CompanyBankAccountTest extends PHPUnit_Framework_TestCase
 
     	print __METHOD__."\n";
     }
+
+    // tear down after class
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -231,6 +235,4 @@ class CompanyBankAccountTest extends PHPUnit_Framework_TestCase
         $this->assertLessThan($result, 0);
         return $localobject->id;
     }
-
 }
-

@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /*
  * Copyright (C) 2005		Rodolphe Quiedeville <rodolphe@quiedeville.org>
@@ -48,12 +48,10 @@ if (! isset($argv[1]) || ! $argv[1] || ! in_array($argv[1],array('test','confirm
 $mode=$argv[1];
 
 
-require($path."../../htdocs/master.inc.php");
-require_once (DOL_DOCUMENT_ROOT."/core/class/CMailFile.class.php");
+require $path."../../htdocs/master.inc.php";
+require_once DOL_DOCUMENT_ROOT."/core/class/CMailFile.class.php";
 
-$langs->load('main');
-$langs->load('contracts');
-
+$langs->loadLangs(array('main', 'contracts'));
 
 // Global variables
 $version=DOL_VERSION;
@@ -65,7 +63,7 @@ $error=0;
  */
 
 @set_time_limit(0);
-print "***** ".$script_file." (".$version.") pid=".getmypid()." *****\n";
+print "***** ".$script_file." (".$version.") pid=".dol_getmypid()." *****\n";
 dol_syslog($script_file." launched with arg ".join(',',$argv));
 
 $now=dol_now('tzserver');
@@ -116,7 +114,7 @@ if ($resql)
                 $oldemail = $obj->email;
                 $olduid = $obj->uid;
                 $oldlang = $obj->lang;
-                $oldsalerepresentative=dolGetFirstLastname($obj->firstname, $obj->lastname);;
+                $oldsalerepresentative=dolGetFirstLastname($obj->firstname, $obj->lastname);
                 $message = '';
                 $total = 0;
                 $foundtoprocess = 0;
@@ -127,10 +125,9 @@ if ($resql)
             // Define line content
             $outputlangs=new Translate('',$conf);
             $outputlangs->setDefaultLang(empty($obj->lang)?$langs->defaultlang:$obj->lang);	// By default language of sale representative
-            $outputlangs->load("bills");
-            $outputlangs->load("main");
-    		$outputlangs->load("contracts");
-            $outputlangs->load("products");
+
+            // Load translation files required by the page
+            $outputlangs->loadLangs(array("main", "contracts", "bills", "products"));
 
             if (dol_strlen($obj->email))
             {

@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2007-2009 Regis Houssin       <regis.houssin@capnetworks.com>
+/* Copyright (C) 2007-2009 Regis Houssin       <regis.houssin@inodbox.com>
  * Copyright (C) 2008      Laurent Destailleur <eldy@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@ include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
 
 
 /**
- *	Classe de description et activation du module Label
+ *	Class to describe and enable module Label
  */
 class modLabel extends DolibarrModules
 {
@@ -43,21 +43,25 @@ class modLabel extends DolibarrModules
 		$this->db = $db;
 		$this->numero = 60;
 
-		$this->family = "other";
+		$this->family = "technic";
+		$this->module_position = '75';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		$this->description = "Gestion des etiquettes";
-		$this->version = 'development';		// 'development' or 'experimental' or 'dolibarr' or version
+		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
+		$this->version = 'development';
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->special = 2;
 		$this->picto='label';
 
 		// Data directories to create when module is enabled
 		$this->dirs = array("/label/temp");
 
-		// Dependancies
-		$this->depends = array();
-		$this->requiredby = array();
+		// Dependencies
+		$this->hidden = false;			// A condition to hide module
+		$this->depends = array();		// List of module class names as string that must be enabled if this module is enabled
+		$this->requiredby = array();	// List of module ids to disable if this one is disabled
+		$this->conflictwith = array();	// List of module class names as string this module is in conflict with
+		$this->phpmin = array(5,4);		// Minimum version of PHP required by module
 
 		// Config pages
 		// $this->config_page_url = array("label.php");
@@ -86,9 +90,7 @@ class modLabel extends DolibarrModules
 		$this->rights[4][1] = 'Supprimer les etiquettes'; // libelle de la permission
 		$this->rights[4][3] = 0; // La permission est-elle une permission par defaut
 		$this->rights[4][4] = 'supprimer';
-
 	}
-
 
 	/**
 	 *		Function called when module is enabled.
@@ -107,20 +109,4 @@ class modLabel extends DolibarrModules
 
 		return $this->_init($sql,$options);
 	}
-
-    /**
-	 *		Function called when module is disabled.
-	 *      Remove from database constants, boxes and permissions from Dolibarr database.
-	 *		Data directories are not deleted
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-    function remove($options='')
-    {
-		$sql = array();
-
-		return $this->_remove($sql,$options);
-    }
-
 }

@@ -1,5 +1,6 @@
 
-/* Copyright (C) 2007-2008 Jeremie Ollivier <jeremie.o@laposte.net>
+/* Copyright (C) 2007-2008	Jeremie Ollivier	<jeremie.o@laposte.net>
+ * Copyright (C) 2015		Regis Houssin		<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +17,7 @@
  */
 
 // Instanciation et initialisation de l'objet xmlhttprequest
-function file (fichier) {
+function file(fichier) {
 
 	// Instanciation de l'objet pour Mozilla, Konqueror, Opera, Safari, etc ...
 	if (window.XMLHttpRequest) {
@@ -50,47 +51,23 @@ function file (fichier) {
 }
 
 
-// Affichage des donnees aTexte dans le bloc identifie par aId
-function afficheDonnees (aId, aTexte) {
-
-	document.getElementById(aId).innerHTML = aTexte;
-
-}
-
-
 // aCible : id du bloc de destination; aCode : argument a passer a la page php chargee du traitement et de l'affichage
-function verifResultat (aCible, aCode) {
-	if (aCode != '') {
+function verifResultat(aCible, aCode, iLimit) {
+	if (aCode != '' && aCode.length >= iLimit) {
 
-		if (texte = file ('facturation_dhtml.php?code='+escape(aCode))) {
-
-			afficheDonnees (aCible, texte);
-
+		if (texte = file('facturation_dhtml.php?code='+escape(aCode))) {
+			document.getElementById(aCible).innerHTML = texte;
 		} else
-
-			afficheDonnees (aCible, '');
-
+			document.getElementById(aCible).innerHTML = '';
 	}
 
 }
 
 
 // Change dynamiquement la classe de l'element ayant l'id aIdElement pour aClasse
-function setStyle (aIdElement, aClasse) {
+function setStyle(aIdElement, aClasse) {
 
 	aIdElement.className = aClasse;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 

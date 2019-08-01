@@ -1,6 +1,7 @@
 <?php
-/* Copyright (C) 2007-2008 Jeremie Ollivier <jeremie.o@laposte.net>
- * Copyright (C) 2008-2009 Laurent Destailleur   <eldy@uers.sourceforge.net>
+/* Copyright (C) 2007-2008 	Jeremie Ollivier 	<jeremie.o@laposte.net>
+ * Copyright (C) 2008-2009 	Laurent Destailleur <eldy@uers.sourceforge.net>
+ * Copyright (C) 2015		Regis Houssin		<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,46 +24,47 @@
  */
 
 
-//if (! defined('NOREQUIREUSER'))  define('NOREQUIREUSER','1');
-//if (! defined('NOREQUIREDB'))    define('NOREQUIREDB','1');
 if (! defined('NOREQUIRESOC'))   define('NOREQUIRESOC','1');
-//if (! defined('NOREQUIRETRAN'))  define('NOREQUIRETRAN','1');
 if (! defined('NOCSRFCHECK'))    define('NOCSRFCHECK','1');
 if (! defined('NOTOKENRENEWAL')) define('NOTOKENRENEWAL','1');
 if (! defined('NOREQUIREMENU'))  define('NOREQUIREMENU','1');
 if (! defined('NOREQUIREHTML'))  define('NOREQUIREHTML','1');
 if (! defined('NOREQUIREAJAX'))  define('NOREQUIREAJAX','1');
-//if (! defined("NOLOGIN"))        define("NOLOGIN",'1');
 
 // Change this following line to use the correct relative path (../, ../../, etc)
 require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/cashdesk/include/environnement.php';
 
-//header("Content-type: text/html; charset=UTF-8");
-header("Content-type: text/html; charset=".$conf->file->character_set_client);
+top_httphead('text/html');
+
+$search = GETPOST("code", "alpha");
 
 // Search from criteria
-if (dol_strlen($_GET["code"]) >= 0)	// If search criteria is on char length at least
+if (dol_strlen($search) >= 0)	// If search criteria is on char length at least
 {
 	$sql = "SELECT p.rowid, p.ref, p.label, p.tva_tx";
 	if (! empty($conf->stock->enabled) && !empty($conf_fkentrepot)) $sql.= ", ps.reel";
 	$sql.= " FROM ".MAIN_DB_PREFIX."product as p";
 	if (! empty($conf->stock->enabled) && !empty($conf_fkentrepot)) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_stock as ps ON p.rowid = ps.fk_product AND ps.fk_entrepot = '".$conf_fkentrepot."'";
-	$sql.= " WHERE p.entity IN (".getEntity('product', 1).")";
+	$sql.= " WHERE p.entity IN (".getEntity('product').")";
 	$sql.= " AND p.tosell = 1";
 	$sql.= " AND p.fk_product_type = 0";
 	// Add criteria on ref/label
 	if (! empty($conf->global->PRODUCT_DONOTSEARCH_ANYWHERE))
 	{
-		$sql.= " AND (p.ref LIKE '".$_GET['code']."%' OR p.label LIKE '".$_GET['code']."%')";
+		$sql.= " AND (p.ref LIKE '".$db->escape($search)."%' OR p.label LIKE '".$db->escape($search)."%'";
+		if (! empty($conf->barcode->enabled)) $sql.= " OR p.barcode LIKE '".$db->escape($search)."%'";
+		$sql.= ")";
 	}
 	else
 	{
-		$sql.= " AND (p.ref LIKE '%".$_GET['code']."%' OR p.label LIKE '%".$_GET['code']."%')";
+		$sql.= " AND (p.ref LIKE '%".$db->escape($search)."%' OR p.label LIKE '%".$db->escape($search)."%'";
+		if (! empty($conf->barcode->enabled)) $sql.= " OR p.barcode LIKE '%".$db->escape($search)."%'";
+		$sql.= ")";
 	}
 	$sql.= " ORDER BY label";
 
-	dol_syslog("facturation_dhtml.php sql=".$sql);
+	dol_syslog("facturation_dhtml.php", LOG_DEBUG);
 	$result = $db->query($sql);
 
 	if ($result)
@@ -106,5 +108,4 @@ if (dol_strlen($_GET["code"]) >= 0)	// If search criteria is on char length at l
 			print '</ul>';
 		}
 	}
-
 }

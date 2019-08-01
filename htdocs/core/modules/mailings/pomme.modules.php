@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2005-2011 Laurent Destailleur <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009 Regis Houssin       <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2009 Regis Houssin       <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,18 +26,21 @@ include_once DOL_DOCUMENT_ROOT.'/core/modules/mailings/modules_mailings.php';
 
 
 /**
- *	\class      mailing_pomme
- *	\brief      Class to offer a selector of emailing targets with Rule 'Peche'.
+ *	Class to offer a selector of emailing targets with Rule 'Peche'.
  */
 class mailing_pomme extends MailingTargets
 {
 	var $name='DolibarrUsers';                      // Identifiant du module mailing
+	// This label is used if no translation is found for key XXX neither MailingModuleDescXXX where XXX=name is found
 	var $desc='Dolibarr users with emails';  		// Libelle utilise si aucune traduction pour MailingModuleDescXXX ou XXX=name trouv�e
 	var $require_module=array();                    // Module mailing actif si modules require_module actifs
 	var $require_admin=1;                           // Module mailing actif pour user admin ou non
 	var $picto='user';
 
-	var $db;
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
 
 	/**
@@ -57,7 +60,7 @@ class mailing_pomme extends MailingTargets
 	 *	array of SQL request that returns two field:
 	 *	One called "label", One called "nb".
 	 *
-	 *	@return		array		Array with SQL requests
+	 *	@return		string[]		Array with SQL requests
 	 */
 	function getSqlArrayForStats()
 	{
@@ -112,11 +115,21 @@ class mailing_pomme extends MailingTargets
 		$langs->load("users");
 
 		$s='';
+		$s.=$langs->trans("Status").': ';
 		$s.='<select name="filter" class="flat">';
-		$s.='<option value="-1"></option>';
+		$s.='<option value="-1">&nbsp;</option>';
 		$s.='<option value="1">'.$langs->trans("Enabled").'</option>';
 		$s.='<option value="0">'.$langs->trans("Disabled").'</option>';
 		$s.='</select>';
+
+		$s.=' ';
+		$s.=$langs->trans("Employee").': ';
+		$s.='<select name="filteremployee" class="flat">';
+		$s.='<option value="-1">&nbsp;</option>';
+		$s.='<option value="1">'.$langs->trans("Yes").'</option>';
+		$s.='<option value="0">'.$langs->trans("No").'</option>';
+		$s.='</select>';
+
 		return $s;
 	}
 
@@ -129,10 +142,11 @@ class mailing_pomme extends MailingTargets
 	 */
 	function url($id)
 	{
-		return '<a href="'.DOL_URL_ROOT.'/user/fiche.php?id='.$id.'">'.img_object('',"user").'</a>';
+		return '<a href="'.DOL_URL_ROOT.'/user/card.php?id='.$id.'">'.img_object('',"user").'</a>';
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Ajoute destinataires dans table des cibles
 	 *
@@ -140,25 +154,30 @@ class mailing_pomme extends MailingTargets
 	 *  @param  array	$filtersarray   Requete sql de selection des destinataires
 	 *  @return int           			< 0 si erreur, nb ajout si ok
 	 */
-	function add_to_target($mailing_id,$filtersarray=array())
+	function add_to_target($mailing_id, $filtersarray=array())
 	{
-		global $conf, $langs;
+        // phpcs:enable
+		// Deprecation warning
+	    if ($filtersarray) {
+		    dol_syslog(__METHOD__ . ": filtersarray parameter is deprecated", LOG_WARNING);
+	    }
+
+	    global $conf, $langs;
 		$langs->load("companies");
-		
+
 		$cibles = array();
 
 		// La requete doit retourner: id, email, fk_contact, lastname, firstname
 		$sql = "SELECT u.rowid as id, u.email as email, null as fk_contact,";
-		$sql.= " u.lastname as lastname, u.firstname as firstname, u.civilite as civility_id, u.login, u.office_phone";
+		$sql.= " u.lastname, u.firstname as firstname, u.civility as civility_id, u.login, u.office_phone";
 		$sql.= " FROM ".MAIN_DB_PREFIX."user as u";
 		$sql.= " WHERE u.email <> ''"; // u.email IS NOT NULL est implicite dans ce test
 		$sql.= " AND u.entity IN (0,".$conf->entity.")";
 		$sql.= " AND u.email NOT IN (SELECT email FROM ".MAIN_DB_PREFIX."mailing_cibles WHERE fk_mailing=".$mailing_id.")";
-		foreach($filtersarray as $key)
-		{
-			if ($key == '1') $sql.= " AND u.statut=1";
-			if ($key == '0') $sql.= " AND u.statut=0";
-		}
+		if (isset($_POST["filter"]) && $_POST["filter"] == '1') $sql.= " AND u.statut=1";
+		if (isset($_POST["filter"]) && $_POST["filter"] == '0') $sql.= " AND u.statut=0";
+		if (isset($_POST["filteremployee"]) && $_POST["filteremployee"] == '1') $sql.= " AND u.employee=1";
+		if (isset($_POST["filteremployee"]) && $_POST["filteremployee"] == '0') $sql.= " AND u.employee=0";
 		$sql.= " ORDER BY u.email";
 
 		// Stocke destinataires dans cibles
@@ -206,6 +225,4 @@ class mailing_pomme extends MailingTargets
 
 		return parent::add_to_target($mailing_id, $cibles);
 	}
-
 }
-

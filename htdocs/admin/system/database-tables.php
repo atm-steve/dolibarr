@@ -3,7 +3,7 @@
  * Copyright (C) 2004-2005	Laurent Destailleur		<eldy@users.sourceforge.net>
  * Copyright (C) 2004		Sebastien Di Cintio		<sdicintio@ressource-toi.org>
  * Copyright (C) 2004		Benoit Mortier			<benoit.mortier@opensides.be>
- * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,13 @@ $action=GETPOST('action','alpha');
 
 if ($action == 'convert')
 {
-	$db->query("alter table ".$_GET["table"]." ENGINE=INNODB");
+    $sql="ALTER TABLE ".$db->escape(GETPOST("table", "aZ09"))." ENGINE=INNODB";
+	$db->query($sql);
+}
+if ($action == 'convertutf8')
+{
+    $sql="ALTER TABLE ".$db->escape(GETPOST("table", "aZ09"))." CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+    $db->query($sql);
 }
 
 
@@ -46,7 +52,7 @@ if ($action == 'convert')
 
 llxHeader();
 
-print_fiche_titre($langs->trans("Tables")." ".ucfirst($conf->db->type),'','setup');
+print load_fiche_titre($langs->trans("Tables")." ".ucfirst($conf->db->type),'','title_setup');
 
 
 // Define request to get table description
@@ -66,6 +72,11 @@ else if ($conf->db->type == 'mssql')
 	//$sqls[0] = "";
 	//$base=3;
 }
+else if ($conf->db->type == 'sqlite' || $conf->db->type == 'sqlite3')
+{
+	//$sql = "SELECT name, type FROM sqlite_master";
+	$base = 4;
+}
 
 
 if (! $base)
@@ -76,7 +87,8 @@ else
 {
 	if ($base == 1)
 	{
-		print '<table class="noborder">';
+        print '<div class="div-table-responsive-no-min">';
+	    print '<table class="noborder">';
 		print '<tr class="liste_titre">';
 		print '<td>'.$langs->trans("TableName").'</td>';
 		print '<td colspan="2">'.$langs->trans("Type").'</td>';
@@ -97,19 +109,17 @@ else
 		if ($resql)
 		{
 			$num = $db->num_rows($resql);
-			$var=True;
 			$i=0;
 			while ($i < $num)
 			{
 				$obj = $db->fetch_object($resql);
-				$var=!$var;
-				print "<tr ".$bc[$var].">";
+				print '<tr class="oddeven">';
 
 				print '<td><a href="dbtable.php?table='.$obj->Name.'">'.$obj->Name.'</a></td>';
 				print '<td>'.$obj->Engine.'</td>';
-				if (isset($row[1]) && $row[1] == "MyISAM")
+				if (isset($obj->Engine) && $obj->Engine == "MyISAM")
 				{
-					print '<td><a href="database-tables.php?action=convert&amp;table='.$row[0].'">'.$langs->trans("Convert").'</a></td>';
+				    print '<td><a class="reposition" href="database-tables.php?action=convert&amp;table='.$obj->Name.'">'.$langs->trans("Convert").' InnoDB</a></td>';
 				}
 				else
 				{
@@ -123,17 +133,24 @@ else
 				print '<td align="right">'.$obj->Index_length.'</td>';
 				print '<td align="right">'.$obj->Auto_increment.'</td>';
 				print '<td align="right">'.$obj->Check_time.'</td>';
-				print '<td align="right">'.$obj->Collation.'</td>';
+				print '<td align="right">'.$obj->Collation;
+				if (isset($obj->Collation) && ($obj->Collation == "utf8mb4_general_ci" || $obj->Collation == "utf8mb4_unicode_ci"))
+				{
+				    print '<br><a class="reposition" href="database-tables.php?action=convertutf8&amp;table='.$obj->Name.'">'.$langs->trans("Convert").' UTF8</a>';
+				}
+				print '</td>';
 				print '</tr>';
 				$i++;
 			}
 		}
 		print '</table>';
+		print '</div>';
 	}
 
 	if ($base == 2)
 	{
-		print '<table class="noborder">';
+        print '<div class="div-table-responsive-no-min">';
+	    print '<table class="noborder">';
 		print '<tr class="liste_titre">';
 		print '<td>'.$langs->trans("TableName").'</td>';
 		print '<td>Nb of tuples</td>';
@@ -150,13 +167,11 @@ else
 		if ($resql)
 		{
 			$num = $db->num_rows($resql);
-			$var=True;
 			$i=0;
 			while ($i < $num)
 			{
 				$row = $db->fetch_row($resql);
-				$var=!$var;
-				print "<tr ".$bc[$var].">";
+				print '<tr class="oddeven">';
 				print '<td>'.$row[0].'</td>';
 				print '<td align="right">'.$row[1].'</td>';
 				print '<td align="right">'.$row[2].'</td>';
@@ -168,8 +183,46 @@ else
 			}
 		}
 		print '</table>';
+		print '</div>';
+	}
+
+	if ($base == 4)
+	{
+		// Sqlite by PDO or by Sqlite3
+    print '<div class="div-table-responsive-no-min">';
+	  print '<table class="noborder">';
+		print '<tr class="liste_titre">';
+		print '<td>'.$langs->trans("TableName").'</td>';
+		print '<td>'.$langs->trans("NbOfRecord").'</td>';
+		print "</tr>\n";
+
+		$sql = "SELECT name, type FROM sqlite_master where type='table' and name not like 'sqlite%' ORDER BY name";
+		$resql = $db->query($sql);
+
+		if ($resql)
+		{
+			while ($row = $db->fetch_row($resql)) {
+
+				$rescount = $db->query("SELECT COUNT(*) FROM " . $row[0]);
+				if ($rescount) {
+					$row_count = $db->fetch_row($rescount);
+					$count = $row_count[0];
+				} else {
+					$count = '?';
+				}
+
+				print '<tr class="oddeven">';
+				print '<td>'.$row[0].'</td>';
+				print '<td>'.$count.'</td>';
+				print '</tr>';
+			}
+		}
+
+		print '</table>';
+		print '</div>';
 	}
 }
 
+// End of page
 llxFooter();
 $db->close();

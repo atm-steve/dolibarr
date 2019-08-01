@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2011-2012 Regis Houssin <regis.houssin@capnetworks.com>
+/* Copyright (C) 2011-2012 Regis Houssin <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,8 +13,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
+
+// Protection to avoid direct call of template
+if (empty($conf) || ! is_object($conf))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
 ?>
 
 <!-- START TEMPLATE FILE UPLOAD -->
@@ -23,6 +30,7 @@
 <form id="fileupload" action="<?php echo DOL_URL_ROOT; ?>/core/ajax/fileupload.php" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="fk_element" value="<?php echo $object->id; ?>">
 <input type="hidden" name="element" value="<?php echo $object->element; ?>">
+<input type="hidden" name="redirect" value="<?php echo $_SERVER['PHP_SELF'].'?id='.$object->id; ?>">
 <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
 <div class="row fileupload-buttonbar">
 	<div class="span7">

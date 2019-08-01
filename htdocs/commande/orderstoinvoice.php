@@ -1,11 +1,13 @@
 <?php
-/* Copyright (C) 2001-2005 Rodolphe Quiedeville   	<rodolphe@quiedeville.org>
- * Copyright (C) 2004-2013 Laurent Destailleur   	<eldy@users.sourceforge.net>
- * Copyright (C) 2005      Marc Barilley / Ocebo  	<marc@ocebo.com>
- * Copyright (C) 2005-2012 Regis Houssin          	<regis.houssin@capnetworks.com>
- * Copyright (C) 2012	   Andreu Bisquerra Gaya  	<jove@bisquerra.com>
- * Copyright (C) 2012	   David Rodriguez Martinez <davidrm146@gmail.com>
- * Copyright (C) 2012	   Juanjo Menent			<jmenent@2byte.es>
+/* Copyright (C) 2001-2005  Rodolphe Quiedeville    <rodolphe@quiedeville.org>
+ * Copyright (C) 2004-2013  Laurent Destailleur     <eldy@users.sourceforge.net>
+ * Copyright (C) 2005       Marc Barilley / Ocebo   <marc@ocebo.com>
+ * Copyright (C) 2005-2012  Regis Houssin           <regis.houssin@inodbox.com>
+ * Copyright (C) 2012       Andreu Bisquerra Gaya   <jove@bisquerra.com>
+ * Copyright (C) 2012       David Rodriguez Martinez <davidrm146@gmail.com>
+ * Copyright (C) 2012-2018  Juanjo Menent           <jmenent@2byte.es>
+ * Copyright (C) 2015       Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2018       Frédéric France         <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,25 +40,26 @@ if (! empty($conf->projet->enabled)) {
 	require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 }
 
-$langs->load('orders');
-$langs->load('deliveries');
-$langs->load('companies');
+// Load translation files required by the page
+$langs->loadLangs(array("orders", "deliveries", "companies"));
 
 if (! $user->rights->facture->creer)
 	accessforbidden();
 
-$id				= (GETPOST('id')?GETPOST('id','int'):GETPOST("facid"));  // For backward compatibility
+$id				= (GETPOST('id')?GETPOST('id','int'):GETPOST("facid","int"));  // For backward compatibility
 $ref			= GETPOST('ref','alpha');
 $action			= GETPOST('action','alpha');
 $confirm		= GETPOST('confirm','alpha');
 $sref			= GETPOST('sref');
 $sref_client	= GETPOST('sref_client');
-$sall			= GETPOST('sall');
+$sall			= trim((GETPOST('search_all', 'alphanohtml')!='')?GETPOST('search_all', 'alphanohtml'):GETPOST('sall', 'alphanohtml'));
 $socid			= GETPOST('socid','int');
 $selected		= GETPOST('orders_to_invoice');
 $sortfield		= GETPOST("sortfield",'alpha');
 $sortorder		= GETPOST("sortorder",'alpha');
 $viewstatut		= GETPOST('viewstatut');
+
+$error = 0;
 
 if (! $sortfield) $sortfield='c.rowid';
 if (! $sortorder) $sortorder='DESC';
@@ -67,11 +70,17 @@ $date_end = dol_mktime(23,59,59,$_REQUEST["date_endmonth"],$_REQUEST["date_endda
 $date_starty = dol_mktime(0,0,0,$_REQUEST["date_start_delymonth"],$_REQUEST["date_start_delyday"],$_REQUEST["date_start_delyyear"]);	// Date for local PHP server
 $date_endy = dol_mktime(23,59,59,$_REQUEST["date_end_delymonth"],$_REQUEST["date_end_delyday"],$_REQUEST["date_end_delyyear"]);
 
+$extrafields = new ExtraFields($db);
+
+// fetch optionals attributes and labels
+$extralabels=$extrafields->fetch_name_optionals_label('facture');
+
 if ($action == 'create')
 {
-	if (is_array($selected) == false)
+	if (! is_array($selected))
 	{
-		$mesgs = array('<div class="error">'.$langs->trans('Error_OrderNotChecked').'</div>');
+		$error++;
+		setEventMessages($langs->trans('Error_OrderNotChecked'), null, 'errors');
 	}
 	else
 	{
@@ -80,7 +89,7 @@ if ($action == 'create')
 	}
 }
 
-// Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 include_once DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php';
 $hookmanager=new HookManager($db);
 $hookmanager->initHooks(array('orderstoinvoice'));
@@ -90,7 +99,7 @@ $hookmanager->initHooks(array('orderstoinvoice'));
  * Actions
  */
 
-if (($action == 'create' || $action == 'add') && empty($mesgs))
+if (($action == 'create' || $action == 'add') && !$error)
 {
 	require_once DOL_DOCUMENT_ROOT.'/core/modules/facture/modules_facture.php';
 	require_once DOL_DOCUMENT_ROOT.'/core/class/discount.class.php';
@@ -103,23 +112,21 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 	$langs->load('main');
 	if (isset($_GET['orders_to_invoice']))
 	{
-		$orders_id = $_GET['orders_to_invoice'];
+		$orders_id = GETPOST('orders_to_invoice','',1);
 		$n        = count($orders_id);
 		$i        = 0;
 
 		$originid=$orders_id[0];
 		$_GET['originid']=$orders_id[0];
-
 	}
 	if (isset($_POST['orders_to_invoice']))
 	{
-		$orders_id = $_POST['orders_to_invoice'];
+		$orders_id = GETPOST('orders_to_invoice','',2);
 		$nn        = count($orders_id);
 		$ii        = 0;
 
 		$originid=$orders_id[0];
 		$_POST['originid']=$orders_id[0];
-
 	}
 
 	$projectid		= GETPOST('projectid','int')?GETPOST('projectid','int'):0;
@@ -170,12 +177,16 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 				$object->remise_absolue		= $_POST['remise_absolue'];
 				$object->remise_percent		= $_POST['remise_percent'];
 
+				$ret = $extrafields->setOptionalsFromPost($extralabels,$object);
+				if ($ret < 0) $error++;
+
 				if ($_POST['origin'] && $_POST['originid'])
 				{
 					$object->origin    = $_POST['origin'];
 					$object->origin_id = $orders_id[$ii];
 					$object->linked_objects = $orders_id;
 					$id = $object->create($user);
+					$object->fetch_thirdparty();
 
 					if ($id>0)
 					{
@@ -215,7 +226,7 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 							{
 								if ($closeOrders)
 								{
-									$objectsrc->classifyBilled();
+									$objectsrc->classifyBilled($user);
 									$objectsrc->setStatut(3);
 								}
 								$lines = $objectsrc->lines;
@@ -248,7 +259,7 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 										}
 										else
 										{
-											$mesgs[]=$discount->error;
+											setEventMessages($discount->error, $discount->errors, 'errors');
 											$error++;
 											break;
 										}
@@ -272,6 +283,13 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 										{
 											$fk_parent_line = 0;
 										}
+
+										// Extrafields
+										if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED) && method_exists($lines[$i], 'fetch_optionals')) {
+											$lines[$i]->fetch_optionals($lines[$i]->rowid);
+											$array_options = $lines[$i]->array_options;
+										}
+
 										$result = $object->addline(
 												$desc,
 												$lines[$i]->subprice,
@@ -295,7 +313,9 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 												$lines[$i]->rowid,
 												$fk_parent_line,
 												$lines[$i]->fk_fournprice,
-												$lines[$i]->pa_ht
+												$lines[$i]->pa_ht,
+												$lines[$i]->label,
+                                                $array_options
 										);
 										if ($result > 0)
 										{
@@ -317,7 +337,7 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 							}
 							else
 							{
-								$mesgs[]=$objectsrc->error;
+								setEventMessages($objectsrc->error, $objectsrc->errors, 'errors');
 								$error++;
 							}
 							$ii++;
@@ -325,7 +345,7 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 					}
 					else
 					{
-						$mesgs[]=$object->error;
+						setEventMessages($object->error, $object->errors, 'errors');
 						$error++;
 					}
 				}
@@ -336,7 +356,7 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 		if ($id > 0 && ! $error)
 		{
 			$db->commit();
-			header('Location: '.DOL_URL_ROOT.'/compta/facture.php?facid='.$id);
+			header('Location: '.DOL_URL_ROOT.'/compta/facture/card.php?facid='.$id);
 			exit;
 		}
 		else
@@ -345,7 +365,8 @@ if (($action == 'create' || $action == 'add') && empty($mesgs))
 			$action='create';
 			$_GET["origin"]=$_POST["origin"];
 			$_GET["originid"]=$_POST["originid"];
-			$mesgs[]='<div class="error">'.$object->error.'</div>';
+			setEventMessages($object->error, $object->errors, 'errors');
+			$error++;
 		}
 	}
 }
@@ -361,12 +382,12 @@ $formfile = new FormFile($db);
 $companystatic = new Societe($db);
 
 // Mode creation
-if ($action == 'create' && empty($mesgs))
+if ($action == 'create' && !$error)
 {
 	$facturestatic=new Facture($db);
 
 	llxHeader();
-	print_fiche_titre($langs->trans('NewBill'));
+	print load_fiche_titre($langs->trans('NewBill'));
 
 	$soc = new Societe($db);
 	if ($socid) $res=$soc->fetch($socid);
@@ -390,25 +411,28 @@ if ($action == 'create' && empty($mesgs))
 	print '<input type="hidden" name="origin" value="'.GETPOST('origin').'">';
 	print '<input type="hidden" name="originid" value="'.GETPOST('originid').'">';
 	print '<input type="hidden" name="autocloseorders" value="'.GETPOST('autocloseorders').'">';
+
+	dol_fiche_head();
+
 	print '<table class="border" width="100%">';
 
 	// Ref
-	print '<tr><td class="fieldrequired">'.$langs->trans('Ref').'</td><td colspan="2">'.$langs->trans('Draft').'</td></tr>';
+	print '<tr><td class="fieldrequired">'.$langs->trans('Ref').'</td><td>'.$langs->trans('Draft').'</td></tr>';
 
 	// Third party
-	print '<tr><td class="fieldrequired">'.$langs->trans('Customer').'</td><td colspan="2">';
+	print '<tr><td class="fieldrequired">'.$langs->trans('Customer').'</td><td>';
 	print $soc->getNomUrl(1);
 	print '<input type="hidden" name="socid" value="'.$soc->id.'">';
 	print '</td>';
 	print '</tr>'."\n";
 
 	// Type
-	print '<tr><td valign="top" class="fieldrequired">'.$langs->trans('Type').'</td><td colspan="2">';
+	print '<tr><td class="tdtop fieldrequired">'.$langs->trans('Type').'</td><td>';
 	print '<table class="nobordernopadding">'."\n";
 
 	// Standard invoice
 	print '<tr height="18"><td width="16px" valign="middle">';
-	print '<input type="radio" name="type" value="0"'.(GETPOST('type')==0?' checked="true"':'').'>';
+	print '<input type="radio" name="type" value="0"'.(GETPOST('type')==0?' checked':'').'>';
 	print '</td><td valign="middle">';
 	$desc=$html->textwithpicto($langs->trans("InvoiceStandardAsk"),$langs->transnoentities("InvoiceStandardDesc"),1);
 	print $desc;
@@ -416,15 +440,15 @@ if ($action == 'create' && empty($mesgs))
 	print '</table>';
 
 	// Date invoice
-	print '<tr><td class="fieldrequired">'.$langs->trans('Date').'</td><td colspan="2">';
-	$html->select_date('','','','','',"add",1,1);
+	print '<tr><td class="fieldrequired">'.$langs->trans('Date').'</td><td>';
+	print $html->selectDate('', '', '', '', '', "add", 1, 1);
 	print '</td></tr>';
 	// Payment term
-	print '<tr><td class="nowrap">'.$langs->trans('PaymentConditionsShort').'</td><td colspan="2">';
+	print '<tr><td class="nowrap">'.$langs->trans('PaymentConditionsShort').'</td><td>';
 	$html->select_conditions_paiements(isset($_POST['cond_reglement_id'])?$_POST['cond_reglement_id']:$cond_reglement_id,'cond_reglement_id');
 	print '</td></tr>';
 	// Payment mode
-	print '<tr><td>'.$langs->trans('PaymentMode').'</td><td colspan="2">';
+	print '<tr><td>'.$langs->trans('PaymentMode').'</td><td>';
 	$html->select_types_paiements(isset($_POST['mode_reglement_id'])?$_POST['mode_reglement_id']:$mode_reglement_id,'mode_reglement_id');
 	print '</td></tr>';
 	// Project
@@ -433,7 +457,7 @@ if ($action == 'create' && empty($mesgs))
 		$formproject=new FormProjets($db);
 
 		$langs->load('projects');
-		print '<tr><td>'.$langs->trans('Project').'</td><td colspan="2">';
+		print '<tr><td>'.$langs->trans('Project').'</td><td>';
 		$formproject->select_projects($soc->id, $projectid, 'projectid');
 		print '</td></tr>';
 	}
@@ -451,8 +475,14 @@ if ($action == 'create' && empty($mesgs))
 	}
 
 	// Other attributes
-	$parameters=array('objectsrc' => $objectsrc, 'idsrc' => $listoforders, 'colspan' => ' colspan="3"');
+	$parameters=array('objectsrc' => $objectsrc, 'idsrc' => $listoforders);
 	$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
+    print $hookmanager->resPrint;
+	if (empty($reshook))
+	{
+		$object=new Facture($db);
+		print $object->showOptionals($extrafields,'edit');
+	}
 
 	// Modele PDF
 	print '<tr><td>'.$langs->trans('Model').'</td>';
@@ -465,8 +495,8 @@ if ($action == 'create' && empty($mesgs))
 	// Public note
 	print '<tr>';
 	print '<td class="border" valign="top">'.$langs->trans('NotePublic').'</td>';
-	print '<td valign="top" colspan="2">';
-	print '<textarea name="note_public" wrap="soft" cols="70" rows="'.ROWS_3.'">';
+	print '<td valign="top">';
+	print '<textarea name="note_public" class="quatrevingtpercent" rows="'.ROWS_3.'">';
 
 	print $langs->trans("Orders").": ".implode(', ', $listoforders);
 
@@ -476,8 +506,8 @@ if ($action == 'create' && empty($mesgs))
 	{
 		print '<tr>';
 		print '<td class="border" valign="top">'.$langs->trans('NotePrivate').'</td>';
-		print '<td valign="top" colspan="2">';
-		print '<textarea name="note" wrap="soft" cols="70" rows="'.ROWS_3.'">';
+		print '<td valign="top">';
+		print '<textarea name="note" class="quatrevingtpercent" rows="'.ROWS_3.'">';
 
 		print '</textarea></td></tr>';
 	}
@@ -491,38 +521,39 @@ if ($action == 'create' && empty($mesgs))
 		$i++;
 	}
 
+	dol_fiche_end();
+
 	// Button "Create Draft"
-	print '<br><center><input type="submit" class="button" name="bouton" value="'.$langs->trans('CreateDraft').'" /></center>';
+	print '<div class="center"><input type="submit" class="button" name="bouton" value="'.$langs->trans('CreateDraft').'" /></div>';
 	print "</form>\n";
 
 	print '</td></tr>';
 	print "</table>\n";
 }
 
-
-//Mode liste
-if (($action != 'create' && $action != 'add') || ! empty($mesgs))
+// Mode liste
+if (($action != 'create' && $action != 'add') || ($action == 'create' && $error))
 {
 	llxHeader();
 	?>
 	<script type="text/javascript">
 		jQuery(document).ready(function() {
 		jQuery("#checkall").click(function() {
-			jQuery(".checkformerge").attr('checked', true);
+			jQuery(".checkformerge").prop('checked', true);
 		});
 		jQuery("#checknone").click(function() {
-			jQuery(".checkformerge").attr('checked', false);
+			jQuery(".checkformerge").prop('checked', false);
 		});
 	});
 	</script>
 	<?php
 
 	$sql = 'SELECT s.nom, s.rowid as socid, s.client, c.rowid, c.ref, c.total_ht, c.ref_client,';
-	$sql.= ' c.date_valid, c.date_commande, c.date_livraison, c.fk_statut, c.facture as facturee';
+	$sql.= ' c.date_valid, c.date_commande, c.date_livraison, c.fk_statut, c.facture as billed';
 	$sql.= ' FROM '.MAIN_DB_PREFIX.'societe as s';
 	$sql.= ', '.MAIN_DB_PREFIX.'commande as c';
 	if (!$user->rights->societe->client->voir && !$socid) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
-	$sql.= ' WHERE c.entity = '.$conf->entity;
+	$sql.= ' WHERE c.entity IN ('.getEntity('commande').')';
 	$sql.= ' AND c.fk_soc = s.rowid';
 
 	// Show orders with status validated, shipping started and delivered (well any order we can bill)
@@ -560,27 +591,27 @@ if (($action != 'create' && $action != 'add') || ! empty($mesgs))
 		$title = $langs->trans('ListOfOrders');
 		$title.=' - '.$langs->trans('StatusOrderValidated').', '.$langs->trans("StatusOrderSent").', '.$langs->trans('StatusOrderToBill');
 		$num = $db->num_rows($resql);
-		print_fiche_titre($title);
+		print load_fiche_titre($title);
 		$i = 0;
-		$period=$html->select_date($date_start,'date_start',0,0,1,'',1,0,1).' - '.$html->select_date($date_end,'date_end',0,0,1,'',1,0,1);
-		$periodely=$html->select_date($date_starty,'date_start_dely',0,0,1,'',1,0,1).' - '.$html->select_date($date_endy,'date_end_dely',0,0,1,'',1,0,1);
+		$period=$html->selectDate($date_start,'date_start',0,0,1,'',1,0).' - '.$html->selectDate($date_end,'date_end',0,0,1,'',1,0);
+		$periodely=$html->selectDate($date_starty,'date_start_dely',0,0,1,'',1,0).' - '.$html->selectDate($date_endy,'date_end_dely',0,0,1,'',1,0);
 
 		if (! empty($socid))
 		{
 			// Company
 			$companystatic->id=$socid;
-			$companystatic->nom=$soc->nom;
+			$companystatic->name=$soc->name;
 			print '<h3>'.$companystatic->getNomUrl(1,'customer').'</h3>';
 		}
 
 		print '<table class="noborder" width="100%">';
 		print '<tr class="liste_titre">';
-		print_liste_field_titre($langs->trans('Ref'),'orderstoinvoice.php','c.ref','','&amp;socid='.$socid,'',$sortfield,$sortorder);
-		print_liste_field_titre($langs->trans('RefCustomerOrder'),'orderstoinvoice.php','c.ref_client','','&amp;socid='.$socid,'',$sortfield,$sortorder);
-		print_liste_field_titre($langs->trans('OrderDate'),'orderstoinvoice.php','c.date_commande','','&amp;socid='.$socid, 'align="center"',$sortfield,$sortorder);
-		print_liste_field_titre($langs->trans('DeliveryDate'),'orderstoinvoice.php','c.date_livraison','','&amp;socid='.$socid, 'align="center"',$sortfield,$sortorder);
-		print_liste_field_titre($langs->trans('Status'),'','','','','align="right"');
-		print_liste_field_titre($langs->trans('GenerateBill'),'','','','','align="center"');
+		print_liste_field_titre('Ref',$_SERVER["PHP_SELF"],'c.ref','','&amp;socid='.$socid,'',$sortfield,$sortorder);
+		print_liste_field_titre('RefCustomerOrder',$_SERVER["PHP_SELF"],'c.ref_client','','&amp;socid='.$socid,'',$sortfield,$sortorder);
+		print_liste_field_titre('OrderDate',$_SERVER["PHP_SELF"],'c.date_commande','','&amp;socid='.$socid, 'align="center"',$sortfield,$sortorder);
+		print_liste_field_titre('DeliveryDate',$_SERVER["PHP_SELF"],'c.date_livraison','','&amp;socid='.$socid, 'align="center"',$sortfield,$sortorder);
+		print_liste_field_titre('Status','','','','','align="right"');
+		print_liste_field_titre('GenerateBill','','','','','align="center"');
 		print '</tr>';
 
 		// Lignes des champs de filtre
@@ -591,9 +622,10 @@ if (($action != 'create' && $action != 'add') || ! empty($mesgs))
 		//REF
 		print '<input class="flat" size="10" type="text" name="sref" value="'.$sref.'">';
 		print '</td>';
-		//print '<td class="liste_titre">';
+
 		print '<td class="liste_titre" align="left">';
 		print '<input class="flat" type="text" size="10" name="sref_client" value="'.$sref_client.'">';
+        print '</td>';
 
 		//DATE ORDER
 		print '<td class="liste_titre" align="center">';
@@ -606,38 +638,44 @@ if (($action != 'create' && $action != 'add') || ! empty($mesgs))
 		print '</td>';
 
 		//SEARCH BUTTON
-		print '</td><td align="right" class="liste_titre">';
+		print '<td align="right" class="liste_titre">';
 		print '<input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'"  value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
+        print '</td>';
 
 		//ALL/NONE
-		print '<td class="liste_titre" align="center">';
+		print '<td align="center" class="liste_titre">';
 		if ($conf->use_javascript_ajax) print '<a href="#" id="checkall">'.$langs->trans("All").'</a> / <a href="#" id="checknone">'.$langs->trans("None").'</a>';
 		print '</td>';
 
-		print '</td></tr>';
+		print '</tr>';
 		print '</form>';
 
 		print '<form name="orders2invoice" action="orderstoinvoice.php" method="GET">';
-		$var=True;
+
 		$generic_commande = new Commande($db);
 
 		while ($i < $num)
 		{
 			$objp = $db->fetch_object($resql);
-			$var=!$var;
-			print '<tr '.$bc[$var].'>';
+
+			print '<tr class="oddeven">';
 			print '<td class="nowrap">';
 
 			$generic_commande->id=$objp->rowid;
 			$generic_commande->ref=$objp->ref;
+			$generic_commande->statut = $objp->fk_statut;
+			$generic_commande->date_commande = $db->jdate($objp->date_commande);
+			$generic_commande->date_livraison = $db->jdate($objp->date_livraison);
 
 			print '<table class="nobordernopadding"><tr class="nocellnopadd">';
 			print '<td class="nobordernopadding nowrap">';
-			print $generic_commande->getNomUrl(1,$objp->fk_statut);
+			print $generic_commande->getNomUrl(1,0);
 			print '</td>';
 
 			print '<td width="20" class="nobordernopadding nowrap">';
-			if (($objp->fk_statut > 0) && ($objp->fk_statut < 3) && $db->jdate($objp->date_valid) < ($now - $conf->commande->client->warning_delay)) print img_picto($langs->trans("Late"),"warning");
+			if ($generic_commande->hasDelay()) {
+				print img_picto($langs->trans("Late"),"warning");
+			}
 			print '</td>';
 
 			print '<td width="16" align="right" class="nobordernopadding hideonsmartphone">';
@@ -651,17 +689,17 @@ if (($action != 'create' && $action != 'add') || ! empty($mesgs))
 			print '<td>'.$objp->ref_client.'</td>';
 
 			// Order date
-			print '<td align="center" nowrap>';
+			print '<td align="center" class="nowrap">';
 			print dol_print_date($db->jdate($objp->date_commande),'day');
 			print '</td>';
 
 			//Delivery date
-			print '<td align="center" nowrap>';
+			print '<td align="center" class="nowrap">';
 			print dol_print_date($db->jdate($objp->date_livraison),'day');
 			print '</td>';
 
 			// Statut
-			print '<td align="right" class="nowrap">'.$generic_commande->LibStatut($objp->fk_statut,$objp->facturee,5).'</td>';
+			print '<td align="right" class="nowrap">'.$generic_commande->LibStatut($objp->fk_statut,$objp->billed,5).'</td>';
 
 			// Checkbox
 			print '<td align="center">';
@@ -679,7 +717,7 @@ if (($action != 'create' && $action != 'add') || ! empty($mesgs))
 		/*
 		 * Boutons actions
 		*/
-		print '<center><br><input type="checkbox" checked="checked" name="autocloseorders"> '.$langs->trans("CloseProcessedOrdersAutomatically");
+		print '<br><div class="center"><input type="checkbox" '.(empty($conf->global->INVOICE_CLOSE_ORDERS_OFF_BY_DEFAULT_FORMASSINVOICE)?' checked="checked"':'').' name="autocloseorders"> '.$langs->trans("CloseProcessedOrdersAutomatically");
 		print '<div align="right">';
 		print '<input type="hidden" name="socid" value="'.$socid.'">';
 		print '<input type="hidden" name="action" value="create">';
@@ -687,17 +725,16 @@ if (($action != 'create' && $action != 'add') || ! empty($mesgs))
 		//print '<a class="butAction" href="index.php">'.$langs->trans("GoBack").'</a>';
 		print '<input type="submit" class="butAction" value="'.$langs->trans("GenerateBill").'">';
 		print '</div>';
+		print '</div>';
 		print '</form>';
 		$db->free($resql);
 	}
 	else
 	{
-		print dol_print_error($db);
+		dol_print_error($db);
 	}
-
 }
 
-dol_htmloutput_mesg($mesg,$mesgs);
-
+// End of page
 llxFooter();
 $db->close();

@@ -2,7 +2,7 @@
 /* Copyright (C) 2000-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2003      Jean-Louis Bergamo   <jlb@j1b.org>
  * Copyright (C) 2004-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,14 +34,18 @@
  */
 class CSMSFile
 {
-    var $error='';
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
-	var $addr_from;
-	var $addr_to;
-	var $deferred;
-	var $priority;
-	var $class;
-	var $message;
+	public $addr_from;
+	public $addr_to;
+	public $deferred;
+	public $priority;
+	public $class;
+	public $message;
+	public $nostop;
 
 
 	/**
@@ -54,7 +58,6 @@ class CSMSFile
 	 *	@param 	int		$deferred			Deferred or not
 	 *	@param 	int		$priority			Priority
 	 *	@param 	int		$class				Class
-	 *	@return	int
 	 */
 	function __construct($to,$from,$msg,$deliveryreceipt=0,$deferred=0,$priority=3,$class=1)
 	{
@@ -82,13 +85,14 @@ class CSMSFile
         $this->priority=$priority;
         $this->class=$class;
         $this->message=$msg;
+        $this->nostop=false;
 	}
 
 
 	/**
-	 * Send mail that was prepared by constructor
+	 * Send sms that was prepared by constructor
 	 *
-	 * @return    boolean     True if mail sent, false otherwise
+	 * @return    boolean     True if sms sent, false otherwise
 	 */
 	function sendfile()
 	{
@@ -108,6 +112,7 @@ class CSMSFile
 
 		if (empty($conf->global->MAIN_DISABLE_ALL_SMS))
 		{
+
 		    // Action according to choosed sending method
 		    if ($conf->global->MAIN_SMS_SENDMODE == 'ovh')    // Backward compatibility    @deprecated
 			{
@@ -119,6 +124,7 @@ class CSMSFile
 				$sms->deferred=$this->deferred;
 				$sms->priority=$this->priority;
                 $sms->class=$this->class;
+                $sms->nostop=$this->nostop;
 
                 $res=$sms->SmsSend();
 				if ($res <= 0)
@@ -130,7 +136,7 @@ class CSMSFile
 				{
 					dol_syslog("CSMSFile::sendfile: sms send success with id=".$res, LOG_DEBUG);
 					//var_dump($res);        // 1973128
-					$this->dump_sms_result($res);
+					if (! empty($conf->global->MAIN_SMS_DEBUG)) $this->dump_sms_result($res);
 				}
 			}
 		    else if (! empty($conf->global->MAIN_SMS_SENDMODE))    // $conf->global->MAIN_SMS_SENDMODE looks like a value 'class@module'
@@ -148,18 +154,20 @@ class CSMSFile
 		            $sms->priority=$this->priority;
 		            $sms->class=$this->class;
 		            $sms->message=$this->message;
+		            $sms->nostop=$this->nostop;
 
                     $res=$sms->SmsSend();
+                    $this->error = $sms->error;
+                    $this->errors = $sms->errors;
     				if ($res <= 0)
     				{
-    					$this->error=$sms->error;
     					dol_syslog("CSMSFile::sendfile: sms send error=".$this->error, LOG_ERR);
     				}
     				else
     				{
     					dol_syslog("CSMSFile::sendfile: sms send success with id=".$res, LOG_DEBUG);
     					//var_dump($res);        // 1973128
-    					$this->dump_sms_result($res);
+    					if (! empty($conf->global->MAIN_SMS_DEBUG)) $this->dump_sms_result($res);
     				}
 		        }
 		        catch(Exception $e)
@@ -169,7 +177,7 @@ class CSMSFile
 		    }
 			else
 			{
-				// Send mail method not correctly defined
+				// Send sms method not correctly defined
 				// --------------------------------------
 
 				return 'Bad value for MAIN_SMS_SENDMODE constant';
@@ -177,7 +185,7 @@ class CSMSFile
 		}
 		else
 		{
-			$this->error='No mail sent. Feature is disabled by option MAIN_DISABLE_ALL_SMS';
+			$this->error='No sms sent. Feature is disabled by option MAIN_DISABLE_ALL_SMS';
 			dol_syslog("CSMSFile::sendfile: ".$this->error, LOG_WARNING);
 		}
 
@@ -187,14 +195,16 @@ class CSMSFile
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
-	 *  Write content of a SMTP request into a dump file (mode = all)
+	 *  Write content of a SendSms request into a dump file (mode = all)
 	 *  Used for debugging.
 	 *
 	 *  @return	void
 	 */
 	function dump_sms()
 	{
+        // phpcs:enable
 		global $conf,$dolibarr_main_data_root;
 
 		if (@is_writeable($dolibarr_main_data_root))	// Avoid fatal error on fopen with open_basedir
@@ -207,6 +217,7 @@ class CSMSFile
 			fputs($fp, "Priority: ".$this->priority."\n");
 			fputs($fp, "Class: ".$this->class."\n");
 			fputs($fp, "Deferred: ".$this->deferred."\n");
+			fputs($fp, "DisableStop: ".$this->nostop."\n");
 			fputs($fp, "Message:\n".$this->message);
 
 			fclose($fp);
@@ -215,8 +226,9 @@ class CSMSFile
 		}
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
-     *  Write content of a SMTP request into a dump file (mode = all)
+     *  Write content of a SendSms result into a dump file (mode = all)
      *  Used for debugging.
      *
      *  @param	int		$result		Result of sms sending
@@ -224,6 +236,7 @@ class CSMSFile
      */
     function dump_sms_result($result)
     {
+        // phpcs:enable
         global $conf,$dolibarr_main_data_root;
 
         if (@is_writeable($dolibarr_main_data_root))    // Avoid fatal error on fopen with open_basedir
@@ -238,6 +251,4 @@ class CSMSFile
             @chmod($outputfile, octdec($conf->global->MAIN_UMASK));
         }
     }
-
 }
-

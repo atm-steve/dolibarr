@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) - 2013	Jean-François FERRY	<jfefe@aternatik.fr>
+/* Copyright (C) - 2013-2015 Jean-François FERRY	<jfefe@aternatik.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
  */
 
 /**
- *       \file       place/class/html.place.class.php
+ *       \file       resource/class/html.formresource.class.php
  *       \ingroup    core
  *       \brief      Class file to manage forms into resource module
  */
-require_once(DOL_DOCUMENT_ROOT ."/core/class/html.form.class.php");
+require_once DOL_DOCUMENT_ROOT ."/core/class/html.form.class.php";
+require_once DOL_DOCUMENT_ROOT ."/resource/class/dolresource.class.php";
 
 
 /**
@@ -32,12 +33,19 @@ require_once(DOL_DOCUMENT_ROOT ."/core/class/html.form.class.php");
  */
 class FormResource
 {
-    var $db;
+    /**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
-    var $substit=array();
-    var $param=array();
+    public $substit=array();
 
-    var $error;
+    public $param=array();
+
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
 
 
 	/**
@@ -48,15 +56,14 @@ class FormResource
     function __construct($db)
     {
         $this->db = $db;
-
-        return 1;
     }
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      *  Output html form to select a resource
      *
-     *	@param	string	$selected       Preselected type
+     *	@param	int   	$selected       Preselected resource id
      *	@param  string	$htmlname       Name of field in form
      *  @param  string	$filter         Optionnal filters criteras (example: 's.rowid <> x')
      *	@param	int		$showempty		Add an empty field
@@ -70,12 +77,13 @@ class FormResource
      */
     function select_resource_list($selected='',$htmlname='fk_resource',$filter='',$showempty=0, $showtype=0, $forcecombo=0, $event=array(), $filterkey='', $outputmode=0, $limit=20)
     {
+        // phpcs:enable
     	global $conf,$user,$langs;
 
     	$out='';
     	$outarray=array();
 
-    	$resourcestat = new Resource($this->db);
+    	$resourcestat = new Dolresource($this->db);
 
     	$resources_used = $resourcestat->fetch_all('ASC', 't.rowid', $limit, $offset, $filter='');
 
@@ -84,20 +92,19 @@ class FormResource
     	    $out = '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
     	    $out.= '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
     	}
-    	//$out.= '<input type="hidden" name="action" value="search">';
-    	//$out.= '<input type="hidden" name="id" value="'.$theme->id.'">';
 
     	if ($resourcestat)
     	{
-    		if ($conf->use_javascript_ajax && $conf->global->COMPANY_USE_SEARCH_TO_SELECT && ! $forcecombo)
+    		if (! empty($conf->use_javascript_ajax) && ! empty($conf->global->RESOURCE_USE_SEARCH_TO_SELECT) && ! $forcecombo)
     		{
-    			//$minLength = (is_numeric($conf->global->COMPANY_USE_SEARCH_TO_SELECT)?$conf->global->COMPANY_USE_SEARCH_TO_SELECT:2);
-    			$out.= ajax_combobox($htmlname, $event, $conf->global->COMPANY_USE_SEARCH_TO_SELECT);
+    			//$minLength = (is_numeric($conf->global->RESOURCE_USE_SEARCH_TO_SELECT)?$conf->global->RESOURCE_USE_SEARCH_TO_SELECT:2);
+    			$out.= ajax_combobox($htmlname, $event, $conf->global->RESOURCE_USE_SEARCH_TO_SELECT);
     		}
 
     		// Construct $out and $outarray
-    		$out.= '<select id="'.$htmlname.'" class="flat" name="'.$htmlname.'">'."\n";
-    		if ($showempty) $out.= '<option value="-1"></option>'."\n";
+    		$out.= '<select id="'.$htmlname.'" class="flat minwidth200" name="'.$htmlname.'">'."\n";
+    		if ($showempty) $out.= '<option value="-1">&nbsp;</option>'."\n";
+
     		$num = count($resourcestat->lines);
 
     		//var_dump($resourcestat->lines);
@@ -106,12 +113,14 @@ class FormResource
     		{
     			while ( $i < $num)
     			{
-    				$label=$langs->trans(ucfirst($resourcestat->lines[$i]->element)).' : ';
-    				$label.=$resourcestat->lines[$i]->ref?$resourcestat->lines[$i]->ref:''.$resourcestat->lines[$i]->label;
+    			    $resourceclass=ucfirst($resourcestat->lines[$i]->element);
+
+    				$label=$resourcestat->lines[$i]->ref?$resourcestat->lines[$i]->ref:''.$resourcestat->lines[$i]->label;
+    				if ($resourceclass != 'Dolresource') $label.=' ('.$langs->trans($resourceclass).')';
 
     				if ($selected > 0 && $selected == $resourcestat->lines[$i]->id)
     				{
-    					$out.= '<option value="'.$resourcestat->lines[$i]->id.'" selected="selected">'.$label.'</option>';
+    					$out.= '<option value="'.$resourcestat->lines[$i]->id.'" selected>'.$label.'</option>';
     				}
     				else
     				{
@@ -125,6 +134,7 @@ class FormResource
     			}
     		}
     		$out.= '</select>'."\n";
+    		$out.= ajax_combobox($htmlname);
 
     		if ($outputmode != 2)
     		{
@@ -143,23 +153,25 @@ class FormResource
     	return $out;
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
-     *      Return html list of tickets type
+     *  Return html list of tickets type
      *
-     *      @param	string	$selected       Id du type pre-selectionne
-     *      @param  string	$htmlname       Nom de la zone select
-     *      @param  string	$filtertype     To filter on field type in llx_c_ticketsup_type (array('code'=>xx,'label'=>zz))
-     *      @param  int		$format         0=id+libelle, 1=code+code, 2=code+libelle, 3=id+code
-     *      @param  int		$empty			1=peut etre vide, 0 sinon
-     * 		@param	int		$noadmininfo	0=Add admin info, 1=Disable admin info
-     *      @param  int		$maxlength      Max length of label
-     * 		@return	void
+     *  @param	string	$selected       Id du type pre-selectionne
+     *  @param  string	$htmlname       Nom de la zone select
+     *  @param  string	$filtertype     To filter on field type in llx_c_ticket_type (array('code'=>xx,'label'=>zz))
+     *  @param  int		$format         0=id+libelle, 1=code+code, 2=code+libelle, 3=id+code
+     *  @param  int		$empty			1=peut etre vide, 0 sinon
+     *  @param	int		$noadmininfo	0=Add admin info, 1=Disable admin info
+     *  @param  int		$maxlength      Max length of label
+     * 	@return	void
      */
     function select_types_resource($selected='',$htmlname='type_resource',$filtertype='',$format=0, $empty=0, $noadmininfo=0,$maxlength=0)
     {
+        // phpcs:enable
     	global $langs,$user;
 
-    	$resourcestat = new Resource($this->db);
+    	$resourcestat = new Dolresource($this->db);
 
     	dol_syslog(get_class($this)."::select_types_resource ".$selected.", ".$htmlname.", ".$filtertype.", ".$format,LOG_DEBUG);
 
@@ -168,7 +180,7 @@ class FormResource
     	if ($filtertype != '' && $filtertype != '-1') $filterarray=explode(',',$filtertype);
 
     	$resourcestat->load_cache_code_type_resource();
-    	print '<select id="select'.$htmlname.'" class="flat select_'.$htmlname.'" name="'.$htmlname.'">';
+    	print '<select id="select'.$htmlname.'" class="flat maxwidthonsmartphone select_'.$htmlname.'" name="'.$htmlname.'">';
     	if ($empty) print '<option value="">&nbsp;</option>';
     	if (is_array($resourcestat->cache_code_type_resource) && count($resourcestat->cache_code_type_resource))
     	{
@@ -183,8 +195,8 @@ class FormResource
     			if ($format == 2) print '<option value="'.$arraytypes['code'].'"';
     			if ($format == 3) print '<option value="'.$id.'"';
     			// Si selected est text, on compare avec code, sinon avec id
-    			if (preg_match('/[a-z]/i', $selected) && $selected == $arraytypes['code']) print ' selected="selected"';
-    			elseif ($selected == $id) print ' selected="selected"';
+    			if (preg_match('/[a-z]/i', $selected) && $selected == $arraytypes['code']) print ' selected';
+    			elseif ($selected == $id) print ' selected';
     			print '>';
     			if ($format == 0) $value=($maxlength?dol_trunc($arraytypes['label'],$maxlength):$arraytypes['label']);
     			if ($format == 1) $value=$arraytypes['code'];
@@ -197,8 +209,4 @@ class FormResource
     	print '</select>';
     	if ($user->admin && ! $noadmininfo) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"),1);
     }
-
-
-
 }
-

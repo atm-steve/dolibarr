@@ -29,10 +29,8 @@ if (!$user->admin && $user->societe_id > 0)
 
 llxHeader();
 
-print_fiche_titre("Payments");
+print load_fiche_titre("Payments");
 
-
-
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

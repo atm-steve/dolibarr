@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2003		Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2004-2013	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@inodbox.com>
  * Copyright (C) 2013		Juanjo Menent			<jmenent@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
+// Load translation files required by the page
 $langs->load("admin");
 
 if (! $user->admin)
@@ -36,11 +37,11 @@ $rowid=GETPOST('rowid','int');
 $entity=GETPOST('entity','int');
 $action=GETPOST('action','alpha');
 $update=GETPOST('update','alpha');
-$delete=GETPOST('delete');	// Do not use alpha here
+$delete=GETPOST('delete','none');	// Do not use alpha here
 $debug=GETPOST('debug','int');
 $consts=GETPOST('const','array');
 $constname=GETPOST('constname','alpha');
-$constvalue=GETPOST('constvalue');
+$constvalue=GETPOST('constvalue','none');	// We shoul dbe able to send everything here
 $constnote=GETPOST('constnote','alpha');
 
 
@@ -55,12 +56,12 @@ if ($action == 'add' || (GETPOST('add') && $action != 'update'))
 
 	if (empty($constname))
 	{
-		setEventMessage($langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Name")),'errors');
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Name")), null, 'errors');
 		$error++;
 	}
 	if ($constvalue == '')
 	{
-		setEventMessage($langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Value")),'errors');
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Value")), null, 'errors');
 		$error++;
 	}
 
@@ -68,7 +69,7 @@ if ($action == 'add' || (GETPOST('add') && $action != 'update'))
 	{
 		if (dolibarr_set_const($db, $constname, $constvalue, 'chaine', 1, $constnote, $entity) >= 0)
 		{
-			setEventMessage($langs->trans("RecordSaved"));
+			setEventMessages($langs->trans("RecordSaved"), null, 'mesgs');
 			$action="";
 			$constname="";
 			$constvalue="";
@@ -99,7 +100,7 @@ if (! empty($consts) && $action == 'update')
 			}
 		}
 	}
-	if ($nbmodified > 0) setEventMessage($langs->trans("RecordSaved"));
+	if ($nbmodified > 0) setEventMessages($langs->trans("RecordSaved"), null, 'mesgs');
 	$action='';
 }
 
@@ -122,7 +123,7 @@ if (! empty($consts) && $action == 'delete')
 			}
 		}
 	}
-	if ($nbdeleted > 0) setEventMessage($langs->trans("RecordDeleted"));
+	if ($nbdeleted > 0) setEventMessages($langs->trans("RecordDeleted"), null, 'mesgs');
 	$action='';
 }
 
@@ -131,7 +132,7 @@ if ($action == 'delete')
 {
 	if (dolibarr_del_const($db, $rowid, $entity) >= 0)
 	{
-		setEventMessage($langs->trans("RecordDeleted"));
+		setEventMessages($langs->trans("RecordDeleted"), null, 'mesgs');
 	}
 	else
 	{
@@ -146,7 +147,8 @@ if ($action == 'delete')
 
 $form = new Form($db);
 
-llxHeader('',$langs->trans("OtherSetup"));
+$wikihelp='EN:Setup_Other|FR:Paramétrage_Divers|ES:Configuración_Varios';
+llxHeader('',$langs->trans("Setup"),$wikihelp);
 
 // Add logic to show/hide buttons
 if ($conf->use_javascript_ajax)
@@ -165,14 +167,14 @@ jQuery(document).ready(function() {
 		var row_num = field_id.split("_");
 		jQuery("#updateconst").show();
 		jQuery("#action").val('update');
-		jQuery("#check_" + row_num[1]).attr("checked",true);
+		jQuery("#check_" + row_num[1]).prop("checked",true);
 	});
 });
 </script>
 <?php
 }
 
-print_fiche_titre($langs->trans("OtherSetup"),'','setup');
+print load_fiche_titre($langs->trans("OtherSetup"),'','title_setup');
 
 print $langs->trans("ConstDesc")."<br>\n";
 print "<br>\n";
@@ -181,6 +183,7 @@ print '<form action="'.$_SERVER["PHP_SELF"].((empty($user->entity) && $debug)?'?
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" id="action" name="action" value="">';
 
+print '<div class="div-table-responsive-no-min">';
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
 print '<td>'.$langs->trans("Name").'</td>';
@@ -195,7 +198,7 @@ print "</tr>\n";
 $var=false;
 print "\n";
 
-print '<tr '.$bc[$var].'><td><input type="text" class="flat" size="24" name="constname" value="'.$constname.'"></td>'."\n";
+print '<tr class="oddeven"><td><input type="text" class="flat" size="24" name="constname" value="'.$constname.'"></td>'."\n";
 print '<td>';
 print '<input type="text" class="flat" size="30" name="constvalue" value="'.$constvalue.'">';
 print '</td><td>';
@@ -229,11 +232,12 @@ $sql.= ", note";
 $sql.= ", entity";
 $sql.= " FROM ".MAIN_DB_PREFIX."const";
 $sql.= " WHERE entity IN (".$user->entity.",".$conf->entity.")";
-if (empty($user->entity) && $debug) {} // to force for superadmin
-elseif ($user->entity || empty($conf->multicompany->enabled)) $sql.= " AND visible = 1";
+if ((empty($user->entity) || $user->admin) && $debug) {} 										// to force for superadmin to debug
+else if (! GETPOST('visible') || GETPOST('visible') != 'all') $sql.= " AND visible = 1";		// We must always have this. Otherwise, array is too large and submitting data fails due to apache POST or GET limits
+if (GETPOST('name')) $sql.=natural_search("name", GETPOST('name'));
 $sql.= " ORDER BY entity, name ASC";
 
-dol_syslog("Const::listConstant sql=".$sql);
+dol_syslog("Const::listConstant", LOG_DEBUG);
 $result = $db->query($sql);
 if ($result)
 {
@@ -244,11 +248,11 @@ if ($result)
 	while ($i < $num)
 	{
 		$obj = $db->fetch_object($result);
-		$var=!$var;
+
 
 		print "\n";
 
-		print '<tr '.$bc[$var].'><td>'.$obj->name.'</td>'."\n";
+		print '<tr class="oddeven"><td>'.$obj->name.'</td>'."\n";
 
 		// Value
 		print '<td>';
@@ -260,7 +264,7 @@ if ($result)
 
 		// Note
 		print '<td>';
-		print '<input type="text" id="note_'.$i.'"class="flat inputforupdate" size="40" name="const['.$i.'][note]" value="'.htmlspecialchars($obj->note,1).'">';
+		print '<input type="text" id="note_'.$i.'" class="flat inputforupdate" size="40" name="const['.$i.'][note]" value="'.htmlspecialchars($obj->note,1).'">';
 		print '</td>';
 
 		// Entity limit to superadmin
@@ -280,7 +284,6 @@ if ($result)
 		if ($conf->use_javascript_ajax)
 		{
 			print '<input type="checkbox" class="flat checkboxfordelete" id="check_'.$i.'" name="const['.$i.'][check]" value="1">';
-			print ' &nbsp; ';
 		}
 		else
 		{
@@ -296,6 +299,7 @@ if ($result)
 
 
 print '</table>';
+print '</div>';
 
 if ($conf->use_javascript_ajax)
 {
@@ -310,6 +314,6 @@ if ($conf->use_javascript_ajax)
 
 print "</form>\n";
 
+// End of page
 llxFooter();
-
 $db->close();

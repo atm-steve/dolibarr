@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2010-2012	Regis Houssin		<regis.houssin@capnetworks.com>
+/* Copyright (C) 2010-2012	Regis Houssin		<regis.houssin@inodbox.com>
  * Copyright (C) 2010		Laurent Destailleur	<eldy@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,15 +31,35 @@ require_once DOL_DOCUMENT_ROOT .'/core/modules/project/task/modules_task.php';
  */
 class mod_task_simple extends ModeleNumRefTask
 {
-	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
-	var $prefix='TK';
-    var $error='';
-	var $nom = "Simple";
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';		// 'development', 'experimental', 'dolibarr'
+
+	public $prefix='TK';
+
+    /**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+	/**
+	 * @var string
+	 * @deprecated
+	 * @see name
+	 */
+	public $nom='Simple';
+
+	/**
+	 * @var string name
+	 */
+	public $name='Simple';
 
 
-    /** 
+    /**
      *  Return description of numbering module
-     * 
+     *
      *  @return     string      Text with description
      */
     function info()
@@ -49,9 +69,9 @@ class mod_task_simple extends ModeleNumRefTask
     }
 
 
-    /** 
+    /**
      *  Return an example of numbering module values
-     * 
+     *
      * 	@return     string      Example
      */
     function getExample()
@@ -62,7 +82,7 @@ class mod_task_simple extends ModeleNumRefTask
 
     /**  Test si les numeros deja en vigueur dans la base ne provoquent pas de
      *   de conflits qui empechera cette numerotation de fonctionner.
-     * 
+     *
      *   @return     boolean     false si conflit, true si ok
      */
     function canBeActivated()
@@ -75,7 +95,7 @@ class mod_task_simple extends ModeleNumRefTask
 		$sql = "SELECT MAX(CAST(SUBSTRING(task.ref FROM " . $posindice . ") AS SIGNED)) as max";
 		$sql .= " FROM " . MAIN_DB_PREFIX . "projet_task AS task, ";
 		$sql .= MAIN_DB_PREFIX . "projet AS project WHERE task.fk_projet=project.rowid";
-		$sql .= " AND task.ref LIKE '" . $this->prefix . "____-%'";
+		$sql .= " AND task.ref LIKE '" . $db->escape($this->prefix) . "____-%'";
 		$sql .= " AND project.entity = " . $conf->entity;
         $resql=$db->query($sql);
         if ($resql)
@@ -98,12 +118,12 @@ class mod_task_simple extends ModeleNumRefTask
 
    /**
 	*  Return next value
-	* 
+	*
 	*  @param   Societe	$objsoc		Object third party
-	*  @param   Task	$task		Object Task
+	*  @param   Task	$object		Object Task
 	*  @return	string				Value if OK, 0 if KO
 	*/
-    function getNextValue($objsoc,$task)
+    function getNextValue($objsoc,$object)
     {
 		global $db,$conf;
 
@@ -111,7 +131,7 @@ class mod_task_simple extends ModeleNumRefTask
 		$posindice=8;
 		$sql = "SELECT MAX(CAST(SUBSTRING(ref FROM ".$posindice.") AS SIGNED)) as max";
 		$sql.= " FROM ".MAIN_DB_PREFIX."projet_task";
-		$sql.= " WHERE ref like '".$this->prefix."____-%'";
+		$sql.= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 
 		$resql=$db->query($sql);
 		if ($resql)
@@ -122,15 +142,15 @@ class mod_task_simple extends ModeleNumRefTask
 		}
 		else
 		{
-			dol_syslog("mod_task_simple::getNextValue sql=".$sql);
+			dol_syslog("mod_task_simple::getNextValue", LOG_DEBUG);
 			return -1;
 		}
 
-		$date=empty($task->date_c)?dol_now():$task->date_c;
+		$date=empty($object->date_c)?dol_now():$object->date_c;
 
 		//$yymm = strftime("%y%m",time());
 		$yymm = strftime("%y%m",$date);
-		
+
 		if ($max >= (pow(10, 4) - 1)) $num=$max+1;	// If counter > 9999, we do not format on 4 chars, we take number as it is
 		else $num = sprintf("%04s",$max+1);
 
@@ -139,16 +159,16 @@ class mod_task_simple extends ModeleNumRefTask
     }
 
 
-    /** 
-     * 	Return next reference not yet used as a reference
-     * 
-     *  @param	Societe	$objsoc     Object third party
-     *  @param  Task	$task		Object task
-     *  @return string      		Next not used reference
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    /**
+     *  Return next reference not yet used as a reference
+     *
+     *  @param  Societe	$objsoc     Object third party
+     *  @param  Task	$object     Object task
+     *  @return string              Next not used reference
      */
-    function task_get_num($objsoc=0,$task='')
+    function task_get_num($objsoc=0,$object='')
     {
-        return $this->getNextValue($objsoc,$task);
+        return $this->getNextValue($objsoc,$object);
     }
 }
-

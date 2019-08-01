@@ -23,7 +23,7 @@
  *      \ingroup    opensurvey
  *      \brief      Description and activation file for module OpenSurvey
  */
-include_once(DOL_DOCUMENT_ROOT ."/core/modules/DolibarrModules.class.php");
+include_once DOL_DOCUMENT_ROOT ."/core/modules/DolibarrModules.class.php";
 
 
 /**
@@ -51,7 +51,8 @@ class modOpenSurvey extends DolibarrModules
 
 		// Family can be 'crm','financial','hr','projects','product','technic','other'
 		// It is used to group modules in module setup page
-		$this->family = "projects";
+		$this->family = "portal";
+		$this->module_position = '40';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		// Module description used if translation string 'ModuleXXXDesc' not found (XXX is value MyModule)
@@ -60,8 +61,6 @@ class modOpenSurvey extends DolibarrModules
 		$this->version = 'dolibarr';
 		// Key used in llx_const table to save module status enabled/disabled (where MYMODULE is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		// Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
-		$this->special = 0;
 		// Name of image file used for this module.
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
@@ -73,9 +72,11 @@ class modOpenSurvey extends DolibarrModules
 		//$this->dirs[1] = DOL_DATA_ROOT.'/mymodule/temp;
 
 		// Dependencies
-		$this->depends = array();		// List of modules id that must be enabled if this module is enabled
-		$this->requiredby = array();	// List of modules id to disable if this one is disabled
-		$this->phpmin = array(4,1);					// Minimum version of PHP required by module
+		$this->hidden = false;			// A condition to hide module
+		$this->depends = array();		// List of module class names as string that must be enabled if this module is enabled
+		$this->requiredby = array();	// List of module ids to disable if this one is disabled
+		$this->conflictwith = array();	// List of module class names as string this module is in conflict with
+		$this->phpmin = array(5,4);		// Minimum version of PHP required by module
 		$this->need_dolibarr_version = array(3,4,0);	// Minimum version of Dolibarr required by module
 
 		// Constants
@@ -118,23 +119,9 @@ class modOpenSurvey extends DolibarrModules
 		$r++;
 
 
-		// Main menu entries
-		$this->menus = array();			// List of menus to add
-		$r=0;
-		/*
-		$this->menu[$r]=array(	'fk_menu'=>0,		    						// Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-								'type'=>'top',
-								'titre'=>'Surveys',
-								'mainmenu'=>'opensurvey',
-								'url'=>'/opensurvey/index.php',
-								'langs'=>'opensurvey',
-								'position'=>200,
-                				'enabled'=>'$conf->opensurvey->enabled',         // Define condition to show or hide menu entry. Use '$conf->NewsSubmitter->enabled' if entry must be visible if module is enabled.
-								'perms'=>'$user->rights->opensurvey->read',
-								'target'=>'',
-								'user'=>0);
-		$r++;*/
-
+		// Menus
+		//-------
+        $r=0;
 		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=tools',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 								'type'=>'left',
 								'titre'=>'Survey',
@@ -144,7 +131,7 @@ class modOpenSurvey extends DolibarrModules
 								'langs'=>'opensurvey',
 								'position'=>200,
                 				'enabled'=>'$conf->opensurvey->enabled',         // Define condition to show or hide menu entry. Use '$conf->NewsSubmitter->enabled' if entry must be visible if module is enabled.
-								'perms'=>'',
+								'perms'=>'$user->rights->opensurvey->read',
 								'target'=>'',
 								'user'=>0);
 		$r++;
@@ -172,7 +159,7 @@ class modOpenSurvey extends DolibarrModules
 								'langs'=>'opensurvey',
 								'position'=>220,
                 				'enabled'=>'$conf->opensurvey->enabled',         // Define condition to show or hide menu entry. Use '$conf->NewsSubmitter->enabled' if entry must be visible if module is enabled.
-								'perms'=>'',
+								'perms'=>'$user->rights->opensurvey->read',
 								'target'=>'',
 								'user'=>0);
 		$r++;
@@ -194,21 +181,6 @@ class modOpenSurvey extends DolibarrModules
 		$sql = array();
 
 		return $this->_init($sql,$options);
-	}
-
-	/**
-	 *	Function called when module is disabled.
-	 *  Remove from database constants, boxes and permissions from Dolibarr database.
-	 *	Data directories are not deleted
-	 *
-     *  @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *  @return     int             	1 if OK, 0 if KO
-	 */
-	function remove($options='')
-	{
-		$sql = array();
-
-		return $this->_remove($sql,$options);
 	}
 }
 

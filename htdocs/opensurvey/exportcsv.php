@@ -23,12 +23,12 @@
  */
 
 
-require_once('../main.inc.php');
-require_once(DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php");
-require_once(DOL_DOCUMENT_ROOT."/core/lib/files.lib.php");
-require_once(DOL_DOCUMENT_ROOT."/opensurvey/class/opensurveysondage.class.php");
+require '../main.inc.php';
+require_once DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php";
+require_once DOL_DOCUMENT_ROOT."/core/lib/files.lib.php";
+require_once DOL_DOCUMENT_ROOT."/opensurvey/class/opensurveysondage.class.php";
 
-$action=GETPOST('action');
+$action=GETPOST('action','aZ09');
 $numsondage = '';
 if (GETPOST('id'))
 {
@@ -82,11 +82,10 @@ if (strpos($object->sujet,'@') !== false)
 }
 
 
-$sql ='SELECT nom, reponses';
+$sql ='SELECT nom as name, reponses';
 $sql.=' FROM '.MAIN_DB_PREFIX."opensurvey_user_studs";
 $sql.=" WHERE id_sondage='" . $db->escape($numsondage) . "'";
 $sql.=" ORDER BY id_users";
-dol_syslog("sql=".$sql);
 $resql=$db->query($sql);
 if ($resql)
 {
@@ -96,8 +95,8 @@ if ($resql)
 	{
 		$obj=$db->fetch_object($resql);
 
-		// Le nom de l'utilisateur
-		$nombase=str_replace("°","'",$obj->nom);
+		// Le name de l'utilisateur
+		$nombase=str_replace("°","'",$obj->name);
 		$input.=$nombase.';';
 
 		//affichage des resultats

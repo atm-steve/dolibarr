@@ -26,26 +26,30 @@
 require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
+// Load translation files required by the page
 $langs->load("admin");
 
 if (!$user->admin) accessforbidden();
 
-$action = GETPOST("action");
+$action = GETPOST('action','aZ09');
 
 
 /*
  *	Actions
  */
+ 
 if ($action == 'setvalue' && $user->admin)
 {
-    $result=dolibarr_set_const($db, "CLICKTODIAL_URL", GETPOST("url"), 'chaine', 0, '', $conf->entity);
-    if ($result >= 0)
+    $result=dolibarr_set_const($db, "CLICKTODIAL_USE_TEL_LINK_ON_PHONE_NUMBERS", GETPOST("CLICKTODIAL_USE_TEL_LINK_ON_PHONE_NUMBERS"), 'chaine', 0, '', $conf->entity);
+    $result=dolibarr_set_const($db, "CLICKTODIAL_URL", GETPOST("CLICKTODIAL_URL"), 'chaine', 0, '', $conf->entity);
+    
+    if ($result1 >= 0 && $result2 >= 0)
     {
-		setEventMessage($langs->trans("SetupSaved"));
+		setEventMessages($langs->trans("SetupSaved"), null, 'mesgs');
     }
     else
     {
-        setEventMessage($langs->trans("Error"),'errors');
+        setEventMessages($langs->trans("Error"), null, 'errors');
     }
 }
 
@@ -59,8 +63,8 @@ $user->fetch_clicktodial();
 $wikihelp='EN:Module_ClickToDial_En|FR:Module_ClickToDial|ES:Módulo_ClickTodial_Es';
 llxHeader('',$langs->trans("ClickToDialSetup"),$wikihelp);
 
-$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
-print_fiche_titre($langs->trans("ClickToDialSetup"),$linkback,'setup');
+$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
+print load_fiche_titre($langs->trans("ClickToDialSetup"),$linkback,'title_setup');
 
 print $langs->trans("ClickToDialDesc")."<br>\n";
 
@@ -69,17 +73,25 @@ print '<form method="post" action="clicktodial.php">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="setvalue">';
 
-$var=true;
-
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
-print '<td width="120">'.$langs->trans("Name").'</td>';
+print '<td>'.$langs->trans("Name").'</td>';
 print '<td>'.$langs->trans("Value").'</td>';
 print "</tr>\n";
-$var=!$var;
-print '<tr '.$bc[$var].'><td valign="top">';
+
+
+print '<tr class="oddeven"><td>';
+print $langs->trans("ClickToDialUseTelLink").'</td><td>';
+print $form->selectyesno("CLICKTODIAL_USE_TEL_LINK_ON_PHONE_NUMBERS", $conf->global->CLICKTODIAL_USE_TEL_LINK_ON_PHONE_NUMBERS, 1).'<br>';
+print '<br>';
+print $langs->trans("ClickToDialUseTelLinkDesc");
+print '</td></tr>';
+
+
+print '<tr class="oddeven"><td>';
 print $langs->trans("DefaultLink").'</td><td>';
-print '<input size="92" type="text" name="url" value="'.$conf->global->CLICKTODIAL_URL.'"><br>';
+print '<input class="quatrevingtpercent" type="text" id="CLICKTODIAL_URL" name="CLICKTODIAL_URL"'.($conf->global->CLICKTODIAL_USE_TEL_LINK_ON_PHONE_NUMBERS?' disabled="disabled"':'').' value="'.$conf->global->CLICKTODIAL_URL.'"><br>';
+print ajax_autoselect('CLICKTODIAL_URL');
 print '<br>';
 print $langs->trans("ClickToDialUrlDesc").'<br>';
 print $langs->trans("Example").':<br>http://myphoneserver/mypage?login=__LOGIN__&password=__PASS__&caller=__PHONEFROM__&called=__PHONETO__';
@@ -94,7 +106,7 @@ print '</td></tr>';
 
 print '</table>';
 
-print '<center><br><input type="submit" class="button" value="'.$langs->trans("Modify").'"></center>';
+print '<div class="center"><br><input type="submit" class="button" value="'.$langs->trans("Modify").'"></div>';
 
 print '</form><br><br>';
 
@@ -128,6 +140,6 @@ if (! empty($conf->global->CLICKTODIAL_URL))
 	}
 }
 
+// End of page
 llxFooter();
-
 $db->close();

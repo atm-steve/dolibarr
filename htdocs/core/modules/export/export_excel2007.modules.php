@@ -33,19 +33,37 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
  */
 class ExportExcel2007 extends ExportExcel
 {
-	var $id;
-	var $label;
-	var $extension;
-	var $version;
+	/**
+	 * @var int ID
+	 */
+	public $id;
 
-	var $label_lib;
-	var $version_lib;
+	/**
+     * @var string label
+     */
+    public $label;
 
-	var $workbook;      // Handle fichier
-	var $worksheet;     // Handle onglet
-	var $row;
-	var $col;
-    var $file;          // To save filename
+	public $extension;
+
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';
+
+	public $label_lib;
+
+	public $version_lib;
+
+	public $workbook;      // Handle fichier
+
+	public $worksheet;     // Handle onglet
+
+	public $row;
+
+	public $col;
+
+    public $file;          // To save filename
 
 	/**
 	 *	Constructor
@@ -64,23 +82,41 @@ class ExportExcel2007 extends ExportExcel
         $this->picto='mime/xls';			// Picto
 		$this->version='1.30';             // Driver version
 
-		// If driver use an external library, put its name here
-		$this->label_lib='PhpExcel';
-		$this->version_lib='1.7.2';
-
 		$this->disabled = (in_array(constant('PHPEXCEL_PATH'),array('disabled','disabled/'))?1:0);	// A condition to disable module (used for native debian packages)
+
+		if (empty($this->disabled))
+		{
+    		// If driver use an external library, put its name here
+    		if (! empty($conf->global->MAIN_USE_PHP_WRITEEXCEL))
+    		{
+    			require_once PHP_WRITEEXCEL_PATH.'class.writeexcel_workbookbig.inc.php';
+                require_once PHP_WRITEEXCEL_PATH.'class.writeexcel_worksheet.inc.php';
+                require_once PHP_WRITEEXCEL_PATH.'functions.writeexcel_utility.inc.php';
+    			$this->label_lib='PhpWriteExcel';
+                $this->version_lib='unknown';
+    		}
+    		else
+    		{
+                require_once PHPEXCEL_PATH.'PHPExcel.php';
+                require_once PHPEXCEL_PATH.'PHPExcel/Style/Alignment.php';
+    			$this->label_lib='PhpExcel';
+                $this->version_lib='1.8.0';		// No way to get info from library
+    		}
+		}
 
 		$this->row=0;
 	}
 
 
-	/**
-     *	Close Excel file
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    /**
+     *  Close Excel file
      *
-	 * 	@return		int							<0 if KO, >0 if OK
+	 *  @return		int							<0 if KO, >0 if OK
      */
 	function close_file()
 	{
+        // phpcs:enable
 		global $conf;
 
 		if (! empty($conf->global->MAIN_USE_PHP_WRITEEXCEL))
@@ -95,8 +131,6 @@ class ExportExcel2007 extends ExportExcel
             $this->workbook->disconnectWorksheets();
             unset($this->workbook);
     	}
-		return 0;
+		return 1;
 	}
-
 }
-

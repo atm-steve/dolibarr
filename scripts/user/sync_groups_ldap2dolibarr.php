@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /**
  * Copyright (C) 2005      Rodolphe Quiedeville <rodolphe@quiedeville.org>
@@ -35,20 +35,19 @@ if (substr($sapi_type, 0, 3) == 'cgi') {
 	exit(-1);
 }
 
-require_once($path."../../htdocs/master.inc.php");
-require_once(DOL_DOCUMENT_ROOT."/core/lib/date.lib.php");
-require_once(DOL_DOCUMENT_ROOT."/core/class/ldap.class.php");
-require_once(DOL_DOCUMENT_ROOT."/user/class/user.class.php");
-require_once(DOL_DOCUMENT_ROOT."/user/class/usergroup.class.php");
+require_once $path."../../htdocs/master.inc.php";
+require_once DOL_DOCUMENT_ROOT."/core/lib/date.lib.php";
+require_once DOL_DOCUMENT_ROOT."/core/class/ldap.class.php";
+require_once DOL_DOCUMENT_ROOT."/user/class/user.class.php";
+require_once DOL_DOCUMENT_ROOT."/user/class/usergroup.class.php";
 
-$langs->load("main");
-$langs->load("errors");
-
+$langs->loadLangs(array("main", "errors"));
 
 // Global variables
 $version=DOL_VERSION;
 $error=0;
 $forcecommit=0;
+$confirmed=0;
 
 
 /*
@@ -56,7 +55,7 @@ $forcecommit=0;
  */
 
 @set_time_limit(0);
-print "***** ".$script_file." (".$version.") pid=".getmypid()." *****\n";
+print "***** ".$script_file." (".$version.") pid=".dol_getmypid()." *****\n";
 dol_syslog($script_file." launched with arg ".join(',',$argv));
 
 // List of fields to get from LDAP
@@ -70,16 +69,20 @@ $required_fields = array(
 // Remove from required_fields all entries not configured in LDAP (empty) and duplicated
 $required_fields=array_unique(array_values(array_filter($required_fields, "dolValidElement")));
 
-if ($argv[2]) $conf->global->LDAP_SERVER_HOST=$argv[2];
 
 if (! isset($argv[1])) {
 	//print "Usage:  $script_file (nocommitiferror|commitiferror) [id_group]\n";
-	print "Usage:  $script_file (nocommitiferror|commitiferror) [ldapserverhost]\n";
+	print "Usage:  $script_file (nocommitiferror|commitiferror) [--server=ldapserverhost] [--excludeuser=user1,user2...] [-y]\n";
 	exit(-1);
 }
-$groupid=$argv[3];
-if ($argv[1] == 'commitiferror') $forcecommit=1;
 
+foreach($argv as $key => $val)
+{
+	if ($val == 'commitiferror') $forcecommit=1;
+	if (preg_match('/--server=([^\s]+)$/',$val,$reg)) $conf->global->LDAP_SERVER_HOST=$reg[1];
+	if (preg_match('/--excludeuser=([^\s]+)$/',$val,$reg)) $excludeuser=explode(',',$reg[1]);
+	if (preg_match('/-y$/',$val,$reg)) $confirmed=1;
+}
 
 print "Mails sending disabled (useless in batch mode)\n";
 $conf->global->MAIN_DISABLE_ALL_MAILS=1;	// On bloque les mails
@@ -102,9 +105,11 @@ print "commitiferror=".$forcecommit."\n";
 print "Mapped LDAP fields=".join(',',$required_fields)."\n";
 print "\n";
 
-print "Hit Enter to continue or CTRL+C to stop...\n";
-$input = trim(fgets(STDIN));
-
+if (! $confirmed)
+{
+	print "Hit Enter to continue or CTRL+C to stop...\n";
+	$input = trim(fgets(STDIN));
+}
 
 if (empty($conf->global->LDAP_GROUP_DN))
 {
@@ -133,19 +138,20 @@ if ($result >= 0)
 		{
 			$group = new UserGroup($db);
 			$group->fetch('', $ldapgroup[$conf->global->LDAP_KEY_GROUPS]);
-			$group->nom = $ldapgroup[$conf->global->LDAP_GROUP_FIELD_FULLNAME];
+			$group->name = $ldapgroup[$conf->global->LDAP_GROUP_FIELD_FULLNAME];
+			$group->nom = $group->name;		// For backward compatibility
 			$group->note = $ldapgroup[$conf->global->LDAP_GROUP_FIELD_DESCRIPTION];
 			$group->entity = $conf->entity;
 
 			//print_r($ldapgroup);
 
 			if($group->id > 0) { // Group update
-				print $langs->transnoentities("GroupUpdate").' # '.$key.': name='.$group->nom;
+				print $langs->transnoentities("GroupUpdate").' # '.$key.': name='.$group->name;
 				$res=$group->update();
 
 				if ($res > 0)
 				{
-					print ' --> Updated group id='.$group->id.' name='.$group->nom;
+					print ' --> Updated group id='.$group->id.' name='.$group->name;
 				}
 				else
 				{
@@ -154,12 +160,12 @@ if ($result >= 0)
 				}
 				print "\n";
 			} else { // Group creation
-				print $langs->transnoentities("GroupCreate").' # '.$key.': name='.$group->nom;
+				print $langs->transnoentities("GroupCreate").' # '.$key.': name='.$group->name;
 				$res=$group->create();
 
 				if ($res > 0)
 				{
-					print ' --> Created group id='.$group->id.' name='.$group->nom;
+					print ' --> Created group id='.$group->id.' name='.$group->name;
 				}
 				else
 				{
@@ -178,8 +184,13 @@ if ($result >= 0)
 			foreach($ldapgroup[$conf->global->LDAP_GROUP_FIELD_GROUPMEMBERS] as $key => $userdn) {
 				if($key === 'count') continue;
 				if(empty($userList[$userdn])) { // Récupération de l'utilisateur
-					$userFilter = explode(',', $userdn);
-					$userKey = $ldap->getAttributeValues('('.$userFilter[0].')', $conf->global->LDAP_KEY_USERS);
+					// Schéma rfc2307: les membres sont listés dans l'attribut memberUid sous form de login uniquement
+					if ($conf->global->LDAP_GROUP_FIELD_GROUPMEMBERS === 'memberUid'){
+						$userKey = array($userdn);
+					} else { // Pour les autres schémas, les membres sont listés sous forme de DN complets
+						$userFilter = explode(',', $userdn);
+						$userKey = $ldap->getAttributeValues('('.$userFilter[0].')', $conf->global->LDAP_KEY_USERS);
+					}
 					if(!is_array($userKey)) continue;
 
 					$fuser = new User($db);

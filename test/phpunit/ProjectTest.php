@@ -61,6 +61,8 @@ class ProjectTest extends PHPUnit_Framework_TestCase
 	 */
 	function __construct()
 	{
+		parent::__construct();
+
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
 		$this->savconf=$conf;
@@ -81,6 +83,8 @@ class ProjectTest extends PHPUnit_Framework_TestCase
 
     	print __METHOD__."\n";
     }
+
+    // tear down after class
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -187,7 +191,7 @@ class ProjectTest extends PHPUnit_Framework_TestCase
     }
 
 	/**
-     * testProjectOther
+     * testProjectClose
      *
      * @param	Project	$localobject	Project
      * @return	int
@@ -203,6 +207,10 @@ class ProjectTest extends PHPUnit_Framework_TestCase
         $langs=$this->savlangs;
         $db=$this->savdb;
 
+        $result=$localobject->setClose($user);
+
+    	print __METHOD__." id=".$localobject->id." result=".$result."\n";
+    	$this->assertLessThan($result, 0);
         return $localobject->id;
     }
 
@@ -212,7 +220,7 @@ class ProjectTest extends PHPUnit_Framework_TestCase
      * @param	int		$id		Id of project
      * @return	void
      *
-     * @depends	testProjectOther
+     * @depends	testProjectClose
      * The depends says test is run only if previous is ok
      */
     public function testProjectDelete($id)
@@ -231,5 +239,4 @@ class ProjectTest extends PHPUnit_Framework_TestCase
     	$this->assertLessThan($result, 0);
     	return $result;
     }
-
 }

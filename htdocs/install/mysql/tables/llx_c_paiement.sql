@@ -1,6 +1,8 @@
 -- ========================================================================
--- Copyright (C) 2001-2004 Rodolphe Quiedeville <rodolphe@quiedeville.org>
--- Copyright (C) 2004      Laurent Destailleur  <eldy@users.sourceforge.net>
+-- Copyright (C) 2001-2004	Rodolphe Quiedeville		<rodolphe@quiedeville.org>
+-- Copyright (C) 2004-2014	Laurent Destailleur		<eldy@users.sourceforge.net>
+-- Copyright (C) 2014		Alexandre Spangaro		<aspangaro.dolibarr@gmail.com>
+-- Copyright (C) 2017		Regis Houssin			<regis.houssin@inodbox.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -17,22 +19,15 @@
 --
 -- ========================================================================
 
-
--- Type :
---
--- 0 : entree d'argent
--- 1 : sortie d'argent
--- 2 : entree ou sortie d'argent
-
 create table llx_c_paiement
 (
-  id         integer     PRIMARY KEY,
-  code       varchar(6)  NOT NULL,
-  libelle    varchar(30),
-  type       smallint,	
-  active     tinyint DEFAULT 1  NOT NULL,
-  module     varchar(32) NULL
+  id					integer AUTO_INCREMENT PRIMARY KEY,
+  entity				integer	DEFAULT 1 NOT NULL,	-- multi company id
+  code       		varchar(6)  NOT NULL,
+  libelle    		varchar(62),
+  type       		smallint,	-- 0: input money, 1: output money, 2: input and output, 3: other
+  active     		tinyint DEFAULT 1  NOT NULL,
+  accountancy_code	varchar(32) NULL,
+  module     		varchar(32) NULL,
+  position			integer NOT NULL DEFAULT 0
 )ENGINE=innodb;
-
-
-

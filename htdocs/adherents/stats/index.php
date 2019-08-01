@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2003      Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2011 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,8 +46,8 @@ $year = strftime("%Y", time());
 $startyear=$year-2;
 $endyear=$year;
 
-$langs->load("members");
-$langs->load("companies");
+// Load translation files required by the page
+$langs->loadLangs(array("companies","members"));
 
 
 /*
@@ -58,7 +58,7 @@ $form=new Form($db);
 
 llxHeader();
 
-print_fiche_titre($langs->trans("SubscriptionsStatistics"), $mesg);
+print load_fiche_titre($langs->trans("SubscriptionsStatistics"), $mesg);
 
 $dir=$conf->adherent->dir_temp;
 
@@ -141,7 +141,7 @@ if (! $mesg)
 
 $head = member_stats_prepare_head($adh);
 
-dol_fiche_head($head, 'statssubscription', $langs->trans("Statistics"), 0, 'user');
+dol_fiche_head($head, 'statssubscription', $langs->trans("Statistics"), -1, 'user');
 
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
@@ -155,7 +155,7 @@ $filter='s.client in (1,2,3)';
 print $form->select_company($id,'memberid',$filter,1);
 print '</td></tr>';
 print '<tr><td>'.$langs->trans("User").'</td><td>';
-print $form->select_dolusers($userid,'userid',1);
+print $form->select_dolusers($userid, 'userid', 1, '', 0, '', '', 0, 0, 0, '', 0, '', 'maxwidth300');
 print '</td></tr>';
 print '<tr><td align="center" colspan="2"><input type="submit" name="submit" class="button" value="'.$langs->trans("Refresh").'"></td></tr>';
 print '</table>';
@@ -167,23 +167,23 @@ print '<br><br>';
 $data = $stats->getAllByYear();
 
 
-print '<table class="border" width="100%">';
-print '<tr height="24">';
+print '<div class="div-table-responsive-no-min">';
+print '<table class="noborder">';
+print '<tr class="liste_titre" height="24">';
 print '<td align="center">'.$langs->trans("Year").'</td>';
-print '<td align="center">'.$langs->trans("NbOfSubscriptions").'</td>';
-print '<td align="center">'.$langs->trans("AmountTotal").'</td>';
-print '<td align="center">'.$langs->trans("AmountAverage").'</td>';
+print '<td align="right">'.$langs->trans("NbOfSubscriptions").'</td>';
+print '<td align="right">'.$langs->trans("AmountTotal").'</td>';
+print '<td align="right">'.$langs->trans("AmountAverage").'</td>';
 print '</tr>';
 
 $oldyear=0;
 foreach ($data as $val)
 {
     $year = $val['year'];
-    print $avg;
     while ($oldyear > $year+1)
     {	// If we have empty year
         $oldyear--;
-        print '<tr height="24">';
+        print '<tr class="oddeven" height="24">';
         print '<td align="center">';
         print '<a href="month.php?year='.$oldyear.'&amp;mode='.$mode.'">';
         print $oldyear;
@@ -194,7 +194,7 @@ foreach ($data as $val)
         print '<td align="right">0</td>';
         print '</tr>';
     }
-    print '<tr height="24">';
+    print '<tr class="oddeven" height="24">';
     print '<td align="center">';
     //print '<a href="month.php?year='.$year.'">';
     print $year;
@@ -208,13 +208,14 @@ foreach ($data as $val)
 }
 
 print '</table>';
+print '</div>';
 
 
 print '</div><div class="fichetwothirdright"><div class="ficheaddleft">';
 
 
 // Show graphs
-print '<table class="border" width="100%"><tr valign="top"><td align="center">';
+print '<table class="border" width="100%"><tr class="pair nohover"><td align="center">';
 if ($mesg) { print $mesg; }
 else {
     print $px1->show();
@@ -230,7 +231,6 @@ print '<div style="clear:both"></div>';
 
 dol_fiche_end();
 
-
+// End of page
 llxFooter();
-
 $db->close();

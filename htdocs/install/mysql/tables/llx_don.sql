@@ -1,7 +1,8 @@
 -- ===================================================================
 -- Copyright (C) 2001-2002 Rodolphe Quiedeville <rodolphe@quiedeville.org>
--- Copyright (C) 2009      Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2009      Regis Houssin        <regis.houssin@inodbox.com>
 -- Copyright (C) 2011      Laurent Destailleur  <eldy@users.sourceforge.net>
+-- Copyright (C) 2015      Alexandre Spangaro   <aspangaro.dolibarr@gmail.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -25,27 +26,31 @@ create table llx_don
   ref             varchar(30) DEFAULT NULL,     -- Ref donation (TODO change to NOT NULL)
   entity          integer DEFAULT 1 NOT NULL,	-- multi company id
   tms             timestamp,
-  fk_statut       smallint NOT NULL DEFAULT 0,  -- etat du don promesse/valid
-  datec           datetime,                     -- date de creation de l'enregistrement
-  datedon         datetime,                     -- date du don/promesse
-  amount          real DEFAULT 0,
-  fk_paiement     integer,
+  fk_statut       smallint NOT NULL DEFAULT 0,  -- Status of donation promise or validate
+  datedon         datetime,                     -- Date of the donation/promise
+  amount          double(24,8) DEFAULT 0,
+  fk_payment      integer,						-- Id of payment mode
+  paid            smallint default 0 NOT NULL,
   firstname       varchar(50),
   lastname        varchar(50),
   societe         varchar(50),
   address         text,
   zip             varchar(30),
   town            varchar(50),
-  country         varchar(50),
+  country         varchar(50),					-- Deprecated - Replace with fk_country
+  fk_country	  integer        NOT NULL,
   email           varchar(255),
   phone           varchar(24),
   phone_mobile    varchar(24),
-  public          smallint DEFAULT 1 NOT NULL,   -- le don est-il public (0,1)
-  fk_don_projet   integer NULL,                  -- projet auquel est fait le don
+  public          smallint DEFAULT 1 NOT NULL,  -- Donation is public ? (0,1)
+  fk_projet       integer NULL,                 -- Donation is given for a project ?
+  datec           datetime,                     -- Create date
   fk_user_author  integer NOT NULL,
+  date_valid      datetime,						-- date de validation
   fk_user_valid   integer NULL,
   note_private    text,
   note_public     text,
   model_pdf       varchar(255),
-  import_key      varchar(14)
+  import_key      varchar(14),
+  extraparams	  varchar(255)							-- for other parameters with json format
 )ENGINE=innodb;

@@ -1,114 +1,83 @@
 # Dolibarr language file - Source file is en_US - cron
-#
 # About page
-#
-About = O
-CronAbout = O Cron
-CronAboutPage = Cron o stránce
-
-#
 # Right
-#
-Permission23101 = Přečtěte si naplánovaná úloha
-Permission23102 = Vytvořit / aktualizovat naplánovanou úlohu
-Permission23103 = Odstranit naplánovaná úloha
-Permission23104 = Provést naplánované úlohy,
-
-#
+Permission23101 = Čtení naplánovaných úloh
+Permission23102 = Vytvoření/aktualizace naplánované úlohy
+Permission23103 = Smazat naplánovanou úlohu
+Permission23104 = Provést naplánovanou úlohu
 # Admin
-#
-CronSetup= Naplánované úlohy správy Nastavení
-# URLToLaunchCronJobs=URL to check and launch cron jobs if required
-# OrToLaunchASpecificJob=Or to check and launch a specific job
-KeyForCronAccess=Bezpečnostní klíč pro URL spustit cron
-FileToLaunchCronJobs=Příkazový řádek spustit cron
-CronExplainHowToRunUnix=V oblasti životního prostředí Unix, měli byste použít crontab spustit příkazový řádek pokaždé, minut
-CronExplainHowToRunWin=Na Microsoft (tm) Windows environement můžete použít naplánovaná úloha nástroje spustit příkazový řádek pokaždé, minut
-
-
-#
+CronSetup= Nastavení naplánovaných úloh
+URLToLaunchCronJobs=URL ke kontrole a spuštění úlohy v případě potřeby
+OrToLaunchASpecificJob=Nebo zkontrolovat a zahájit konkrétní práci
+KeyForCronAccess=Bezpečnostní klíč URL spuštění úlohy
+FileToLaunchCronJobs=Command line to check and launch qualified cron jobs
+CronExplainHowToRunUnix=Na Unixových systémech by jste měli použít následující položku crontab ke spuštění příkazového řádku každých 5 minut
+CronExplainHowToRunWin=Na Microsoft Windows systémech můžete použít naplánováné nástroje úloh ke spuštění příkazového řádku každých 5 minut
+CronMethodDoesNotExists=Třída %s neobsahuje žádné metody %s
+CronJobDefDesc=Cron job profiles are defined into the module descriptor file. When module is activated, they are loaded and available so you can administer the jobs from the admin tools menu %s.
+CronJobProfiles=List of predefined cron job profiles
 # Menu
-#
-CronJobs=Naplánované úlohy
-CronListActive= Seznam aktivních úloh
-CronListInactive= Seznam postižených míst
-CronListActive= Seznam aktivních úloh
-
-
-#
+EnabledAndDisabled=Zapínat a vypínat
 # Page list
-#
-CronDateLastRun=Poslední běh
-CronLastOutput=Poslední běh výstup
-CronLastResult=Poslední kód výsledku
-CronListOfCronJobs=Seznam naplánovaných úloh
+CronLastOutput=Výstup poslední úlohy
+CronLastResult=Výstup posledního kódu
 CronCommand=Příkaz
-# CronList=Jobs list
-CronDelete= Odstranit cron
-CronConfirmDelete= Jste si jisti, že chcete smazat tento cron?
-CronExecute=Zahájení práce
-CronConfirmExecute= Opravdu chcete provést tuto práci nyní
-CronInfo= Práce umožňují provádět úlohy, které byly plánované
-CronWaitingJobs=Wainting pracovních míst
+CronList=Naplánované úlohy
+CronDelete=Smazat naplánované úlohy
+CronConfirmDelete=Jste si jisti, že chcete odstranit tyto naplánované úlohy?
+CronExecute=Spuštění naplánovaných úloh
+CronConfirmExecute=Jste si jisti, že chcete provést tyto naplánované úlohy nyní?
+CronInfo=Scheduled job module allows to schedule jobs to execute them automatically. Jobs can also be started manually.
 CronTask=Práce
-CronNone= Nikdo
-CronDtStart=Datum zahájení
-CronDtEnd=Datum ukončení
+CronNone=Nikdo
+CronDtStart=Ne předtím
+CronDtEnd=nikoli po
 CronDtNextLaunch=Další provedení
-CronDtLastLaunch=Poslední poprava
-CronFrequency=Frekvenční
-CronClass=Classe
+CronDtLastLaunch=Počáteční datum posledního provedení
+CronDtLastResult=datum ukončení posledního výkonu
+CronFrequency=Frekvence
+CronClass=Třída
 CronMethod=Metoda
 CronModule=Modul
-CronAction=Akce
-CronStatus=Postavení
-CronStatusActive=Povoleno
-CronStatusInactive=Invalidní
-CronNoJobs=Žádní registrovaní práce
+CronNoJobs=Žádné registrované úkoly
 CronPriority=Priorita
-CronLabel=Popis
+CronLabel=Štítek
 CronNbRun=Nb. zahájit
+CronMaxRun=Max number launch
 CronEach=Každý
 JobFinished=Práce zahájena a dokončena
-
-#
 #Page card
-#
-CronAdd= Přidat pracovních míst
-CronHourStart= Začněte hodinu a datum úkolu
-CronEvery= A úkol provést každý
-CronObject= Instance / objekt vytvořit
+CronAdd= Přidat práci
+CronEvery=Vykonat práci každý
+CronObject=Vytvoření Instance/objektu
 CronArgs=Parametry
-CronSaveSucess=Uložit úspěšně
+CronSaveSucess=Úspěšně uloženo
 CronNote=Komentář
-CronFieldMandatory=Pole je povinné %s
+CronFieldMandatory=Pole %s je povinné
 CronErrEndDateStartDt=Datum ukončení nemůže být před datem zahájení
+StatusAtInstall=Status at module installation
 CronStatusActiveBtn=Umožnit
 CronStatusInactiveBtn=Zakázat
-CronTaskInactive=Tato úloha je zakázán
-CronDtLastResult=Poslední výsledek Datum
+CronTaskInactive=Tato úloha je zakázána
 CronId=Id
-CronClassFile=Třídy (filename.class.php)
-CronModuleHelp=Název adresáře modulu Dolibarr (také pracovat s externím modulem Dolibarr). <BR> Např načíst metody objektu výrobku Dolibarr / htdocs / <u>produktu</u> / třída / product.class.php, hodnota modulu je <i>produkt</i>
-CronClassFileHelp=Název souboru načíst. <BR> Např načíst metody objektu výrobku Dolibarr / htdocs / produktu / třída / <u>product.class.php,</u> hodnota název třídy souboru je <i>product.class.php</i>
-CronObjectHelp=Název objektu načíst. <BR> Např načíst metody objektu výrobku Dolibarr / htdocs / produktu / třída / product.class.php, hodnota název třídy souboru je <i>výrobek</i>
-CronMethodHelp=Objekt způsob startu. <BR> Např načíst metody objektu výrobku Dolibarr / htdocs / produktu / třída / product.class.php, hodnota metody je <i>fecth</i>
-CronArgsHelp=Metoda argumenty. <BR> Např načíst metody objektu výrobku Dolibarr / htdocs / produktu / třída / product.class.php, může být hodnota paramters být <i>0, ProductRef</i>
-CronCommandHelp=Systém příkazového řádku spustit.
-
-#
+CronClassFile=Filename with class
+CronModuleHelp=Name of Dolibarr module directory (also work with external Dolibarr module). <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/<u>product</u>/class/product.class.php, the value for module is<br><i>product</i>
+CronClassFileHelp=The relative path and file name to load (path is relative to web server root directory). <BR> For exemple to call the fetch method of Dolibarr Product object htdocs/product/class/<u>product.class.php</u>, the value for class file name is<br><i>product/class/product.class.php</i>
+CronObjectHelp=The object name to load. <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/product/class/product.class.php, the value for class file name is<br><i>Product</i>
+CronMethodHelp=The object method to launch. <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/product/class/product.class.php, the value for method is<br><i>fetch</i>
+CronArgsHelp=The method arguments. <BR> For exemple to call the fetch method of Dolibarr Product object /htdocs/product/class/product.class.php, the value for paramters can be<br><i>0, ProductRef</i>
+CronCommandHelp=Spustit příkazový řádek.
+CronCreateJob=Vytvořit novou naplánovanou úlohu
+CronFrom=Z
 # Info
-#
-CronInfoPage=Informace
-
-
-#
 # Common
-#
 CronType=Typ úlohy
-CronType_method=Volání metody třídy Dolibarr
+CronType_method=Call method of a PHP Class
 CronType_command=Shell příkaz
-CronMenu=Cron
-CronCannotLoadClass=Nelze načíst třídu nebo objekt %s %s
-
-UseMenuModuleToolsToAddCronJobs=Jděte do menu &quot;Home - Moduly nářadí - Seznam úloh&quot; vidět a upravovat naplánované úlohy.
+CronCannotLoadClass=Cannot load class file %s (to use class %s)
+CronCannotLoadObject=Class file %s was loaded, but object %s was not found into it
+UseMenuModuleToolsToAddCronJobs=Jděte do menu "Home- Moduly nářadí- Seznam úloh" kde vidíte a upravujete naplánované úlohy.
+JobDisabled=Úloha vypnuta
+MakeLocalDatabaseDumpShort=Záloha lokální databáze
+MakeLocalDatabaseDump=Create a local database dump. Parameters are: compression ('gz' or 'bz' or 'none'), backup type ('mysql' or 'pgsql'), 1, 'auto' or filename to build, number of backup files to keep
+WarningCronDelayed=Attention, for performance purpose, whatever is next date of execution of enabled jobs, your jobs may be delayed to a maximum of %s hours, before being run.

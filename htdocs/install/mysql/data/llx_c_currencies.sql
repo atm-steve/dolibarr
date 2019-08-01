@@ -3,7 +3,7 @@
 -- Copyright (C) 2004-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
 -- Copyright (C) 2004      Benoit Mortier       <benoit.mortier@opensides.be>
 -- Copyright (C) 2004      Guillaume Delecourt  <guillaume.delecourt@opensides.be>
--- Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@inodbox.com>
 -- Copyright (C) 2007 	   Patrick Raguin       <patrick.raguin@gmail.com>
 -- Copyright (C) 2011 	   Juanjo Menent        <jmenent@2byte.es>
 --
@@ -38,8 +38,10 @@ INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'ARS'
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'AWG', '[402]', 1,				'Aruba Guilder');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'AUD', '[36]', 1,				'Australia Dollar');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'AZN', '[1084,1072,1085]', 1,	'Azerbaijan New Manat');
+INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'BHD', NULL, 1,					'Bahrain');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'BSD', '[36]', 1,				'Bahamas Dollar');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'BBD', '[36]', 1,				'Barbados Dollar');
+INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'BDT', '[2547]', 1,			    'Bangladeshi Taka');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'BYR', '[112,46]', 1,			'Belarus Ruble');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'BZD', '[66,90,36]', 1,			'Belize Dollar');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'BMD', '[36]', 1,				'Bermuda Dollar');
@@ -69,6 +71,7 @@ INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'EUR'
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'FKP', '[163]', 1,				'Falkland Islands (Malvinas) Pound');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'FJD', '[36]', 1,				'Fiji Dollar');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'GHC', '[162]', 1,				'Ghana Cedis');
+INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'GNF', '[70,71]', 1,				'Franc Guinéen');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'GIP', '[163]', 1,				'Gibraltar Pound');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'GTQ', '[81]', 1,				'Guatemala Quetzal');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'GGP', '[163]', 1,				'Guernsey Pound');
@@ -77,7 +80,7 @@ INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'HNL'
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'HKD', '[36]', 1,				'Hong Kong Dollar');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'HUF', '[70,116]', 1,			'Hungary Forint');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'ISK', '[107,114]', 1,			'Iceland Krona');
-INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'INR', NULL, 1,					'India Rupee'); 
+INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'INR', '[8377]', 1,				'India Rupee'); 
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'IDR', '[82,112]', 1,			'Indonesia Rupiah');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'IRR', '[65020]', 1,				'Iran Rial');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'IMP', '[163]', 1,				'Isle of Man Pound');
@@ -95,6 +98,7 @@ INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'LVL'
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'LBP', '[163]', 1,				'Lebanon Pound');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'LRD', '[36]', 1,				'Liberia Dollar');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'LTL', '[76,116]', 1,			'Lithuania Litas');
+INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'MGA', NULL, 1,					'Ariary');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'MKD', '[1076,1077,1085]', 1,	'Macedonia Denar');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'MYR', '[82,77]', 1,				'Malaysia Ringgit');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'MRO', NULL, 1,					'Mauritania Ouguiya');
@@ -150,6 +154,7 @@ INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'VEF'
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'VND', '[8363]', 1,				'Viet Nam Dong');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'XAF', NULL, 1,					'Communaute Financiere Africaine (BEAC) CFA Franc');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'XOF', NULL, 1,					'Communaute Financiere Africaine (BCEAO) Franc');
+INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'XPF', '[70]', 1,                'Franc CFP');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'YER', '[65020]', 1,				'Yemen Rial');
 INSERT INTO llx_c_currencies ( code_iso, unicode, active, label ) VALUES ( 'ZWD', '[90,36]', 1,				'Zimbabwe Dollar');
 

@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2011	Regis Houssin	<regis.houssin@capnetworks.com>
+/* Copyright (C) 2011	Regis Houssin	<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,17 +24,17 @@
 /**
  * Prepare array with list of tabs
  *
- * @param   Object	$object		Object related to tabs
- * @return  array				Array of tabs to shoc
+ * @param   Deplacement	$object		Object related to tabs
+ * @return  array				Array of tabs to show
  */
-function trip_prepare_head($object)
+function trip_prepare_head(Deplacement $object)
 {
 	global $langs, $conf;
 
 	$h = 0;
 	$head = array();
 
-	$head[$h][0] = DOL_URL_ROOT . '/compta/deplacement/fiche.php?id=' . $object->id;
+	$head[$h][0] = DOL_URL_ROOT . '/compta/deplacement/card.php?id=' . $object->id;
 	$head[$h][1] = $langs->trans("Card");
 	$head[$h][2] = 'card';
 	$h++;

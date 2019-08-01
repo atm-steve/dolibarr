@@ -26,7 +26,7 @@
 include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
 
 /**
- *	Classe de description et activation du module Mailing
+ *	Class to describe and enable module Mailing
  */
 class modNotification extends DolibarrModules
 {
@@ -41,30 +41,38 @@ class modNotification extends DolibarrModules
 		$this->db = $db;
 		$this->numero = 600;
 
-		$this->family = "technic";
+		// Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
+		// It is used to group modules in module setup page
+		$this->family = "interface";
+		// Module position in the family on 2 digits ('01', '10', '20', ...)
+		$this->module_position = '01';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
-		$this->description = "Gestion des notifications (par mail) sur evenement Dolibarr";
-		$this->version = 'dolibarr';	// 'experimental' or 'dolibarr' or version
+		$this->description = "EMail notifications (push) on business Dolibarr events";
+        $this->descriptionlong = 'Module600Long';
+		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
+        $this->version = 'dolibarr';
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->special = 1;
 		$this->picto='email';
 
 		// Data directories to create when module is enabled.
 		$this->dirs = array();
 
-		// Dependances
-		$this->depends = array();
-		$this->requiredby = array();
+		// Dependencies
+		$this->hidden = false;			// A condition to hide module
+		$this->depends = array();		// List of module class names as string that must be enabled if this module is enabled
+		$this->requiredby = array();	// List of module ids to disable if this one is disabled
+		$this->conflictwith = array();	// List of module class names as string this module is in conflict with
+		$this->phpmin = array(5,4);		// Minimum version of PHP required by module
 		$this->langfiles = array("mails");
 
 		// Config pages
 		$this->config_page_url = array("notification.php");
 
-		// Constantes
+		// Constants
 		$this->const = array();
 
-		// Boites
+		// Boxes
 		$this->boxes = array();
 
 		// Permissions
@@ -90,20 +98,4 @@ class modNotification extends DolibarrModules
 
 		return $this->_init($sql,$options);
 	}
-
-    /**
-	 *		Function called when module is disabled.
-	 *      Remove from database constants, boxes and permissions from Dolibarr database.
-	 *		Data directories are not deleted
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-    function remove($options='')
-    {
-		$sql = array();
-
-		return $this->_remove($sql,$options);
-    }
-
 }

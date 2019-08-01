@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2006-2012	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2009-2012	Regis Houssin		<regis.houssin@capnetworks.com>
+ * Copyright (C) 2009-2012	Regis Houssin		<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,24 +25,27 @@
 /**
  * Prepare array with list of tabs
  *
- * @param   Object	$object		Object related to tabs
- * @return  array				Array of tabs to shoc
+ * @param   Contrat	$object		Object related to tabs
+ * @return  array				Array of tabs to show
  */
-function contract_prepare_head($object)
+function contract_prepare_head(Contrat $object)
 {
-	global $langs, $conf;
+	global $db, $langs, $conf;
+	
 	$h = 0;
 	$head = array();
 
-	$head[$h][0] = DOL_URL_ROOT.'/contrat/fiche.php?id='.$object->id;
+	$head[$h][0] = DOL_URL_ROOT.'/contrat/card.php?id='.$object->id;
 	$head[$h][1] = $langs->trans("ContractCard");
 	$head[$h][2] = 'card';
 	$h++;
 
 	if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB))
 	{
-		$head[$h][0] = DOL_URL_ROOT.'/contrat/contact.php?id='.$object->id;
+	    $nbContact = count($object->liste_contact(-1,'internal')) + count($object->liste_contact(-1,'external'));
+	    $head[$h][0] = DOL_URL_ROOT.'/contrat/contact.php?id='.$object->id;
 		$head[$h][1] = $langs->trans("ContactsAddresses");
+		if ($nbContact > 0) $head[$h][1].= ' <span class="badge">'.$nbContact.'</span>';
 		$head[$h][2] = 'contact';
 		$h++;
 	}
@@ -60,17 +63,19 @@ function contract_prepare_head($object)
 		if(!empty($object->note_public)) $nbNote++;
     	$head[$h][0] = DOL_URL_ROOT.'/contrat/note.php?id='.$object->id;
     	$head[$h][1] = $langs->trans("Notes");
-		if($nbNote > 0) $head[$h][1].= ' ('.$nbNote.')';
+		if ($nbNote > 0) $head[$h][1].= ' <span class="badge">'.$nbNote.'</span>';
     	$head[$h][2] = 'note';
     	$h++;
     }
 
 	require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+    require_once DOL_DOCUMENT_ROOT.'/core/class/link.class.php';
 	$upload_dir = $conf->contrat->dir_output . "/" . dol_sanitizeFileName($object->ref);
-	$nbFiles = count(dol_dir_list($upload_dir,'files',0,'','(\.meta|_preview\.png)$'));
+	$nbFiles = count(dol_dir_list($upload_dir,'files',0,'','(\.meta|_preview.*\.png)$'));
+    $nbLinks=Link::count($db, $object->element, $object->id);
 	$head[$h][0] = DOL_URL_ROOT.'/contrat/document.php?id='.$object->id;
 	$head[$h][1] = $langs->trans("Documents");
-	if($nbFiles > 0) $head[$h][1].= ' ('.$nbFiles.')';
+	if (($nbFiles+$nbLinks) > 0) $head[$h][1].= ' <span class="badge">'.($nbFiles+$nbLinks).'</span>';
 	$head[$h][2] = 'documents';
 	$h++;
 
@@ -110,6 +115,11 @@ function contract_admin_prepare_head()
 	$head[$h][0] = DOL_URL_ROOT.'/contrat/admin/contract_extrafields.php';
 	$head[$h][1] = $langs->trans("ExtraFields");
     $head[$h][2] = 'attributes';
+    $h++;
+
+    $head[$h][0] = DOL_URL_ROOT.'/contrat/admin/contractdet_extrafields.php';
+    $head[$h][1] = $langs->trans("ExtraFieldsLines");
+    $head[$h][2] = 'attributeslines';
     $h++;
 
 

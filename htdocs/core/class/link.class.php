@@ -28,14 +28,29 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
  */
 class Link extends CommonObject
 {
-    public $element = 'link';
-    public $table_element = 'links';
+    /**
+	 * @var string ID to identify managed object
+	 */
+	public $element = 'link';
 
-    public $id;
-    public $entity;
+    /**
+	 * @var string Name of table without prefix where object is stored
+	 */
+	public $table_element = 'links';
+
+    /**
+	 * @var int Entity
+	 */
+	public $entity;
+
     public $datea;
     public $url;
+
+    /**
+     * @var string Links label
+     */
     public $label;
+
     public $objecttype;
     public $objectid;
 
@@ -47,11 +62,7 @@ class Link extends CommonObject
      */
     public function __construct($db)
     {
-        global $conf;
-
         $this->db = $db;
-
-        return 1;
     }
 
 
@@ -90,24 +101,19 @@ class Link extends CommonObject
         $sql .= " VALUES ('".$conf->entity."', '".$this->db->idate($this->datea)."'";
         $sql .= ", '" . $this->db->escape($this->url) . "'";
         $sql .= ", '" . $this->db->escape($this->label) . "'";
-        $sql .= ", '" . $this->objecttype . "'";
+        $sql .= ", '" . $this->db->escape($this->objecttype) . "'";
         $sql .= ", " . $this->objectid . ")";
 
-        dol_syslog(get_class($this)."::create sql=".$sql);
+        dol_syslog(get_class($this)."::create", LOG_DEBUG);
         $result = $this->db->query($sql);
         if ($result) {
             $this->id = $this->db->last_insert_id(MAIN_DB_PREFIX . "links");
 
             if ($this->id > 0) {
-                // Appel des triggers
-                include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
-                $interface=new Interfaces($this->db);
-                $result=$interface->run_triggers('LINK_CREATE', $this, $user, $langs, $conf);
-                if ($result < 0) {
-                    $error++;
-                    $this->errors = $interface->errors;
-                }
-                // Fin appel triggers
+                // Call trigger
+                $result=$this->call_trigger('LINK_CREATE',$user);
+                if ($result < 0) $error++;
+                // End call triggers
             } else {
                 $error++;
             }
@@ -136,7 +142,6 @@ class Link extends CommonObject
             else
             {
                 $this->error=$this->db->lasterror();
-                dol_syslog(get_class($this)."::Create fails insert sql=".$sql, LOG_ERR);
                 $result=-2;
             }
             $this->db->rollback();
@@ -181,9 +186,9 @@ class Link extends CommonObject
         $sql .= ", datea = '" . $this->db->idate(dol_now()) . "'";
         $sql .= ", url = '" . $this->db->escape($this->url) . "'";
         $sql .= ", label = '" . $this->db->escape($this->label) . "'";
-        $sql .= ", objecttype = '" . $this->objecttype . "'";
+        $sql .= ", objecttype = '" . $this->db->escape($this->objecttype) . "'";
         $sql .= ", objectid = " . $this->objectid;
-        $sql .= " WHERE rowid = '" . $this->id ."'";
+        $sql .= " WHERE rowid = " . $this->id;
 
         dol_syslog(get_class($this)."::update sql = " .$sql);
         $resql = $this->db->query($sql);
@@ -191,15 +196,10 @@ class Link extends CommonObject
         {
             if ($call_trigger)
             {
-                // Appel des triggers
-                include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
-                $interface = new Interfaces($this->db);
-                $result = $interface->run_triggers('LINK_MODIFY', $this, $user, $langs, $conf);
-                if ($result < 0) {
-                    $error++;
-                    $this->errors = $interface->errors;
-                }
-                // Fin appel triggers
+                // Call trigger
+                $result=$this->call_trigger('LINK_MODIFY',$user);
+                if ($result < 0) $error++;
+                // End call triggers
             }
 
             if (! $error)
@@ -208,6 +208,7 @@ class Link extends CommonObject
                 $this->db->commit();
                 return 1;
             } else {
+                setEventMessages('', $this->errors, 'errors');
                 $this->db->rollback();
                 return -1;
             }
@@ -223,7 +224,6 @@ class Link extends CommonObject
             else
             {
                 $this->error = $langs->trans("Error sql = " . $sql);
-                dol_syslog(get_class($this) . "::Update fails update = " . $this->error, LOG_ERR);
                 $result =  -2;
             }
             $this->db->rollback();
@@ -234,19 +234,18 @@ class Link extends CommonObject
     /**
      *  Loads all links from database
      *
-     *  @param  array   $links     array of Link objects to fill
+     *  @param  array   $links      array of Link objects to fill
      *  @param  string  $objecttype type of the associated object in dolibarr
      *  @param  int     $objectid   id of the associated object in dolibarr
      *  @param  string  $sortfield  field used to sort
      *  @param  string  $sortorder  sort order
-     *  @return 1 if ok, 0 if no records, -1 if error
-     *
-     * */
+     *  @return int                 1 if ok, 0 if no records, -1 if error
+     **/
     public function fetchAll(&$links, $objecttype, $objectid, $sortfield=null, $sortorder=null)
     {
         global $conf;
 
-        $sql = "SELECT rowid, entity, datea, url, label , objecttype, objectid FROM " . MAIN_DB_PREFIX . "links";
+        $sql = "SELECT rowid, entity, datea, url, label, objecttype, objectid FROM " . MAIN_DB_PREFIX . "links";
         $sql .= " WHERE objecttype = '" . $objecttype . "' AND objectid = " . $objectid;
         if ($conf->entity != 0) $sql .= " AND entity = " . $conf->entity;
         if ($sortfield) {
@@ -256,7 +255,7 @@ class Link extends CommonObject
             $sql .= " ORDER BY " . $sortfield . " " . $sortorder;
         }
 
-        dol_syslog(get_class($this)."::fetchAll sql=".$sql, LOG_DEBUG);
+        dol_syslog(get_class($this)."::fetchAll", LOG_DEBUG);
         $resql = $this->db->query($sql);
         if ($resql)
         {
@@ -281,9 +280,33 @@ class Link extends CommonObject
                 return 0;
             }
         } else {
-            dol_syslog(get_class($this) . "::FetchAll fails sql=" . $sql, LOG_ERR);
             return -1;
         }
+    }
+
+    /**
+     *  Return nb of links
+     *
+     *  @param  DoliDb  $db         Database handler
+     *  @param  string  $objecttype Type of the associated object in dolibarr
+     *  @param  int     $objectid   Id of the associated object in dolibarr
+     *  @return int                 Nb of links, -1 if error
+     **/
+    public static function count($db, $objecttype, $objectid)
+    {
+        global $conf;
+
+        $sql = "SELECT COUNT(rowid) as nb FROM " . MAIN_DB_PREFIX . "links";
+        $sql .= " WHERE objecttype = '" . $objecttype . "' AND objectid = " . $objectid;
+        if ($conf->entity != 0) $sql .= " AND entity = " . $conf->entity;
+
+        $resql = $db->query($sql);
+        if ($resql)
+        {
+            $obj = $db->fetch_object($resql);
+            if ($obj) return $obj->nb;
+        }
+        return -1;
     }
 
     /**
@@ -291,7 +314,6 @@ class Link extends CommonObject
      *
      *  @param 	int		$rowid 		Id of link to load
      *  @return int 				1 if ok, 0 if no record found, -1 if error
-     *
      **/
     public function fetch($rowid=null)
     {
@@ -305,7 +327,7 @@ class Link extends CommonObject
         $sql .= " WHERE rowid = " . $rowid;
         if($conf->entity != 0) $sql .= " AND entity = " . $conf->entity;
 
-        dol_syslog(get_class($this)."::fetch sql=".$sql, LOG_DEBUG);
+        dol_syslog(get_class($this)."::fetch", LOG_DEBUG);
         $resql = $this->db->query($sql);
         if ($resql)
         {
@@ -326,7 +348,6 @@ class Link extends CommonObject
             }
         } else {
             $this->error=$this->db->lasterror();
-            dol_syslog($this->error, LOG_ERR);
             return -1;
         }
     }
@@ -343,31 +364,22 @@ class Link extends CommonObject
         dol_syslog(get_class($this)."::delete", LOG_DEBUG);
         $error = 0;
 
+        // Call trigger
+        $result=$this->call_trigger('LINK_DELETE',$user);
+        if ($result < 0) return -1;
+        // End call triggers
+
         $this->db->begin();
 
         // Remove link
         $sql = "DELETE FROM " . MAIN_DB_PREFIX . "links";
         $sql.= " WHERE rowid = " . $this->id;
 
-        dol_syslog(get_class($this)."::delete sql=" . $sql, LOG_DEBUG);
+        dol_syslog(get_class($this)."::delete", LOG_DEBUG);
         if (! $this->db->query($sql))
         {
             $error++;
             $this->error = $this->db->lasterror();
-            dol_syslog(get_class($this)."::delete error -4 " . $this->error, LOG_ERR);
-        }
-
-
-        if (! $error) {
-            // Appel des triggers
-            include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
-            $interface=new Interfaces($this->db);
-            $result = $interface->run_triggers('LINK_DELETE', $this, $user, $langs, $conf);
-            if ($result < 0) {
-                $error++;
-                $this->errors = $interface->errors;
-            }
-            // Fin appel triggers
         }
 
         if (! $error) {
@@ -378,7 +390,5 @@ class Link extends CommonObject
             $this->db->rollback();
             return -1;
         }
-
     }
-
 }

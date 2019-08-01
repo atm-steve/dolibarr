@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Copyright (C) 2002-2004 Rodolphe Quiedeville <rodolphe@quiedeville.org>
 -- Copyright (C) 2004-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
--- Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@inodbox.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ ALTER TABLE llx_facture ADD INDEX idx_facture_fk_facture_source (fk_facture_sour
 ALTER TABLE llx_facture ADD INDEX idx_facture_fk_projet (fk_projet);
 ALTER TABLE llx_facture ADD INDEX idx_facture_fk_account (fk_account);
 ALTER TABLE llx_facture ADD INDEX idx_facture_fk_currency (fk_currency);
+ALTER TABLE llx_facture ADD INDEX idx_facture_fk_statut (fk_statut);
 
 ALTER TABLE llx_facture ADD CONSTRAINT fk_facture_fk_soc            FOREIGN KEY (fk_soc) REFERENCES llx_societe (rowid);
 ALTER TABLE llx_facture ADD CONSTRAINT fk_facture_fk_user_author    FOREIGN KEY (fk_user_author) REFERENCES llx_user (rowid);

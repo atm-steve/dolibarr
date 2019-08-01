@@ -1,5 +1,5 @@
 -- ========================================================================
--- Copyright (C) 2010 Regis Houssin      <regis.houssin@capnetworks.com>
+-- Copyright (C) 2010 Regis Houssin      <regis.houssin@inodbox.com>
 -- Copyright (C) 201 Laurent Destailleur <eldy@users.sourceforge.net>
 --
 -- This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,6 @@ ALTER TABLE llx_c_ziptown ADD INDEX idx_c_ziptown_fk_pays   (fk_pays);
 ALTER TABLE llx_c_ziptown ADD INDEX idx_c_ziptown_zip       (zip);
 
 ALTER TABLE llx_c_ziptown ADD CONSTRAINT fk_c_ziptown_fk_county	FOREIGN KEY (fk_county) REFERENCES llx_c_departements (rowid);
-ALTER TABLE llx_c_ziptown ADD CONSTRAINT fk_c_ziptown_fk_pays   FOREIGN KEY (fk_pays)   REFERENCES llx_c_pays(rowid);
+ALTER TABLE llx_c_ziptown ADD CONSTRAINT fk_c_ziptown_fk_pays   FOREIGN KEY (fk_pays)   REFERENCES llx_c_country(rowid);
 
 ALTER TABLE llx_c_ziptown ADD UNIQUE INDEX uk_ziptown_fk_pays (zip, town, fk_pays);

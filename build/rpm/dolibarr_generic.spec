@@ -26,17 +26,17 @@ License: GPL-3.0+
 #Packager: Laurent Destailleur (Eldy) <eldy@users.sourceforge.net>
 Vendor: Dolibarr dev team
 
-URL: http://www.dolibarr.org
+URL: https://www.dolibarr.org
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
-Source0: http://www.dolibarr.org/files/lastbuild/package_rpm_redhat-fedora/%{name}-%{version}.tgz
+Source0: https://www.dolibarr.org/files/lastbuild/package_rpm_redhat-fedora/%{name}-%{version}.tgz
 %else
 %if 0%{?mdkversion}
-Source0: http://www.dolibarr.org/files/lastbuild/package_rpm_mandriva/%{name}-%{version}.tgz
+Source0: https://www.dolibarr.org/files/lastbuild/package_rpm_mandriva/%{name}-%{version}.tgz
 %else
 %if 0%{?suse_version}
-Source0: http://www.dolibarr.org/files/lastbuild/package_rpm_opensuse/%{name}-%{version}.tgz
+Source0: https://www.dolibarr.org/files/lastbuild/package_rpm_opensuse/%{name}-%{version}.tgz
 %else
-Source0: http://www.dolibarr.org/files/lastbuild/package_rpm_generic/%{name}-%{version}.tgz
+Source0: https://www.dolibarr.org/files/lastbuild/package_rpm_generic/%{name}-%{version}.tgz
 %endif
 %endif
 %endif
@@ -46,7 +46,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-build
 
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
 Group: Applications/Productivity
-Requires: httpd, php >= 5.3.0, php-cli, php-gd, php-ldap, php-imap, php-mysql, php-adodb, php-nusoap, dejavu-sans-fonts
+Requires: httpd, php >= 5.3.0, php-cli, php-gd, php-ldap, php-imap, php-mysqli, php-adodb, php-nusoap, dejavu-sans-fonts, php-mbstring, php-xml
 Requires: mysql-server, mysql
 BuildRequires: desktop-file-utils
 %else
@@ -54,7 +54,7 @@ BuildRequires: desktop-file-utils
 Group: Applications/Productivity
 Requires: apache-base, apache-mod_php, php-cgi, php-cli, php-bz2, php-gd, php-ldap, php-imap, php-mysqli, php-openssl, fonts-ttf-dejavu 
 Requires: mysql, mysql-client 
-%else
+%else%_datadir/dolibarr/htdocs/datapolicy
 %if 0%{?suse_version}
 # Voir http://en.opensuse.org/openSUSE:Packaging_Conventions_RPM_Macros
 Group: Productivity/Office/Management
@@ -63,9 +63,9 @@ Requires: mysql-community-server, mysql-community-server-client
 BuildRequires: update-desktop-files fdupes
 %else
 Group: Applications/Productivity
-Requires: httpd, php >= 5.3.0, php-cli, php-gd, php-ldap, php-imap 
+Requires: httpd, php >= 5.3.0, php-cli, php-gd, php-ldap, php-imap, php-mbstring, php-xml
 Requires: mysql-server, mysql 
-Requires: php-mysql >= 4.1.0 
+Requires: php-mysqli >= 4.1.0 
 %endif
 %endif
 %endif
@@ -75,7 +75,7 @@ AutoReqProv: no
 
 
 %description
-An easy to use CRM & ERP open source/free software for small  
+An easy to use CRM & ERP open source/free software package for small  
 and medium companies, foundations or freelances. It includes different 
 features for Enterprise Resource Planning (ERP) and Customer Relationship 
 Management (CRM) but also for different other activities.
@@ -124,7 +124,7 @@ cui hai bisogno ed essere facile da usare.
 
 %if 0%{?sles_version}
 %{__rm} -rf $RPM_BUILD_ROOT
-%{__mkdir} $RPM_BUILD_ROOT
+%{__mkdir} $RPM_BUILD_ROOT%_datadir/dolibarr/htdocs/datapolicy
 %{__mkdir} $RPM_BUILD_ROOT%{_sysconfdir}
 %{__mkdir} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}
 %else
@@ -239,12 +239,15 @@ done >>%{name}.lang
 %_datadir/dolibarr/htdocs/accountancy
 %_datadir/dolibarr/htdocs/adherents
 %_datadir/dolibarr/htdocs/admin
+%_datadir/dolibarr/htdocs/api
+%_datadir/dolibarr/htdocs/asset
 %_datadir/dolibarr/htdocs/asterisk
 %_datadir/dolibarr/htdocs/barcode
+%_datadir/dolibarr/htdocs/blockedlog
 %_datadir/dolibarr/htdocs/bookmarks
-%_datadir/dolibarr/htdocs/boutique
 %_datadir/dolibarr/htdocs/cashdesk
 %_datadir/dolibarr/htdocs/categories
+%_datadir/dolibarr/htdocs/collab
 %_datadir/dolibarr/htdocs/comm
 %_datadir/dolibarr/htdocs/commande
 %_datadir/dolibarr/htdocs/compta
@@ -253,34 +256,50 @@ done >>%{name}.lang
 %_datadir/dolibarr/htdocs/contrat
 %_datadir/dolibarr/htdocs/core
 %_datadir/dolibarr/htdocs/cron
+%_datadir/dolibarr/htdocs/custom
+%_datadir/dolibarr/htdocs/datapolicy
+%_datadir/dolibarr/htdocs/dav
+%_datadir/dolibarr/htdocs/don
 %_datadir/dolibarr/htdocs/ecm
+%_datadir/dolibarr/htdocs/emailcollector
 %_datadir/dolibarr/htdocs/expedition
+%_datadir/dolibarr/htdocs/expensereport
 %_datadir/dolibarr/htdocs/exports
 %_datadir/dolibarr/htdocs/externalsite
 %_datadir/dolibarr/htdocs/fichinter
 %_datadir/dolibarr/htdocs/fourn
 %_datadir/dolibarr/htdocs/ftp
 %_datadir/dolibarr/htdocs/holiday
+%_datadir/dolibarr/htdocs/hrm
 %_datadir/dolibarr/htdocs/imports
 %_datadir/dolibarr/htdocs/includes
 %_datadir/dolibarr/htdocs/install
 %_datadir/dolibarr/htdocs/langs/HOWTO-Translation.txt
 %_datadir/dolibarr/htdocs/livraison
+%_datadir/dolibarr/htdocs/loan
 %_datadir/dolibarr/htdocs/mailmanspip
 %_datadir/dolibarr/htdocs/margin
+%_datadir/dolibarr/htdocs/modulebuilder
+%_datadir/dolibarr/htdocs/multicurrency
 %_datadir/dolibarr/htdocs/opensurvey
 %_datadir/dolibarr/htdocs/paybox
 %_datadir/dolibarr/htdocs/paypal
-%_datadir/dolibarr/htdocs/printipp
+%_datadir/dolibarr/htdocs/printing
 %_datadir/dolibarr/htdocs/product
 %_datadir/dolibarr/htdocs/projet
 %_datadir/dolibarr/htdocs/public
 %_datadir/dolibarr/htdocs/resource
 %_datadir/dolibarr/htdocs/societe
+%_datadir/dolibarr/htdocs/stripe
+%_datadir/dolibarr/htdocs/supplier_proposal
 %_datadir/dolibarr/htdocs/support
 %_datadir/dolibarr/htdocs/theme
+%_datadir/dolibarr/htdocs/takepos
+%_datadir/dolibarr/htdocs/ticket
 %_datadir/dolibarr/htdocs/user
+%_datadir/dolibarr/htdocs/variants
 %_datadir/dolibarr/htdocs/webservices
+%_datadir/dolibarr/htdocs/website
 %_datadir/dolibarr/htdocs/*.ico
 %_datadir/dolibarr/htdocs/*.patch
 %_datadir/dolibarr/htdocs/*.php
@@ -428,8 +447,8 @@ if [ "x$os" = "xfedora-redhat" -a -s /sbin/restorecon ]; then
 %else
   echo Add SE Linux permissions for dolibarr
   # semanage add records into /etc/selinux/targeted/contexts/files/file_contexts.local
-  semanage fcontext -a -t httpd_sys_script_rw_t "/etc/dolibarr(/.*?)"
-  semanage fcontext -a -t httpd_sys_script_rw_t "/var/lib/dolibarr(/.*?)"
+  semanage fcontext -a -t httpd_sys_rw_content_t "/etc/dolibarr(/.*)?"
+  semanage fcontext -a -t httpd_sys_rw_content_t "/var/lib/dolibarr(/.*)?"
   restorecon -R -v /etc/dolibarr
   restorecon -R -v /var/lib/dolibarr
 %endif
@@ -569,26 +588,4 @@ fi
 
 # version x.y.z-0.1.a for alpha, x.y.z-0.2.b for beta, x.y.z-0.3 for release
 %changelog
-* Wed Sep 24 2014 Laurent Destailleur 3.6.1-0.3
-- Upstream release
-
-* Wed Jul 15 2014 Laurent Destailleur 3.6.0-0.3
-- Upstream release
-
-* Tue Jul 8 2014 Laurent Destailleur 3.5.5-0.3
-- Upstream release
-
-* Tue Jul 1 2014 Laurent Destailleur 3.5.4-0.3
-- Upstream release
-
-* Fri May 2 2014 Laurent Destailleur 3.5.3-0.3
-- Upstream release
-
-* Fri Feb 14 2014 Laurent Destailleur 3.5.2-0.3
-- Upstream release
-
-* Fri Feb 7 2014 Laurent Destailleur 3.5.1-0.3
-- Upstream release
-
-* Mon Dec 30 2013 Laurent Destailleur 3.5.0-0.3
-- Initial version (#723326)
+__CHANGELOGSTRING__

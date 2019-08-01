@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2001-2007 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2011 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,8 @@
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
-$langs->load("admin");
-$langs->load("user");
-$langs->load("install");
+// Load translation files required by the page
+$langs->loadLangs(array("admin", "user", "install"));
 
 if (! $user->admin) accessforbidden();
 
@@ -45,7 +44,7 @@ if (! $user->admin) accessforbidden();
 
 llxHeader();
 
-print_fiche_titre($langs->trans("SummarySystem"),'','setup');
+print load_fiche_titre($langs->trans("SummarySystem"),'','title_setup');
 
 
 print '<table class="noborder" width="100%">';
@@ -86,7 +85,7 @@ print "<br>\n";
 // Database
 print '<table class="noborder" width="100%">';
 print "<tr class=\"liste_titre\"><td colspan=\"2\">".$langs->trans("Database")."</td></tr>\n";
-$dblabel=getStaticMember(get_class($db),'label');
+$dblabel=$db::LABEL;
 $dbversion=$db->getVersion();
 print "<tr $bc[0]><td width=\"280\">".$langs->trans("Version")."</td><td>" .$dblabel." ".$dbversion."</td></tr>\n";
 print '</table>';
@@ -95,11 +94,10 @@ if ($db->type == 'pgsql')
 {
 	// Check option standard_conforming_strings is on
 	$paramarray=$db->getServerParametersValues('standard_conforming_strings');
-	if ($paramarray['standard_conforming_strings'] != 'on' && $paramarray['standard_conforming_strings'] != 1)
-	{
-		$langs->load("errors");
-		//print '<div class="error">'.$langs->trans("ErrorDatabaseParameterWrong",'standard_conforming_strings','on').'</div>';
-	}
+//	if ($paramarray['standard_conforming_strings'] != 'on' && $paramarray['standard_conforming_strings'] != 1)
+//	{
+//		$langs->load("errors");
+//	}
 }
 print '<br>';
 
@@ -107,7 +105,7 @@ print '<br>';
 print '<table class="noborder" width="100%">';
 print "<tr class=\"liste_titre\"><td colspan=\"2\">".$langs->trans("Browser")."</td></tr>\n";
 print "<tr $bc[0]><td width=\"280\">".$langs->trans("UserAgent")."</td><td>" .$_SERVER["HTTP_USER_AGENT"]."</td></tr>\n";
-print "<tr $bc[1]><td width=\"280\">".$langs->trans("Smartphone")."</td><td>".(empty($conf->browser->phone)?$langs->trans("No"):$conf->browser->phone)."</td></tr>\n";
+print "<tr $bc[1]><td width=\"280\">".$langs->trans("Smartphone")."</td><td>".(($conf->browser->layout != 'phone')?$langs->trans("No"):$langs->trans("Yes"))."</td></tr>\n";
 print '</table>';
 print '<br>';
 
@@ -115,6 +113,6 @@ print '<br>';
 //print "<br>\n";
 print info_admin($langs->trans("SystemInfoDesc")).'<br>';
 
+// End of page
 llxFooter();
-
 $db->close();

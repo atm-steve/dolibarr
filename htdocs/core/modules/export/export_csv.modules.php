@@ -30,17 +30,31 @@ require_once DOL_DOCUMENT_ROOT .'/core/modules/export/modules_export.php';
  */
 class ExportCsv extends ModeleExports
 {
-	var $id;
-	var $label;
-	var $extension;
-	var $version;
+	/**
+	 * @var int ID
+	 */
+	public $id;
 
-	var $label_lib;
-	var $version_lib;
+	/**
+     * @var string export files label
+     */
+    public $label;
 
-	var $separator;
+	public $extension;
 
-	var $handle;    // Handle fichier
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';
+
+	public $label_lib;
+
+	public $version_lib;
+
+	public $separator;
+
+	public $handle;    // Handle fichier
 
 
 	/**
@@ -50,7 +64,7 @@ class ExportCsv extends ModeleExports
 	 */
 	function __construct($db)
 	{
-		global $conf,$langs;
+		global $conf, $langs;
 		$this->db = $db;
 
 		$this->separator=',';
@@ -68,13 +82,12 @@ class ExportCsv extends ModeleExports
 		// If driver use an external library, put its name here
 		$this->label_lib='Dolibarr';
 		$this->version_lib=DOL_VERSION;
-
 	}
 
 	/**
 	 * getDriverId
 	 *
-	 * @return int
+	 * @return string
 	 */
 	function getDriverId()
 	{
@@ -142,6 +155,7 @@ class ExportCsv extends ModeleExports
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *	Open output file
 	 *
@@ -151,6 +165,7 @@ class ExportCsv extends ModeleExports
 	 */
 	function open_file($file,$outputlangs)
 	{
+        // phpcs:enable
 		global $langs;
 
 		dol_syslog("ExportCsv::open_file file=".$file);
@@ -169,6 +184,7 @@ class ExportCsv extends ModeleExports
 		return $ret;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 * 	Output header into file
 	 *
@@ -177,10 +193,12 @@ class ExportCsv extends ModeleExports
 	 */
 	function write_header($outputlangs)
 	{
+        // phpcs:enable
 		return 0;
 	}
 
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 * 	Output title line into file
 	 *
@@ -192,6 +210,7 @@ class ExportCsv extends ModeleExports
 	 */
 	function write_title($array_export_fields_label,$array_selected_sorted,$outputlangs,$array_types)
 	{
+        // phpcs:enable
 		global $conf;
 
 		if (! empty($conf->global->EXPORT_CSV_FORCE_CHARSET))
@@ -206,7 +225,7 @@ class ExportCsv extends ModeleExports
 		foreach($array_selected_sorted as $code => $value)
 		{
 			$newvalue=$outputlangs->transnoentities($array_export_fields_label[$code]);		// newvalue is now $outputlangs->charset_output encoded
-			$newvalue=$this->csv_clean($newvalue,$outputlangs->charset_output);
+			$newvalue=$this->csvClean($newvalue,$outputlangs->charset_output);
 
 			fwrite($this->handle,$newvalue.$this->separator);
 		}
@@ -215,7 +234,8 @@ class ExportCsv extends ModeleExports
 	}
 
 
-	/**
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    /**
      *	Output record line into file
      *
      *  @param     	array		$array_selected_sorted      Array with list of field to export
@@ -226,6 +246,7 @@ class ExportCsv extends ModeleExports
 	 */
 	function write_record($array_selected_sorted,$objp,$outputlangs,$array_types)
 	{
+        // phpcs:enable
 		global $conf;
 
 		if (! empty($conf->global->EXPORT_CSV_FORCE_CHARSET))
@@ -240,7 +261,7 @@ class ExportCsv extends ModeleExports
 		$this->col=0;
 		foreach($array_selected_sorted as $code => $value)
 		{
-			if (strpos($code,' as ') == 0) $alias=str_replace(array('.','-'),'_',$code);
+			if (strpos($code,' as ') == 0) $alias=str_replace(array('.','-','(',')'),'_',$code);
 			else $alias=substr($code, strpos($code, ' as ') + 4);
 			if (empty($alias)) dol_print_error('','Bad value for field with key='.$code.'. Try to redefine export.');
 
@@ -250,7 +271,14 @@ class ExportCsv extends ModeleExports
 			// Translation newvalue
 			if (preg_match('/^\((.*)\)$/i',$newvalue,$reg)) $newvalue=$outputlangs->transnoentities($reg[1]);
 
-			$newvalue=$this->csv_clean($newvalue,$outputlangs->charset_output);
+			$newvalue=$this->csvClean($newvalue,$outputlangs->charset_output);
+
+			if (preg_match('/^Select:/i', $typefield, $reg) && $typefield = substr($typefield, 7))
+			{
+				$array = unserialize($typefield);
+				$array = $array['options'];
+				$newvalue = $array[$newvalue];
+			}
 
 			fwrite($this->handle,$newvalue.$this->separator);
 			$this->col++;
@@ -260,6 +288,7 @@ class ExportCsv extends ModeleExports
 		return 0;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 * 	Output footer into file
 	 *
@@ -268,9 +297,11 @@ class ExportCsv extends ModeleExports
 	 */
 	function write_footer($outputlangs)
 	{
+        // phpcs:enable
 		return 0;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 * 	Close file handle
 	 *
@@ -278,6 +309,7 @@ class ExportCsv extends ModeleExports
 	 */
 	function close_file()
 	{
+        // phpcs:enable
 		fclose($this->handle);
 		return 0;
 	}
@@ -285,23 +317,35 @@ class ExportCsv extends ModeleExports
 
 	/**
 	 * Clean a cell to respect rules of CSV file cells
+	 * Note: It uses $this->separator
+	 * Note: We keep this function public to be able to test
 	 *
 	 * @param 	string	$newvalue	String to clean
 	 * @param	string	$charset	Input AND Output character set
 	 * @return 	string				Value cleaned
 	 */
-	function csv_clean($newvalue, $charset)
+	public function csvClean($newvalue, $charset)
 	{
+		global $conf;
 		$addquote=0;
 
-		// Rule Dolibarr: No HTML
-		//print $charset.' '.$newvalue."\n";
-		$newvalue=dol_string_nohtmltag($newvalue,1,$charset);
-		//print $charset.' '.$newvalue."\n";
 
-		// Rule 1 CSV: No CR, LF in cells
+		// Rule Dolibarr: No HTML
+   		//print $charset.' '.$newvalue."\n";
+   		//$newvalue=dol_string_nohtmltag($newvalue,0,$charset);
+   		$newvalue=dol_htmlcleanlastbr($newvalue);
+   		//print $charset.' '.$newvalue."\n";
+
+		// Rule 1 CSV: No CR, LF in cells (except if USE_STRICT_CSV_RULES is on, we can keep record as it is but we must add quotes)
+		$oldvalue=$newvalue;
 		$newvalue=str_replace("\r",'',$newvalue);
 		$newvalue=str_replace("\n",'\n',$newvalue);
+		if (! empty($conf->global->USE_STRICT_CSV_RULES) && $oldvalue != $newvalue)
+		{
+			// If strict use of CSV rules, we just add quote
+			$newvalue=$oldvalue;
+			$addquote=1;
+		}
 
 		// Rule 2 CSV: If value contains ", we must escape with ", and add "
 		if (preg_match('/"/',$newvalue))
@@ -318,6 +362,4 @@ class ExportCsv extends ModeleExports
 
 		return ($addquote?'"':'').$newvalue.($addquote?'"':'');
 	}
-
 }
-

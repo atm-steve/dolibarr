@@ -60,6 +60,8 @@ class MarginsLibTest extends PHPUnit_Framework_TestCase
 	 */
 	function __construct()
 	{
+		parent::__construct();
+
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
 		$this->savconf=$conf;
@@ -80,6 +82,8 @@ class MarginsLibTest extends PHPUnit_Framework_TestCase
 
     	print __METHOD__."\n";
     }
+
+    // tear down after class
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -134,17 +138,15 @@ class MarginsLibTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(25,$result[1]);
 		print __METHOD__." result[2]=".$result[2]."\n";
 		$this->assertEquals(20,$result[2]);
-		
+
 		$result=getMarginInfos(10, 10, 19.6, 0, 0, 0, 8);
-		var_dump($result);
 		print __METHOD__." result[0]=".$result[0]."\n";
 		$this->assertEquals(8,$result[0]);
 		print __METHOD__." result[1]=".$result[1]."\n";
 		$this->assertEquals(12.5,$result[1]);
 		print __METHOD__." result[2]=".$result[2]."\n";
 		$this->assertEquals(1/9*100,$result[2]);
-		
+
 		return 0;
     }
-
 }

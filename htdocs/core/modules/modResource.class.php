@@ -1,6 +1,6 @@
 <?php
-/* Module to manage resources into Dolibarr ERP/CRM
- * Copyright (C) 2013-2014	Jean-François Ferry	<jfefe@aternatik.fr>
+/* Copyright (C) 2013-2014 Jean-François Ferry <jfefe@aternatik.fr>
+ * Copyright (C) 2015      Laurent Destailleur <eldy@users.sourceforge.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,10 +14,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Module to manage resources into Dolibarr ERP/CRM
  */
 
 /**
- * 	\defgroup	resource	Resource module
+ * 	\defgroup	resource	Module resource
  * 	\brief		Resource module descriptor.
  * 	\file		core/modules/modResource.class.php
  * 	\ingroup	resource
@@ -45,13 +47,15 @@ class modResource extends DolibarrModules
 		// Id for module (must be unique).
 		// Use a free id here
 		// (See in Home -> System information -> Dolibarr for list of used modules id).
-		$this->numero = 110111;
+		$this->numero = 63000;
+
 		// Key text used to identify module (for permissions, menus, etc...)
 		$this->rights_class = 'resource';
 
 		// Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
 		// It is used to group modules in module setup page
-		$this->family = "hr";
+		$this->family = "projects";
+		$this->module_position = '20';
 		// Module label (no space allowed)
 		// used if translation string 'ModuleXXXName' not found
 		// (where XXX is value of numeric property 'numero' of module)
@@ -59,15 +63,12 @@ class modResource extends DolibarrModules
 		// Module description
 		// used if translation string 'ModuleXXXDesc' not found
 		// (where XXX is value of numeric property 'numero' of module)
-		$this->description = "Description of module Resource";
+		$this->description = "Manage resources (printers, cars, room, ...) you can then share into events";
 		// Possible values for version are: 'development', 'experimental' or version
-		$this->version = 'development';
+		$this->version = 'dolibarr';
 		// Key used in llx_const table to save module status enabled/disabled
 		// (where MYMODULE is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);
-		// Where to store the module in setup page
-		// (0=common,1=interface,2=others,3=very specific)
-		$this->special = 0;
 		// Name of image file used for this module.
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png
 		// use this->picto='pictovalue'
@@ -78,26 +79,7 @@ class modResource extends DolibarrModules
 		// for default path (eg: /resource/core/xxxxx) (0=disable, 1=enable)
 		// for specific path of parts (eg: /resource/core/modules/barcode)
 		// for specific css file (eg: /resource/css/resource.css.php)
-		$this->module_parts = array(
-			// Set this to 1 if module has its own trigger directory
-			//'triggers' => 1,
-			// Set this to 1 if module has its own login method directory
-			//'login' => 0,
-			// Set this to 1 if module has its own substitution function file
-			//'substitutions' => 0,
-			// Set this to 1 if module has its own menus handler directory
-			//'menus' => 0,
-			// Set this to 1 if module has its own barcode directory
-			//'barcode' => 0,
-			// Set this to 1 if module has its own models directory
-			//'models' => 0,
-			// Set this to relative path of css if module has its own css file
-			//'css' => '/resource/css/resource.css.php',
-			// Set here all hooks context managed by module
-			// 'hooks' => array('actioncard','actioncommdao','resource_card','element_resource')
-			// Set here all workflow context managed by module
-			//'workflow' => array('order' => array('WORKFLOW_ORDER_AUTOCREATE_INVOICE'))
-		);
+		$this->module_parts = array();
 
 		// Data directories to create when module is enabled.
 		// Example: this->dirs = array("/resource/temp");
@@ -105,7 +87,7 @@ class modResource extends DolibarrModules
 
 		// Config pages. Put here list of php pages
 		// stored into resource/admin directory, used to setup module.
-		//$this->config_page_url = array("admin_resource.php@resource");
+		$this->config_page_url = array("resource.php");
 
 		// Dependencies
 		// List of modules id that must be enabled if this module is enabled
@@ -113,10 +95,9 @@ class modResource extends DolibarrModules
 		// List of modules id to disable if this one is disabled
 		$this->requiredby = array('modPlace');
 		// Minimum version of PHP required by module
-		$this->phpmin = array(5, 3);
-		// Minimum version of Dolibarr required by module
-		$this->need_dolibarr_version = array(3, 5);
-		$this->langfiles = array("resource@resource"); // langfiles@resource
+		$this->phpmin = array(5, 4);
+
+		$this->langfiles = array("resource"); // langfiles@resource
 		// Constants
 		// List of particular constants to add when module is enabled
 		// (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive)
@@ -151,11 +132,6 @@ class modResource extends DolibarrModules
 		// 'categories_x'		to add a tab in category view
 		// (reresource 'x' by type of category (0=product, 1=supplier, 2=customer, 3=member)
 
-		$this->tabs = array(
-			'action:+resources:Resources:resource:$user->rights->resource->read:/resource/element_resource.php?element=action&element_id=__ID__',
-			'thirdparty:+resources:Resources:resource:$user->rights->resource->read:/resource/element_resource.php?element=societe&element_id=__ID__'
-		);
-
 		// Boxes
 		// Add here list of php file(s) stored in core/boxes that contains class to show a box.
 		$this->boxes = array(); // Boxes list
@@ -173,47 +149,36 @@ class modResource extends DolibarrModules
 		$this->rights = array(); // Permission array used by this module
 		$r = 0;
 
-		$this->rights[$r][0] = 1101201;
-		$this->rights[$r][1] = 'See resources';
+		$this->rights[$r][0] = 63001;
+		$this->rights[$r][1] = 'Read resources';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'read';
 		$r++;
 
-		$this->rights[$r][0] = 1101202;
-		$this->rights[$r][1] = 'Modify resources';
+		$this->rights[$r][0] = 63002;
+		$this->rights[$r][1] = 'Create/Modify resources';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'write';
 		$r++;
 
-		$this->rights[$r][0] = 1101203;
+		$this->rights[$r][0] = 63003;
 		$this->rights[$r][1] = 'Delete resources';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'delete';
 		$r++;
 
-		$this->rights[$r][0] = 1101204;
-		$this->rights[$r][1] = 'Link resources';
+		$this->rights[$r][0] = 63004;
+		$this->rights[$r][1] = 'Link resources to agenda events';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'link';
 		$r++;
 
 
-		// Add here list of permission defined by
-		// an id, a label, a boolean and two constant strings.
-		// Example:
-		//// Permission id (must not be already used)
-		//$this->rights[$r][0] = 2000;
-		//// Permission label
-		//$this->rights[$r][1] = 'Permision label';
-		//// Permission by default for new user (0/1)
-		//$this->rights[$r][3] = 1;
-		//// In php code, permission will be checked by test
-		//// if ($user->rights->permkey->level1->level2)
-		//$this->rights[$r][4] = 'level1';
-		//// In php code, permission will be checked by test
-		//// if ($user->rights->permkey->level1->level2)
-		//$this->rights[$r][5] = 'level2';
-		//$r++;
+		// Menus
+		//-------
+		$this->menu = 1;        // This module add menu entries. They are coded into menu manager.
+
+
 		// Main menu entries
 		$this->menu = array(); // List of menus to add
 		$r = 0;
@@ -239,108 +204,87 @@ class modResource extends DolibarrModules
 			'type'=> 'left', // Toujours un menu gauche
 			'titre'=> 'MenuResourceAdd',
 			'mainmenu'=> 'tools',
-			'leftmenu'=> '', // On n'indique rien ici car on ne souhaite pas intégrer de sous-menus à ce menu
-			'url'=> '/resource/add.php',
+			'leftmenu'=> 'resource_add',
+			'url'=> '/resource/card.php?action=create',
 			'langs'=> 'resource',
 			'position'=> 101,
+			'enabled'=> '1',
+			'perms'=> '$user->rights->resource->write',
+			'target'=> '',
+			'user'=> 0
+		);
+
+		$this->menu[$r++]=array(
+			'fk_menu'=>'fk_mainmenu=tools,fk_leftmenu=resource', //On utilise les ancres définis dans le menu parent déclaré au dessus
+			'type'=> 'left', // Toujours un menu gauche
+			'titre'=> 'List',
+			'mainmenu'=> 'tools',
+			'leftmenu'=> 'resource_list',
+			'url'=> '/resource/list.php',
+			'langs'=> 'resource',
+			'position'=> 102,
 			'enabled'=> '1',
 			'perms'=> '$user->rights->resource->read',
 			'target'=> '',
 			'user'=> 0
 		);
 
-		// Exports
-		$r = 1;
 
-		// Example:
-		//$this->export_code[$r]=$this->rights_class.'_'.$r;
-		//// Translation key (used only if key ExportDataset_xxx_z not found)
-		//$this->export_label[$r]='CustomersInvoicesAndInvoiceLines';
-		//// Condition to show export in list (ie: '$user->id==3').
-		//// Set to 1 to always show when module is enabled.
-		//$this->export_enabled[$r]='1';
-		//$this->export_permission[$r]=array(array("facture","facture","export"));
-		//$this->export_fields_array[$r]=array(
-		//	's.rowid'=>"IdCompany",
-		//	's.nom'=>'CompanyName',
-		//	's.address'=>'Address',
-		//	's.cp'=>'Zip',
-		//	's.ville'=>'Town',
-		//	's.fk_pays'=>'Country',
-		//	's.tel'=>'Phone',
-		//	's.siren'=>'ProfId1',
-		//	's.siret'=>'ProfId2',
-		//	's.ape'=>'ProfId3',
-		//	's.idprof4'=>'ProfId4',
-		//	's.code_compta'=>'CustomerAccountancyCode',
-		//	's.code_compta_fournisseur'=>'SupplierAccountancyCode',
-		//	'f.rowid'=>"InvoiceId",
-		//	'f.facnumber'=>"InvoiceRef",
-		//	'f.datec'=>"InvoiceDateCreation",
-		//	'f.datef'=>"DateInvoice",
-		//	'f.total'=>"TotalHT",
-		//	'f.total_ttc'=>"TotalTTC",
-		//	'f.tva'=>"TotalVAT",
-		//	'f.paye'=>"InvoicePaid",
-		//	'f.fk_statut'=>'InvoiceStatus',
-		//	'f.note'=>"InvoiceNote",
-		//	'fd.rowid'=>'LineId',
-		//	'fd.description'=>"LineDescription",
-		//	'fd.price'=>"LineUnitPrice",
-		//	'fd.tva_tx'=>"LineVATRate",
-		//	'fd.qty'=>"LineQty",
-		//	'fd.total_ht'=>"LineTotalHT",
-		//	'fd.total_tva'=>"LineTotalTVA",
-		//	'fd.total_ttc'=>"LineTotalTTC",
-		//	'fd.date_start'=>"DateStart",
-		//	'fd.date_end'=>"DateEnd",
-		//	'fd.fk_product'=>'ProductId',
-		//	'p.ref'=>'ProductRef'
-		//);
-		//$this->export_entities_array[$r]=array('s.rowid'=>"company",
-		//	's.nom'=>'company',
-		//	's.address'=>'company',
-		//	's.cp'=>'company',
-		//	's.ville'=>'company',
-		//	's.fk_pays'=>'company',
-		//	's.tel'=>'company',
-		//	's.siren'=>'company',
-		//	's.siret'=>'company',
-		//	's.ape'=>'company',
-		//	's.idprof4'=>'company',
-		//	's.code_compta'=>'company',
-		//	's.code_compta_fournisseur'=>'company',
-		//	'f.rowid'=>"invoice",
-		//	'f.facnumber'=>"invoice",
-		//	'f.datec'=>"invoice",
-		//	'f.datef'=>"invoice",
-		//	'f.total'=>"invoice",
-		//	'f.total_ttc'=>"invoice",
-		//	'f.tva'=>"invoice",
-		//	'f.paye'=>"invoice",
-		//	'f.fk_statut'=>'invoice',
-		//	'f.note'=>"invoice",
-		//	'fd.rowid'=>'invoice_line',
-		//	'fd.description'=>"invoice_line",
-		//	'fd.price'=>"invoice_line",
-		//	'fd.total_ht'=>"invoice_line",
-		//	'fd.total_tva'=>"invoice_line",
-		//	'fd.total_ttc'=>"invoice_line",
-		//	'fd.tva_tx'=>"invoice_line",
-		//	'fd.qty'=>"invoice_line",
-		//	'fd.date_start'=>"invoice_line",
-		//	'fd.date_end'=>"invoice_line",
-		//	'fd.fk_product'=>'product',
-		//	'p.ref'=>'product'
-		//);
-		//$this->export_sql_start[$r] = 'SELECT DISTINCT ';
-		//$this->export_sql_end[$r] = ' FROM (' . MAIN_DB_PREFIX . 'facture as f, '
-		//	. MAIN_DB_PREFIX . 'facturedet as fd, ' . MAIN_DB_PREFIX . 'societe as s)';
-		//$this->export_sql_end[$r] .= ' LEFT JOIN ' . MAIN_DB_PREFIX
-		//	. 'product as p on (fd.fk_product = p.rowid)';
-		//$this->export_sql_end[$r] .= ' WHERE f.fk_soc = s.rowid '
-		//	. 'AND f.rowid = fd.fk_facture';
-		//$r++;
+		// Exports
+		//--------
+		$r=0;
+
+		$r++;
+		$this->export_code[$r]=$this->rights_class.'_'.$r;
+		$this->export_label[$r]="ResourceSingular";	// Translation key (used only if key ExportDataset_xxx_z not found)
+		$this->export_permission[$r]=array(array("resource","read"));
+		$this->export_fields_array[$r]=array('r.rowid'=>'IdResource','r.ref'=>'ResourceFormLabel_ref','c.code'=>'ResourceTypeCode','c.label'=>'ResourceType','r.description'=>'ResourceFormLabel_description','r.note_private'=>"NotePrivate",'r.note_public'=>"NotePublic",'r.asset_number'=>'AssetNumber','r.datec'=>"DateCreation",'r.tms'=>"DateLastModification");
+		$this->export_TypeFields_array[$r]=array('r.rowid'=>'List:resource:ref','r.ref'=>'Text','r.asset_number'=>'Text','r.description'=>'Text','c.code'=>'Text','c.label'=>'List:c_type_resource:label','r.datec'=>'Date','r.tms'=>'Date','r.note_private'=>'Text','r.note_public'=>'Text');
+		$this->export_entities_array[$r]=array('r.rowid'=>'resource','r.ref'=>'resource','c.code'=>'resource','c.label'=>'resource','r.description'=>'resource','r.note_private'=>"resource",'r.resource'=>"resource",'r.asset_number'=>'resource','r.datec'=>"resource",'r.tms'=>"resource");
+		$keyforselect='resource'; $keyforelement='resource'; $keyforaliasextra='extra';
+		include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
+
+		$this->export_dependencies_array[$r]=array('resource'=>array('r.rowid')); // We must keep this until the aggregate_array is used. To add unique key if we ask a field of a child to avoid the DISTINCT to discard them.
+		$this->export_sql_start[$r]='SELECT DISTINCT ';
+		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'resource as r ';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_type_resource as c ON c.rowid=r.fk_code_type_resource';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'resource_extrafields as extra ON extra.fk_object = c.rowid';
+		$this->export_sql_end[$r] .=' AND r.entity IN ('.getEntity('resource').')';
+
+
+		// Imports
+		//--------
+		$r=0;
+
+		// Import list of third parties and attributes
+		$r++;
+		$this->import_code[$r]=$this->rights_class.'_'.$r;
+		$this->import_label[$r]='ImportDataset_resource_1';
+		$this->import_icon[$r]='resource';
+		$this->import_entities_array[$r]=array();		// We define here only fields that use another icon that the one defined into import_icon
+		$this->import_tables_array[$r]=array('r'=>MAIN_DB_PREFIX.'resource','extra'=>MAIN_DB_PREFIX.'resource_extrafields');	// List of tables to insert into (insert done in same order)
+		$this->import_fields_array[$r]=array('r.ref'=>"ResourceFormLabel_ref*",'r.fk_code_type_resource'=>'ResourceTypeCode','r.description'=>'ResourceFormLabel_description','r.note_private'=>"NotePrivate",'r.note_public'=>"NotePublic",'r.asset_number'=>'AssetNumber','r.datec'=>'DateCreation');
+		// Add extra fields
+		$sql="SELECT name, label, fieldrequired FROM ".MAIN_DB_PREFIX."extrafields WHERE elementtype = 'resource' AND entity IN (0,".$conf->entity.")";
+		$resql=$this->db->query($sql);
+		if ($resql)    // This can fail when class is used on old database (during migration for example)
+		{
+			while ($obj=$this->db->fetch_object($resql))
+			{
+				$fieldname='extra.'.$obj->name;
+				$fieldlabel=ucfirst($obj->label);
+				$this->import_fields_array[$r][$fieldname]=$fieldlabel.($obj->fieldrequired?'*':'');
+			}
+		}
+		// End add extra fields
+		$this->import_fieldshidden_array[$r]=array('r.fk_user_author'=>'user->id','extra.fk_object'=>'lastrowid-'.MAIN_DB_PREFIX.'resource');    // aliastable.field => ('user->id' or 'lastrowid-'.tableparent)
+		$this->import_convertvalue_array[$r]=array(
+				'r.fk_code_type_resource'=>array('rule'=>'fetchidfromcodeorlabel','classfile'=>'/core/class/ctyperesource.class.php','class'=>'Ctyperesource','method'=>'fetch','dict'=>'DictionaryResourceType'),
+		);
+		//$this->import_convertvalue_array[$r]=array('s.fk_soc'=>array('rule'=>'lastrowid',table='t');
+		$this->import_regex_array[$r]=array('s.datec'=>'^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]( [0-9][0-9]:[0-9][0-9]:[0-9][0-9])?$');
+		$this->import_examplevalues_array[$r]=array('r.ref'=>"REF1",'r.fk_code_type_resource'=>"Code from dictionary resource type",'r.datec'=>"2017-01-01 or 2017-01-01 12:30:00");
+		$this->import_updatekeys_array[$r]=array('r.rf'=>'ResourceFormLabel_ref');
 	}
 
 	/**
@@ -359,21 +303,6 @@ class modResource extends DolibarrModules
 		$result = $this->loadTables();
 
 		return $this->_init($sql, $options);
-	}
-
-	/**
-	 * Function called when module is disabled.
-	 * Remove from database constants, boxes and permissions from Dolibarr database.
-	 * Data directories are not deleted
-	 *
-	 * 	@param		string	$options	Options when enabling module ('', 'noboxes')
-	 * 	@return		int					1 if OK, 0 if KO
-	 */
-	public function remove($options = '')
-	{
-		$sql = array();
-
-		return $this->_remove($sql, $options);
 	}
 
 	/**

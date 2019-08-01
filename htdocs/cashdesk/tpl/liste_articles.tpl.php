@@ -17,12 +17,19 @@
  *
  */
 
+// Protection to avoid direct call of template
+if (empty($langs) || ! is_object($langs))
+{
+	print "Error, template page can't be called as URL";
+	exit;
+}
+
+
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 
-$langs->load("main");
-$langs->load("bills");
-$langs->load("cashdesk");
+// Load translation files required by the page
+$langs->loadLangs(array("main","bills","cashdesk"));
 
 ?>
 
@@ -38,11 +45,10 @@ $societe = new Societe($db);
 $societe->fetch($thirdpartyid);
 /** end add Ditto */
 
-$tab=array();
-$tab = $_SESSION['poscart'];
+$tab = (! empty($_SESSION['poscart'])?$_SESSION['poscart']:array());
 
 $tab_size=count($tab);
-if ($tab_size <= 0) print '<center>'.$langs->trans("NoArticle").'<center><br>';
+if ($tab_size <= 0) print '<div class="center">'.$langs->trans("NoArticle").'</div><br>';
 else
 {
     for ($i=0;$i < $tab_size;$i++)
@@ -53,11 +59,9 @@ else
         if ( $tab[$i]['remise_percent'] > 0 ) {
 
             $remise_percent = ' -'.$tab[$i]['remise_percent'].'%';
-
         } else {
 
             $remise_percent = '';
-
         }
 
         $remise = $tab[$i]['remise'];
@@ -67,8 +71,6 @@ else
     }
 }
 
-$obj_facturation->calculTotaux();
-$total_ttc = $obj_facturation->prixTotalTtc();
 echo ('<p class="cadre_prix_total">'.$langs->trans("Total").' : '.price(price2num($total_ttc, 'MT'),0,$langs,0,0,-1,$conf->currency).'<br></p>'."\n");
 
 ?></div>

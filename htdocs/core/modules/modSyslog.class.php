@@ -45,6 +45,8 @@ class modSyslog extends DolibarrModules
 		// Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
 		// It is used to group modules in module setup page
 		$this->family = "base";
+		// Module position in the family on 2 digits ('01', '10', '20', ...)
+		$this->module_position = '50';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		// Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
@@ -52,11 +54,9 @@ class modSyslog extends DolibarrModules
 		// Can be enabled / disabled only in the main company
 		$this->core_enabled = 1;
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
-		$this->version = 'dolibarr';    // 'experimental' or 'dolibarr' or version
+		$this->version = 'dolibarr';
 		// Key used in llx_const table to save module status enabled/disabled (where MYMODULE is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		// Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
-		$this->special = 2;
 		// Name of image file used for this module.
 		$this->picto='technic';
 
@@ -66,51 +66,39 @@ class modSyslog extends DolibarrModules
 		// Config pages
 		$this->config_page_url = array("syslog.php");
 
-		// Dependances
-		$this->depends = array();
-		$this->requiredby = array();
+		// Dependencies
+		$this->hidden = false;			// A condition to hide module
+		$this->depends = array();		// List of module class names as string that must be enabled if this module is enabled
+		$this->requiredby = array();	// List of module ids to disable if this one is disabled
+		$this->conflictwith = array();	// List of module class names as string this module is in conflict with
+		$this->phpmin = array(5,4);		// Minimum version of PHP required by module
 
-		// Constantes
+		// Constants
 		$this->const = array();
 
-		// Boites
+		// Boxes
 		$this->boxes = array();
 
 		// Permissions
 		$this->rights = array();
 		$this->rights_class = 'syslog';
+
+		// Cronjobs
+		$this->cronjobs = array(
+			0 => array(
+				'label' => 'CompressSyslogs',
+				'jobtype' => 'method',
+				'class' => 'core/class/utils.class.php',
+				'objectname' => 'Utils',
+				'method' => 'compressSyslogs',
+				'parameters' => '',
+				'comment' => 'Compress and archive log files. Warning: batch must be run with same account than your web server to avoid to get log files with different owner than required by web server. Another solution is to set web server Operating System group as the group of directory documents and set GROUP permission "rws" on this directory so log files will always have the group and permissions of the web server Operating System group',
+				'frequency' => 1,
+				'unitfrequency' => 3600 * 24,
+				'priority' => 50,
+				'status' => 0,
+				'test' => true
+			)
+		);
 	}
-
-
-	/**
-	 *		Function called when module is enabled.
-	 *		The init function add constants, boxes, permissions and menus (defined in constructor) into Dolibarr database.
-	 *		It also creates data directories
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-	 */
-	function init($options='')
-	{
-		$sql = array();
-
-		return $this->_init($sql,$options);
-
-	}
-
-    /**
-	 *		Function called when module is disabled.
-	 *      Remove from database constants, boxes and permissions from Dolibarr database.
-	 *		Data directories are not deleted
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-    function remove($options='')
-    {
-		$sql = array();
-
-		return $this->_remove($sql,$options);
-    }
-
 }

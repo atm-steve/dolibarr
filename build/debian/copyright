@@ -1,14 +1,14 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Dolibarr
 Upstream-Contact: Laurent Destailleur <eldy@users.sourceforge.net>
-Source: http://www.dolibarr.org/files/stable/standard/
+Source: https://www.dolibarr.org/files/stable/standard/
 
 Files: *
 Copyright: 2002-2009, Rodolphe Quiedeville   <rodolphe@quiedeville.org>
            2003-2006, Jean-Louis Bergamo     <jlb@j1b.org>
            2003-2013, Laurent Destailleur    <eldy@users.sourceforge.net>
            2003, Xavier Dutoit               <doli@sydesy.com>
-           2004-2013, Regis Houssin          <regis.houssin@capnetworks.com>
+           2004-2013, Regis Houssin          <regis.houssin@inodbox.com>
            2004, Sebastien Di Cintio         <sdicintio@ressource-toi.org>
            2004, Benoit Mortier              <benoit.mortier@opensides.be>
            2004, Christophe Combelles        <ccomb@free.fr>
@@ -159,7 +159,7 @@ Comments:
  Those files are not shipped in the binary package as we
  configure Dolibarr to use Dejavu fonts from "fonts-dejavu-core".
   
-Files: docs/images/*
+Files: doc/images/*
 Copyright: Laurent Destailleur 
 License: CC-BY-SA-3.0
  You are free:
@@ -176,7 +176,7 @@ License: CC-BY-SA-3.0
  .
  For more information, see http://creativecommons.org/licenses/by-sa/3.0/
 
-Files: htdocs/includes/fpdi/*
+Files: htdocs/includes/fpdfi/*
 Copyright: 2004-2011 Setasign - Jan Slabon
 License: GPL-2+
  This program is free software; you can redistribute it
@@ -197,9 +197,6 @@ License: GPL-2+
  On Debian systems, the full text of the GNU General Public
  License version 2 can be found in the file
  `/usr/share/common-licenses/GPL-2'.
-Comment:
- Those files are not shipped in the binary package as we
- configure Dolibarr to use the library packaged in "libfpdi-php".
 
 Files: htdocs/includes/geoip/*
 Copyright: 2007 MaxMind LLC

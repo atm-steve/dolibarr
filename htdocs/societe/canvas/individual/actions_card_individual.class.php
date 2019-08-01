@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2010-2011 Regis Houssin  <regis.houssin@capnetworks.com>
+/* Copyright (C) 2010-2011 Regis Houssin  <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,6 @@ include_once DOL_DOCUMENT_ROOT.'/societe/canvas/actions_card_common.class.php';
  */
 class ActionsCardIndividual extends ActionsCardCommon
 {
-    var $dirmodule;
-	var $targetmodule;
-    var $canvas;
-    var $card;
-
     /**
 	 *    Constructor
 	 *
@@ -74,6 +69,7 @@ class ActionsCardIndividual extends ActionsCardCommon
 
 	/**
 	 * Execute actions
+     * @deprecated Use the doActions of hooks instead of this.
 	 *
 	 * @param	string	$action	Action
 	 * @param	int		$id			Id of object (may be empty for creation)
@@ -88,16 +84,18 @@ class ActionsCardIndividual extends ActionsCardCommon
 		return $return;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *    Assign custom values for canvas (for example into this->tpl to be used by templates)
 	 *
 	 *    @param	string	$action    Type of action
-	 *    @param	string	$id			Id of object
+	 *    @param	integer	$id			Id of object
 	 *    @param	string	$ref		Ref of object
 	 *    @return	void
 	 */
 	function assign_values(&$action, $id=0, $ref='')
 	{
+        // phpcs:enable
 		global $conf, $langs;
 		global $form, $formcompany;
 
@@ -138,6 +136,4 @@ class ActionsCardIndividual extends ActionsCardCommon
 	{
 		return restrictedArea($user,$features,$objectid,$dbtablename,$feature2,$dbt_keyfield,$dbt_select);
 	}
-
 }
-

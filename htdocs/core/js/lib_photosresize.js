@@ -21,10 +21,10 @@
 
 /* Enable jcrop plugin onto id cropbox */
 jQuery(function() {
-   jQuery('#cropbox').Jcrop({
-      onSelect: updateCoords, 
-      onChange: updateCoords
-   });
+    jQuery('#cropbox').Jcrop({
+        onSelect: updateCoords,
+        onChange: updateCoords
+    });
 });
 
 /* Update fields that store new size */
@@ -33,18 +33,11 @@ function updateCoords(c)
 	//alert(parseInt(jQuery("#ratioforcrop").val()));
 	ratio=1;
 	if (parseInt(jQuery("#ratioforcrop").val()) > 0) ratio = parseInt(jQuery("#ratioforcrop").val());
+	//console.log(ratio);
 	jQuery('#x').val(Math.ceil(c.x * ratio));
 	jQuery('#y').val(Math.ceil(c.y * ratio));
 	jQuery('#x2').val(Math.ceil(c.x2 * ratio));
 	jQuery('#y2').val(Math.ceil(c.y2 * ratio));
 	jQuery('#w').val(Math.ceil(c.w * ratio));
 	jQuery('#h').val(Math.ceil(c.h * ratio));
-};
-
-/* checkCoords */
-function checkCoords()
-{
-   if (parseInt(jQuery('#w').val())) return true;
-   alert('Please select a crop region then press submit.');
-   return false;
 };

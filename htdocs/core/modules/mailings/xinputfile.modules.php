@@ -31,12 +31,12 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 class mailing_xinputfile extends MailingTargets
 {
 	var $name='EmailsFromFile';              // Identifiant du module mailing
-	var $desc='EMails issus d\'un fichier';  // Libelle utilise si aucune traduction pour MailingModuleDescXXX ou XXX=name trouv�e
+	// This label is used if no translation is found for key XXX neither MailingModuleDescXXX where XXX=name is found
+	var $desc='EMails from a file';          // Libelle utilise si aucune traduction pour MailingModuleDescXXX ou XXX=name trouv�e
 	var $require_module=array();             // Module mailing actif si modules require_module actifs
 	var $require_admin=0;                    // Module mailing actif pour user admin ou non
 	var $picto='generic';
-
-	var $db;
+	var $tooltip='UseFormatFileEmailToTarget';
 
 
 	/**
@@ -73,8 +73,8 @@ class mailing_xinputfile extends MailingTargets
 	 *	For example if this selector is used to extract 500 different
 	 *	emails from a text file, this function must return 500.
 	 *
-	 *  @param      string	$sql        Requete sql de comptage
-	 *	@return		int			'' means NA
+	 *  @param      string	$sql        Sql request to count
+	 *	@return		string				'' means NA
 	 */
 	function getNbOfRecipients($sql='')
 	{
@@ -110,6 +110,7 @@ class mailing_xinputfile extends MailingTargets
 		return $s;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Ajoute destinataires dans table des cibles
 	 *
@@ -119,6 +120,7 @@ class mailing_xinputfile extends MailingTargets
 	 */
 	function add_to_target($mailing_id,$filtersarray=array())
 	{
+        // phpcs:enable
 		global $conf,$langs,$_FILES;
 
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
@@ -137,8 +139,6 @@ class mailing_xinputfile extends MailingTargets
 			{
 				$cpt=0;
 
-				//$mesg = '<div class="ok">'.$langs->trans("FileTransferComplete").'</div>';
-				//print_r($_FILES);
 				$file=$upload_dir . "/" . $_FILES['username']['name'];
 				$handle = @fopen($file, "r");
 				if ($handle)
@@ -181,7 +181,9 @@ class mailing_xinputfile extends MailingTargets
 					        {
 					        	$i++;
 					        	$langs->load("errors");
-					        	$this->error = $langs->trans("ErrorFoundBadEmailInFile",$i,$cpt,$email);
+							$msg = $langs->trans("ErrorFoundBadEmailInFile", $i, $cpt, $email);
+					        	if (!empty($msg)) $this->error = $msg;
+							else $this->error = 'ErrorFoundBadEmailInFile '.$i.' '.$cpt.' '.$email;	// We experience case where $langs->trans return an empty string.
 					        }
 				        }
 				    }
@@ -222,6 +224,4 @@ class mailing_xinputfile extends MailingTargets
 
 		return parent::add_to_target($mailing_id, $cibles);
 	}
-
 }
-

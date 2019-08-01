@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2003      Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2009 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2013 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2013 Regis Houssin        <regis.houssin@inodbox.com>
  * Copyright (C) 2011      Herve Prot           <herve.prot@symeos.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,11 +28,10 @@ require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
-$langs->load("admin");
-$langs->load("users");
-$langs->load("other");
+// Load translation files required by the page
+$langs->loadLangs(array('admin', 'users', 'other'));
 
-$action=GETPOST('action');
+$action=GETPOST('action','aZ09');
 
 if (!$user->admin) accessforbidden();
 
@@ -44,7 +43,7 @@ if (!$user->admin) accessforbidden();
 if ($action == 'add')
 {
     $sql = "UPDATE ".MAIN_DB_PREFIX."rights_def SET bydefault=1";
-    $sql.= " WHERE id = ".$_GET["pid"];
+    $sql.= " WHERE id = ".GETPOST("pid",'int');
     $sql.= " AND entity = ".$conf->entity;
     $db->query($sql);
 }
@@ -52,7 +51,7 @@ if ($action == 'add')
 if ($action == 'remove')
 {
     $sql = "UPDATE ".MAIN_DB_PREFIX."rights_def SET bydefault=0";
-    $sql.= " WHERE id = ".$_GET["pid"];
+    $sql.= " WHERE id = ".GETPOST('pid','int');
     $sql.= " AND entity = ".$conf->entity;
     $db->query($sql);
 }
@@ -62,12 +61,13 @@ if ($action == 'remove')
  * View
  */
 
-llxHeader('',$langs->trans("DefaultRights"));
+$wikihelp='EN:Setup_Security|FR:Paramétrage_Sécurité|ES:Configuración_Seguridad';
+llxHeader('',$langs->trans("DefaultRights"), $wikihelp);
 
-print_fiche_titre($langs->trans("SecuritySetup"),'','setup');
+print load_fiche_titre($langs->trans("SecuritySetup"),'','title_setup');
 
 print $langs->trans("DefaultRightsDesc");
-print " ".$langs->trans("OnlyActiveElementsAreShown")."<br>\n";
+print " ".$langs->trans("OnlyActiveElementsAreShown")."<br><br>\n";
 
 $db->begin();
 
@@ -115,23 +115,22 @@ foreach ($modulesdir as $dir)
 
 $db->commit();
 
-// Show warning about external users
-print showModulesExludedForExternal($modules).'<br>'."\n";
-print "<br>\n";
-
-
 $head=security_prepare_head();
 
-dol_fiche_head($head, 'default', $langs->trans("Security"));
+dol_fiche_head($head, 'default', $langs->trans("Security"), -1);
 
 
+// Show warning about external users
+print info_admin(showModulesExludedForExternal($modules)).'<br>'."\n";
+
+print '<div class="div-table-responsive-no-min">';
 print '<table class="noborder" width="100%">';
 
-// Affiche lignes des permissions
+// Show permissions lines
 $sql = "SELECT r.id, r.libelle, r.module, r.perms, r.subperms, r.bydefault";
 $sql.= " FROM ".MAIN_DB_PREFIX."rights_def as r";
 $sql.= " WHERE r.libelle NOT LIKE 'tou%'";    // On ignore droits "tous"
-$sql.= " AND entity IN (".(! empty($conf->multicompany->transverse_mode)?"1,":"").$conf->entity.")";
+$sql.= " AND entity = ".$conf->entity;
 if (empty($conf->global->MAIN_USE_ADVANCED_PERMS)) $sql.= " AND r.perms NOT LIKE '%_advance'";  // Hide advanced perms if option is not enabled
 $sql.= " ORDER BY r.module, r.id";
 
@@ -140,7 +139,6 @@ if ($result)
 {
     $num	= $db->num_rows($result);
     $i		= 0;
-    $var	= True;
     $oldmod	= "";
 
     while ($i < $num)
@@ -186,11 +184,12 @@ if ($result)
             print "</tr>\n";
         }
 
-        $var=!$var;
-        print '<tr '. $bc[$var].'>';
 
-        print '<td>'.img_object('',$picto).' '.$objMod->getName();
+        print '<tr class="oddeven">';
+        print '<td>';
+        print img_object('',$picto,'class="pictoobjectwidth"').' '.$objMod->getName();
         print '<a name="'.$objMod->getName().'">&nbsp;</a>';
+		print '</td>';
 
         $perm_libelle=($conf->global->MAIN_USE_ADVANCED_PERMS && ($langs->trans("PermissionAdvanced".$obj->id)!=("PermissionAdvanced".$obj->id))?$langs->trans("PermissionAdvanced".$obj->id):(($langs->trans("Permission".$obj->id)!=("Permission".$obj->id))?$langs->trans("Permission".$obj->id):$obj->libelle));
         print '<td>'.$perm_libelle. '</td>';
@@ -200,13 +199,13 @@ if ($result)
         {
             print img_picto($langs->trans("Active"),'tick');
             print '</td><td>';
-            print '<a href="perms.php?pid='.$obj->id.'&amp;action=remove#'.$objMod->getName().'">'.img_edit_remove().'</a>';
+            print '<a class="reposition" href="perms.php?pid='.$obj->id.'&amp;action=remove">'.img_edit_remove().'</a>';
         }
         else
         {
             print '&nbsp;';
             print '</td><td>';
-            print '<a href="perms.php?pid='.$obj->id.'&amp;action=add#'.$objMod->getName().'">'.img_edit_add().'</a>';
+            print '<a class="reposition" href="perms.php?pid='.$obj->id.'&amp;action=add">'.img_edit_add().'</a>';
         }
 
         print '</td></tr>';
@@ -215,10 +214,10 @@ if ($result)
 }
 
 print '</table>';
-
 print '</div>';
 
+dol_fiche_end();
 
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

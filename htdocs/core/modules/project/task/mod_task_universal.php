@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2010 Regis Houssin  <regis.houssin@capnetworks.com>
+/* Copyright (C) 2010 Regis Houssin  <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,22 +30,41 @@ require_once DOL_DOCUMENT_ROOT .'/core/modules/project/task/modules_task.php';
  */
 class mod_task_universal extends ModeleNumRefTask
 {
-	var $version='dolibarr';		// 'development', 'experimental', 'dolibarr'
-	var $error = '';
-	var $nom = 'Universal';
+	/**
+     * Dolibarr version of the loaded document
+     * @public string
+     */
+	public $version = 'dolibarr';		// 'development', 'experimental', 'dolibarr'
+
+	/**
+     * @var string Error code (or message)
+     */
+    public $error = '';
+
+	/**
+	 * @var string
+	 * @deprecated
+	 * @see name
+	 */
+	public $nom='Universal';
+
+	/**
+	 * @var string name
+	 */
+	public $name='Universal';
 
 
     /**
      *  Renvoi la description du modele de numerotation
-     * 
+     *
      *  @return     string      Texte descripif
      */
 	function info()
     {
     	global $conf,$langs;
 
-		$langs->load("projects");
-		$langs->load("admin");
+		// Load translation files required by the page
+        $langs->loadLangs(array("projects","admin"));
 
 		$form = new Form($this->db);
 
@@ -78,7 +97,7 @@ class mod_task_universal extends ModeleNumRefTask
 
     /**
      *  Renvoi un exemple de numerotation
-     * 
+     *
      *  @return     string      Example
      */
     function getExample()
@@ -99,12 +118,12 @@ class mod_task_universal extends ModeleNumRefTask
 
    /**
 	*  Return next value
-	* 
+	*
 	*  @param	Societe		$objsoc		Object third party
-	*  @param   Project		$project	Object project
+	*  @param   Task		$object	    Object task
 	*  @return  string					Value if OK, 0 if KO
 	*/
-    function getNextValue($objsoc,$project)
+    function getNextValue($objsoc,$object)
     {
 		global $db,$conf;
 
@@ -119,23 +138,24 @@ class mod_task_universal extends ModeleNumRefTask
 			return 0;
 		}
 
-		$date=empty($project->date_c)?dol_now():$project->date_c;
-		$numFinal=get_next_value($db,$mask,'projet_task','ref','',$objsoc->code_client,$date);
+		$date=empty($object->date_c)?dol_now():$object->date_c;
+		$numFinal=get_next_value($db,$mask,'projet_task','ref','',(is_object($objsoc)?$objsoc->code_client:''),$date);
 
 		return  $numFinal;
 	}
 
 
-    /**   
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    /**
      *  Return next reference not yet used as a reference
-     * 
+     *
      *  @param	Societe		$objsoc     Object third party
-     *  @param  Project		$project	Object project
+     *  @param  Task		$object	    Object task
      *  @return string      			Next not used reference
      */
-    function project_get_num($objsoc=0,$project='')
+    function project_get_num($objsoc=0,$object='')
     {
-        return $this->getNextValue($objsoc,$project);
+        // phpcs:enable
+        return $this->getNextValue($objsoc, $object);
     }
 }
-

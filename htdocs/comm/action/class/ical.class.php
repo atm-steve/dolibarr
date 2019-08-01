@@ -1,8 +1,8 @@
 <?php
-/* Copyright (C) 2006	Roman Ozana			<ozana@omdesign.cz>
- * Copyright (C) 2011	Juanjo Menent		<jmenent@2byte.es>
- * Copyright (C) 2013	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2012	Regis Houssin		<regis.houssin@capnetworks.com>
+/* Copyright (C) 2006      Roman Ozana			<ozana@omdesign.cz>
+ * Copyright (C) 2011	   Juanjo Menent		<jmenent@2byte.es>
+ * Copyright (C) 2013-2014 Laurent Destailleur	<eldy@users.sourceforge.net>
+ * Copyright (C) 2012	   Regis Houssin		<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,11 @@
  *       \ingroup    agenda
  *       \brief      File of class to parse ical calendars
  */
+require_once DOL_DOCUMENT_ROOT.'/core/lib/xcal.lib.php';
 
 
 /**
- *		Class to parse ICal calendars
+ *  Class to read/parse ICal calendars
  */
 class ICal
 {
@@ -38,15 +39,15 @@ class ICal
     var $last_key; //Help variable save last key (multiline string)
 
 
-	/**
-	 * Constructor
-	 */
-	public function __construct()
-	{
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+    }
 
-	}
-
-	/**
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
+    /**
      * Read text file, icalender text file
      *
      * @param 	string 	$file		File
@@ -54,6 +55,7 @@ class ICal
      */
     function read_file($file)
     {
+        // phpcs:enable
         $this->file = $file;
         $file_text='';
 
@@ -66,6 +68,7 @@ class ICal
         return $file_text; // return all text
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Returns the number of calendar events
      *
@@ -73,9 +76,11 @@ class ICal
      */
     function get_event_count()
     {
+        // phpcs:enable
         return $this->event_count;
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Returns the number of to do
      *
@@ -83,6 +88,7 @@ class ICal
      */
     function get_todo_count()
     {
+        // phpcs:enable
         return $this->todo_count;
     }
 
@@ -107,6 +113,7 @@ class ICal
         if (!stristr($this->file_text[0],'BEGIN:VCALENDAR')) return 'error not VCALENDAR';
 
         $insidealarm=0;
+        $tmpkey='';$tmpvalue=''; $type='';
         foreach ($this->file_text as $text)
         {
             $text = trim($text); // trim one line
@@ -137,7 +144,7 @@ class ICal
                     case "BEGIN:DAYLIGHT":
                     case "BEGIN:VTIMEZONE":
                     case "BEGIN:STANDARD":
-                        $type = $value; // save tu array under value key
+                        $type = $value; // save array under value key
                         break;
 
                     case "END:VTODO": // end special text - goto VCALENDAR key
@@ -159,8 +166,31 @@ class ICal
                         $insidealarm=0;
                         break;
 
-                    default: // no special string
-                        if (! $insidealarm) $this->add_to_array($type, $key, $value); // add to array
+                    default: // no special string (SUMMARY, DESCRIPTION, ...)
+                    	if ($tmpvalue)
+						{
+							$tmpvalue .= $text;
+							if (! preg_match('/=$/',$text))	// No more lines
+							{
+								$key=$tmpkey;
+								$value=quotedPrintDecode(preg_replace('/^ENCODING=QUOTED-PRINTABLE:/i','',$tmpvalue));
+								$tmpkey='';
+								$tmpvalue='';
+							}
+						}
+                    	elseif (preg_match('/^ENCODING=QUOTED-PRINTABLE:/i',$value))
+                    	{
+                    		if (preg_match('/=$/',$value))
+                    		{
+                    			$tmpkey=$key;
+                    			$tmpvalue=$tmpvalue.preg_replace('/=$/',"",$value);	// We must wait to have next line to have complete message
+                    		}
+                    		else
+                    		{
+                    			$value=quotedPrintDecode(preg_replace('/^ENCODING=QUOTED-PRINTABLE:/i','',$tmpvalue.$value));
+                    		}
+                    	}                    	//$value=quotedPrintDecode($tmpvalue.$value);
+                    	if (! $insidealarm && ! $tmpkey) $this->add_to_array($type, $key, $value); // add to array
                         break;
                 }
             }
@@ -170,6 +200,7 @@ class ICal
         return $this->cal;
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Add to $this->ical array one value and key.
      *
@@ -180,10 +211,11 @@ class ICal
      */
     function add_to_array($type, $key, $value)
     {
+        // phpcs:enable
 
         //print 'type='.$type.' key='.$key.' value='.$value.'<br>'."\n";
 
-        if ($key == false)
+        if (empty($key))
         {
             $key = $this->last_key;
             switch ($type)
@@ -194,12 +226,12 @@ class ICal
             }
         }
 
-        if (($key == "DTSTAMP") or ($key == "LAST-MODIFIED") or ($key == "CREATED")) $value = $this->ical_date_to_unix($value);
-        if ($key == "RRULE" ) $value = $this->ical_rrule($value);
+        if (($key == "DTSTAMP") || ($key == "LAST-MODIFIED") || ($key == "CREATED")) $value = $this->ical_date_to_unix($value);
+        //if ($key == "RRULE" ) $value = $this->ical_rrule($value);
 
-        if (stristr($key,"DTSTART") or stristr($key,"DTEND") or stristr($key,"DTSTART;VALUE=DATE") or stristr($key,"DTEND;VALUE=DATE"))
+        if (stristr($key,"DTSTART") || stristr($key,"DTEND") || stristr($key,"DTSTART;VALUE=DATE") || stristr($key,"DTEND;VALUE=DATE"))
         {
-        	if (stristr($key,"DTSTART;VALUE=DATE") or stristr($key,"DTEND;VALUE=DATE"))
+        	if (stristr($key,"DTSTART;VALUE=DATE") || stristr($key,"DTEND;VALUE=DATE"))
         	{
         		list($key,$value) = array($key,$value);
         	}
@@ -230,6 +262,7 @@ class ICal
         $this->last_key = $key;
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Parse text "XXXX:value text some with : " and return array($key = "XXXX", $value="value");
      *
@@ -238,7 +271,8 @@ class ICal
      */
     function retun_key_value($text)
     {
-    	/*
+        // phpcs:enable
+        /*
         preg_match("/([^:]+)[:]([\w\W]+)/", $text, $matches);
 
         if (empty($matches))
@@ -250,9 +284,10 @@ class ICal
             $matches = array_splice($matches, 1, 2);
             return $matches;
         }*/
-		return explode(':',$text,2);
+        return explode(':',$text,2);
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Parse RRULE  return array
      *
@@ -261,6 +296,8 @@ class ICal
      */
     function ical_rrule($value)
     {
+        // phpcs:enable
+        $result = array();
         $rrule = explode(';',$value);
         foreach ($rrule as $line)
         {
@@ -269,6 +306,8 @@ class ICal
         }
         return $result;
     }
+
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return Unix time from ical date time fomrat (YYYYMMDD[T]HHMMSS[Z] or YYYYMMDD[T]HHMMSS)
      *
@@ -277,6 +316,7 @@ class ICal
      */
     function ical_date_to_unix($ical_date)
     {
+        // phpcs:enable
         $ical_date = str_replace('T', '', $ical_date);
         $ical_date = str_replace('Z', '', $ical_date);
 
@@ -290,6 +330,7 @@ class ICal
         return $ntime;      // ntime is a GTM time
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return unix date from iCal date format
      *
@@ -299,6 +340,8 @@ class ICal
      */
     function ical_dt_date($key, $value)
     {
+        // phpcs:enable
+        $return_value = array();
         $value = $this->ical_date_to_unix($value);
 
         // Analyse TZID
@@ -309,8 +352,8 @@ class ICal
             $value = str_replace('T', '', $value);
             return array($key,$value);
         }
-        // adding $value and $tzid
-        $key =     $temp[0];
+
+        $key = $temp[0];
         $temp = explode("=", $temp[1]);
         $return_value[$temp[0]] = $temp[1];
         $return_value['unixtime'] = $value;
@@ -318,6 +361,7 @@ class ICal
         return array($key,$return_value);
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return sorted eventlist as array or false if calenar is empty
      *
@@ -325,17 +369,20 @@ class ICal
      */
     function get_sort_event_list()
     {
+        // phpcs:enable
         $temp = $this->get_event_list();
         if (!empty($temp))
         {
             usort($temp, array(&$this, "ical_dtstart_compare"));
             return $temp;
-        } else
-        {
+        }
+        else
+       {
             return false;
         }
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Compare two unix timestamp
      *
@@ -345,9 +392,11 @@ class ICal
      */
     function ical_dtstart_compare($a, $b)
     {
+        // phpcs:enable
         return strnatcasecmp($a['DTSTART']['unixtime'], $b['DTSTART']['unixtime']);
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return eventlist array (not sort eventlist array)
      *
@@ -355,9 +404,11 @@ class ICal
      */
     function get_event_list()
     {
+        // phpcs:enable
         return (! empty($this->cal['VEVENT'])?$this->cal['VEVENT']:'');
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return eventlist array (not sort eventlist array)
      *
@@ -365,9 +416,11 @@ class ICal
      */
     function get_freebusy_list()
     {
+        // phpcs:enable
         return $this->cal['VFREEBUSY'];
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return to do array (not sort to do array)
      *
@@ -375,9 +428,11 @@ class ICal
      */
     function get_todo_list()
     {
+        // phpcs:enable
         return $this->cal['VTODO'];
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return base calendar data
      *
@@ -385,9 +440,11 @@ class ICal
      */
     function get_calender_data()
     {
+        // phpcs:enable
         return $this->cal['VCALENDAR'];
     }
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
      * Return array with all data
      *
@@ -395,6 +452,7 @@ class ICal
      */
     function get_all_data()
     {
+        // phpcs:enable
         return $this->cal;
     }
 }

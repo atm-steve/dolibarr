@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2009 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2010 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2010 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,9 @@ require_once DOL_DOCUMENT_ROOT .'/comm/mailing/class/mailing.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/emailing.lib.php';
 
+$id=GETPOST('id');
+
+// Load translation files required by the page
 $langs->load("mails");
 
 // Security check
@@ -43,26 +46,35 @@ llxHeader('',$langs->trans("Mailing"),'EN:Module_EMailing|FR:Module_Mailing|ES:M
 
 $form = new Form($db);
 
-$mil = new Mailing($db);
+$object = new Mailing($db);
 
-if ($mil->fetch($_REQUEST["id"]) >= 0)
+if ($object->fetch($id) >= 0)
 {
-	$head = emailing_prepare_head($mil);
+	$head = emailing_prepare_head($object);
 
-	dol_fiche_head($head, 'info', $langs->trans("Mailing"), 0, 'email');
+	dol_fiche_head($head, 'info', $langs->trans("Mailing"), -1, 'email');
 
+	$linkback = '<a href="'.DOL_URL_ROOT.'/comm/mailing/list.php">'.$langs->trans("BackToList").'</a>';
 
-	print '<table width="100%"><tr><td>';
-	$mil->user_creation=$mil->user_creat;
-	$mil->date_creation=$mil->date_creat;
-	$mil->user_validation=$mil->user_valid;
-	$mil->date_validation=$mil->date_valid;
-	dol_print_object_info($mil);
-	print '</td></tr></table>';
+	$morehtmlright='';
+	if ($object->statut == 2) $morehtmlright.=' ('.$object->countNbOfTargets('alreadysent').'/'.$object->nbemail.') ';
+	
+	dol_banner_tab($object, 'id', $linkback, 1, 'rowid', 'ref', '', '', 0, '', $morehtmlright);
+	
+	print '<div class="underbanner clearboth"></div><br>';
+	
+	//print '<table width="100%"><tr><td>';
+	$object->user_creation=$object->user_creat;
+	$object->date_creation=$object->date_creat;
+	$object->user_validation=$object->user_valid;
+	$object->date_validation=$object->date_valid;
+	dol_print_object_info($object, 0);
+	//print '</td></tr></table>';
+	
 
-	print '</div>';
+	dol_fiche_end();
 }
 
-$db->close();
-
+// End of page
 llxFooter();
+$db->close();

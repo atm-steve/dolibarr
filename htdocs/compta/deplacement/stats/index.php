@@ -27,7 +27,8 @@ require '../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/dolgraph.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/deplacement/class/deplacementstats.class.php';
 
-$langs->load("trips");
+// Load translation files required by the page
+$langs->loadLangs(array('trips', 'companies'));
 
 $WIDTH=DolGraph::getDefaultGraphSizeForStats('width');
 $HEIGHT=DolGraph::getDefaultGraphSizeForStats('height');
@@ -45,6 +46,18 @@ if ($user->societe_id > 0)
 if ($user->societe_id) $socid=$user->societe_id;
 $result = restrictedArea($user, 'deplacement', $id,'');
 
+// Other security check
+$childids = $user->getAllChildIds();
+$childids[]=$user->id;
+if ($userid > 0)
+{
+	if (empty($user->rights->deplacement->readall) && empty($user->rights->deplacement->lire_tous) && ! in_array($userid, $childids))
+	{
+		accessforbidden();
+		exit;
+	}
+}
+
 $nowyear=strftime("%Y", dol_now());
 $year = GETPOST('year')>0?GETPOST('year'):$nowyear;
 //$startyear=$year-2;
@@ -60,16 +73,24 @@ $mode=GETPOST("mode")?GETPOST("mode"):'customer';
 
 $form=new Form($db);
 
+
 llxHeader();
 
 $title=$langs->trans("TripsAndExpensesStatistics");
 $dir=$conf->deplacement->dir_temp;
 
-print_fiche_titre($title, $mesg);
+print load_fiche_titre($title, $mesg);
 
 dol_mkdir($dir);
 
-$stats = new DeplacementStats($db, $socid, $userid);
+$useridtofilter=$userid;	// Filter from parameters
+if (empty($useridtofilter))
+{
+	$useridtofilter=$childids;
+	if (! empty($user->rights->deplacement->readall) || ! empty($user->rights->deplacement->lire_tous)) $useridtofilter=0;
+}
+
+$stats = new DeplacementStats($db, $socid, $useridtofilter);
 
 
 // Build graphic number of object
@@ -202,7 +223,7 @@ $h++;
 
 complete_head_from_modules($conf,$langs,null,$head,$h,'trip_stats');
 
-dol_fiche_head($head,'byyear',$langs->trans("Statistics"));
+dol_fiche_head($head, 'byyear', $langs->trans("Statistics"), -1);
 
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
@@ -216,11 +237,13 @@ print '<tr class="liste_titre"><td class="liste_titre" colspan="2">'.$langs->tra
 // Company
 print '<tr><td>'.$langs->trans("ThirdParty").'</td><td>';
 $filter='';
-print $form->select_company($socid,'socid',$filter,1,1);
+print $form->select_company($socid,'socid',$filter,1,1,0,array(),0,'','style="width: 95%"');
 print '</td></tr>';
 // User
-print '<tr><td>'.$langs->trans("User").'/'.$langs->trans("SalesRepresentative").'</td><td>';
-print $form->select_dolusers($userid,'userid',1);
+print '<tr><td>'.$langs->trans("User").'</td><td>';
+$include='';
+if (empty($user->rights->deplacement->readall) && empty($user->rights->deplacement->lire_tous)) $include='hierarchy';
+print $form->select_dolusers($userid, 'userid', 1, '', 0, $include, '', 0, 0, 0, '', 0, '', 'maxwidth300');
 print '</td></tr>';
 // Year
 print '<tr><td>'.$langs->trans("Year").'</td><td>';
@@ -233,6 +256,7 @@ print '</table>';
 print '</form>';
 print '<br><br>';
 
+print '<div class="div-table-responsive-no-min">';
 print '<table class="border" width="100%">';
 print '<tr height="24">';
 print '<td align="center">'.$langs->trans("Year").'</td>';
@@ -265,13 +289,13 @@ foreach ($data as $val)
 }
 
 print '</table>';
-
+print '</div>';
 
 print '</div><div class="fichetwothirdright"><div class="ficheaddleft">';
 
 
 // Show graphs
-print '<table class="border" width="100%"><tr valign="top"><td align="center">';
+print '<table class="border" width="100%"><tr class="pair nohover"><td align="center">';
 if ($mesg) { print $mesg; }
 else {
     print $px1->show();
@@ -289,7 +313,6 @@ print '<div style="clear:both"></div>';
 
 dol_fiche_end();
 
-
+// End of page
 llxFooter();
-
 $db->close();

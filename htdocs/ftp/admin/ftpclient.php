@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2004-2009 Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2004-2016 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2011 	   Juanjo Menent		<jmenent@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,7 @@
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
-$langs->load("admin");
-$langs->load("ftp");
+$langs->loadLangs(array("admin", "ftp"));
 
 // Security check
 if (!$user->admin) accessforbidden();
@@ -37,7 +36,12 @@ $lastftpentry=0;
 $action = GETPOST('action','alpha');
 $entry = GETPOST('numero_entry','alpha');
 
-// Positionne la variable pour le nombre de rss externes
+
+/*
+ * Action
+ */
+
+// Get value for $lastftpentry
 $sql ="select MAX(name) as name from ".MAIN_DB_PREFIX."const";
 $sql.=" WHERE name like 'FTP_SERVER_%'";
 $result=$db->query($sql);
@@ -58,18 +62,17 @@ if ($action == 'add' || GETPOST('modify','alpha'))
 	$ftp_server = "FTP_SERVER_" . $entry; //$_POST["numero_entry"];
 
 	$error=0;
-	$mesg='';
 
 	if (! GETPOST("$ftp_name",'alpha'))
 	{
 		$error=1;
-		$mesg.='<div class="error">'.$langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Label")).'</div>';
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Label")), null, 'errors');
 	}
 
 	if (! GETPOST("$ftp_server",'alpha'))
 	{
 		$error=1;
-		$mesg.='<div class="error">'.$langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Server")).'</div>';
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Server")), null, 'errors');
 	}
 
     if (! $error)
@@ -91,7 +94,6 @@ if ($action == 'add' || GETPOST('modify','alpha'))
         if ($result1 && $result2 && $result3 && $result4 && $result5 && $result6)
         {
             $db->commit();
-	  		//$mesg='<div class="ok">'.$langs->trans("Success").'</div>';
             header("Location: ".$_SERVER["PHP_SELF"]);
             exit;
         }
@@ -119,7 +121,6 @@ if (GETPOST('delete','alpha'))
         if ($result1 && $result2 && $result3 && $result4 && $result5 && $result6)
         {
             $db->commit();
-	  		//$mesg='<div class="ok">'.$langs->trans("Success").'</div>';
             header("Location: ".$_SERVER["PHP_SELF"]);
             exit;
         }
@@ -140,8 +141,8 @@ $form=new Form($db);
 
 llxHeader();
 
-$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
-print_fiche_titre($langs->trans("FTPClientSetup"), $linkback, 'setup');
+$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
+print load_fiche_titre($langs->trans("FTPClientSetup"), $linkback, 'title_setup');
 print '<br>';
 
 if (! function_exists('ftp_connect'))
@@ -176,7 +177,7 @@ else
 	print '<tr class="pair">';
 	print '<td width="100">'.$langs->trans("Port").'</td>';
 	print '<td><input type="text" name="FTP_PORT_'.($lastftpentry+1).'" value="'.GETPOST("FTP_PORT_" . ($lastftpentry+1)).'" size="64"></td>';
-	print '<td>21</td>';
+	print '<td>21 for pure non crypted FTP or if option FTP_CONNECT_WITH_SSL (See Home-Setup-Other) is on (FTPS)<br>22 if option FTP_CONNECT_WITH_SFTP (See Home-Setup-Other) is on (SFTP)</td>';
 	print '</tr>';
 
 	print '<tr class="impair">';
@@ -201,7 +202,8 @@ else
 	
 	print '</table>';
 	
-	?><br><center><input type="submit" class="button" value="<?php echo $langs->trans("Add") ?>"></center>
+	?>
+	<br><div class="center"><input type="submit" class="button" value="<?php echo $langs->trans("Add") ?>"></div>
 	<input type="hidden" name="action" value="add">
 	<input type="hidden" name="numero_entry" value="<?php echo ($lastftpentry+1) ?>">
 	<?php
@@ -212,13 +214,11 @@ else
 
 	<?php
 
-	print '<table class="noborder" width="100%">'."\n";
-
 	$sql ="select name, value, note from ".MAIN_DB_PREFIX."const";
 	$sql.=" WHERE name like 'FTP_SERVER_%'";
 	$sql.=" ORDER BY name";
 
-	dol_syslog("ftpclient select ftp setup sql=".$sql,LOG_DEBUG);
+	dol_syslog("ftpclient select ftp setup", LOG_DEBUG);
 	$resql=$db->query($sql);
 	if ($resql)
 	{
@@ -233,49 +233,57 @@ else
 			$idrss = $reg[0];
 			//print "x".join(',',$reg)."=".$obj->name."=".$idrss;
 
-			$var=true;
-
 			print "<form name=\"externalrssconfig\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 			print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+			print '<input type="hidden" name="numero_entry" value="'.$idrss.'">';
+			
+			print '<table class="noborder" width="100%">'."\n";
 
-			print "<tr class=\"liste_titre\">";
-			print "<td colspan=\"2\">".$langs->trans("FTP")." ".($idrss)."</td>";
+			print '<tr class="liste_titre">';
+			print '<td class="fieldtitle">'.$langs->trans("FTP")." ".($idrss)."</td>";
+			print '<td></td>';
 			print "</tr>";
 
-			$var=!$var;
-			print "<tr ".$bc[$var].">";
+			$keyforname="FTP_NAME_" . $idrss;
+			$keyforserver="FTP_SERVER_" . $idrss;
+			$keyforport="FTP_PORT_" . $idrss;
+			$keyforuser="FTP_USER_" . $idrss;
+			$keyforpassword="FTP_PASSWORD_" . $idrss;
+			$keyforpassive="FTP_PASSIVE_" . $idrss;
+				
+			print '<tr class="oddeven">';
 			print "<td>".$langs->trans("Name")."</td>";
-			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_NAME_" . $idrss . "\" value=\"" . @constant("FTP_NAME_" . $idrss) . "\" size=\"64\"></td>";
+			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_NAME_" . $idrss . "\" value=\"" . $conf->global->$keyforname . "\" size=\"64\"></td>";
 			print "</tr>";
 
-			$var=!$var;
-			print "<tr ".$bc[$var].">";
+			
+			print '<tr class="oddeven">';
 			print "<td>".$langs->trans("Server")."</td>";
-			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_SERVER_" . $idrss . "\" value=\"" . @constant("FTP_SERVER_" . $idrss) . "\" size=\"64\"></td>";
+			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_SERVER_" . $idrss . "\" value=\"" . $conf->global->$keyforserver . "\" size=\"64\"></td>";
 			print "</tr>";
 
-			$var=!$var;
-			print "<tr ".$bc[$var].">";
+			
+			print '<tr class="oddeven">';
 			print "<td width=\"100\">".$langs->trans("Port")."</td>";
-			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_PORT_" . $idrss . "\" value=\"" . @constant("FTP_PORT_" . $idrss) . "\" size=\"64\"></td>";
+			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_PORT_" . $idrss . "\" value=\"" . $conf->global->$keyforport . "\" size=\"64\"></td>";
 			print "</tr>";
 
-			$var=!$var;
-			print "<tr ".$bc[$var].">";
+			
+			print '<tr class="oddeven">';
 			print "<td width=\"100\">".$langs->trans("User")."</td>";
-			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_USER_" . $idrss . "\" value=\"" . @constant("FTP_USER_" . $idrss) . "\" size=\"24\"></td>";
+			print "<td><input type=\"text\" class=\"flat\" name=\"FTP_USER_" . $idrss . "\" value=\"" . $conf->global->$keyforuser . "\" size=\"24\"></td>";
 			print "</tr>";
 
-			$var=!$var;
-			print "<tr ".$bc[$var].">";
+			
+			print '<tr class="oddeven">';
 			print "<td width=\"100\">".$langs->trans("Password")."</td>";
-			print "<td><input type=\"password\" class=\"flat\" name=\"FTP_PASSWORD_" . $idrss . "\" value=\"" . @constant("FTP_PASSWORD_" . $idrss) . "\" size=\"24\"></td>";
+			print "<td><input type=\"password\" class=\"flat\" name=\"FTP_PASSWORD_" . $idrss . "\" value=\"" . $conf->global->$keyforpassword . "\" size=\"24\"></td>";
 			print "</tr>";
 
-			$var=!$var;
-			print "<tr ".$bc[$var].">";
+			
+			print '<tr class="oddeven">';
 			print "<td width=\"100\">".$langs->trans("FTPPassiveMode")."</td>";
-			print '<td>'.$form->selectyesno('FTP_PASSIVE_'.$idrss, @constant("FTP_PASSIVE_" . $idrss), 1).'</td>';
+			print '<td>'.$form->selectyesno('FTP_PASSIVE_'.$idrss, $conf->global->$keyforpassive, 1).'</td>';
 			print "</tr>";
 
 			print "<tr>";
@@ -283,12 +291,14 @@ else
 			print "<input type=\"submit\" class=\"button\" name=\"modify\" value=\"".$langs->trans("Modify")."\">";
 			print " &nbsp; ";
 			print "<input type=\"submit\" class=\"button\" name=\"delete\" value=\"".$langs->trans("Delete")."\">";
-			print "<input type=\"hidden\" name=\"numero_entry\"  value=\"".$idrss."\">";
 			print "</td>";
 			print "</tr>";
 
+			print '</table>';
+			
 			print "</form>";
-
+			print '<br>';
+			
 			$i++;
 		}
 	}
@@ -296,14 +306,8 @@ else
 	{
 		dol_print_error($db);
 	}
-
-	print '</table>';
-
 }
 
-dol_htmloutput_mesg($mesg);
-
-
+// End of page
 llxFooter();
-
 $db->close();

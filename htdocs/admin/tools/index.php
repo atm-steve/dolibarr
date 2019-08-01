@@ -1,7 +1,7 @@
 <?php
 /* Copyright (C) 2001-2004	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
  * Copyright (C) 2004-2006	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2012	Regis Houssin			<regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 
 require '../../main.inc.php';
 
-$langs->load("admin");
-$langs->load("companies");
+// Load translation files required by the page
+$langs->loadLangs(array("companies","admin"));
 
 if (! $user->admin)
 	accessforbidden();
@@ -37,12 +37,12 @@ if (! $user->admin)
 
 $form = new Form($db);
 
-$title=$langs->trans("SystemToolsArea");
-if (GETPOST('leftmenu') == 'modulesadmintools') $title=$langs->trans("ModulesSystemTools");
+$title=$langs->trans("AdminTools");
+//if (GETPOST('leftmenu',"aZ09") == 'admintools') $title=$langs->trans("ModulesSystemTools");
 
-llxHeader(array(),$title);
+llxHeader('', $title);
 
-print_fiche_titre($title,'','setup');
+print load_fiche_titre($title,'','title_setup');
 
 print $langs->trans("SystemToolsAreaDesc").'<br>';
 print "<br>";
@@ -53,7 +53,9 @@ print '<br><br>';
 
 
 // Show logo
-print '<center><div class="logo_setup"></div></center>';
+//print '<div class="center"><div class="logo_setup"></div></div>';
+print '<center><div class="logo_setup"></div></center>';				// For a reason I don't know, the div class="center does not works, we must keep the <center>
 
+// End of page
 llxFooter();
 $db->close();

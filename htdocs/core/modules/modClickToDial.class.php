@@ -28,7 +28,7 @@ include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
 
 
 /**
- *	Classe de description et activation du module de Click to Dial
+ *	Class to describe and enable module Click to Dial
  */
 class modClickToDial extends DolibarrModules
 {
@@ -43,7 +43,7 @@ class modClickToDial extends DolibarrModules
 		$this->db = $db;
 		$this->numero = 58;
 
-		$this->family = "technic";
+		$this->family = "interface";
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
 		$this->name = preg_replace('/^mod/i','',get_class($this));
 		$this->description = "Gestion du Click To Dial";
@@ -51,7 +51,6 @@ class modClickToDial extends DolibarrModules
 		$this->version = 'dolibarr';		// 'development' or 'experimental' or 'dolibarr' or version
 
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->special = 1;
 		$this->picto='phoning';
 
 		// Data directories to create when module is enabled
@@ -74,37 +73,4 @@ class modClickToDial extends DolibarrModules
 		$this->rights = array();
 		$this->rights_class = 'clicktodial';
 	}
-
-    /**
-	 *		Function called when module is enabled.
-	 *		The init function add constants, boxes, permissions and menus (defined in constructor) into Dolibarr database.
-	 *		It also creates data directories
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-	function init($options='')
-	{
-		global $conf;
-
-		$sql = array();
-
-		return $this->_init($sql,$options);
-	}
-
-    /**
-	 *		Function called when module is disabled.
-	 *      Remove from database constants, boxes and permissions from Dolibarr database.
-	 *		Data directories are not deleted
-	 *
-     *      @param      string	$options    Options when enabling module ('', 'noboxes')
-	 *      @return     int             	1 if OK, 0 if KO
-     */
-    function remove($options='')
-    {
-		$sql = array();
-
-		return $this->_remove($sql,$options);
-    }
-
 }

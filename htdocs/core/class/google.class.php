@@ -26,17 +26,23 @@
  */
 class GoogleAPI
 {
-	var $db;
-	var $error;
+	/**
+     * @var DoliDB Database handler.
+     */
+    public $db;
 
-	var $key;
+	/**
+	 * @var string Error code (or message)
+	 */
+	public $error='';
+
+	public $key;
 
 	/**
 	 * Constructor
 	 *
 	 * @param 	DoliDB		$db			Database handler
 	 * @param	string		$key		Google key
-	 * @return 	GoogleAPI
 	 */
 	function __construct($db,$key)
 	{
@@ -60,7 +66,7 @@ class GoogleAPI
 		$i=0;
 
 		// Desired address
-		$urladdress = "http://maps.google.com/maps/geo?q=".urlencode($address)."&output=xml&key=".$this->key;
+		$urladdress = "https://maps.google.com/maps/geo?q=".urlencode($address)."&output=xml&key=".$this->key;
 
 		// Retrieve the URL contents
 		$page = file_get_contents($urladdress);

@@ -31,12 +31,12 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 class mailing_xinputuser extends MailingTargets
 {
 	var $name='EmailsFromUser';              // Identifiant du module mailing
+	// This label is used if no translation is found for key XXX neither MailingModuleDescXXX where XXX=name is found
 	var $desc='EMails input by user';        // Libelle utilise si aucune traduction pour MailingModuleDescXXX ou XXX=name trouv�e
 	var $require_module=array();            // Module mailing actif si modules require_module actifs
 	var $require_admin=0;                    // Module mailing actif pour user admin ou non
 	var $picto='generic';
-
-	var $db;
+	var $tooltip='UseFormatInputEmailToTarget';
 
 
 	/**
@@ -73,8 +73,8 @@ class mailing_xinputuser extends MailingTargets
 	 *	For example if this selector is used to extract 500 different
 	 *	emails from a text file, this function must return 500.
 	 *
-	 *  @param      string	$sql   Requete sql de comptage
-	 *	@return		int			'' means NA
+	 *  @param      string	$sql   	Sql request to count
+	 *	@return		string			'' means NA
 	 */
 	function getNbOfRecipients($sql='')
 	{
@@ -104,10 +104,11 @@ class mailing_xinputuser extends MailingTargets
 		global $langs;
 
 		$s='';
-		$s.='<input type="text" name="xinputuser" class="flat" size="40" value="'.GETPOST("xinputuser").'">';
+		$s.='<input type="text" name="xinputuser" class="flat minwidth300" value="'.GETPOST("xinputuser").'">';
 		return $s;
 	}
 
+    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
 	/**
 	 *  Ajoute destinataires dans table des cibles
 	 *
@@ -117,6 +118,7 @@ class mailing_xinputuser extends MailingTargets
 	 */
 	function add_to_target($mailing_id,$filtersarray=array())
 	{
+        // phpcs:enable
 		global $conf,$langs,$_FILES;
 
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
@@ -153,12 +155,9 @@ class mailing_xinputuser extends MailingTargets
 		}
 		else
 		{
-		   	$langs->load("errors");
-		   	$this->error = $langs->trans("ErrorBadEmail",$email);
+            $langs->load("errors");
+            $this->error = $langs->trans("ErrorBadEmail",$email);
 			return -1;
 		}
-
 	}
-
 }
-

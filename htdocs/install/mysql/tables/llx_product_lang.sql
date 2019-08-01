@@ -1,6 +1,6 @@
 -- ============================================================================
 -- Copyright (C) 2002-2003 Rodolphe Quiedeville <rodolphe@quiedeville.org>
--- Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@capnetworks.com>
+-- Copyright (C) 2005-2010 Regis Houssin        <regis.houssin@inodbox.com>
 -- Copyright (C) 2009      Laurent Destailleur  <eldy@users.sourceforge.net>
 --
 -- This program is free software; you can redistribute it and/or modify
@@ -25,5 +25,6 @@ create table llx_product_lang
   lang           varchar(5)   DEFAULT 0 NOT NULL,
   label          varchar(255) NOT NULL,
   description    text,
-  note           text
+  note           text,
+  import_key varchar(14) DEFAULT NULL
 )ENGINE=innodb;
