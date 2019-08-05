@@ -4531,7 +4531,7 @@ abstract class CommonObject
 
 				if (is_array($params) && count($params)>0) {
 					if (array_key_exists('colspan',$params)) {
-						$colspan=$params['colspan'];
+						$colspan=$params['colspan'] - 1;
 					}
 				}else {
 					$colspan='3';
