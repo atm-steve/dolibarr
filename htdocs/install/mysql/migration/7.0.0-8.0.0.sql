@@ -563,4 +563,6 @@ DROP TABLE llx_ticket_logs;
 
 ALTER TABLE llx_actioncomm MODIFY COLUMN code varchar(50);
 
+-- Product components
+ALTER TABLE llx_product_association ADD COLUMN optional integer DEFAULT 0;
 ALTER TABLE llx_stock_mouvement ADD COLUMN fk_projet INTEGER NOT NULL DEFAULT 0 AFTER model_pdf;
