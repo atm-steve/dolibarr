@@ -878,7 +878,7 @@ if ($resql)
     }
     if (! empty($arrayfields['m.fk_projet']['checked']))
     {
-    	// Price
+    	// fk_projet
     	print '<td class="liste_titre" align="left">';
     	print '&nbsp; ';
     	print '</td>';
@@ -1077,6 +1077,12 @@ if ($resql)
         	if ($objp->fk_projet != 0) print $movement->get_origin($objp->fk_projet, 'project');
         	print '</td>';
         }
+
+		// Fields from hook
+		$parameters=array('arrayfields'=>$arrayfields, 'objp'=>$objp);
+		$reshook=$hookmanager->executeHooks('printFieldListValue',$parameters);    // Note that $action and $object may have been modified by hook
+		print $hookmanager->resPrint;
+
         // Action column
         print '<td class="nowrap" align="center">';
         if ($massactionbutton || $massaction)   // If we are in select mode (massactionbutton defined) or if we have already selected and sent an action ($massaction) defined
