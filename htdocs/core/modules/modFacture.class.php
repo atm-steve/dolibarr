@@ -220,6 +220,7 @@ class modFacture extends DolibarrModules
 			'cat2.label'=>'FirstLevelChildCategory',
 			'cat3.label'=>'SecondLevelChildCategory',
 		    'c.code'=>'CountryCode',
+		    'cd.nom'=>'State',
 		    's.phone'=>'Phone',
 		    's.siren'=>'ProfId1',
 		    's.siret'=>'ProfId2',
@@ -265,7 +266,14 @@ class modFacture extends DolibarrModules
 		    'p.label'=>'ProductLabel',
 		    'p.accountancy_code_sell'=>'ProductAccountancySellCode'
 		);
-		
+		if (! empty($conf->multicurrency->enabled))
+		{
+		    $this->export_fields_array[$r]['f.multicurrency_code'] = 'Currency';
+		    $this->export_fields_array[$r]['f.multicurrency_tx'] = 'CurrencyRate';
+		    $this->export_fields_array[$r]['f.multicurrency_total_ht'] = 'MulticurrencyAmountHT';
+		    $this->export_fields_array[$r]['f.multicurrency_total_tva'] = 'MulticurrencyAmountVAT';
+		    $this->export_fields_array[$r]['f.multicurrency_total_ttc'] = 'MulticurrencyAmountTTC';
+		}
 		$this->export_TypeFields_array[$r] = array(
 		    's.rowid'=>'Numeric',
 		    's.nom'=>'Text',
@@ -278,6 +286,7 @@ class modFacture extends DolibarrModules
 			'cat2.label'=>'Text',
 			'cat3.label'=>'Text',
 		    'c.code'=>'Text',
+		    'cd.nom'=>'Text',
 		    's.phone'=>'Text',
 		    's.siren'=>'Text',
 		    's.siret'=>'Text',
@@ -379,13 +388,14 @@ class modFacture extends DolibarrModules
 		include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
 		$this->export_sql_start[$r] = 'SELECT DISTINCT ';
 		$this->export_sql_end[$r]  = ' FROM '.MAIN_DB_PREFIX.'societe as s';
-		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
+		if (empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'user as u ON sc.fk_user = u.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_societe as cs ON cs.fk_soc = s.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat1 ON (cs.fk_categorie = cat1.rowid AND cat1.fk_parent = 0)';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat2 ON (cat2.fk_parent = cat1.rowid AND cat2.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat3 ON (cat3.fk_parent = cat2.rowid AND cat3.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';		
-		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c on s.fk_pays = c.rowid,';
+		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c on s.fk_pays = c.rowid';
+		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_departements as cd on s.fk_departement = cd.rowid,';
 		$this->export_sql_end[$r] .= ' '.MAIN_DB_PREFIX.'facture as f';
 		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'projet as pj ON f.fk_projet = pj.rowid';
 		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'user as uc ON f.fk_user_author = uc.rowid';
@@ -405,7 +415,7 @@ class modFacture extends DolibarrModules
 		$this->export_icon[$r] = 'invoice';
 		$this->export_permission[$r] = array(array("facture", "facture", "export"));
 		$this->export_fields_array[$r] = array(
-			's.rowid'=>"IdCompany", 's.nom'=>'CompanyName', 's.code_client'=>'CustomerCode', 's.address'=>'Address', 's.zip'=>'Zip', 's.town'=>'Town', 'ucomm.lastname'=>'SalesRepresentatives','cat1.label'=>'ParentCategory','cat2.label'=>'FirstLevelChildCategory','cat3.label'=>'SecondLevelChildCategory','c.code'=>'CountryCode', 's.phone'=>'Phone',
+			's.rowid'=>"IdCompany", 's.nom'=>'CompanyName', 's.code_client'=>'CustomerCode', 's.address'=>'Address', 's.zip'=>'Zip', 's.town'=>'Town', 'ucomm.lastname'=>'SalesRepresentatives','cat1.label'=>'ParentCategory','cat2.label'=>'FirstLevelChildCategory','cat3.label'=>'SecondLevelChildCategory','c.code'=>'CountryCode', 'cd.nom'=>'State', 's.phone'=>'Phone',
 			's.siren'=>'ProfId1', 's.siret'=>'ProfId2', 's.ape'=>'ProfId3', 's.idprof4'=>'ProfId4', 's.code_compta'=>'CustomerAccountancyCode',
 			's.code_compta_fournisseur'=>'SupplierAccountancyCode', 's.tva_intra'=>'VATIntra',
 			'f.rowid'=>"InvoiceId", 'f.facnumber'=>"InvoiceRef",  'f.ref_client'=>'RefCustomer',
@@ -416,8 +426,16 @@ class modFacture extends DolibarrModules
 			'p.amount'=>'AmountPayment', 'pf.amount'=>'AmountPaymentDistributedOnInvoice', 'p.datep'=>'DatePayment', 'p.num_paiement'=>'PaymentNumber',
 			'pt.code'=>'CodePaymentMode', 'pt.libelle'=>'LabelPaymentMode', 'p.note'=>'PaymentNote', 'p.fk_bank'=>'IdTransaction', 'ba.ref'=>'AccountRef'
 		);
+		if (! empty($conf->multicurrency->enabled))
+		{
+		    $this->export_fields_array[$r]['f.multicurrency_code'] = 'Currency';
+		    $this->export_fields_array[$r]['f.multicurrency_tx'] = 'CurrencyRate';
+		    $this->export_fields_array[$r]['f.multicurrency_total_ht'] = 'MulticurrencyAmountHT';
+		    $this->export_fields_array[$r]['f.multicurrency_total_tva'] = 'MulticurrencyAmountVAT';
+		    $this->export_fields_array[$r]['f.multicurrency_total_ttc'] = 'MulticurrencyAmountTTC';
+		}
 		$this->export_TypeFields_array[$r] = array(
-			's.rowid'=>'Numeric', 's.nom'=>'Text', 's.code_client'=>'Text', 's.address'=>'Text', 's.zip'=>'Text', 's.town'=>'Text','ucomm.lastname'=>'Text','cat1.label'=>'Text','cat2.label'=>'Text','cat3.label'=>'Text', 'c.code'=>'Text', 's.phone'=>'Text', 's.siren'=>'Text',
+			's.rowid'=>'Numeric', 's.nom'=>'Text', 's.code_client'=>'Text', 's.address'=>'Text', 's.zip'=>'Text', 's.town'=>'Text','ucomm.lastname'=>'Text','cat1.label'=>'Text','cat2.label'=>'Text','cat3.label'=>'Text', 'c.code'=>'Text', 'cd.nom'=>'Text', 's.phone'=>'Text', 's.siren'=>'Text',
 			's.siret'=>'Text', 's.ape'=>'Text', 's.idprof4'=>'Text', 's.code_compta'=>'Text', 's.code_compta_fournisseur'=>'Text', 's.tva_intra'=>'Text',
 			'f.rowid'=>"Numeric", 'f.facnumber'=>"Text", 'f.ref_client'=>'Text', 'f.type'=>"Numeric", 'f.datec'=>"Date", 'f.datef'=>"Date", 'f.date_lim_reglement'=>"Date",
 			'f.total'=>"Numeric", 'f.total_ttc'=>"Numeric", 'f.tva'=>"Numeric", 'none.rest'=>'NumericCompute', 'f.paye'=>"Boolean", 'f.fk_statut'=>'Status',
@@ -438,13 +456,14 @@ class modFacture extends DolibarrModules
 		include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
 		$this->export_sql_start[$r]='SELECT DISTINCT ';
 		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'societe as s';
-		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
+		if (empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux as sc ON sc.fk_soc = s.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'user as ucomm ON sc.fk_user = ucomm.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_societe as cs ON cs.fk_soc = s.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat1 ON (cs.fk_categorie = cat1.rowid AND cat1.fk_parent = 0)';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat2 ON (cat2.fk_parent = cat1.rowid AND cat2.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as cat3 ON (cat3.fk_parent = cat2.rowid AND cat3.rowid IN (SELECT fk_categorie FROM llx_categorie_societe WHERE fk_soc =  s.rowid))';
-		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c on s.fk_pays = c.rowid,';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c on s.fk_pays = c.rowid';
+		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_departements as cd on s.fk_departement = cd.rowid,';
 		$this->export_sql_end[$r] .=' '.MAIN_DB_PREFIX.'facture as f';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'projet as pj ON f.fk_projet = pj.rowid';
 		$this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'user as uc ON f.fk_user_author = uc.rowid';

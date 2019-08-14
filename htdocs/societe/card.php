@@ -973,7 +973,7 @@ else
         $object->idprof6			= GETPOST('idprof6', 'alpha');
         $object->typent_id			= GETPOST('typent_id', 'int');
         $object->effectif_id		= GETPOST('effectif_id', 'int');
-        $object->civility_id		= GETPOST('civility_id', 'int');
+        $object->civility_id		= GETPOST('civility_id', 'alpha');
 
         $object->tva_assuj			= GETPOST('assujtva_value', 'int');
         $object->status				= GETPOST('status', 'int');
@@ -1382,7 +1382,8 @@ else
 		print '<td>'.fieldLabel('AllocateCommercial','commercial_id').'</td>';
 		print '<td colspan="3" class="maxwidthonsmartphone">';
 		$userlist = $form->select_dolusers('', '', 0, null, 0, '', '', 0, 0, 0, '', 0, '', '', 0, 1);
-		print $form->multiselectarray('commercial', $userlist, (count(GETPOST('commercial', 'array')) > 0?GETPOST('commercial', 'array'):(empty($user->rights->societe->client->voir)?array($user->id):array())), null, null, null, null, "90%");
+		$selected = (count(GETPOST('commercial', 'array')) > 0 ? GETPOST('commercial', 'array') : (GETPOST('commercial', 'int') > 0 ? array(GETPOST('commercial', 'int')) : (empty($user->rights->societe->client->voir)?array($user->id):array())));
+		print $form->multiselectarray('commercial', $userlist, $selected, null, null, null, null, "90%");
 		print '</td></tr>';
 
 		// Incoterms

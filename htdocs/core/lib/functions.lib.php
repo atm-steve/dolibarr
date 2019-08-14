@@ -321,13 +321,18 @@ function GETPOST($paramname, $check='none', $method=0, $filter=null, $options=nu
 					}
 				}
 			}
-			if (! empty($_SESSION['lastsearch_contextpage_'.$relativepathstring]))	// If there is saved contextpage
+			// If there is saved contextpage, page or limit
+			if ($paramname == 'contextpage' && ! empty($_SESSION['lastsearch_contextpage_'.$relativepathstring]))
 			{
-				if ($paramname == 'contextpage')
-				{
-					$out = $_SESSION['lastsearch_contextpage_'.$relativepathstring];
-					//var_dump($paramname.' '.$out);
-				}
+				$out = $_SESSION['lastsearch_contextpage_'.$relativepathstring];
+			}
+			elseif ($paramname == 'page' && ! empty($_SESSION['lastsearch_page_'.$relativepathstring]))
+			{
+				$out = $_SESSION['lastsearch_page_'.$relativepathstring];
+			}
+			elseif ($paramname == 'limit' && ! empty($_SESSION['lastsearch_limit_'.$relativepathstring]))
+			{
+				$out = $_SESSION['lastsearch_limit_'.$relativepathstring];
 			}
 		}
 		// Else, retreive default values if we are not doing a sort
@@ -5993,6 +5998,7 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 			$substitutionarray['__REF__'] = $object->ref;
 			$substitutionarray['__REFCLIENT__'] = (isset($object->ref_client) ? $object->ref_client : (isset($object->ref_customer) ? $object->ref_customer : ''));
 			$substitutionarray['__REFSUPPLIER__'] = (isset($object->ref_supplier) ? $object->ref_supplier : '');
+			$substitutionarray['__SUPPLIER_ORDER_DATE_DELIVERY__'] = (isset($object->date_livraison) ? dol_print_date($object->date_livraison, 'day', 0, $outputlangs): '');
 
 			// TODO Use this ?
 			$msgishtml = 0;
@@ -6227,6 +6233,8 @@ function make_substitutions($text, $substitutionarray, $outputlangs=null)
 	// Make substitition for array $substitutionarray
 	foreach ($substitutionarray as $key => $value)
 	{
+		if (! isset($value)) continue;	// If value is null, it same than not having substitution key at all into array, we do not replace.
+
 		if ($key == '__SIGNATURE__' && (! empty($conf->global->MAIN_MAIL_DO_NOT_USE_SIGN))) $value='';		// Protection
 		if ($key == '__USER_SIGNATURE__' && (! empty($conf->global->MAIN_MAIL_DO_NOT_USE_SIGN))) $value='';	// Protection
 

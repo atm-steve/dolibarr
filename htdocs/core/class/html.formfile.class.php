@@ -300,8 +300,10 @@ class FormFile
 			return $this->getDocumentsLink($modulepart, $modulesubdir, $filedir);
 		}
 
-		// Add entity in $param
-		$param.= 'entity='.(!empty($object->entity)?$object->entity:$conf->entity);
+		// Add entity in $param if not already exists
+		if (!preg_match('/entity\=[0-9]+/', $param)) {
+			$param.= 'entity='.(!empty($object->entity)?$object->entity:$conf->entity);
+		}
 
 		$printer=0;
 		if (in_array($modulepart,array('facture','supplier_proposal','propal','proposal','order','commande','expedition', 'commande_fournisseur', 'expensereport')))	// The direct print feature is implemented only for such elements
@@ -759,7 +761,7 @@ class FormFile
 					$out.= '<a class="documentdownload paddingright" href="'.$documenturl.'?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).($param?'&'.$param:'').'"';
 					$mime=dol_mimetype($relativepath,'',0);
 					if (preg_match('/text/',$mime)) $out.= ' target="_blank"';
-					$out.= ' target="_blank">';
+					$out.= '>';
 					$out.= img_mime($file["name"],$langs->trans("File").': '.$file["name"]);
 					$out.= dol_trunc($file["name"], 150);
 					$out.= '</a>'."\n";

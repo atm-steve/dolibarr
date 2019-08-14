@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2013		Cédric Salvador		<csalvador@gpcsolutions.fr>
- * Copyright (C) 2013-2016	Laurent Destaileur	<ely@users.sourceforge.net>
+ * Copyright (C) 2013-2018	Laurent Destaileur	<ely@users.sourceforge.net>
  * Copyright (C) 2014		Regis Houssin		<regis.houssin@capnetworks.com>
  * Copyright (C) 2016		Juanjo Menent		<jmenent@2byte.es>
  * Copyright (C) 2016		ATM Consulting		<support@atm-consulting.fr>
@@ -41,6 +41,9 @@ if ($user->societe_id) {
     $socid = $user->societe_id;
 }
 $result=restrictedArea($user,'produit|service');
+
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
+$hookmanager->initHooks(array('stockreplenishlist'));
 
 //checks if a product has been ordered
 
@@ -86,6 +89,9 @@ if (! empty($conf->global->STOCK_CALCULATE_ON_SHIPMENT)
 $usevirtualstock=0;
 if ($mode == 'virtual') $usevirtualstock=1;
 
+$parameters=array();
+$reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
 /*
  * Actions
@@ -288,24 +294,34 @@ if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entre
 
 $sql = 'SELECT p.rowid, p.ref, p.label, p.description, p.price,';
 $sql.= ' p.price_ttc, p.price_base_type,p.fk_product_type,';
-$sql.= ' p.tms as datem, p.duration, p.tobuy';
-$sql.= ' ,p.desiredstock,p.seuil_stock_alerte';
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
-	$sql.= ', pse.desiredstock' ;
-	$sql.= ', pse.seuil_stock_alerte' ;
+$sql.= ' p.tms as datem, p.duration, p.tobuy,';
+$sql.= ' p.desiredstock, p.seuil_stock_alerte,';
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+	$sql.= ' pse.desiredstock as desiredstockpse, pse.seuil_stock_alerte as seuil_stock_alertepse,';
 }
-$sql.= ' ,'.$sqldesiredtock.' as desiredstock, '.$sqlalertstock.' as alertstock,';
-
+$sql.= ' '.$sqldesiredtock.' as desiredstockcombined, '.$sqlalertstock.' as seuil_stock_alertecombined,';
 $sql.= ' SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").') as stock_physique';
+
+// Add fields from hooks
+$parameters=array();
+$reshook=$hookmanager->executeHooks('printFieldListSelect',$parameters);    // Note that $action and $object may have been modified by hook
+$sql.=$hookmanager->resPrint;
+
 $sql.= ' FROM ' . MAIN_DB_PREFIX . 'product as p';
 $sql.= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'product_stock as s';
 $sql.= ' ON (p.rowid = s.fk_product AND s.fk_entrepot IN (SELECT ent.rowid FROM '.MAIN_DB_PREFIX.'entrepot AS ent WHERE ent.entity IN('.getEntity('stock').')))';
-if($fk_supplier > 0) {
+if ($fk_supplier > 0) {
 	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'product_fournisseur_price pfp ON (pfp.fk_product = p.rowid AND pfp.fk_soc = '.$fk_supplier.')';
 }
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
 	$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_warehouse_properties AS pse ON (p.rowid = pse.fk_product AND pse.fk_entrepot = '.$fk_entrepot.')';
 }
+
+// Add fields from hooks
+$parameters=array();
+$reshook=$hookmanager->executeHooks('printFieldListJoin',$parameters);    // Note that $action and $object may have been modified by hook
+$sql.=$hookmanager->resPrint;
+
 $sql.= ' WHERE p.entity IN (' . getEntity('product') . ')';
 if ($sall) $sql .= natural_search(array('p.ref', 'p.label', 'p.description', 'p.note'), $sall);
 // if the type is not 1, we show all products (type = 0,2,3)
@@ -325,7 +341,7 @@ $sql.= ', p.price_ttc, p.price_base_type,p.fk_product_type, p.tms';
 $sql.= ', p.duration, p.tobuy';
 $sql.= ', p.desiredstock';
 $sql.= ', p.seuil_stock_alerte';
-if(!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0) {
 	$sql.= ', pse.desiredstock' ;
 	$sql.= ', pse.seuil_stock_alerte' ;
 }
@@ -364,7 +380,7 @@ if ($usevirtualstock)
 	$sqlReceptionFourn.= " AND fd.fk_product = p.rowid";
 	$sqlReceptionFourn.= " AND cf.fk_statut IN (3,4))";
 
-	$sql.= ' HAVING ((('.$db->ifsql($sqldesiredtock." IS NULL", "0", $sqldesiredtock).' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
+	$sql.= ' HAVING (('.$sqldesiredtock.' >= 0 AND ('.$sqldesiredtock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
 	$sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.')))';
 	$sql.= ' OR ('.$sqlalertstock.' >= 0 AND ('.$sqlalertstock.' > SUM('.$db->ifsql("s.reel IS NULL", "0", "s.reel").')';
 	$sql.= ' - ('.$sqlCommandesCli.' - '.$sqlExpeditionsCli.') + ('.$sqlCommandesFourn.' - '.$sqlReceptionFourn.'))))';
@@ -386,6 +402,11 @@ if ($usevirtualstock)
 	}
 }
 
+// Add where from hooks
+$parameters=array();
+$reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
+$sql.=$hookmanager->resPrint;
+
 $sql.= $db->order($sortfield,$sortorder);
 $sql.= $db->plimit($limit + 1, $offset);
 
@@ -396,7 +417,6 @@ if (empty($resql))
     dol_print_error($db);
     exit;
 }
-//print $sql;
 
 $num = $db->num_rows($resql);
 $i = 0;
@@ -450,9 +470,15 @@ if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE))
 print '<div class="inline-block valignmiddle" style="padding-right: 20px;">';
 print $langs->trans('Supplier').' '.$form->select_company($fk_supplier, 'fk_supplier', 'fournisseur=1', 1);
 print '</div>';
+
+$parameters=array();
+$reshook=$hookmanager->executeHooks('printFieldPreListTitle',$parameters);    // Note that $action and $object may have been modified by hook
+if (empty($reshook)) print $hookmanager->resPrint;
+
 print '<div class="inline-block valignmiddle">';
 print '<input class="button" type="submit" name="valid" value="'.$langs->trans('ToFilter').'">';
 print '</div>';
+
 print '</form>';
 
 if ($sref || $snom || $sall || $salert || $draftorder || GETPOST('search', 'alpha')) {
@@ -505,9 +531,12 @@ $param .= '&fk_supplier=' . $fk_supplier;
 $param .= '&fk_entrepot=' . $fk_entrepot;
 
 $stocklabel = $langs->trans('Stock');
-if ($usevirtualstock == 1) $stocklabel = 'VirtualStock';
-if ($usevirtualstock == 0) $stocklabel = 'PhysicalStock';
-
+if ($usevirtualstock == 1) $stocklabel = $langs->trans('VirtualStock');
+if ($usevirtualstock == 0) $stocklabel = $langs->trans('PhysicalStock');
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0)
+{
+	$stocklabel.=' ('.$langs->trans("AllWarehouses").')';
+}
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST" name="formulaire">'.
 	'<input type="hidden" name="token" value="' .$_SESSION['newtoken'] . '">'.
 	'<input type="hidden" name="fk_supplier" value="' . $fk_supplier . '">'.
@@ -528,9 +557,15 @@ if (!empty($conf->service->enabled) && $type == 1) print '<td class="liste_titre
 print '<td class="liste_titre">&nbsp;</td>';
 print '<td class="liste_titre" align="right">&nbsp;</td>';
 print '<td class="liste_titre" align="right">' . $langs->trans('AlertOnly') . '&nbsp;<input type="checkbox" id="salert" name="salert" ' . (!empty($alertchecked)?$alertchecked:'') . '></td>';
-print '<td class="liste_titre" align="right">' . $langs->trans('Draft') . '&nbsp;<input type="checkbox" id="draftorder" name="draftorder" ' . (!empty($draftchecked)?$draftchecked:'') . '></td>';
+print '<td class="liste_titre" align="right">' . $langs->trans('IncludeAlsoDraftOrders') . '&nbsp;<input type="checkbox" id="draftorder" name="draftorder" ' . (!empty($draftchecked)?$draftchecked:'') . '></td>';
 print '<td class="liste_titre">&nbsp;</td>';
 print '<td class="liste_titre" align="right">';
+
+// Fields from hook
+$parameters=array('param'=>$param,'sortfield'=>$sortfield,'sortorder'=>$sortorder);
+$reshook=$hookmanager->executeHooks('printFieldListOption',$parameters);    // Note that $action and $object may have been modified by hook
+print $hookmanager->resPrint;
+
 $searchpicto=$form->showFilterAndCheckAddButtons(0);
 print $searchpicto;
 print '</td>';
@@ -548,6 +583,12 @@ print_liste_field_titre($stocklabel, $_SERVER["PHP_SELF"], 'stock_physique', $pa
 print_liste_field_titre('Ordered', $_SERVER["PHP_SELF"], '', $param, '', 'align="right"', $sortfield, $sortorder);
 print_liste_field_titre('StockToBuy', $_SERVER["PHP_SELF"], '', $param, '', 'align="right"', $sortfield, $sortorder);
 print_liste_field_titre('SupplierRef', $_SERVER["PHP_SELF"], '', $param, '', 'align="right"', $sortfield, $sortorder);
+
+// Hook fields
+$parameters=array('param'=>$param,'sortfield'=>$sortfield,'sortorder'=>$sortorder);
+$reshook=$hookmanager->executeHooks('printFieldListTitle',$parameters);    // Note that $action and $object may have been modified by hook
+print $hookmanager->resPrint;
+
 print "</tr>\n";
 
 while ($i < ($limit ? min($num, $limit) : $num))
@@ -600,20 +641,23 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		//print $prod->stats_reception['qty'];
 		$ordered = $prod->stats_commande_fournisseur['qty'] - $prod->stats_reception['qty'];
 
+		$desiredstock=($objp->desiredstockpse ? $objp->desiredstockpse : $objp->desiredstock);
+		$alertstock=($objp->seuil_stock_alertepse ? $objp->seuil_stock_alertepse : $objp->seuil_stock_alerte);
+
 		$warning='';
-		if ($objp->alertstock && ($stock < $objp->alertstock))
+		if ($alertstock && ($stock < $alertstock))
 		{
 			$warning = img_warning($langs->trans('StockTooLow')) . ' ';
 		}
 
 		//depending on conf, use either physical stock or
 		//virtual stock to compute the stock to buy value
-		$stocktobuy = max(max($objp->desiredstock, $objp->alertstock) - $stock - $ordered, 0);
+		$stocktobuy = max(max($desiredstock, $alertstock) - $stock - $ordered, 0);
 		$disabled = '';
 		if ($ordered > 0)
 		{
 			$stockforcompare = $usevirtualstock ? $stock : $stock + $ordered;
-			if ($stockforcompare >= $objp->desiredstock)
+			if ($stockforcompare >= $desiredstock)
 			{
 				$picto = img_picto('', './img/yes', '', 1);
 				$disabled = 'disabled';
@@ -653,12 +697,12 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		}
 
 		// Desired stock
-		print '<td align="right">' . $objp->desiredstock . '</td>';
+		print '<td align="right">' . $desiredstock . '</td>';
 
-		// Limit stock for alerr
-		print '<td align="right">' . $objp->alertstock . '</td>';
+		// Limit stock for alert
+		print '<td align="right">' . $alertstock . '</td>';
 
-		// Current stock
+		// Current stock (all warehouses)
 		print '<td align="right">'. $warning . $stock. '</td>';
 
 		// Already ordered
@@ -671,10 +715,20 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		// Supplier
 		print '<td align="right">'.	$form->select_product_fourn_price($prod->id, 'fourn'.$i, $fk_supplier).'</td>';
 
+		// Fields from hook
+		$parameters=array( 'objp'=>$objp);
+		$reshook=$hookmanager->executeHooks('printFieldListValue',$parameters);    // Note that $action and $object may have been modified by hook
+		print $hookmanager->resPrint;
+
 		print '</tr>';
 	}
 	$i++;
 }
+
+$parameters=array('sql'=>$sql);
+$reshook=$hookmanager->executeHooks('printFieldListFooter',$parameters);    // Note that $action and $object may have been modified by hook
+print $hookmanager->resPrint;
+
 print '</table>';
 print '</div>';
 

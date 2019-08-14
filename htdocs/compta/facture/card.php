@@ -688,6 +688,7 @@ if (empty($reshook))
 			$db->begin();
 
 			$amount_ht = $amount_tva = $amount_ttc = array();
+			$multicurrency_amount_ht = $multicurrency_amount_tva = $multicurrency_amount_ttc = array();
 
 			// Loop on each vat rate
 			$i = 0;
@@ -701,7 +702,7 @@ if (empty($reshook))
 					$multicurrency_amount_ht[$line->tva_tx] += $line->multicurrency_total_ht;
 					$multicurrency_amount_tva[$line->tva_tx] += $line->multicurrency_total_tva;
 					$multicurrency_amount_ttc[$line->tva_tx] += $line->multicurrency_total_ttc;
-					$i ++;
+					$i++;
 				}
 			}
 
@@ -725,20 +726,31 @@ if (empty($reshook))
 			{
 				// If we're on a standard invoice, we have to get excess received to create a discount in TTC without VAT
 
+				// Total payments
 				$sql = 'SELECT SUM(pf.amount) as total_paiements';
 				$sql.= ' FROM '.MAIN_DB_PREFIX.'paiement_facture as pf, '.MAIN_DB_PREFIX.'paiement as p';
 				$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_paiement as c ON p.fk_paiement = c.id';
 				$sql.= ' WHERE pf.fk_facture = '.$object->id;
 				$sql.= ' AND pf.fk_paiement = p.rowid';
 				$sql.= ' AND p.entity IN (' . getEntity('facture').')';
-
 				$resql = $db->query($sql);
 				if (! $resql) dol_print_error($db);
 
 				$res = $db->fetch_object($resql);
 				$total_paiements = $res->total_paiements;
 
-				$discount->amount_ht = $discount->amount_ttc = $total_paiements - $object->total_ttc;
+				// Total credit note and deposit
+				$total_creditnote_and_deposit = 0;
+		                $sql = "SELECT re.rowid, re.amount_ht, re.amount_tva, re.amount_ttc,";
+		                $sql .= " re.description, re.fk_facture_source";
+		                $sql .= " FROM " . MAIN_DB_PREFIX . "societe_remise_except as re";
+		                $sql .= " WHERE fk_facture = " . $object->id;
+		                $resql = $db->query($sql);
+		                if (!empty($resql)) {
+		                        while ($obj = $db->fetch_object($resql)) $total_creditnote_and_deposit += $obj->amount_ttc;
+		                } else dol_print_error($db);
+
+				$discount->amount_ht = $discount->amount_ttc = $total_paiements + $total_creditnote_and_deposit - $object->total_ttc;
 				$discount->amount_tva = 0;
 				$discount->tva_tx = 0;
 
@@ -1278,15 +1290,15 @@ if (empty($reshook))
 											$qualified=1;
 											if (empty($lines[$i]->qty)) $qualified=0;	// We discard qty=0, it is an option
 											if (! empty($lines[$i]->special_code)) $qualified=0;	// We discard special_code (frais port, ecotaxe, option, ...)
-											if ($qualified) $totalamount += $lines[$i]->total_ht; // Fixme : is it not for the customer ? Shouldn't we take total_ttc ?
+											if ($qualified){
+												$totalamount += $lines[$i]->total_ht; // Fixme : is it not for the customer ? Shouldn't we take total_ttc ?
+												$tva_tx = $lines[$i]->tva_tx;
+												$amountdeposit[$tva_tx] += ($lines[$i]->total_ht * $valuedeposit) / 100;
+											}
+																					
 										}
 
-										if ($totalamount != 0) {
-											if ($numlines > 0) $numlines = $numlines-1;
-											$tva_tx = $lines[$numlines]->tva_tx;
-											if (! empty($lines[$numlines]->vat_src_code) && ! preg_match('/\(/', $tva_tx)) $tva_tx .= ' ('.$lines[$numlines]->vat_src_code.')';
-											$amountdeposit[$tva_tx] = ($totalamount * $valuedeposit) / 100;
-										} else {
+										if($totalamount == 0) {
 											$amountdeposit[0] = 0;
 										}
 									} else {
@@ -1297,9 +1309,10 @@ if (empty($reshook))
 
 								$amount_ttc_diff = $amountdeposit[0];
 							}
-
 							foreach ($amountdeposit as $tva => $amount)
 							{
+								if (empty($amount)) continue;
+
 								$arraylist = array('amount' => 'FixAmount','variable' => 'VarAmount');
 								$descline = $langs->trans('Deposit');
 								//$descline.= ' - '.$langs->trans($arraylist[$typeamount]);
@@ -1308,6 +1321,7 @@ if (empty($reshook))
 								} elseif ($typeamount=='variable') {
 									$descline.= ' ('. $valuedeposit.'%)';
 								}
+								
 								$descline.= ' - '.$srcobject->ref;
 								$result = $object->addline(
 										$descline,
@@ -1364,8 +1378,9 @@ if (empty($reshook))
 								{
 									// Don't add lines with qty 0 when coming from a shipment including all order lines
 									if($srcobject->element == 'shipping' && $conf->global->SHIPMENT_GETS_ALL_ORDER_PRODUCTS && $lines[$i]->qty == 0) continue;
-									// Don't add closed lines when coming from a contract
-									if($srcobject->element == 'contrat' && $lines[$i]->statut == 5) continue;
+									// Don't add closed lines when coming from a contract (Set constant to '0,5' to exclude also inactive lines)
+									if (! isset( $conf->global->CONTRACT_EXCLUDE_SERVICES_STATUS_FOR_INVOICE)) $conf->global->CONTRACT_EXCLUDE_SERVICES_STATUS_FOR_INVOICE = '5';
+									if ($srcobject->element == 'contrat' && in_array($lines[$i]->statut, explode(',', $conf->global->CONTRACT_EXCLUDE_SERVICES_STATUS_FOR_INVOICE))) continue;
 
 									$label=(! empty($lines[$i]->label)?$lines[$i]->label:'');
 									$desc=(! empty($lines[$i]->desc)?$lines[$i]->desc:$lines[$i]->libelle);
@@ -1523,14 +1538,16 @@ if (empty($reshook))
 			$datefacture = dol_mktime(12, 0, 0, $_POST['remonth'], $_POST['reday'], $_POST['reyear']);
 			if (empty($datefacture)) {
 				$error++;
-				$mesg = '<div class="error">' . $langs->trans("ErrorFieldRequired", $langs->trans("Date")) . '</div>';
+				$mesg = $langs->trans("ErrorFieldRequired", $langs->trans("Date"));
+                setEventMessages($mesg, null, 'errors');
 			}
 
 			$date_pointoftax = dol_mktime(12, 0, 0, $_POST['date_pointoftaxmonth'], $_POST['date_pointoftaxday'], $_POST['date_pointoftaxyear']);
 
 			if (!($_POST['situations'] > 0)) {
 				$error++;
-				$mesg = '<div class="error">' . $langs->trans("ErrorFieldRequired", $langs->trans("InvoiceSituation")) . '</div>';
+				$mesg = $langs->trans("ErrorFieldRequired", $langs->trans("InvoiceSituation"));
+                setEventMessages($mesg, null, 'errors');
 			}
 
 			if (!$error) {
@@ -1670,7 +1687,7 @@ if (empty($reshook))
 		// Extrafields
 		$extrafieldsline = new ExtraFields($db);
 		$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
-		$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline, $predef);
+		$array_options = $extrafieldsline->getOptionalsFromPost($object->table_element_line, $predef);
 		// Unset extrafield
 		if (is_array($extralabelsline)) {
 			// Get extra fields
@@ -1695,7 +1712,7 @@ if (empty($reshook))
 			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), null, 'errors');
 			$error++;
 		}
-		if ($prod_entry_mode == 'free' && empty($idprod) && (($price_ht < 0 && empty($conf->global->FACTURE_ENABLE_NEGATIVE_LINES)) || $price_ht == '') && $price_ht_devise == '') 	// Unit price can be 0 but not ''
+		if (($prod_entry_mode == 'free' && empty($idprod) && (($price_ht < 0 && empty($conf->global->FACTURE_ENABLE_NEGATIVE_LINES)) || $price_ht == '') && $price_ht_devise == '') && $object->type != Facture::TYPE_CREDIT_NOTE) 	// Unit price can be 0 but not ''
 		{
 			if ($price_ht < 0 && empty($conf->global->FACTURE_ENABLE_NEGATIVE_LINES))
 			{
@@ -2077,7 +2094,7 @@ if (empty($reshook))
 		// Extrafields
 		$extrafieldsline = new ExtraFields($db);
 		$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
-		$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline);
+		$array_options = $extrafieldsline->getOptionalsFromPost($object->table_element_line);
 		// Unset extrafield
 		if (is_array($extralabelsline)) {
 			// Get extra fields
@@ -2155,7 +2172,7 @@ if (empty($reshook))
 			setEventMessages($langs->trans('ErrorQtyForCustomerInvoiceCantBeNegative'), null, 'errors');
 			$error++;
 		}
-		if (empty($productid) && (($pu_ht < 0 && empty($conf->global->FACTURE_ENABLE_NEGATIVE_LINES)) || $pu_ht == '') && $pu_ht_devise == '') 	// Unit price can be 0 but not ''
+		if ((empty($productid) && (($pu_ht < 0 && empty($conf->global->FACTURE_ENABLE_NEGATIVE_LINES)) || $pu_ht == '') && $pu_ht_devise == '') && $object->type != Facture::TYPE_CREDIT_NOTE) 	// Unit price can be 0 but not ''
 		{
 			if ($pu_ht < 0 && empty($conf->global->FACTURE_ENABLE_NEGATIVE_LINES))
 			{
@@ -2256,11 +2273,13 @@ if (empty($reshook))
 		if (!$object->fetch($id) > 0) dol_print_error($db);
 		if (!is_null(GETPOST('all_progress')) && GETPOST('all_progress') != "")
 		{
+            $all_progress = GETPOST('all_progress', 'int');
 			foreach ($object->lines as $line)
 			{
 				$percent = $line->get_prev_progress($object->id);
-				if (GETPOST('all_progress') < $percent) {
-					$mesg = '<div class="warning">' . $langs->trans("CantBeLessThanMinPercent") . '</div>';
+				if (floatval($all_progress) < floatval($percent)) {
+                    $mesg = $langs->trans("Line") . ' ' . $i . ' '. $line->ref .' : ' . $langs->trans("CantBeLessThanMinPercent");
+                    setEventMessages($mesg, null, 'warnings');
 					$result = -1;
 				} else
 					$object->update_percent($line, $_POST['all_progress']);
@@ -4540,7 +4559,7 @@ else if ($id > 0 || ! empty($ref))
 		$ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1);
 
 	// Form to add new line
-	if ($object->statut == 0 && $user->rights->facture->creer && $action != 'valid' && $action != 'editline' && ($object->is_first() || !$object->situation_cycle_ref))
+	if ($object->statut == 0 && $user->rights->facture->creer && $action != 'valid' && $action != 'editline')
 	{
 	    if ($action != 'editline' && $action != 'selectlines')
 		{

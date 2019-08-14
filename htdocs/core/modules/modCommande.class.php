@@ -243,8 +243,16 @@ class modCommande extends DolibarrModules
 		    'u.lastname'=>'SalesRepresentatives' ,
 		    'cat.label'=>'Category'
 		);
-		
-		
+		if (! empty($conf->multicurrency->enabled))
+		{
+		    $this->export_fields_array[$r]['c.multicurrency_code'] = 'Currency';
+		    $this->export_fields_array[$r]['c.multicurrency_tx'] = 'CurrencyRate';
+		    $this->export_fields_array[$r]['c.multicurrency_total_ht'] = 'MulticurrencyAmountHT';
+		    $this->export_fields_array[$r]['c.multicurrency_total_tva'] = 'MulticurrencyAmountVAT';
+		    $this->export_fields_array[$r]['c.multicurrency_total_ttc'] = 'MulticurrencyAmountTTC';
+		}
+
+
 		$this->export_TypeFields_array[$r]=array(
 		    's.nom'=>'Text' ,
 		    's.address'=>'Text' ,
@@ -282,7 +290,7 @@ class modCommande extends DolibarrModules
 		    'cd.total_ht'=>"Numeric" ,
 		    'cd.total_tva'=>"Numeric" ,
 		    'cd.total_ttc'=>"Numeric" ,
-		    'p.rowid'=>'List:product:ref' ,
+		    'p.rowid'=>'List:product:ref::product' ,
 		    'p.ref'=>'Text' ,
 		    'p.label'=>'Text' ,
 		    'd.nom'=>'Text'
