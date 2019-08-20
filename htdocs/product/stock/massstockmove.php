@@ -30,9 +30,10 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
+dol_include_once('/cliama/class/assettransfert.class.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array('products', 'stocks', 'orders', 'productbatch'));
+$langs->loadLangs(array('products', 'stocks', 'orders', 'productbatch', 'cliama@cliama'));
 
 // Security check
 if ($user->societe_id) {
@@ -65,6 +66,8 @@ if (!$sortorder) {
 $limit = GETPOST('limit','int')?GETPOST('limit','int'):$conf->liste_limit;
 $offset = $limit * $page ;
 
+$trans = new AssetTranfert($db);
+
 $listofdata=array();
 if (! empty($_SESSION['massstockmove'])) $listofdata=json_decode($_SESSION['massstockmove'],true);
 
@@ -79,6 +82,14 @@ if ($action == 'addline')
 	{
 		$error++;
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Product")), null, 'errors');
+	}
+	else
+	{
+		$p = new Product($db);
+		$p->fetch($id_product);
+		$p->get_sousproduits_arbo();
+		$res = $p->get_arbo_each_prod();
+		if (!empty($res)) setEventMessages($langs->trans('StockTransfertRefusedForComposed'), null, 'errors');
 	}
 	if (! ($id_sw > 0))
 	{
@@ -116,6 +127,38 @@ if ($action == 'addline')
 				setEventMessages($langs->trans("ErrorTryToMakeMoveOnProductRequiringBatchData", $producttmp->ref), null, 'errors');
 			}
 		}
+
+		if(!empty($producttmp->array_options['options_type_asset']))
+		{
+			$assets = array();
+
+			while ($i <= $qty)
+			{
+				$t = new AssetTranfert($db);
+				$t->fk_product = $id_product;
+				$t->source_serial = '';
+				$t->target_serial = '';
+				$t->type = '';
+				$t->fk_entrepot_source = 0;
+				$t->fk_entrepot_dest = 0;
+				$t->date_mvt = dol_now();
+				$t->num_inventaire = '';
+
+				$res = $t->create($user);
+
+				if ($res > 0) $assets[] = $res;
+
+				/*$assets[] = array(
+					'fk_source_asset' => 0
+					,'fk_target_asset' => 0
+					,'type_trans' => 0
+					,'fk_user' => 0
+					,'date_mouv' => ''
+					,'num_inventaire' => ''
+				);*/
+				$i++;
+			}
+		}
 	}
 
 	// TODO Check qty is ok for stock move. Note qty may not be enough yet, but we make a check now to report a warning.
@@ -137,7 +180,7 @@ if ($action == 'addline')
 	{
 		if (count(array_keys($listofdata)) > 0) $id=max(array_keys($listofdata)) + 1;
 		else $id=1;
-		$listofdata[$id]=array('id'=>$id, 'id_product'=>$id_product, 'qty'=>$qty, 'id_sw'=>$id_sw, 'id_tw'=>$id_tw, 'batch'=>$batch);
+		$listofdata[$id]=array('id'=>$id, 'id_product'=>$id_product, 'qty'=>$qty, 'id_sw'=>$id_sw, 'id_tw'=>$id_tw, 'batch'=>$batch, 'assets'=>$assets);
 		$_SESSION['massstockmove']=json_encode($listofdata);
 
 		unset($id_product);
@@ -149,7 +192,18 @@ if ($action == 'addline')
 
 if ($action == 'delline' && $idline != '')
 {
-	if (! empty($listofdata[$idline])) unset($listofdata[$idline]);
+	if (! empty($listofdata[$idline])) {
+		if (!empty($listofdata[$idline]['assets']))
+		{
+			foreach ($listofdata[$idline]['assets'] as $t_id)
+			{
+				$t = new AssetTranfert($db);
+				$t->fetch($t_id);
+				$t->delete($user);
+			}
+		}
+		unset($listofdata[$idline]);
+	}
 	if (count($listofdata) > 0) $_SESSION['massstockmove']=json_encode($listofdata);
 	else unset($_SESSION['massstockmove']);
 }
@@ -428,9 +482,53 @@ foreach($listofdata as $key => $val)
 	print '<td align="right"><a href="'.$_SERVER["PHP_SELF"].'?action=delline&idline='.$val['id'].'">'.img_delete($langs->trans("Remove")).'</a></td>';
 
 	print '</tr>';
+	if (!empty($val['assets']))
+	{
+		$i = 0;
+		foreach ($val['assets'] as $at_id)
+		{
+			$t = new AssetTranfert($db);
+			$t->fetch($at_id);
+
+			print '<tr class="oddeven">';
+
+			print '<td>';
+			print '<input type="hidden" name="parent_id" value="'.$val['id'].'">';
+			if (!empty($i)) $style = 'style="display:none;"';
+
+			print '<div '.$style.'>';
+			print 'Type transfert : '.$form->selectArray('type_trans', $t->TTypes, $t->type,0,0,1).'<br />';
+			print 'Date de mouvement : '.$form->select_date($t->date_mvt,'date_mouv', 0, 0, 0, '', 1, 0, 1);
+			print '</div>';
+			print '</td>';
+
+			print '<td>';
+			print '<input type="text" name="source_serial" id="source_serial" value="'.$t->source_serial.'" placeholder="Numero de série source">';
+			print '</td>';
+			print '<td>';
+			print '<input type="text" name="target_serial" id="target_serial" value="'.$t->target_serial.'" placeholder="Numero de série remplacement">';
+			print '</td>';
+			print '<td>';
+			//print 'num inv';
+			print '<input type="text" name="num_inventaire" id="num_inventaire" value="'.$t->num_inventaire.'" placeholder="Numero inventaire">';
+			//print '<input type="text" name="user_id" id="user_id" value="'.$t->user_id.'" placeholder="Numero inventaire">';
+			print $form->select_dolusers(!empty($t->user_id) ? $t->user_id: "", 'user_id'.$t->id, 1);
+			print '</td>';
+			print '<td align="right">';
+			print '<input class="button savetransfert" type="button" value="'.$langs->trans('Save').'" data-id="'.$t->id.'"/>';
+			print '</td>';
+
+
+			print '</tr>';
+			$i++;
+		}
+
+	}
+	var_dump($val);
 }
 
 print '</table>';
+
 print '</div>';
 
 print '</form>';
@@ -466,6 +564,42 @@ print '<div class="center"><input class="button" type="submit" name="valid" valu
 
 print '</form>';
 
+?>
+	<script type="text/javascript">
+		$(document).ready(function(){
+		    $('.savetransfert').on('click', function(e){
+		        var tr = $(this).closest('tr');
+		        var id = $(this).data('id');
+		        var type = tr.find('[name="type_trans"]').val();
+		        var date = tr.find('[name="date_mouv"]').val();
+		        var source = tr.find('[name="source_serial"]').val();
+		        var target = tr.find('[name="target_serial"]').val();
+		        var user_id = tr.find('[name^="user_id"]').val();
+		        if (user_id == -1) user_id = 0;
+		        var num_inv = tr.find('[name="num_inventaire"]').val();
+
+		        $.ajax({
+					url: "<?php echo dol_buildpath('/cliama/script/interface.php',1) ?>"
+                    ,data: {
+                        put:'save_transfert'
+                        ,id:id
+                        ,type:type
+                        ,date:date
+                        ,source_serial:source
+                        ,target_serial:target
+                        ,user_id:user_id
+                        ,num_inventaire:num_inv
+                    }
+                    ,dataType:'json'
+				}).done(function(data){
+				    if(data.success) $(this).hide();
+				})
+			})
+		});
+
+
+	</script>
+<?php
 
 llxFooter();
 
