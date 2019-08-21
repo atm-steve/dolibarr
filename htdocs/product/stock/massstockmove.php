@@ -707,23 +707,9 @@ print '</form>';
                 span = $(this).next();
                 dest = $(this).val();
 
-
                 if (source != dest)
 				{
-				    $.ajax({
-						url:"<?php echo dol_buildpath('/cliama/script/interface.php', 1) ?>",
-                        dataType: "json",
-                        data: {
-                            serial: dest
-                            ,product_id:product
-                            , get: 'existingAsset'
-                        }
-					}).done(function(data){
-					    if (data.success == true) {
-					        if (data.response == true) span.show();
-					        else span.hide();
-						}
-					});
+                    assetexists(target_serial, product, span)
 				}
                 else span.hide();
 			})
@@ -733,6 +719,36 @@ print '</form>';
                     .find('.savetransfert')
                     .trigger('click');
 			})
+
+            $('[name="target_serial"]').each(function(i, item){
+                source = $(item).parent().parent().find('#source_serial').val();
+                product = $(item).parent().parent().find('#source_serial').data('product');
+                span = $(item).next();
+                dest = $(item).val();
+
+                if (source != dest)
+                {
+                    assetexists(dest, product, span)
+                }
+			});
+
+			function assetexists(target_serial, product, element)
+			{
+                $.ajax({
+                    url:"<?php echo dol_buildpath('/cliama/script/interface.php', 1) ?>",
+                    dataType: "json",
+                    data: {
+                        serial: target_serial
+                        ,product_id:product
+                        , get: 'existingAsset'
+                    }
+                }).done(function(data){
+                    if (data.success == true) {
+                        if (data.response == true) element.show();
+                        else element.hide();
+                    }
+                });
+			}
 		});
 	</script>
 <?php
