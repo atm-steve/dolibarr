@@ -547,7 +547,7 @@ foreach($listofdata as $key => $val)
 		}
 
 	}
-	var_dump($val);
+
 }
 
 print '</table>';
