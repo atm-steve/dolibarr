@@ -372,7 +372,7 @@ if ($action == 'createmovements')
 
 		$db->commit();
 		setEventMessages($langs->trans("StockMovementRecorded"), null, 'mesgs');
-		header("Location: ".DOL_URL_ROOT.'/product/stock/index.php');		// Redirect to avoid pb when using back
+		header("Location: ".$_SERVER['PHP_SELF']);		// Redirect to avoid pb when using back
 		exit;
 	}
 	else
