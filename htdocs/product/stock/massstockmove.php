@@ -709,9 +709,12 @@ print '</form>';
 
                 if (source != dest)
 				{
-                    assetexists(target_serial, product, span)
+                    assetexists(dest, product, span)
 				}
-                else span.hide();
+                else {
+                    span.hide();
+                    $('[name="valid"]').attr('disabled', false);
+                }
 			})
 
 		    $('[name="num_inventaire"]').on('keydown', function(e){
@@ -744,8 +747,17 @@ print '</form>';
                     }
                 }).done(function(data){
                     if (data.success == true) {
-                        if (data.response == true) element.show();
-                        else element.hide();
+                        if (data.response == true) {
+                            element.show();
+                            $('[name="valid"]').attr('disabled', true);
+                        }
+                        else {
+                            element.hide();
+                            $('[name="valid"]').attr('disabled', false);
+                            element.parent().parent()
+								.find('.savetransfert')
+                                .trigger('click');
+                        }
                     }
                 });
 			}
