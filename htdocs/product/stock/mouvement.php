@@ -487,7 +487,8 @@ if ($search_warehouse > 0)          $sql.= " AND e.rowid = '".$db->escape($searc
 if (! empty($search_user))          $sql.= natural_search('u.login', $search_user);
 if (! empty($search_batch))         $sql.= natural_search('m.batch', $search_batch);
 if ($search_qty != '')				$sql.= natural_search('m.value', $search_qty, 1);
-if ($search_type_mouvement)	$sql.= " AND m.type_mouvement = '".$db->escape($search_type_mouvement)."'";
+
+if ($search_type_mouvement || $search_type_mouvement == '0')	$sql.= " AND m.type_mouvement = '".$db->escape($search_type_mouvement)."'";
 
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
