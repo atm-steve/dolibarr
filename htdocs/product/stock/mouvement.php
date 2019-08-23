@@ -927,7 +927,7 @@ if ($resql)
     if (! empty($arrayfields['origin']['checked']))             print_liste_field_titre($arrayfields['origin']['label'],$_SERVER["PHP_SELF"], "","",$param,"",$sortfield,$sortorder);
     if (! empty($arrayfields['m.value']['checked']))            print_liste_field_titre($arrayfields['m.value']['label'],$_SERVER["PHP_SELF"], "m.value","",$param,'align="right"',$sortfield,$sortorder);
     if (! empty($arrayfields['m.price']['checked']))            print_liste_field_titre($arrayfields['m.price']['label'],$_SERVER["PHP_SELF"], "m.price","",$param,'align="right"',$sortfield,$sortorder);
-    if (! empty($arrayfields['m.fk_projet']['checked']))        print_liste_field_titre($arrayfields['m.fk_projet']['label'],$_SERVER["PHP_SELF"], "m.fk_projet","",$param,'align="right"',$sortfield,$sortorder);
+    if (! empty($arrayfields['m.fk_projet']['checked']))        print_liste_field_titre($arrayfields['m.fk_projet']['label'],$_SERVER["PHP_SELF"], "fk_projet","",$param,'align="right"',$sortfield,$sortorder);
 
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
