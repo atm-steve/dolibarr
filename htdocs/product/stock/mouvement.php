@@ -71,6 +71,7 @@ $search_user = trim(GETPOST("search_user"));
 $search_batch = trim(GETPOST("search_batch"));
 $search_qty = trim(GETPOST("search_qty"));
 $search_type_mouvement=GETPOST('search_type_mouvement','int');
+$search_fk_projet=GETPOST("search_fk_projet", 'int');
 
 $limit = GETPOST('limit','int')?GETPOST('limit','int'):$conf->liste_limit;
 $page = GETPOST("page",'int');
@@ -150,6 +151,7 @@ if (GETPOST('button_removefilter_x','alpha') || GETPOST('button_removefilter.x',
     $search_qty='';
     $sall="";
 	$toselect='';
+	$search_fk_projet=0;
     $search_array_options=array();
 }
 
@@ -486,6 +488,7 @@ if (! empty($search_user))          $sql.= natural_search('u.login', $search_use
 if (! empty($search_batch))         $sql.= natural_search('m.batch', $search_batch);
 if ($search_qty != '')				$sql.= natural_search('m.value', $search_qty, 1);
 if ($search_type_mouvement)	$sql.= " AND m.type_mouvement = '".$db->escape($search_type_mouvement)."'";
+
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 // Add where from hooks
@@ -846,10 +849,10 @@ if ($resql)
 	    //print '<input class="flat" type="text" size="3" name="search_type_mouvement" value="'.dol_escape_htmltag($search_type_mouvement).'">';
 		print '<select name="search_type_mouvement">';
 		print '<option value="" '.(($search_type_mouvement=="")?'selected="selected"':'').'></option>';
-		print '<option value="0" '.(($search_type_mouvement=="0")?'selected="selected"':'').'>0</option>';
-		print '<option value="1" '.(($search_type_mouvement=="1")?'selected="selected"':'').'>1</option>';
-		print '<option value="2" '.(($search_type_mouvement=="2")?'selected="selected"':'').'>2</option>';
-		print '<option value="3" '.(($search_type_mouvement=="3")?'selected="selected"':'').'>3</option>';
+		print '<option value="0" '.(($search_type_mouvement=="0")?'selected="selected"':'').'>'.$langs->trans('StockIncreaseAfterCorrectTransfer').'</option>';
+		print '<option value="1" '.(($search_type_mouvement=="1")?'selected="selected"':'').'>'.$langs->trans('StockDecreaseAfterCorrectTransfer').'</option>';
+		print '<option value="2" '.(($search_type_mouvement=="2")?'selected="selected"':'').'>'.$langs->trans('StockDecrease').'</option>';
+		print '<option value="3" '.(($search_type_mouvement=="3")?'selected="selected"':'').'>'.$langs->trans('StockIncrease').'</option>';
 		print '</select>';
 		// TODO: add new function $formentrepot->selectTypeOfMovement(...) like
 		// print $formproduct->selectWarehouses($search_warehouse, 'search_warehouse', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, null, 'maxwidth200');
@@ -880,7 +883,14 @@ if ($resql)
     {
     	// fk_projet
     	print '<td class="liste_titre" align="left">';
-    	print '&nbsp; ';
+		$f = new FormProjets($db);
+		$f->select_projects(-1, $search_fk_projet, "search_fk_projet",16, 0, 1, 0, 0, 0, 0, "", 0, 0, 'width100p');
+		?>
+		<script type="text/javascript">
+                $('[name="search_fk_projet"] > option:disabled').each(function(){$(this).attr('disabled', false);});
+                $('[name="search_fk_projet"]').select2();
+		</script>
+		<?php
     	print '</td>';
     }
 
@@ -941,6 +951,12 @@ if ($resql)
 	print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"],"",'','','align="center"',$sortfield,$sortorder,'maxwidthsearch ');
     print "</tr>\n";
 
+	$TTrad = array(
+		$langs->trans('StockIncreaseAfterCorrectTransfer'),
+		$langs->trans('StockDecreaseAfterCorrectTransfer'),
+		$langs->trans('StockDecrease'),
+		$langs->trans('StockIncrease')
+	);
 
     $arrayofuniqueproduct=array();
 
@@ -1048,7 +1064,7 @@ if ($resql)
 		if (! empty($arrayfields['m.type_mouvement']['checked']))
         {
             // Type of movement
-        	print '<td align="center">'.$objp->type_mouvement.'</td>';
+        	print '<td align="center">'.$TTrad[$objp->type_mouvement].'</td>';
         }
         if (! empty($arrayfields['origin']['checked']))
         {
