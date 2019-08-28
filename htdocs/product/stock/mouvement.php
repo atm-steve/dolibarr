@@ -1144,6 +1144,7 @@ if ($resql)
         	// fk_projet
         	print '<td align="right">';
         	if ($objp->fk_projet != 0) print $movement->get_origin($objp->fk_projet, 'project');
+        	else if($objp->origintype == 'project') print $movement->get_origin($objp->fk_origin, 'project');
         	print '</td>';
         }
 		/*
