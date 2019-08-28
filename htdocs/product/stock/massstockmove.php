@@ -723,7 +723,7 @@ print '</form>';
                 }
 			})
 
-		    $('[name="num_inventaire"]').on('keydown', function(e){
+		    $('[name="num_inventaire"]').on('keyup', function(e){
                 $(this).parent().parent()
                     .find('.savetransfert')
                     .trigger('click');
