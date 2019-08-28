@@ -895,6 +895,19 @@ if ($resql)
     	print '&nbsp; ';
     	print '</td>';
     }
+	/*
+ * Spé
+ */
+	if(!empty($TServFrais)) {
+		foreach($TServFrais as $servFrais) {
+			if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+				print '<td class="liste_titre" align="left"></td>';
+			}
+		}
+	}
+	/*
+	 * Fin spé
+	 */
     if (! empty($arrayfields['m.fk_projet']['checked']))
     {
     	// fk_projet
@@ -909,19 +922,7 @@ if ($resql)
 		<?php
     	print '</td>';
     }
-	/*
-	 * Spé
-	 */
-	if(!empty($TServFrais)) {
-		foreach($TServFrais as $servFrais) {
-			if (! empty($arrayfields[$servFrais->ref]['checked'])) {
-				print '<td class="liste_titre" align="left"></td>';
-			}
-		}
-	}
-	/*
-	 * Fin spé
-	 */
+
 
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
@@ -966,20 +967,22 @@ if ($resql)
     if (! empty($arrayfields['origin']['checked']))             print_liste_field_titre($arrayfields['origin']['label'],$_SERVER["PHP_SELF"], "","",$param,"",$sortfield,$sortorder);
     if (! empty($arrayfields['m.value']['checked']))            print_liste_field_titre($arrayfields['m.value']['label'],$_SERVER["PHP_SELF"], "m.value","",$param,'align="right"',$sortfield,$sortorder);
     if (! empty($arrayfields['m.price']['checked']))            print_liste_field_titre($arrayfields['m.price']['label'],$_SERVER["PHP_SELF"], "m.price","",$param,'align="right"',$sortfield,$sortorder);
-    if (! empty($arrayfields['m.fk_projet']['checked']))        print_liste_field_titre($arrayfields['m.fk_projet']['label'],$_SERVER["PHP_SELF"], "fk_projet","",$param,'align="right"',$sortfield,$sortorder);
 	/*
 	 * Spé
 	 */
 	if(!empty($TServFrais)) {
 		foreach($TServFrais as $servFrais) {
-			if (! empty($arrayfields[$servFrais->ref]['checked'])) {
-				print_liste_field_titre($arrayfields[$servFrais->ref]['label'],$_SERVER["PHP_SELF"], "","",$param,"",$sortfield,$sortorder);
+			if(!empty($arrayfields[$servFrais->ref]['checked'])) {
+				print_liste_field_titre($arrayfields[$servFrais->ref]['label'], $_SERVER["PHP_SELF"], "", "", $param, "", $sortfield, $sortorder);
 			}
 		}
 	}
 	/*
 	 * Fin spé
 	 */
+
+    if (! empty($arrayfields['m.fk_projet']['checked']))        print_liste_field_titre($arrayfields['m.fk_projet']['label'],$_SERVER["PHP_SELF"], "fk_projet","",$param,'align="right"',$sortfield,$sortorder);
+
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
 
@@ -1139,14 +1142,6 @@ if ($resql)
         	if ($objp->price != 0) print price($objp->price);
         	print '</td>';
         }
-        if (! empty($arrayfields['m.fk_projet']['checked']))
-        {
-        	// fk_projet
-        	print '<td align="right">';
-        	if ($objp->fk_projet != 0) print $movement->get_origin($objp->fk_projet, 'project');
-        	else if($objp->origintype == 'project') print $movement->get_origin($objp->fk_origin, 'project');
-        	print '</td>';
-        }
 		/*
 		 * Spé
 		 */
@@ -1176,6 +1171,15 @@ if ($resql)
 		/*
 		 * Fin spé
 		 */
+        if (! empty($arrayfields['m.fk_projet']['checked']))
+        {
+        	// fk_projet
+        	print '<td align="right">';
+        	if ($objp->fk_projet != 0) print $movement->get_origin($objp->fk_projet, 'project');
+        	else if($objp->origintype == 'project') print $movement->get_origin($objp->fk_origin, 'project');
+        	print '</td>';
+        }
+
 		// Fields from hook
 		$parameters=array('arrayfields'=>$arrayfields, 'objp'=>$objp);
 		$reshook=$hookmanager->executeHooks('printFieldListValue',$parameters);    // Note that $action and $object may have been modified by hook
