@@ -90,6 +90,17 @@ if ($action == 'addline')
 		$p = new Product($db);
 		$p->fetch($id_product);
 		$p->get_sousproduits_arbo();
+
+		$p->load_stock();
+		if(array_key_exists($id_sw, $p->stock_warehouse)) {
+			if($p->stock_warehouse[$id_sw]->real < $qty) {
+				setEventMessages($langs->trans('NotEnoughStock'), null, 'errors');
+				$error++;
+			}
+		} else {
+			setEventMessages($langs->trans('EmptyStock'), null, 'errors');
+			$error++;
+		}
 		$res = $p->get_arbo_each_prod();
 		if (!empty($res)) {
 			setEventMessages($langs->trans('StockTransfertRefusedForComposed'), null, 'errors');
