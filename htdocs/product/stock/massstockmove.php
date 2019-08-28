@@ -534,13 +534,13 @@ foreach($listofdata as $key => $val)
 			print '<input type="text" name="target_serial" id="target_serial" value="'.$t->target_serial.'" placeholder="Numero de série remplacement">';
 			print '<span id="warning" style="display: none">'.img_picto($langs->trans('AssetAlreadyExists'), 'warning.png').'</span>';
 			print '</td>';
-			print '<td align="center">';
+			print '<td align="center" colspan="2">';
 			//print 'num inv';
 			print 'N° inventaire :<input type="text" name="num_inventaire" id="num_inventaire" value="'.$t->num_inventaire.'" placeholder="Numero inventaire">';
 			//print '<input type="text" name="user_id" id="user_id" value="'.$t->user_id.'" placeholder="Numero inventaire">';
 			if ($typeent->getType($val['id_tw']) == 2) print '<br>Utilisateur affecté : '.$form->select_dolusers(!empty($t->user_id) ? $t->user_id: "", 'user_id'.$t->id, 1);
 			print '</td>';
-			print '<td align="right">';
+			print '<td align="right" style="display: none;">';
 			print '<input class="button savetransfert" type="button" value="'.$langs->trans('Save').'" data-id="'.$t->id.'"/>';
 			print '</td>';
 
@@ -717,6 +717,9 @@ print '</form>';
                 else {
                     span.hide();
                     $('[name="valid"]').attr('disabled', false);
+                    $(this).parent().parent()
+                        .find('.savetransfert')
+                        .trigger('click');
                 }
 			})
 
