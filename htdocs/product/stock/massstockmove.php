@@ -91,7 +91,10 @@ if ($action == 'addline')
 		$p->fetch($id_product);
 		$p->get_sousproduits_arbo();
 		$res = $p->get_arbo_each_prod();
-		if (!empty($res)) setEventMessages($langs->trans('StockTransfertRefusedForComposed'), null, 'errors');
+		if (!empty($res)) {
+			setEventMessages($langs->trans('StockTransfertRefusedForComposed'), null, 'errors');
+			$error++;
+		}
 	}
 	if (! ($id_sw > 0))
 	{
