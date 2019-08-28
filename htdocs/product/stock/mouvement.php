@@ -115,7 +115,22 @@ $arrayfields=array(
     //'m.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500)
 );
 
-
+/*
+ * Spé
+ */
+$TServFrais = array();
+if(!empty($conf->global->CLIAMA_FREIGHT_CHARGES_SERVICES)) {
+	$TServFraisIds = unserialize($conf->global->CLIAMA_FREIGHT_CHARGES_SERVICES);
+	foreach($TServFraisIds as $servFraisId) {
+		$prod = new Product($db);
+		$prod->fetch($servFraisId);
+		$TServFrais[] = $prod;
+		$arrayfields[$prod->ref] = array('label'=>$prod->label, 'checked'=>1);
+	}
+}
+/*
+ * Fin spé
+ */
 
 /*
  * Actions
@@ -894,7 +909,19 @@ if ($resql)
 		<?php
     	print '</td>';
     }
-
+	/*
+	 * Spé
+	 */
+	if(!empty($TServFrais)) {
+		foreach($TServFrais as $servFrais) {
+			if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+				print '<td class="liste_titre" align="left"></td>';
+			}
+		}
+	}
+	/*
+	 * Fin spé
+	 */
 
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
@@ -915,6 +942,7 @@ if ($resql)
 	    print '<td class="liste_titre">';
 	    print '</td>';
 	}
+
     // Actions
     print '<td class="liste_titre" align="right">';
     $searchpicto=$form->showFilterAndCheckAddButtons(0);
@@ -939,7 +967,19 @@ if ($resql)
     if (! empty($arrayfields['m.value']['checked']))            print_liste_field_titre($arrayfields['m.value']['label'],$_SERVER["PHP_SELF"], "m.value","",$param,'align="right"',$sortfield,$sortorder);
     if (! empty($arrayfields['m.price']['checked']))            print_liste_field_titre($arrayfields['m.price']['label'],$_SERVER["PHP_SELF"], "m.price","",$param,'align="right"',$sortfield,$sortorder);
     if (! empty($arrayfields['m.fk_projet']['checked']))        print_liste_field_titre($arrayfields['m.fk_projet']['label'],$_SERVER["PHP_SELF"], "fk_projet","",$param,'align="right"',$sortfield,$sortorder);
-
+	/*
+	 * Spé
+	 */
+	if(!empty($TServFrais)) {
+		foreach($TServFrais as $servFrais) {
+			if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+				print_liste_field_titre($arrayfields[$servFrais->ref]['label'],$_SERVER["PHP_SELF"], "","",$param,"",$sortfield,$sortorder);
+			}
+		}
+	}
+	/*
+	 * Fin spé
+	 */
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
 
@@ -986,10 +1026,22 @@ if ($resql)
         $warehousestatic->id=$objp->entrepot_id;
         $warehousestatic->libelle=$objp->stock;
         $warehousestatic->lieu=$objp->lieu;
-
+		$cmdfourn = '';
         $arrayofuniqueproduct[$objp->rowid]=$objp->produit;
 		if(!empty($objp->fk_origin)) {
 			$origin = $movement->get_origin($objp->fk_origin, $objp->origintype);
+			/*
+			 * Spé
+			 */
+
+			if($objp->origintype == 'order_supplier'){
+				$cmdfourn = new CommandeFournisseur($db);
+				$cmdfourn->fetch($objp->fk_origin);
+			}
+
+			/*
+			 * Fin spé
+			 */
 		} else {
 			$origin = '';
 		}
@@ -1094,7 +1146,35 @@ if ($resql)
         	if ($objp->fk_projet != 0) print $movement->get_origin($objp->fk_projet, 'project');
         	print '</td>';
         }
-
+		/*
+		 * Spé
+		 */
+		if(!empty($TServFrais)) {
+			foreach($TServFrais as $servFrais) {
+				if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+					print '<td align="right">';
+					if(!empty($cmdfourn->id)){
+						if (count($cmdfourn->lines))
+						{
+							$found = 0;
+							foreach ($cmdfourn->lines as $line)
+							{
+								if ($line->fk_product == $servFrais->id && !empty($line->array_options['options_fee'])){
+									print price($line->pu_ht);
+									$found = 1;
+									break;
+								}
+							}
+							if(!$found) print price(0);
+						}
+					}
+					print '</td>';
+				}
+			}
+		}
+		/*
+		 * Fin spé
+		 */
 		// Fields from hook
 		$parameters=array('arrayfields'=>$arrayfields, 'objp'=>$objp);
 		$reshook=$hookmanager->executeHooks('printFieldListValue',$parameters);    // Note that $action and $object may have been modified by hook
