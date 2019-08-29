@@ -1035,9 +1035,10 @@ if ($resql)
         /*
          * Spé
          */
-
+        if(!defined('INC_FROM_DOLIBARR')) define('INC_FROM_DOLIBARR',1);
+		dol_include_once('assetatm/config.php');
 		$PDOdb = new TPDOdb;
-		dol_include_once('/assetatm/class/asset.class.php');
+		dol_include_once('assetatm/class/asset.class.php');
 		$asset = new TAsset;
 
 		if ($asset->loadReference($PDOdb, $objp->assets, $objp->rowid)){
