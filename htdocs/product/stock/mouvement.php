@@ -1031,20 +1031,40 @@ if ($resql)
         $warehousestatic->lieu=$objp->lieu;
 		$cmdfourn = '';
         $arrayofuniqueproduct[$objp->rowid]=$objp->produit;
+
+        /*
+         * Spé
+         */
+
+		$PDOdb = new TPDOdb;
+		dol_include_once('/assetatm/class/asset.class.php');
+		$asset = new TAsset;
+
+		if ($asset->loadReference($PDOdb, $objp->assets, $objp->rowid)){
+			global $db,$langs;
+
+			//Liste des commandes fournisseurs liés à l'équipement
+			$sql = "SELECT DISTINCT(cf.rowid)
+				FROM ".MAIN_DB_PREFIX."commande_fournisseur as cf
+					LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet as cfd ON (cfd.fk_commande = cf.rowid)
+					LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet_asset as cfda ON (cfda.fk_commandedet = cfd.rowid)
+					LEFT JOIN ".MAIN_DB_PREFIX."assetatm as a ON (a.serial_number = cfda.serial_number)
+					LEFT JOIN ".MAIN_DB_PREFIX."assetatmlot as al ON (al.lot_number = a.lot_number)";
+			$sql .= " WHERE a.rowid = ".$asset->rowid;
+
+			$PDOdb->Execute($sql);
+
+			$cmdfourn = new CommandeFournisseur($db);
+			$PDOdb->Get_line();
+			$cmdfourn->fetch($PDOdb->Get_field('rowid'));
+		}
+
+        /*
+         * Fin spé
+         */
+
 		if(!empty($objp->fk_origin)) {
 			$origin = $movement->get_origin($objp->fk_origin, $objp->origintype);
-			/*
-			 * Spé
-			 */
-
-			if($objp->origintype == 'order_supplier'){
-				$cmdfourn = new CommandeFournisseur($db);
-				$cmdfourn->fetch($objp->fk_origin);
-			}
-
-			/*
-			 * Fin spé
-			 */
 		} else {
 			$origin = '';
 		}
