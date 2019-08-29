@@ -1050,8 +1050,7 @@ if ($resql)
 					LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet_asset as cfda ON (cfda.fk_commandedet = cfd.rowid)
 					LEFT JOIN ".MAIN_DB_PREFIX."assetatm as a ON (a.serial_number = cfda.serial_number)
 					LEFT JOIN ".MAIN_DB_PREFIX."assetatmlot as al ON (al.lot_number = a.lot_number)";
-			if($asset->rowid) $sql .= " WHERE a.rowid = ".$asset->rowid;
-			else $sql .= " WHERE al.lot_number = '".$this->lot_number."'";
+			$sql .= " WHERE a.rowid = ".$asset->rowid;
 
 			$PDOdb->Execute($sql);
 
