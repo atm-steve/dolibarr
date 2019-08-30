@@ -607,8 +607,9 @@ print '</form>';
 		    $('.savetransfert').on('click', function(e){
 		        var tr = $(this).closest('tr');
 		        var id = $(this).data('id');
-		        var type = tr.find('[name="type_trans"]').val();
-		        var date = tr.find('[name="date_mouv"]').val();
+		        var table = $(this).closest('table');
+		        var type = table.find('[name="type_trans"]').val();
+		        var date = table.find('[name="date_mouv"]').val();
 		        var source = tr.find('[name="source_serial"]').val();
 		        var target = tr.find('[name="target_serial"]').val();
 		        var user_id = tr.find('[name^="user_id"]').val();
