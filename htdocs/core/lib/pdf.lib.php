@@ -1128,7 +1128,7 @@ function pdf_writeLinkedObjects(&$pdf,$object,$outputlangs,$posx,$posy,$w,$h,$al
 		        $reftoshow .= ' / '.$linkedobject["date_value"];
 		    }
 
-			$posy+=3;
+			$posy+=6;
 			$pdf->SetXY($posx,$posy);
 			$pdf->SetFont('','', $default_font_size - 2);
 			$pdf->MultiCell($w, $h, $reftoshow, '', $align);
