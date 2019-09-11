@@ -74,6 +74,7 @@ $search_user = trim(GETPOST("search_user"));
 $search_batch = trim(GETPOST("search_batch"));
 $search_qty = trim(GETPOST("search_qty"));
 $search_type_mouvement=GETPOST('search_type_mouvement', 'int');
+$search_price = trim(GETPOST('search_price', 'int'));
 
 $limit = GETPOST('limit', 'int')?GETPOST('limit', 'int'):$conf->liste_limit;
 $page = GETPOST("page", 'int');
@@ -150,6 +151,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
     $search_user="";
     $search_batch="";
     $search_qty='';
+    $search_price='';
     $sall="";
 	$toselect='';
     $search_array_options=array();
@@ -465,6 +467,7 @@ if (! empty($search_user))          $sql.= natural_search('u.login', $search_use
 if (! empty($search_batch))         $sql.= natural_search('m.batch', $search_batch);
 if ($search_qty != '')				$sql.= natural_search('m.value', $search_qty, 1);
 if ($search_type_mouvement != '' && $search_type_mouvement != '-1')	$sql.= natural_search('m.type_mouvement', $search_type_mouvement, 2);
+if ($search_price != '')            $sql.= natural_search('m.price', $search_price, 1);
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 // Add where from hooks
@@ -855,7 +858,7 @@ if ($resql)
     {
     	// Price
     	print '<td class="liste_titre left">';
-    	print '&nbsp; ';
+	    print '<input class="flat" type="text" size="4" name="search_price" value="'.dol_escape_htmltag($search_price).'">';
     	print '</td>';
     }
 
