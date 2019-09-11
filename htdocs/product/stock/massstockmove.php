@@ -659,13 +659,13 @@ print '</form>';
 		        parent_id = $(this).parent().parent().prev().val();
 
                 $('[name="parent_id"][value="'+parent_id+'"]').each(function(i, item){
-					date = $(item).next().find('div > #date_mouv');
+					date = $(item).closest('table').find('#date_mouv');
                 	date.val(val);
                 	$(item).parent().parent()
                         .find('.savetransfert')
                         .trigger('click');
 				});
-			})
+			});
 
             $('[name="source_serial"]').each(function(i, item){
                 $(item).autocomplete({
