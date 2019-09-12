@@ -1044,7 +1044,7 @@ if ($resql)
 			$TAssetNb = explode(',', $objp->assets);
 			$assetNb = $TAssetNb[0];
 		} else $assetNb = $objp->assets;
-	
+
 		if ($asset->loadReference($PDOdb, $assetNb, $objp->rowid)){
 			global $db,$langs;
 
@@ -1063,6 +1063,12 @@ if ($resql)
 			$cmdfourn = new CommandeFournisseur($db);
 			$PDOdb->Get_line();
 			$cmdfourn->fetch($PDOdb->Get_field('rowid'));
+
+		}
+
+		if(empty($cmdfourn) && !empty($objp->fk_origin) && $objp->origintype == 'order_supplier') {
+			$cmdfourn = new CommandeFournisseur($db);
+			$cmdfourn->fetch($objp->fk_origin);
 		}
 
         /*
