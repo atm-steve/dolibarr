@@ -1040,9 +1040,14 @@ if ($resql)
 		$PDOdb = new TPDOdb;
 		dol_include_once('assetatm/class/asset.class.php');
 		$asset = new TAsset;
-
-		if ($asset->loadReference($PDOdb, $objp->assets, $objp->rowid)){
+		if(strpos($objp->assets,',') !== false) {
+			$TAssetNb = explode(',', $objp->assets);
+			$assetNb = $TAssetNb[0];
+		} else $assetNb = $objp->assets;
+	
+		if ($asset->loadReference($PDOdb, $assetNb, $objp->rowid)){
 			global $db,$langs;
+
 
 			//Liste des commandes fournisseurs liés à l'équipement
 			$sql = "SELECT DISTINCT(cf.rowid)
