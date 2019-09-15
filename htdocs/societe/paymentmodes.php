@@ -157,9 +157,13 @@ if (empty($reshook))
 			$companybankaccount->owner_address   = GETPOST('owner_address','alpha');
 			$companybankaccount->frstrecur       = GETPOST('frstrecur','alpha');
 			$companybankaccount->rum             = GETPOST('rum','alpha');
+			$companybankaccount->date_rum        = dol_mktime(0,0,0, GETPOST('date_rummonth'),GETPOST('date_rumday'),GETPOST('date_rumyear'));
 			if (empty($companybankaccount->rum))
 			{
 				$companybankaccount->rum = $prelevement->buildRumNumber($object->code_client, $companybankaccount->datec, $companybankaccount->id);
+			}
+			if (empty($companybankaccount->date_rum))
+			{
 				$companybankaccount->date_rum = dol_now();
 			}
 
@@ -268,6 +272,7 @@ if (empty($reshook))
 			$companybankaccount->owner_address   = GETPOST('owner_address','alpha');
 			$companybankaccount->frstrecur       = GETPOST('frstrecur');
 			$companybankaccount->rum             = GETPOST('rum','alpha');
+			$companybankaccount->date_rum        = dol_mktime(0,0,0, GETPOST('date_rummonth'),GETPOST('date_rumday'),GETPOST('date_rumyear'));
 			$companybankaccount->datec			 = dol_now();
 			$companybankaccount->status          = 1;
 
@@ -1086,6 +1091,7 @@ if ($socid && $action != 'edit' && $action != 'create' && $action != 'editcard' 
 		if (! empty($conf->prelevement->enabled))
 		{
 			print print_liste_field_titre("RUM");
+			print_liste_field_titre("DateRUM");
 			print print_liste_field_titre("WithdrawMode");
 		}
 		print_liste_field_titre("DefaultRIB", '', '', '', '', 'align="center"');
@@ -1155,7 +1161,9 @@ if ($socid && $action != 'edit' && $action != 'create' && $action != 'editcard' 
 			{
 				// RUM
 				//print '<td>'.$prelevement->buildRumNumber($object->code_client, $rib->datec, $rib->id).'</td>';
-				print '<td>'.$rib->rum.'</td>';
+				print '<td>'.	$rib->rum.'</td>';
+
+				print '<td>'.dol_print_date($rib->date_rum, 'day').'</td>';
 
 				// FRSTRECUR
 				print '<td>'.$rib->frstrecur.'</td>';
@@ -1409,6 +1417,9 @@ if ($socid && $action == 'edit' && $user->rights->societe->creer)
 		print '<tr><td class="titlefield">'.$langs->trans("RUM").'</td>';
 		print '<td><input class="minwidth300" type="text" name="rum" value="'.dol_escape_htmltag($companybankaccount->rum).'"></td></tr>';
 
+		print '<tr><td class="titlefield">'.$langs->trans("DateRUM").'</td>';
+		print '<td>'.$form->selectDate(GETPOST('date_rum')?GETPOST('date_rum'):$companybankaccount->date_rum, 'date_rum', 0,0,1, 'date_rum').'</td></tr>';
+
 		print '<tr><td>'.$langs->trans("WithdrawMode").'</td><td>';
 		$tblArraychoice = array("FRST" => $langs->trans("FRST"), "RECUR" => $langs->trans("RECUR"));
 		print $form->selectarray("frstrecur", $tblArraychoice, dol_escape_htmltag(GETPOST('frstrecur','alpha')?GETPOST('frstrecur','alpha'):$companybankaccount->frstrecur), 0);
@@ -1552,6 +1563,9 @@ if ($socid && $action == 'create' && $user->rights->societe->creer)
 		// RUM
 		print '<tr><td class="titlefieldcreate">'.$langs->trans("RUM").'</td>';
 		print '<td colspan="4"><input type="text" class="minwidth300" name="rum" value="'.GETPOST('rum','alpha').'"> <div class="opacitymedium">'.$langs->trans("RUMWillBeGenerated").'</div></td></tr>';
+
+		print '<tr><td class="titlefieldcreate">'.$langs->trans("DateRUM").'</td>';
+		print '<td colspan="4">'.$form->selectDate(GETPOST('date_rum'), 'date_rum', 0,0,1, 'date_rum').'</td></tr>';
 
 		print '<tr><td>'.$langs->trans("WithdrawMode").'</td><td>';
 		$tblArraychoice = array("FRST" => $langs->trans("FRST"), "RECUR" => $langs->trans("RECUR"));
