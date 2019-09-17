@@ -998,6 +998,9 @@ if ($resql)
 			// Margin
 			if (!empty($arrayfields['margin']['checked'])) {
 				print '<td align="center" nowrap>' . price($marginInfos['total_margin']) . "</td>\n";
+				if (! $i) $totalarray['nbfield']++;
+				if (! $i) $totalarray['totalmarginfield']=$totalarray['nbfield'];
+				$totalarray['totalmargin'] += $marginInfos['total_margin'];
 			}
 			// MarkRate
 			if (!empty($arrayfields['markRate']['checked'])) {
@@ -1115,6 +1118,9 @@ if ($resql)
  	   || isset($totalarray['totalamfield'])
  	   || isset($totalarray['totalrtpfield'])
  	   || isset($totalarray['totalizable'])
+		//Spe
+	   || isset($totalarray['totalmarginfield'])
+		//Fin Spe
  	   )
 	{
 		print '<tr class="liste_total">';
@@ -1130,6 +1136,9 @@ if ($resql)
 		    elseif ($totalarray['totalhtfield'] == $i) print '<td align="right">'.price($totalarray['totalht']).'</td>';
 		    elseif ($totalarray['totalvatfield'] == $i) print '<td align="right">'.price($totalarray['totalvat']).'</td>';
 		    elseif ($totalarray['totalttcfield'] == $i) print '<td align="right">'.price($totalarray['totalttc']).'</td>';
+			//Spe
+			elseif ($totalarray['totalmarginfield'] == $i) print '<td align="right">'.price($totalarray['totalmargin']).'</td>';
+			//Fin Spe
 		    elseif ($totalarray['totalizable']) {
                 $printed = false;
                 foreach ($totalarray['totalizable'] as $totalizable) {
