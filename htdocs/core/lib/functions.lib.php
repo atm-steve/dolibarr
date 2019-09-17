@@ -1436,6 +1436,7 @@ function dol_banner_tab($object, $paramid, $morehtml='', $shownav=1, $fieldid='r
 						{
 							if (empty($conf->global->MAIN_DISABLE_PDF_THUMBS))		// If you experienc trouble with pdf thumb generation and imagick, you can disable here.
 							{
+							    include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 								$ret = dol_convert_file($file, 'png', $fileimage);
 								if ($ret < 0) $error++;
 							}
@@ -5998,6 +5999,7 @@ function getCommonSubstitutionArray($outputlangs, $onlykey=0, $exclude=null, $ob
 			$substitutionarray['__REF__'] = $object->ref;
 			$substitutionarray['__REFCLIENT__'] = (isset($object->ref_client) ? $object->ref_client : (isset($object->ref_customer) ? $object->ref_customer : ''));
 			$substitutionarray['__REFSUPPLIER__'] = (isset($object->ref_supplier) ? $object->ref_supplier : '');
+			$substitutionarray['__SUPPLIER_ORDER_DATE_DELIVERY__'] = (isset($object->date_livraison) ? dol_print_date($object->date_livraison, 'day', 0, $outputlangs): '');
 
 			// TODO Use this ?
 			$msgishtml = 0;
@@ -6232,6 +6234,8 @@ function make_substitutions($text, $substitutionarray, $outputlangs=null)
 	// Make substitition for array $substitutionarray
 	foreach ($substitutionarray as $key => $value)
 	{
+		if (! isset($value)) continue;	// If value is null, it same than not having substitution key at all into array, we do not replace.
+
 		if ($key == '__SIGNATURE__' && (! empty($conf->global->MAIN_MAIL_DO_NOT_USE_SIGN))) $value='';		// Protection
 		if ($key == '__USER_SIGNATURE__' && (! empty($conf->global->MAIN_MAIL_DO_NOT_USE_SIGN))) $value='';	// Protection
 

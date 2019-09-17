@@ -245,7 +245,7 @@ if ($action == 'dispatch' && $user->rights->fournisseur->commande->receptionner)
 			// We ask to move a qty
 			if (GETPOST($qty) != 0) {
 				if (! (GETPOST($ent, 'int') > 0)) {
-					dol_syslog('No dispatch for line ' . $key . ' as no warehouse choosed');
+					dol_syslog('No dispatch for line ' . $key . ' as no warehouse was chosen.');
 					$text = $langs->transnoentities('Warehouse') . ', ' . $langs->transnoentities('Line') . ' ' . ($numline);
 					setEventMessages($langs->trans('ErrorFieldRequired', $text), null, 'errors');
 					$error ++;
@@ -282,7 +282,7 @@ if ($action == 'dispatch' && $user->rights->fournisseur->commande->receptionner)
 			// We ask to move a qty
 			if (GETPOST($qty) > 0) {
 				if (! (GETPOST($ent, 'int') > 0)) {
-					dol_syslog('No dispatch for line ' . $key . ' as no warehouse choosed');
+					dol_syslog('No dispatch for line ' . $key . ' as no warehouse was chosen.');
 					$text = $langs->transnoentities('Warehouse') . ', ' . $langs->transnoentities('Line') . ' ' . ($numline) . '-' . ($reg[1] + 1);
 					setEventMessages($langs->trans('ErrorFieldRequired', $text), null, 'errors');
 					$error ++;
@@ -499,7 +499,7 @@ if ($id > 0 || ! empty($ref)) {
 		$sql .= " WHERE l.fk_commande = " . $object->id;
 		if (empty($conf->global->STOCK_SUPPORTS_SERVICES))
 			$sql .= " AND l.product_type = 0";
-		$sql .= " GROUP BY p.ref, p.label, p.tobatch, l.rowid, l.fk_product, l.subprice, l.remise_percent"; // Calculation of amount dispatched is done per fk_product so we must group by fk_product
+		$sql .= " GROUP BY p.ref, p.label, p.tobatch, l.rowid, l.fk_product, l.subprice, l.remise_percent, p.fk_default_warehouse"; // Calculation of amount dispatched is done per fk_product so we must group by fk_product
 		$sql .= " ORDER BY p.ref, p.label";
 
 		$resql = $db->query($sql);

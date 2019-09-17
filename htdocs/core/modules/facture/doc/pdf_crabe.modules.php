@@ -721,7 +721,7 @@ class pdf_crabe extends ModelePDFFactures
 				// Affiche zone versements
 				if (($deja_regle || $amount_credit_notes_included || $amount_deposits_included) && empty($conf->global->INVOICE_NO_PAYMENT_DETAILS))
 				{
-					$posy=$this->_tableau_versements($pdf, $object, $posy, $outputlangs);
+					$posy=$this->_tableau_versements($pdf, $object, $posy, $outputlangs, $heightforfooter);
 				}
 
 				// Pied de page
@@ -766,15 +766,17 @@ class pdf_crabe extends ModelePDFFactures
      *  @param  Object		$object         Object invoice
      *  @param  int			$posy           Position y in PDF
      *  @param  Translate	$outputlangs    Object langs for output
+     *  @param  int			$heightforfooter height for footer
      *  @return int             			<0 if KO, >0 if OK
 	 */
-	function _tableau_versements(&$pdf, $object, $posy, $outputlangs)
+	function _tableau_versements(&$pdf, $object, $posy, $outputlangs, $heightforfooter)
 	{
 		global $conf;
 
         $sign=1;
         if ($object->type == 2 && ! empty($conf->global->INVOICE_POSITIVE_CREDIT_NOTE)) $sign=-1;
 
+		$current_page = $pdf->getPage();
         $tab3_posx = 120;
 		$tab3_top = $posy + 8;
 		$tab3_width = 80;
@@ -786,26 +788,7 @@ class pdf_crabe extends ModelePDFFactures
 
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 
-		$title=$outputlangs->transnoentities("PaymentsAlreadyDone");
-		if ($object->type == 2) $title=$outputlangs->transnoentities("PaymentsBackAlreadyDone");
-
-		$pdf->SetFont('','', $default_font_size - 3);
-		$pdf->SetXY($tab3_posx, $tab3_top - 4);
-		$pdf->MultiCell(60, 3, $title, 0, 'L', 0);
-
-		$pdf->line($tab3_posx, $tab3_top, $tab3_posx+$tab3_width, $tab3_top);
-
-		$pdf->SetFont('','', $default_font_size - 4);
-		$pdf->SetXY($tab3_posx, $tab3_top);
-		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Payment"), 0, 'L', 0);
-		$pdf->SetXY($tab3_posx+21, $tab3_top);
-		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Amount"), 0, 'L', 0);
-		$pdf->SetXY($tab3_posx+40, $tab3_top);
-		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Type"), 0, 'L', 0);
-		$pdf->SetXY($tab3_posx+58, $tab3_top);
-		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Num"), 0, 'L', 0);
-
-		$pdf->line($tab3_posx, $tab3_top-1+$tab3_height, $tab3_posx+$tab3_width, $tab3_top-1+$tab3_height);
+		$this->_tableau_versements_header($pdf, $object, $outputlangs, $default_font_size, $tab3_posx, $tab3_top, $tab3_width, $tab3_height);
 
 		$y=0;
 
@@ -827,6 +810,17 @@ class pdf_crabe extends ModelePDFFactures
 			while ($i < $num)
 			{
 				$y+=3;
+				if ($tab3_top+$y >= $this->page_hauteur-$heightforfooter)
+				{
+					$y=0;
+					$current_page++;
+					$pdf->AddPage('','',true);
+					if (! empty($tplidx)) $pdf->useTemplate($tplidx);
+					if (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)) $this->_pagehead($pdf, $object, 0, $outputlangs);
+					$pdf->setPage($current_page);
+					$this->_tableau_versements_header($pdf, $object, $outputlangs, $default_font_size, $tab3_posx, $tab3_top+$y-3, $tab3_width, $tab3_height);
+				}
+
 				$obj = $this->db->fetch_object($resql);
 
 				if ($obj->type == 2) $text=$outputlangs->transnoentities("CreditNote");
@@ -873,6 +867,17 @@ class pdf_crabe extends ModelePDFFactures
 			$i=0;
 			while ($i < $num) {
 				$y+=3;
+				if ($tab3_top+$y >= $this->page_hauteur-$heightforfooter)
+				{
+					$y=0;
+					$current_page++;
+					$pdf->AddPage('','',true);
+					if (! empty($tplidx)) $pdf->useTemplate($tplidx);
+					if (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)) $this->_pagehead($pdf, $object, 0, $outputlangs);
+					$pdf->setPage($current_page);
+					$this->_tableau_versements_header($pdf, $object, $outputlangs, $default_font_size, $tab3_posx, $tab3_top+$y-3, $tab3_width, $tab3_height);
+				}
+
 				$row = $this->db->fetch_object($resql);
 
 				$pdf->SetXY($tab3_posx, $tab3_top+$y);
@@ -899,6 +904,39 @@ class pdf_crabe extends ModelePDFFactures
 
 	}
 
+	/**
+	 * @param PDF 			$pdf				Object PDF
+	 * @param Facture		$object				Object invoice
+	 * @param Translate		$outputlangs		Object langs for output
+	 * @param int			$default_font_size	Font size
+	 * @param int			$tab3_posx			pos x
+	 * @param int 			$tab3_top			pos y
+	 * @param int 			$tab3_width			width
+	 * @param int 			$tab3_height		height
+	 */
+	function _tableau_versements_header($pdf, $object, $outputlangs, $default_font_size, $tab3_posx, $tab3_top, $tab3_width, $tab3_height)
+	{
+		$title=$outputlangs->transnoentities("PaymentsAlreadyDone");
+		if ($object->type == 2) $title=$outputlangs->transnoentities("PaymentsBackAlreadyDone");
+
+		$pdf->SetFont('','', $default_font_size - 3);
+		$pdf->SetXY($tab3_posx, $tab3_top - 4);
+		$pdf->MultiCell(60, 3, $title, 0, 'L', 0);
+
+		$pdf->line($tab3_posx, $tab3_top, $tab3_posx+$tab3_width, $tab3_top);
+
+		$pdf->SetFont('','', $default_font_size - 4);
+		$pdf->SetXY($tab3_posx, $tab3_top);
+		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Payment"), 0, 'L', 0);
+		$pdf->SetXY($tab3_posx+21, $tab3_top);
+		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Amount"), 0, 'L', 0);
+		$pdf->SetXY($tab3_posx+40, $tab3_top);
+		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Type"), 0, 'L', 0);
+		$pdf->SetXY($tab3_posx+58, $tab3_top);
+		$pdf->MultiCell(20, 3, $outputlangs->transnoentities("Num"), 0, 'L', 0);
+
+		$pdf->line($tab3_posx, $tab3_top-1+$tab3_height, $tab3_posx+$tab3_width, $tab3_top-1+$tab3_height);
+	}
 
 	/**
 	 *   Show miscellaneous information (payment mode, payment term, ...)
@@ -1188,24 +1226,6 @@ class pdf_crabe extends ModelePDFFactures
                 //}
 
 				// VAT
-				// Situations totals migth be wrong on huge amounts
-				if ($object->situation_cycle_ref && $object->situation_counter > 1) {
-
-					$sum_pdf_tva = 0;
-					foreach($this->tva as $tvakey => $tvaval){
-						$sum_pdf_tva+=$tvaval; // sum VAT amounts to compare to object
-					}
-
-					if($sum_pdf_tva!=$object->total_tva) { // apply coef to recover the VAT object amount (the good one)
-						$coef_fix_tva = $object->total_tva / $sum_pdf_tva;
-
-						foreach($this->tva as $tvakey => $tvaval) {
-							$this->tva[$tvakey]=$tvaval * $coef_fix_tva;
-						}
-					}
-
-				}
-
 				foreach($this->tva as $tvakey => $tvaval)
 				{
 					if ($tvakey != 0)    // On affiche pas taux 0

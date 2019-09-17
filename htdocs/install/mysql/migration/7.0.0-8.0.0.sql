@@ -564,3 +564,4 @@ DROP TABLE llx_ticket_logs;
 
 -- Product components
 ALTER TABLE llx_product_association ADD COLUMN optional integer DEFAULT 0;
+ALTER TABLE llx_actioncomm MODIFY COLUMN code varchar(50);
