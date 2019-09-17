@@ -44,7 +44,10 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 // Spe
-require_once DOL_DOCUMENT_ROOT . '/core/class/html.formmargin.class.php';
+global $conf;
+if ($conf->margin->enabled) {
+	require_once DOL_DOCUMENT_ROOT . '/core/class/html.formmargin.class.php';
+}
 //Fin Spe
 
 // Load translation files required by the page
@@ -163,16 +166,18 @@ $arrayfields=array(
 	'p.total_ht'=>array('label'=>$langs->trans("AmountHT"), 'checked'=>1),
 	'p.total_vat'=>array('label'=>$langs->trans("AmountVAT"), 'checked'=>0),
 	'p.total_ttc'=>array('label'=>$langs->trans("AmountTTC"), 'checked'=>0),
-	// Spe
-	'margin'=>array('label'=>$langs->trans("Margin"), 'checked'=>1),
-	'markRate'=>array('label'=>$langs->trans("MarkRate"), 'checked'=>1),
-	// Fin Spe
 	'u.login'=>array('label'=>$langs->trans("Author"), 'checked'=>1, 'position'=>10),
 	'sale_representative'=>array('label'=>$langs->trans("SaleRepresentativesOfThirdParty"), 'checked'=>1),
 	'p.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
 	'p.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500),
 	'p.fk_statut'=>array('label'=>$langs->trans("Status"), 'checked'=>1, 'position'=>1000),
 );
+// Spe
+if (! empty($conf->margin->enabled)){
+	$arrayfields['margin'] = array('label'=>$langs->trans("Margin"), 'checked'=>1);
+	$arrayfields['markRate'] = array('label'=>$langs->trans("MarkRate"), 'checked'=>1);
+}
+// Fin Spe
 // Extra fields
 if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
 {
@@ -261,8 +266,10 @@ $companystatic=new Societe($db);
 $projectstatic=new Project($db);
 $formcompany=new FormCompany($db);
 // Spe
-$formmargin = new FormMargin($db);
-$rounding = min($conf->global->MAIN_MAX_DECIMALS_UNIT, $conf->global->MAIN_MAX_DECIMALS_TOT);
+if (! empty($conf->margin->enabled)) {
+	$formmargin = new FormMargin($db);
+	$rounding = min($conf->global->MAIN_MAX_DECIMALS_UNIT, $conf->global->MAIN_MAX_DECIMALS_TOT);
+}
 // Fin Spe
 
 $help_url='EN:Commercial_Proposals|FR:Proposition_commerciale|ES:Presupuestos';
@@ -683,15 +690,15 @@ if ($resql)
 		print '</td>';
 	}
 	/* Spe */
-	if (! empty($arrayfields['margin']['checked']))
-	{
-		// Margin
-		print '<td class="liste_titre" align="center"></td>';
-	}
-	if (! empty($arrayfields['markRate']['checked']))
-	{
-		// MarkRate
-		print '<td class="liste_titre" align="center"></td>';
+	if (! empty($conf->margin->enabled)) {
+		if (!empty($arrayfields['margin']['checked'])) {
+			// Margin
+			print '<td class="liste_titre" align="center"></td>';
+		}
+		if (!empty($arrayfields['markRate']['checked'])) {
+			// MarkRate
+			print '<td class="liste_titre" align="center"></td>';
+		}
 	}
 	/* Fin Spe */
 	if (! empty($arrayfields['u.login']['checked']))
@@ -759,8 +766,10 @@ if ($resql)
 	if (! empty($arrayfields['p.total_vat']['checked']))      print_liste_field_titre($arrayfields['p.total_vat']['label'],$_SERVER["PHP_SELF"],'p.tva','',$param, 'align="right"',$sortfield,$sortorder);
 	if (! empty($arrayfields['p.total_ttc']['checked']))      print_liste_field_titre($arrayfields['p.total_ttc']['label'],$_SERVER["PHP_SELF"],'p.total','',$param, 'align="right"',$sortfield,$sortorder);
 	// Spe
-	if (! empty($arrayfields['margin']['checked'])) 		  print_liste_field_titre($arrayfields['margin']['label'], $_SERVER["PHP_SELF"], "","","$param",'align="center"',$sortfield,$sortorder);
-	if (! empty($arrayfields['markRate']['checked'])) 		  print_liste_field_titre($arrayfields['markRate']['label'], $_SERVER["PHP_SELF"], "","","$param",'align="center"',$sortfield,$sortorder);
+	if (! empty($conf->margin->enabled)) {
+		if (!empty($arrayfields['margin']['checked'])) print_liste_field_titre($arrayfields['margin']['label'], $_SERVER["PHP_SELF"], "", "", "$param", 'align="center"', $sortfield, $sortorder);
+		if (!empty($arrayfields['markRate']['checked'])) print_liste_field_titre($arrayfields['markRate']['label'], $_SERVER["PHP_SELF"], "", "", "$param", 'align="center"', $sortfield, $sortorder);
+	}
 	// Fin Spe
 	if (! empty($arrayfields['u.login']['checked']))       	  print_liste_field_titre($arrayfields['u.login']['label'],$_SERVER["PHP_SELF"],'u.login','',$param,'align="center"',$sortfield,$sortorder);
 	if (! empty($arrayfields['sale_representative']['checked'])) print_liste_field_titre($arrayfields['sale_representative']['label'], $_SERVER["PHP_SELF"], "","","$param",'',$sortfield,$sortorder);
@@ -784,11 +793,11 @@ if ($resql)
 		$obj = $db->fetch_object($resql);
 
 		/* Spe */
-
-		$propal = new Propal($db);
-		$propal->fetch($obj->rowid);
-		$marginInfos = $formmargin->getMarginInfosArray($propal);
-
+		if (! empty($conf->margin->enabled)) {
+			$propal = new Propal($db);
+			$propal->fetch($obj->rowid);
+			$marginInfos = $formmargin->getMarginInfosArray($propal);
+		}
 		/* Fin Spe */
 		
 		$objectstatic->id=$obj->rowid;
@@ -985,15 +994,15 @@ if ($resql)
 		}
 
 		/* Spe */
-		// Margin
-		if (! empty($arrayfields['margin']['checked']))
-		{
-			print '<td align="center" nowrap>'.price($marginInfos['total_margin'])."</td>\n";
-		}
-		// MarkRate
-		if (! empty($arrayfields['markRate']['checked']))
-		{
-			print '<td align="right">'.(($marginInfos['total_mark_rate'] == '')?'':price($marginInfos['total_mark_rate'], null, null, null, null, $rounding).'%').'</td>';
+		if (! empty($conf->margin->enabled)) {
+			// Margin
+			if (!empty($arrayfields['margin']['checked'])) {
+				print '<td align="center" nowrap>' . price($marginInfos['total_margin']) . "</td>\n";
+			}
+			// MarkRate
+			if (!empty($arrayfields['markRate']['checked'])) {
+				print '<td align="right">' . (($marginInfos['total_mark_rate'] == '') ? '' : price($marginInfos['total_mark_rate'], null, null, null, null, $rounding) . '%') . '</td>';
+			}
 		}
 		/* Fin Spe */
 
