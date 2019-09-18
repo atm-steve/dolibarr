@@ -654,7 +654,7 @@ print '</form>';
 				})
 			});
 
-		    $('#date_mouv').on('blur', function(e){
+		    $('#date_mouv').datepicker('option', 'onSelect', function() {
 		        val = $(this).val();
 		        parent_id = $(this).parent().parent().prev().val();
 
