@@ -2,6 +2,7 @@
 ProductRef=Ref. Produs
 ProductLabel=Etichetă produs
 ProductLabelTranslated=Etichetă de produs tradusă
+ProductDescription=Product description
 ProductDescriptionTranslated=Descrierea produsului tradus
 ProductNoteTranslated=Nota de produs tradusă
 ProductServiceCard=Fişe Produse / Servicii
@@ -159,7 +160,7 @@ SuppliersPrices=Prețurile furnizorului
 SuppliersPricesOfProductsOrServices=Prețurile furnizorilor (de produse sau servicii)
 CustomCode=Cod Vamal / Marfă / SA
 CountryOrigin=Ţara de origine
-Nature=Tipul produsului (material / finisat)
+Nature=Nature of produt (material/finished)
 ShortLabel=Etichetă scurta
 Unit=Unit
 p=u.

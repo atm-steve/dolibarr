@@ -2,6 +2,7 @@
 ProductRef=Productreferentie
 ProductLabel=Naam
 ProductLabelTranslated=Vertaald product label
+ProductDescription=Product description
 ProductDescriptionTranslated=Vertaalde product beschrijving
 ProductNoteTranslated=Vertaalde product aantekening
 ProductServiceCard=Producten / Dienstendetailkaart
@@ -159,7 +160,7 @@ SuppliersPrices=Prijzen van leveranciers
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Douane / Commodity / HS-code
 CountryOrigin=Land van herkomst
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Kort label
 Unit=Eenheid
 p=u.

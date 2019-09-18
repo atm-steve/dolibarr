@@ -177,6 +177,7 @@ class Stripe extends CommonObject
 				}
 				catch(Exception $e)
 				{
+					// For exemple, we may have error: 'No such customer: cus_XXXXX; a similar object exists in live mode, but a test mode key was used to make this request.'
 					$this->error = $e->getMessage();
 				}
 			}
@@ -318,14 +319,14 @@ class Stripe extends CommonObject
 		if (! in_array($currency_code, $arrayzerounitcurrency)) $stripeamount = $amount * 100;
 		else $stripeamount = $amount;
 
-		$fee = round($amount * ($conf->global->STRIPE_APPLICATION_FEE_PERCENT / 100) + $conf->global->STRIPE_APPLICATION_FEE);
+		$fee = $amount * ($conf->global->STRIPE_APPLICATION_FEE_PERCENT / 100) + $conf->global->STRIPE_APPLICATION_FEE;
 		if ($fee >= $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL && $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL > $conf->global->STRIPE_APPLICATION_FEE_MINIMAL) {
-		    $fee = round($conf->global->STRIPE_APPLICATION_FEE_MAXIMAL);
+		    $fee = $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL;
 		} elseif ($fee < $conf->global->STRIPE_APPLICATION_FEE_MINIMAL) {
-		    $fee = round($conf->global->STRIPE_APPLICATION_FEE_MINIMAL);
+		    $fee = $conf->global->STRIPE_APPLICATION_FEE_MINIMAL;
 		}
-		if (! in_array($currency_code, $arrayzerounitcurrency)) $stripefee = $fee * 100;
-		else $stripefee = $fee;
+				if (! in_array($currency, $arrayzerounitcurrency)) $stripefee = round($fee * 100);
+				else $stripefee = round($fee);
 
 		$paymentintent = null;
 
@@ -382,6 +383,7 @@ class Stripe extends CommonObject
             {
                 $metadata['dol_type'] = $object->element;
                 $metadata['dol_id'] = $object->id;
+				if (is_object($object->thirdparty) && $object->thirdparty->id > 0) $metadata['dol_thirdparty_id'] = $object->thirdparty->id;
             }
 
     		$dataforintent = array(
@@ -389,7 +391,7 @@ class Stripe extends CommonObject
     		    "confirmation_method" => $mode,
     		    "amount" => $stripeamount,
     			"currency" => $currency_code,
-    		    "payment_method_types" => ["card"],
+    		    "payment_method_types" => array("card"),
     		    "description" => $description,
     		    "statement_descriptor" => dol_trunc($tag, 10, 'right', 'UTF-8', 1),     // 22 chars that appears on bank receipt (company + description)
     			//"save_payment_method" => true,
@@ -402,7 +404,7 @@ class Stripe extends CommonObject
 
     		if ($conf->entity!=$conf->global->STRIPECONNECT_PRINCIPAL && $stripefee > 0)
     		{
-    			$dataforintent["application_fee"] = $stripefee;
+    			$dataforintent["application_fee_amount"] = $stripefee;
     		}
     		if ($usethirdpartyemailforreceiptemail && is_object($object) && $object->thirdparty->email)
     		{
@@ -707,15 +709,14 @@ class Stripe extends CommonObject
 					$charge = \Stripe\Charge::create($paymentarray, array("idempotency_key" => "$description"));
 				}
 			} else {
-				$fee = round($amount * ($conf->global->STRIPE_APPLICATION_FEE_PERCENT / 100) + $conf->global->STRIPE_APPLICATION_FEE);
-			    if ($fee >= $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL && $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL > $conf->global->STRIPE_APPLICATION_FEE_MINIMAL) {
-					$fee = round($conf->global->STRIPE_APPLICATION_FEE_MAXIMAL);
-				}
-                elseif ($fee < $conf->global->STRIPE_APPLICATION_FEE_MINIMAL) {
-					$fee = round($conf->global->STRIPE_APPLICATION_FEE_MINIMAL);
-				}
-				if (! in_array($currency, $arrayzerounitcurrency)) $stripefee = $fee * 100;
-				else $stripefee = $fee;
+		$fee = $amount * ($conf->global->STRIPE_APPLICATION_FEE_PERCENT / 100) + $conf->global->STRIPE_APPLICATION_FEE;
+		if ($fee >= $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL && $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL > $conf->global->STRIPE_APPLICATION_FEE_MINIMAL) {
+		    $fee = $conf->global->STRIPE_APPLICATION_FEE_MAXIMAL;
+		} elseif ($fee < $conf->global->STRIPE_APPLICATION_FEE_MINIMAL) {
+		    $fee = $conf->global->STRIPE_APPLICATION_FEE_MINIMAL;
+		}
+				if (! in_array($currency, $arrayzerounitcurrency)) $stripefee = round($fee * 100);
+				else $stripefee = round($fee);
 
         		$paymentarray = array(
 					"amount" => "$stripeamount",
@@ -729,7 +730,7 @@ class Stripe extends CommonObject
 				);
 				if ($conf->entity!=$conf->global->STRIPECONNECT_PRINCIPAL && $stripefee > 0)
 				{
-					$paymentarray["application_fee"] = $stripefee;
+					$paymentarray["application_fee_amount"] = $stripefee;
 				}
 				if ($societe->email && $usethirdpartyemailforreceiptemail)
 				{

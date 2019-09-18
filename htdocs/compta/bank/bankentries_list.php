@@ -603,12 +603,13 @@ if ($resql)
 	        print $langs->trans("EventualyAddCategory").': ';
 	        print Form::selectarray('cat', $options, GETPOST('cat'), 1);
 	    }
-	    print '<br>'.$langs->trans("ThenCheckLinesAndConciliate").' ';
+	    print '<br><div style="margin-top: 5px;">'.$langs->trans("ThenCheckLinesAndConciliate").' ';
 	    print '<input class="button" name="confirm_savestatement" type="submit" value="'.$langs->trans("SaveStatementOnly").'">';
 	    print ' '.$langs->trans("or").' ';
 	    print '<input class="button" name="confirm_reconcile" type="submit" value="'.$langs->trans("Conciliate").'">';
 	    print ' '.$langs->trans("or").' ';
 	    print '<input type="submit" name="cancel" class="button" value="'.$langs->trans("Cancel").'">';
+		print '</div>';
 
 	    // Show last bank statements
 	    $nbmax=15;      // We accept to show last 15 receipts (so we can have more than one year)
@@ -617,7 +618,7 @@ if ($resql)
 	    $sql.= " WHERE fk_account=".$object->id." AND num_releve IS NOT NULL";
 	    $sql.= $db->order("num_releve", "DESC");
 	    $sql.= $db->plimit($nbmax+1);
-	    print '<br><br>';
+	    print '<br>';
 	    print $langs->trans("LastAccountStatements").' : ';
 	    $resqlr=$db->query($sql);
 	    if ($resqlr)
@@ -1355,7 +1356,7 @@ if ($resql)
     	// Debit
     	if (! empty($arrayfields['b.debit']['checked']))
     	{
-    	    print '<td class="right">';
+    	    print '<td class="nowrap right">';
     	    if ($objp->amount < 0)
     	    {
     	    	print price($objp->amount * -1);
@@ -1369,7 +1370,7 @@ if ($resql)
     	// Credit
     	if (! empty($arrayfields['b.credit']['checked']))
     	{
-    	    print '<td class="right">';
+    	    print '<td class="nowrap right">';
     	    if ($objp->amount > 0)
     	    {
 				print price($objp->amount);

@@ -29,6 +29,7 @@ MenuMembersUpToDate=На сегодняшний день членами
 MenuMembersNotUpToDate=За сегодняшний день члены
 MenuMembersResiliated=Terminated members
 MembersWithSubscriptionToReceive=Члены с подпиской на получение
+MembersWithSubscriptionToReceiveShort=Subscription to receive
 DateSubscription=Дата подписки
 DateEndSubscription=Дата окончания подписки
 EndSubscription=Конец подписке
@@ -171,7 +172,7 @@ MembersStatisticsDesc=Выберите статистику вы хотите п
 MenuMembersStats=Статистика
 LastMemberDate=Latest member date
 LatestSubscriptionDate=Latest subscription date
-Nature=Природа
+MemberNature=Nature of member
 Public=Информационные общественности (нет = частных)
 NewMemberbyWeb=Новый участник добавил. В ожидании утверждения
 NewMemberForm=Новая форма члена

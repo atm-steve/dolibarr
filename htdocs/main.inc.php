@@ -111,13 +111,15 @@ function testSqlAndScriptInject($val, $type)
 	$inj += preg_match('/Set\.constructor/i', $val);	// ECMA script 6
 	if (! defined('NOSTYLECHECK')) $inj += preg_match('/<style/i', $val);
 	$inj += preg_match('/base[\s]+href/si', $val);
-	$inj += preg_match('/<.*onmouse/si', $val);       // onmousexxx can be set on img or any html tag like <img title='...' onmouseover=alert(1)>
-	$inj += preg_match('/onerror\s*=/i', $val);       // onerror can be set on img or any html tag like <img title='...' onerror = alert(1)>
-	$inj += preg_match('/onfocus\s*=/i', $val);       // onfocus can be set on input text html tag like <input type='text' value='...' onfocus = alert(1)>
-	$inj += preg_match('/onload\s*=/i', $val);        // onload can be set on svg tag <svg/onload=alert(1)> or other tag like body <body onload=alert(1)>
-	$inj += preg_match('/onloadstart\s*=/i', $val);   // onload can be set on audio tag <audio onloadstart=alert(1)>
-	$inj += preg_match('/onclick\s*=/i', $val);       // onclick can be set on img text html tag like <img onclick = alert(1)>
-	$inj += preg_match('/onscroll\s*=/i', $val);      // onscroll can be on textarea
+	// List of dom events is on https://www.w3schools.com/jsref/dom_obj_event.asp
+	$inj += preg_match('/onmouse([a-z]*)\s*=/i', $val);       // onmousexxx can be set on img or any html tag like <img title='...' onmouseover=alert(1)>
+	$inj += preg_match('/ondrag([a-z]*)\s*=/i', $val);        //
+	$inj += preg_match('/ontouch([a-z]*)\s*=/i', $val);        //
+	$inj += preg_match('/on(abort|afterprint|beforeprint|beforeunload|blur|canplay|canplaythrough|change|click|contextmenu|copy|cut)\s*=/i', $val);
+	$inj += preg_match('/on(dblclick|drop|durationchange|ended|error|focus|focusin|focusout|hashchange|input|invalid)\s*=/i', $val);
+	$inj += preg_match('/on(keydown|keypress|keyup|load|loadeddata|loadedmetadata|loadstart|offline|online|pagehide|pageshow)\s*=/i', $val);
+	$inj += preg_match('/on(paste|pause|play|playing|progress|ratechange|resize|reset|scroll|search|seeking|select|show|stalled|start|submit|suspend)\s*=/i', $val);
+	$inj += preg_match('/on(timeupdate|toggle|unload|volumechange|waiting)\s*=/i', $val);
 	//$inj += preg_match('/on[A-Z][a-z]+\*=/', $val);   // To lock event handlers onAbort(), ...
 	$inj += preg_match('/&#58;|&#0000058|&#x3A/i', $val);		// refused string ':' encoded (no reason to have it encoded) to lock 'javascript:...'
 	//if ($type == 1)
@@ -273,6 +275,7 @@ if (isset($_SERVER["HTTP_USER_AGENT"]))
 	if ($conf->browser->layout == 'phone') $conf->dol_no_mouse_hover=1;
 }
 
+
 // Force HTTPS if required ($conf->file->main_force_https is 0/1 or https dolibarr root url)
 // $_SERVER["HTTPS"] is 'on' when link is https, otherwise $_SERVER["HTTPS"] is empty or 'off'
 if (! empty($conf->file->main_force_https) && (empty($_SERVER["HTTPS"]) || $_SERVER["HTTPS"] != 'on'))
@@ -372,13 +375,15 @@ if (! defined('NOTOKENRENEWAL'))
 }
 
 //var_dump(GETPOST('token').' '.$_SESSION['token'].' - '.$_SESSION['newtoken'].' '.$_SERVER['SCRIPT_FILENAME']);
-
+//$dolibarr_nocsrfcheck=1;
 // Check token
+//var_dump((! defined('NOCSRFCHECK')).' '.empty($dolibarr_nocsrfcheck).' '.(! empty($conf->global->MAIN_SECURITY_CSRF_WITH_TOKEN)).' '.$_SERVER['REQUEST_METHOD'].' '.(! GETPOSTISSET('token')));
 if ((! defined('NOCSRFCHECK') && empty($dolibarr_nocsrfcheck) && ! empty($conf->global->MAIN_SECURITY_CSRF_WITH_TOKEN))
 	|| defined('CSRFCHECK_WITH_TOKEN'))	// Check validity of token, only if option MAIN_SECURITY_CSRF_WITH_TOKEN enabled or if constant CSRFCHECK_WITH_TOKEN is set
 {
 	if ($_SERVER['REQUEST_METHOD'] == 'POST' && ! GETPOSTISSET('token')) // Note, offender can still send request by GET
 	{
+		dol_syslog("--- Access to ".$_SERVER["PHP_SELF"]." refused by CSRFCHECK_WITH_TOKEN protection. Token not provided.");
 		print "Access by POST method refused by CSRF protection in main.inc.php. Token not provided.\n";
 		print "If you access your server behind a proxy using url rewriting, you might check that all HTTP header is propagated (or add the line \$dolibarr_nocsrfcheck=1 into your conf.php file or MAIN_SECURITY_CSRF_WITH_TOKEN to 0 into setup).\n";
 		die;
@@ -388,9 +393,9 @@ if ((! defined('NOCSRFCHECK') && empty($dolibarr_nocsrfcheck) && ! empty($conf->
 	//{
 	if (GETPOSTISSET('token') && GETPOST('token', 'alpha') != $_SESSION['token'])
 	{
-		dol_syslog("Invalid token, so we disable POST and some GET parameters - referer=".$_SERVER['HTTP_REFERER'].", action=".GETPOST('action', 'aZ09').", _GET|POST['token']=".GETPOST('token', 'alpha').", _SESSION['token']=".$_SESSION['token'], LOG_WARNING);
+		dol_syslog("--- Access to ".$_SERVER["PHP_SELF"]." refused due to invalid token, so we disable POST and some GET parameters - referer=".$_SERVER['HTTP_REFERER'].", action=".GETPOST('action', 'aZ09').", _GET|POST['token']=".GETPOST('token', 'alpha').", _SESSION['token']=".$_SESSION['token'], LOG_WARNING);
 		//print 'Unset POST by CSRF protection in main.inc.php.';	// Do not output anything because this create problems when using the BACK button on browsers.
-        if ($conf->global->MAIN_FEATURES_LEVEL>1) setEventMessages('Unset POST by CSRF protection in main.inc.php.', null, 'warnings');
+		if ($conf->global->MAIN_FEATURES_LEVEL>1) setEventMessages('Unset POST by CSRF protection in main.inc.php (POST was already done or was done by a not allowed web page).'."<br>\n".'$_SERVER[REQUEST_URI] = '.$_SERVER['REQUEST_URI'].' $_SERVER[REQUEST_METHOD] = '.$_SERVER['REQUEST_METHOD'].' GETPOST(token) = '.GETPOST('token', 'alpha').' $_SESSION[token] = '.$_SESSION['token'], null, 'warnings');
 		unset($_POST);
 		unset($_GET['confirm']);
 	}
@@ -1740,7 +1745,7 @@ function top_menu_user(User $user, Translate $langs)
         $userImage          = Form::showphoto('userphoto', $user, 0, 0, 0, 'photouserphoto userphoto', 'small', 0, 1);
         $userDropDownImage  = Form::showphoto('userphoto', $user, 0, 0, 0, 'dropdown-user-image', 'small', 0, 1);
     }
-    else{
+    else {
         $nophoto='/public/theme/common/user_anonymous.png';
         if ($user->gender == 'man') $nophoto='/public/theme/common/user_man.png';
         if ($user->gender == 'woman') $nophoto='/public/theme/common/user_woman.png';
@@ -1754,7 +1759,7 @@ function top_menu_user(User $user, Translate $langs)
     $dropdownBody.= '<div id="topmenuloginmoreinfo" >';
 
     // login infos
-    if (!empty($user->admin)) {
+    if (! empty($user->admin)) {
         $dropdownBody.= '<br><b>' . $langs->trans("Administrator").'</b>: '.yn($user->admin);
     }
     if (! empty($user->socid))	// Add thirdparty for external users
@@ -1770,7 +1775,7 @@ function top_menu_user(User $user, Translate $langs)
     $dropdownBody.= '<br>';
 
     $dropdownBody.= '<br><u>'.$langs->trans("Session").'</u>';
-    $dropdownBody.= '<br><b>'.$langs->trans("IPAddress").'</b>: '.$_SERVER["REMOTE_ADDR"];
+    $dropdownBody.= '<br><b>'.$langs->trans("IPAddress").'</b>: '.dol_escape_htmltag($_SERVER["REMOTE_ADDR"]);
     if (! empty($conf->global->MAIN_MODULE_MULTICOMPANY)) $dropdownBody.= '<br><b>'.$langs->trans("ConnectedOnMultiCompany").':</b> '.$conf->entity.' (user entity '.$user->entity.')';
     $dropdownBody.= '<br><b>'.$langs->trans("AuthenticationMode").':</b> '.$_SESSION["dol_authmode"].(empty($dolibarr_main_demo)?'':' (demo)');
     $dropdownBody.= '<br><b>'.$langs->trans("ConnectedSince").':</b> '.dol_print_date($user->datelastlogin, "dayhour", 'tzuser');
@@ -1779,7 +1784,7 @@ function top_menu_user(User $user, Translate $langs)
     $dropdownBody.= '<br><b>'.$langs->trans("CurrentMenuManager").':</b> '.$menumanager->name;
     $langFlag=picto_from_langcode($langs->getDefaultLang());
     $dropdownBody.= '<br><b>'.$langs->trans("CurrentUserLanguage").':</b> '.($langFlag?$langFlag.' ':'').$langs->getDefaultLang();
-    $dropdownBody.= '<br><b>'.$langs->trans("Browser").':</b> '.$conf->browser->name.($conf->browser->version?' '.$conf->browser->version:'').' ('.$_SERVER['HTTP_USER_AGENT'].')';
+    $dropdownBody.= '<br><b>'.$langs->trans("Browser").':</b> '.$conf->browser->name.($conf->browser->version?' '.$conf->browser->version:'').' ('.dol_escape_htmltag($_SERVER['HTTP_USER_AGENT']).')';
     $dropdownBody.= '<br><b>'.$langs->trans("Layout").':</b> '.$conf->browser->layout;
     $dropdownBody.= '<br><b>'.$langs->trans("Screen").':</b> '.$_SESSION['dol_screenwidth'].' x '.$_SESSION['dol_screenheight'];
     if ($conf->browser->layout == 'phone') $dropdownBody.= '<br><b>'.$langs->trans("Phone").':</b> '.$langs->trans("Yes");
@@ -1807,7 +1812,7 @@ function top_menu_user(User $user, Translate $langs)
 
     $profilName = $user->getFullName($langs).' ('.$user->login.')';
 
-    if($user->admin){
+    if (! empty($user->admin)) {
         $profilName = '<i class="far fa-star classfortooltip" title="'.$langs->trans("Administrator").'" ></i> '.$profilName;
     }
 
@@ -1824,11 +1829,11 @@ function top_menu_user(User $user, Translate $langs)
     }
     else $appli.=" ".DOL_VERSION;
 
-    $btnUser = '
+    $btnUser = '<!-- div for user link -->
     <div id="topmenu-login-dropdown" class="userimg atoplogin dropdown user user-menu">
         <a href="'.DOL_URL_ROOT.'/user/card.php?id='.$user->id.'" class="dropdown-toggle login-dropdown-a" data-toggle="dropdown">
             '.$userImage.'
-            <span class="hidden-xs maxwidth200 atoploginusername">'.dol_trunc($user->firstname ? $user->firstname : $user->login, 10).'</span>
+            <span class="hidden-xs maxwidth200 atoploginusername hideonsmartphone">'.dol_trunc($user->firstname ? $user->firstname : $user->login, 10).'</span>
             <span class="fa fa-chevron-down login-dropdown-btn" id="dropdown-icon-down"></span>
             <span class="fa fa-chevron-up login-dropdown-btn hidden" id="dropdown-icon-up"></span>
         </a>
@@ -1859,32 +1864,38 @@ function top_menu_user(User $user, Translate $langs)
             </div>
 
         </div>
-    </div>
-    <!-- Code to show/hide the user drop-down -->
-    <script>
-    $( document ).ready(function() {
-        $(document).on("click", function(event) {
-            if (!$(event.target).closest("#topmenu-login-dropdown").length) {
-                // Hide the menus.
-                $("#topmenu-login-dropdown").removeClass("open");
-            }
+    </div>';
+
+    if (! defined('JS_JQUERY_DISABLE_DROPDOWN'))    // This may be set by some pages that use different jquery version to avoid errors
+    {
+        $btnUser .= '
+        <!-- Code to show/hide the user drop-down -->
+        <script>
+        $( document ).ready(function() {
+            $(document).on("click", function(event) {
+                if (!$(event.target).closest("#topmenu-login-dropdown").length) {
+                    // Hide the menus.
+                    $("#topmenu-login-dropdown").removeClass("open");
+    				$("#dropdown-icon-down").show();	// use show/hide instead toggle for avoid conflict
+    				$("#dropdown-icon-up").hide();		// use show/hide instead toggle for avoid conflict
+                }
+            });
+
+            $("#topmenu-login-dropdown .dropdown-toggle").on("click", function(event) {
+                event.preventDefault();
+                $("#topmenu-login-dropdown").toggleClass("open");
+                $("#dropdown-icon-down").toggle();
+                $("#dropdown-icon-up").toggle();
+            });
+
+            $("#topmenuloginmoreinfo-btn").on("click", function() {
+                $("#topmenuloginmoreinfo").slideToggle();
+            });
+
         });
-
-        $("#topmenu-login-dropdown .dropdown-toggle").on("click", function(event) {
-            event.preventDefault();
-            $("#topmenu-login-dropdown").toggleClass("open");
-            $("#dropdown-icon-down").toggle();
-            $("#dropdown-icon-up").toggle();
-        });
-
-        $("#topmenuloginmoreinfo-btn").on("click", function() {
-            $("#topmenuloginmoreinfo").slideToggle();
-        });
-
-    });
-    </script>
-    ';
-
+        </script>
+        ';
+    }
 
     return $btnUser;
 }

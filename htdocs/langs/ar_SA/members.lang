@@ -29,6 +29,7 @@ MenuMembersUpToDate=حتى الآن من أعضاء
 MenuMembersNotUpToDate=وحتى الآن من أصل أعضاء
 MenuMembersResiliated=Terminated members
 MembersWithSubscriptionToReceive=أعضاء مع اشتراك لتلقي
+MembersWithSubscriptionToReceiveShort=Subscription to receive
 DateSubscription=تاريخ الاكتتاب
 DateEndSubscription=تاريخ انتهاء الاكتتاب
 EndSubscription=انتهاء الاكتتاب
@@ -171,7 +172,7 @@ MembersStatisticsDesc=اختيار الإحصاءات التي ترغب في ق�
 MenuMembersStats=إحصائيات
 LastMemberDate=Latest member date
 LatestSubscriptionDate=Latest subscription date
-Nature=طبيعة
+MemberNature=Nature of member
 Public=معلومات علنية
 NewMemberbyWeb=وأضاف عضو جديد. تنتظر الموافقة
 NewMemberForm=الأعضاء الجدد في شكل

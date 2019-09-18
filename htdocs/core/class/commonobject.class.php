@@ -10,8 +10,8 @@
  * Copyright (C) 2015      Alexandre Spangaro   <aspangaro@open-dsi.fr>
  * Copyright (C) 2016      Bahfir abbes         <dolipar@dolipar.org>
  * Copyright (C) 2017      ATM Consulting       <support@atm-consulting.fr>
- * Copyright (C) 2017      Nicolas ZABOURI      <info@inovea-conseil.com>
- * Copyright (C) 2017      Rui Strecht          <rui.strecht@aliartalentos.com>
+ * Copyright (C) 2017-2019 Nicolas ZABOURI      <info@inovea-conseil.com>
+ * Copyright (C) 2017      Rui Strecht		    <rui.strecht@aliartalentos.com>
  * Copyright (C) 2018      Frédéric France      <frederic.france@netlogic.fr>
  * Copyright (C) 2018      Josep Lluís Amador   <joseplluis@lliuretic.cat>
  *
@@ -53,6 +53,7 @@ abstract class CommonObject
 
 	/**
 	 * @var string 		Error string
+	 * @see             $errors
 	 */
 	public $error;
 
@@ -2053,6 +2054,7 @@ abstract class CommonObject
 		}
 	}
 
+
 	/**
 	 *	Define delivery address
 	 *  @deprecated
@@ -2443,9 +2445,9 @@ abstract class CommonObject
 	 */
 	public function updateRangOfLine($rowid, $rang)
 	{
-		$fieldposition = 'rang';	// @TODO Rename 'rang' and 'position' into 'rank'
+		$fieldposition = 'rang';	// @TODO Rename 'rang' into 'position'
 		if (in_array($this->table_element_line, array('ecm_files', 'emailcollector_emailcollectoraction'))) $fieldposition = 'position';
-		if (in_array($this->table_element_line, array('bom_bomline'))) $fieldposition = 'rank';
+		if (in_array($this->table_element_line, array('bom_bomline'))) $fieldposition = 'position';
 
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element_line.' SET '.$fieldposition.' = '.$rang;
 		$sql.= ' WHERE rowid = '.$rowid;
@@ -2749,7 +2751,7 @@ abstract class CommonObject
 		$MODULE = "";
 		if ($this->element == 'propal')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_PROPOSAL";
-		elseif ($this->element == 'order')
+		elseif ($this->element == 'commande' || $this->element == 'order')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_ORDER";
 		elseif ($this->element == 'facture')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_INVOICE";
@@ -6027,6 +6029,12 @@ abstract class CommonObject
 			$type='link';
 			$param['options']=array($reg[1].':'.$reg[2]=>$reg[1].':'.$reg[2]);
 		}
+        elseif(preg_match('/^sellist:(.*):(.*):(.*):(.*)/i', $val['type'], $reg)) {
+            $param['options'] = array($reg[1] . ':' . $reg[2] . ':' . $reg[3] . ':' . $reg[4] => 'N');
+            $type = 'sellist';
+        }
+
+
 		$langfile=$val['langfile'];
 		$list=$val['list'];
 		$help=$val['help'];
@@ -6048,7 +6056,7 @@ abstract class CommonObject
 			{
 				$morecss = 'minwidth100imp';
 			}
-			elseif ($type == 'datetime')
+			elseif ($type == 'datetime' || $type == 'timestamp')
 			{
 				$morecss = 'minwidth200imp';
 			}
@@ -6092,7 +6100,7 @@ abstract class CommonObject
 				$value='';
 			}
 		}
-		elseif ($type == 'datetime')
+		elseif ($type == 'datetime' || $type == 'timestamp')
 		{
 			if(! empty($value)) {
 				$value=dol_print_date($value, 'dayhour');
@@ -6362,7 +6370,7 @@ abstract class CommonObject
 	 * @param 	array       $params         Optional parameters. Example: array('style'=>'class="oddeven"', 'colspan'=>$colspan)
 	 * @param 	string      $keysuffix      Suffix string to add after name and id of field (can be used to avoid duplicate names)
 	 * @param 	string      $keyprefix      Prefix string to add before name and id of field (can be used to avoid duplicate names)
-	 * @param	string		$onetrtd		All fields in same tr td
+	 * @param	string		$onetrtd		All fields in same tr td (TODO field not used ?)
 	 * @return 	string
 	 */
 	public function showOptionals($extrafields, $mode = 'view', $params = null, $keysuffix = '', $keyprefix = '', $onetrtd = 0)
@@ -6442,9 +6450,12 @@ abstract class CommonObject
 				}
 				else
 				{
-					$csstyle='';
 					$class=(!empty($extrafields->attributes[$this->table_element]['hidden'][$key]) ? 'hideobject ' : '');
+					$csstyle='';
 					if (is_array($params) && count($params)>0) {
+						if (array_key_exists('class', $params)) {
+							$class.=$params['class'].' ';
+						}
 						if (array_key_exists('style', $params)) {
 							$csstyle=$params['style'];
 						}
@@ -6459,10 +6470,7 @@ abstract class CommonObject
 
 					$out .= '<tr id="'.$html_id.'" '.$csstyle.' class="'.$class.$this->element.'_extras_'.$key.'" '.$domData.' >';
 
-					if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0)
-					{
-						if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0) { $colspan='0'; }
-					}
+					if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0) { $colspan='0'; }
 
 					if ($action == 'selectlines') { $colspan++; }
 
@@ -6484,16 +6492,19 @@ abstract class CommonObject
 
 					$labeltoshow = $langs->trans($label);
 
-					$out .= '<td class="titlefield';
-					if (GETPOST('action', 'none') == 'create') $out.='create';
+					$out .= '<td class="';
+					//$out .= "titlefield";
+					//if (GETPOST('action', 'none') == 'create') $out.='create';
 					if ($mode != 'view' && ! empty($extrafields->attributes[$this->table_element]['required'][$key])) $out .= ' fieldrequired';
 					$out .= '">';
-					if (! empty($extrafields->attributes[$object->table_element]['help'][$key])) $out .= $form->textwithpicto($labeltoshow, $extrafields->attributes[$object->table_element]['help'][$key]);
+					if (! empty($extrafields->attributes[$this->table_element]['help'][$key])) $out .= $form->textwithpicto($labeltoshow, $extrafields->attributes[$this->table_element]['help'][$key]);
 					else $out .= $labeltoshow;
 					$out .= '</td>';
 
 					$html_id = !empty($this->id) ? $this->element.'_extras_'.$key.'_'.$this->id : '';
+
 					$out .='<td id="'.$html_id.'" class="'.$this->element.'_extras_'.$key.'" '.($colspan?' colspan="'.$colspan.'"':'').'>';
+					//$out .='<td id="'.$html_id.'" class="'.$this->element.'_extras_'.$key.'">';
 
 					switch($mode) {
 						case "view":
@@ -6505,6 +6516,11 @@ abstract class CommonObject
 					}
 
 					$out .= '</td>';
+
+					/*for($ii = 0; $ii < ($colspan - 1); $ii++)
+					{
+						$out .='<td class="'.$this->element.'_extras_'.$key.'"></td>';
+					}*/
 
 					if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && (($e % 2) == 1)) $out .= '</tr>';
 					else $out .= '</tr>';
@@ -6519,7 +6535,7 @@ abstract class CommonObject
 				    jQuery(document).ready(function() {
 				    	function showOptions(child_list, parent_list)
 				    	{
-				    		var val = $("select[name=\"options_"+parent_list+"\"]").val();
+				    		var val = $("select[name=\""+parent_list+"\"]").val();
 				    		var parentVal = parent_list + ":" + val;
 							if(val > 0) {
 					    		$("select[name=\""+child_list+"\"] option[parent]").hide();
@@ -7315,6 +7331,7 @@ abstract class CommonObject
 		if (!empty($id))  $sql.= ' WHERE rowid = '.$id;
 		elseif (!empty($ref)) $sql.= " WHERE ref = ".$this->quote($ref, $this->fields['ref']);
 		else $sql.=' WHERE 1 = 1';	// usage with empty id and empty ref is very rare
+		if (empty($id) && isset($this->ismultientitymanaged) && $this->ismultientitymanaged == 1) $sql.=' AND entity IN ('.getEntity($this->table_element).')';
 		if ($morewhere)   $sql.= $morewhere;
 		$sql.=' LIMIT 1';	// This is a fetch, to be sure to get only one record
 
@@ -7519,18 +7536,20 @@ abstract class CommonObject
 		}
 
 		// Delete cascade first
-		foreach($this->childtablesoncascade as $table)
-		{
-			$sql = 'DELETE FROM '.MAIN_DB_PREFIX.$table.' WHERE '.$this->fk_element.' = '.$this->id;
-			$resql = $this->db->query($sql);
-			if (! $resql)
-			{
-				$this->error=$this->db->lasterror();
-				$this->errors[]=$this->error;
-				$this->db->rollback();
-				return -1;
-			}
-		}
+		if (! empty($this->childtablesoncascade)) {
+            foreach($this->childtablesoncascade as $table)
+            {
+                $sql = 'DELETE FROM '.MAIN_DB_PREFIX.$table.' WHERE '.$this->fk_element.' = '.$this->id;
+                $resql = $this->db->query($sql);
+                if (! $resql)
+                {
+                    $this->error=$this->db->lasterror();
+                    $this->errors[]=$this->error;
+                    $this->db->rollback();
+                    return -1;
+                }
+            }
+        }
 
 		if (! $error) {
 			if (! $notrigger) {

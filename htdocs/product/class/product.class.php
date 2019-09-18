@@ -272,12 +272,25 @@ class Product extends CommonObject
     public $accountancy_code_buy;
 
     /**
-     * Main barcode
-     * barcode value
+     * Main Barcode value
      *
      * @var string
      */
     public $barcode;
+
+    /**
+     * Main Barcode type ID
+     *
+     * @var int
+     */
+    public $barcode_type;
+
+    /**
+     * Main Barcode type code
+     *
+     * @var string
+     */
+    public $barcode_type_code;
 
     /**
      * Additional barcodes (Some products have different barcodes according to the country of origin of manufacture)
@@ -294,7 +307,7 @@ class Product extends CommonObject
 
     public $multilangs=array();
 
-    //! Taille de l'image
+    //! Size of image
     public $imgWidth;
     public $imgHeight;
 
@@ -348,16 +361,7 @@ class Product extends CommonObject
 
 
     public $fields = array(
-        'rowid' => array(
-            'type'=>'integer',
-            'label'=>'TechnicalID',
-            'enabled'=>1,
-            'visible'=>-2,
-            'notnull'=>1,
-            'index'=>1,
-            'position'=>1,
-            'comment'=>'Id',
-        ),
+        'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>1, 'visible'=>-2, 'notnull'=>1, 'index'=>1, 'position'=>1, 'comment'=>'Id'),
         'ref'           =>array('type'=>'varchar(128)', 'label'=>'Ref',              'enabled'=>1, 'visible'=>1,  'notnull'=>1,  'showoncombobox'=>1, 'index'=>1, 'position'=>10, 'searchall'=>1, 'comment'=>'Reference of object'),
         'entity'        =>array('type'=>'integer',      'label'=>'Entity',           'enabled'=>1, 'visible'=>0,  'default'=>1, 'notnull'=>1,  'index'=>1, 'position'=>20),
         'note_public'   =>array('type'=>'html',            'label'=>'NotePublic',         'enabled'=>1, 'visible'=>0,  'position'=>61),
@@ -443,7 +447,7 @@ class Product extends CommonObject
             $error=0;
 
         // Clean parameters
-        $this->ref = dol_string_nospecial(trim($this->ref));
+        $this->ref = dol_sanitizeFileName(dol_string_nospecial(trim($this->ref)));
         $this->label = trim($this->label);
         $this->price_ttc=price2num($this->price_ttc);
         $this->price=price2num($this->price);
@@ -2048,7 +2052,7 @@ class Product extends CommonObject
         $sql.= " fk_price_expression, price_autogen";
         $sql.= " FROM ".MAIN_DB_PREFIX."product";
         if ($id) {
-            $sql.= " WHERE rowid = ".$this->db->escape($id);
+            $sql.= " WHERE rowid = ".(int) $id;
         } else {
             $sql.= " WHERE entity IN (".getEntity($this->element).")";
             if ($ref) {
@@ -4033,7 +4037,7 @@ class Product extends CommonObject
             }
 
             $linkclose.= ' title="'.dol_escape_htmltag($label, 1, 1).'"';
-            $linkclose.= ' class="classfortooltip"';
+            $linkclose.= ' class="nowraponall classfortooltip"';
 
             /*
             $hookmanager->initHooks(array('productdao'));
@@ -4041,6 +4045,10 @@ class Product extends CommonObject
             $reshook=$hookmanager->executeHooks('getnomurltooltip',$parameters,$this,$action);    // Note that $action and $object may have been modified by some hooks
             if ($reshook > 0) $linkclose = $hookmanager->resPrint;
             */
+        }
+        else
+        {
+        	$linkclose = ' class="nowraponall"';
         }
 
         if ($option == 'supplier' || $option == 'category') {
@@ -4062,7 +4070,7 @@ class Product extends CommonObject
             }
         }
 
-        $linkstart = '<a class="nowraponall" href="'.$url.'"';
+        $linkstart = '<a href="'.$url.'"';
         $linkstart.=$linkclose.'>';
         $linkend='</a>';
 

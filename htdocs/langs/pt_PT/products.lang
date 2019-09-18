@@ -2,6 +2,7 @@
 ProductRef=Ref. do produto
 ProductLabel=Etiqueta do produto
 ProductLabelTranslated=Etiqueta do produto traduzida
+ProductDescription=Product description
 ProductDescriptionTranslated=Categoria do produto traduzida
 ProductNoteTranslated=Nota do produto traduzida
 ProductServiceCard=Ficha de produto/serviço
@@ -159,7 +160,7 @@ SuppliersPrices=Preços de fornecedor
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Código Aduaneiro / Commodity / HS
 CountryOrigin=País de origem
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Rótulo curto
 Unit=Unidade
 p=você.

@@ -2,6 +2,7 @@
 ProductRef=製品のref。
 ProductLabel=製品のラベル
 ProductLabelTranslated=Translated product label
+ProductDescription=Product description
 ProductDescriptionTranslated=Translated product description
 ProductNoteTranslated=Translated product note
 ProductServiceCard=製品/サービスカード
@@ -159,7 +160,7 @@ SuppliersPrices=Vendor prices
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=原産国
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Short label
 Unit=ユニット
 p=u.

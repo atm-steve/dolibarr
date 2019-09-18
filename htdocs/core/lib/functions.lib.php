@@ -796,7 +796,10 @@ function dol_size($size, $type = '')
  */
 function dol_sanitizeFileName($str, $newstr = '_', $unaccent = 1)
 {
-	$filesystem_forbidden_chars = array('<','>','/','\\','?','*','|','"','°');
+	// List of special chars for filenames in windows are defined on page https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+	// Char '>' '<' '|' '$' and ';' are special chars for shells.
+	// Char '/' and '\' are file delimiters.
+	$filesystem_forbidden_chars = array('<', '>', '/', '\\', '?', '*', '|', '"', ':', '°', '$', ';');
 	return dol_string_nospecial($unaccent?dol_string_unaccent($str):$str, $newstr, $filesystem_forbidden_chars);
 }
 
@@ -921,11 +924,15 @@ function dol_escape_js($stringtoescape, $mode = 0, $noescapebackslashn = 0)
  *  @param      string		$stringtoescape		String to escape
  *  @param		int			$keepb				1=Preserve b tags (otherwise, remove them)
  *  @param      int         $keepn              1=Preserve \r\n strings (otherwise, replace them with escaped value). Set to 1 when escaping for a <textarea>.
+ *  @param		string		$keepmoretags		'' or 'common' or list of tags
  *  @return     string     				 		Escaped string
  *  @see		dol_string_nohtmltag(), dol_string_nospecial(), dol_string_unaccent()
  */
-function dol_escape_htmltag($stringtoescape, $keepb = 0, $keepn = 0)
+function dol_escape_htmltag($stringtoescape, $keepb = 0, $keepn = 0, $keepmoretags = '')
 {
+	if ($keepmoretags == 'common') $keepmoretags = 'html,body,a,em,i,u,ul,li,br,div,img,font,p,span,strong,table,tr,td,th,tbody';
+	// TODO Implement $keepmoretags
+
 	// escape quotes and backslashes, newlines, etc.
 	$tmp=html_entity_decode($stringtoescape, ENT_COMPAT, 'UTF-8');		// TODO Use htmlspecialchars_decode instead, that make only required change for html tags
 	if (! $keepb) $tmp=strtr($tmp, array("<b>"=>'','</b>'=>''));
@@ -1208,7 +1215,7 @@ function dol_get_fiche_head($links = array(), $active = '', $title = '', $notab 
 	}
 	if ($popuptab) $outmore.='</div>';
 
-	if ($displaytab > $limittoshow)
+	if ($popuptab)	// If there is some tabs not shown
 	{
 		$left=($langs->trans("DIRECTION") == 'rtl'?'right':'left');
 		$right=($langs->trans("DIRECTION") == 'rtl'?'left':'right');
@@ -2935,22 +2942,23 @@ function dol_trunc($string, $size = 40, $trunc = 'right', $stringencoding = 'UTF
 /**
  *	Show picto whatever it's its name (generic function)
  *
- *	@param      string		$titlealt         	Text on title tag for tooltip. Not used if param notitle is set to 1.
- *	@param      string		$picto       		Name of image file to show ('filenew', ...)
- *												If no extension provided, we use '.png'. Image must be stored into theme/xxx/img directory.
- *                                  			Example: picto.png                  if picto.png is stored into htdocs/theme/mytheme/img
- *                                  			Example: picto.png@mymodule         if picto.png is stored into htdocs/mymodule/img
- *                                  			Example: /mydir/mysubdir/picto.png  if picto.png is stored into htdocs/mydir/mysubdir (pictoisfullpath must be set to 1)
- *	@param		string		$moreatt			Add more attribute on img tag (For example 'style="float: right"')
- *	@param		boolean|int	$pictoisfullpath	If true or 1, image path is a full path
- *	@param		int			$srconly			Return only content of the src attribute of img.
- *  @param		int			$notitle			1=Disable tag title. Use it if you add js tooltip, to avoid duplicate tooltip.
- *  @param		string		$alt				Force alt for bind people
- *  @param		string		$morecss			Add more class css on img tag (For example 'myclascss'). Work only if $moreatt is empty.
- *  @return     string       				    Return img tag
+ *	@param      string		$titlealt         		Text on title tag for tooltip. Not used if param notitle is set to 1.
+ *	@param      string		$picto       			Name of image file to show ('filenew', ...)
+ *													If no extension provided, we use '.png'. Image must be stored into theme/xxx/img directory.
+ *                                  				Example: picto.png                  if picto.png is stored into htdocs/theme/mytheme/img
+ *                                  				Example: picto.png@mymodule         if picto.png is stored into htdocs/mymodule/img
+ *                                  				Example: /mydir/mysubdir/picto.png  if picto.png is stored into htdocs/mydir/mysubdir (pictoisfullpath must be set to 1)
+ *	@param		string		$moreatt				Add more attribute on img tag (For example 'style="float: right"')
+ *	@param		boolean|int	$pictoisfullpath		If true or 1, image path is a full path
+ *	@param		int			$srconly				Return only content of the src attribute of img.
+ *  @param		int			$notitle				1=Disable tag title. Use it if you add js tooltip, to avoid duplicate tooltip.
+ *  @param		string		$alt					Force alt for bind people
+ *  @param		string		$morecss				Add more class css on img tag (For example 'myclascss'). Work only if $moreatt is empty.
+ *  @param		string		$marginleftonlyshort	1 = Add a short left margin on picto, 2 = Add a larger left maring on picto, 0 = No margin left. Works for fontawesome picto only.
+ *  @return     string       				    	Return img tag
  *  @see        img_object(), img_picto_common()
  */
-function img_picto($titlealt, $picto, $moreatt = '', $pictoisfullpath = false, $srconly = 0, $notitle = 0, $alt = '', $morecss = '')
+function img_picto($titlealt, $picto, $moreatt = '', $pictoisfullpath = false, $srconly = 0, $notitle = 0, $alt = '', $morecss = '', $marginleftonlyshort = 2)
 {
 	global $conf, $langs;
 
@@ -2986,7 +2994,7 @@ function img_picto($titlealt, $picto, $moreatt = '', $pictoisfullpath = false, $
 		    if (empty($conf->global->MAIN_DISABLE_FONT_AWESOME_5)) $fa='fas';
 		    $fakey = $pictowithoutext;
 			$facolor = ''; $fasize = '';
-			$marginleftonlyshort = 2;
+
 			if ($pictowithoutext == 'setup') {
 			    $fakey = 'fa-cog';
 			    $fasize = '1.4em';
@@ -4399,7 +4407,7 @@ function price($amount, $form = 0, $outlangs = '', $trunc = 1, $rounding = -1, $
 	{
 		if ($currency_code == 'auto') $currency_code=$conf->currency;
 
-		$listofcurrenciesbefore=array('USD','GBP','AUD','HKD','MXN','PEN','CNY');
+		$listofcurrenciesbefore=array('USD','GBP','AUD','HKD','MXN','PEN','CNY','CAD');
 		$listoflanguagesbefore=array('nl_NL');
 		if (in_array($currency_code, $listofcurrenciesbefore) || in_array($outlangs->defaultlang, $listoflanguagesbefore))
 		{
@@ -5526,7 +5534,7 @@ function dol_nl2br($stringtoencode, $nl2brmode = 0, $forxml = false)
 
 /**
  *	This function is called to encode a string into a HTML string but differs from htmlentities because
- * 	a detection is done before to see if text is already HTML or not. Also, all entities but &,<,> are converted.
+ * 	a detection is done before to see if text is already HTML or not. Also, all entities but &,<,>," are converted.
  *  This permits to encode special chars to entities with no double encoding for already encoded HTML strings.
  * 	This function also remove last EOL or BR if $removelasteolbr=1 (default).
  *  For PDF usage, you can show text by 2 ways:
@@ -5633,7 +5641,7 @@ function dol_string_is_good_iso($s)
 	$ok=1;
 	for($scursor=0;$scursor<$len;$scursor++)
 	{
-		$ordchar=ord($s{$scursor});
+		$ordchar=ord($s[$scursor]);
 		//print $scursor.'-'.$ordchar.'<br>';
 		if ($ordchar < 32 && $ordchar != 13 && $ordchar != 10) { $ok=0; break; }
 		if ($ordchar > 126 && $ordchar < 160) { $ok=0; break; }
@@ -6553,10 +6561,17 @@ function dol_htmloutput_mesg($mesgstring = '', $mesgarray = array(), $style = 'o
 			$newmesgarray=array();
 			foreach($mesgarray as $val)
 			{
-				$tmpmesgstring=preg_replace('/<\/div><div class="(error|warning)">/', '<br>', $val);
-				$tmpmesgstring=preg_replace('/<div class="(error|warning)">/', '', $tmpmesgstring);
-				$tmpmesgstring=preg_replace('/<\/div>/', '', $tmpmesgstring);
-				$newmesgarray[]=$tmpmesgstring;
+				if (is_string($val))
+				{
+					$tmpmesgstring=preg_replace('/<\/div><div class="(error|warning)">/', '<br>', $val);
+					$tmpmesgstring=preg_replace('/<div class="(error|warning)">/', '', $tmpmesgstring);
+					$tmpmesgstring=preg_replace('/<\/div>/', '', $tmpmesgstring);
+					$newmesgarray[]=$tmpmesgstring;
+				}
+				else
+				{
+					dol_syslog("Error call of dol_htmloutput_mesg with an array with a value that is not a string", LOG_WARNING);
+				}
 			}
 			$mesgarray=$newmesgarray;
 		}
@@ -7037,7 +7052,7 @@ function getLanguageCodeFromCountryCode($countrycode)
 	$buildprimarykeytotest = strtolower($countrycode).'-'.strtoupper($countrycode);
 	if (in_array($buildprimarykeytotest, $locales)) return strtolower($countrycode).'_'.strtoupper($countrycode);
 
-	if (function_exists('locale_get_primary_language'))    // Need extension php-intl
+	if (function_exists('locale_get_primary_language') && function_exists('locale_get_region'))    // Need extension php-intl
 	{
 	    foreach ($locales as $locale)
     	{
@@ -7211,7 +7226,7 @@ function printCommonFooter($zone = 'private')
 			{
 				print "\n";
 				print '/* JS CODE TO ENABLE to manage handler to switch left menu page (menuhider) */'."\n";
-				print 'jQuery(".menuhider").click(function(event) {';
+				print 'jQuery("li.menuhider").click(function(event) {';
 				print '  if (!$( "body" ).hasClass( "sidebar-collapse" )){ event.preventDefault(); }'."\n";
 				print '  console.log("We click on .menuhider");'."\n";
 				print '  $("body").toggleClass("sidebar-collapse")'."\n";

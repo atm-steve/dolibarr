@@ -2,6 +2,7 @@
 ProductRef=Rif. prodotto
 ProductLabel=Etichetta prodotto
 ProductLabelTranslated=Etichetta del prodotto tradotto
+ProductDescription=Product description
 ProductDescriptionTranslated=Descrizione del prodotto tradotto
 ProductNoteTranslated=Tradotto nota prodotto
 ProductServiceCard=Scheda Prodotti/servizi
@@ -159,7 +160,7 @@ SuppliersPrices=Prezzi fornitore
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=Paese di origine
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Etichetta breve
 Unit=Unità
 p=u.

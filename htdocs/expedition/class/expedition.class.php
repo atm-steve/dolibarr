@@ -813,13 +813,18 @@ class Expedition extends CommonObject
 			// Rename directory if dir was a temporary ref
 			if (preg_match('/^[\(]?PROV/i', $this->ref))
 			{
-				// On renomme repertoire ($this->ref = ancienne ref, $numfa = nouvelle ref)
-				// in order not to lose the attached files
+				// Now we rename also files into index
+				$sql = 'UPDATE '.MAIN_DB_PREFIX."ecm_files set filename = CONCAT('".$this->db->escape($this->newref)."', SUBSTR(filename, ".(strlen($this->ref)+1).")), filepath = 'expedition/sending/".$this->db->escape($this->newref)."'";
+				$sql.= " WHERE filename LIKE '".$this->db->escape($this->ref)."%' AND filepath = 'expedition/sending/".$this->db->escape($this->ref)."' and entity = ".$conf->entity;
+				$resql = $this->db->query($sql);
+				if (! $resql) { $error++; $this->error = $this->db->lasterror(); }
+
+				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($numref);
 				$dirsource = $conf->expedition->dir_output.'/sending/'.$oldref;
 				$dirdest = $conf->expedition->dir_output.'/sending/'.$newref;
-				if (file_exists($dirsource))
+				if (! $error && file_exists($dirsource))
 				{
 					dol_syslog(get_class($this)."::valid rename dir ".$dirsource." into ".$dirdest);
 
@@ -1149,10 +1154,11 @@ class Expedition extends CommonObject
 	 * 	Delete shipment.
 	 * 	Warning, do not delete a shipment if a delivery is linked to (with table llx_element_element)
 	 *
-	 *  @param  int  $notrigger Disable triggers
-	 * 	@return	int		>0 if OK, 0 if deletion done but failed to delete files, <0 if KO
+	 *  @param  int  $notrigger 			Disable triggers
+     *  @param  bool $also_update_stock  	true if the stock should be increased back (false by default)
+	 * 	@return	int							>0 if OK, 0 if deletion done but failed to delete files, <0 if KO
 	 */
-	public function delete($notrigger = 0)
+	public function delete($notrigger = 0, $also_update_stock = false)
 	{
 		global $conf, $langs, $user;
 
@@ -1184,7 +1190,9 @@ class Expedition extends CommonObject
 		}
 
 		// Stock control
-		if (! $error && $conf->stock->enabled && $conf->global->STOCK_CALCULATE_ON_SHIPMENT && $this->statut > self::STATUS_DRAFT)
+		if (! $error && $conf->stock->enabled &&
+			(($conf->global->STOCK_CALCULATE_ON_SHIPMENT && $this->statut > self::STATUS_DRAFT) ||
+			 ($conf->global->STOCK_CALCULATE_ON_SHIPMENT_CLOSE && $this->statut == self::STATUS_CLOSED && $also_update_stock)))
 		{
 			require_once DOL_DOCUMENT_ROOT."/product/stock/class/mouvementstock.class.php";
 

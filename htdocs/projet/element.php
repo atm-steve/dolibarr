@@ -532,7 +532,8 @@ if (! $showdatefilter)
 {
 	print '<div class="center centpercent">';
     print '<form action="'.$_SERVER["PHP_SELF"].'?id='.$projectid.'" method="post">';
-	print '<input type="hidden" name="tablename" value="'.$tablename.'">';
+    print '<input type="hidden" name="token" value="'.$_SESSION["newtoken"].'">';
+    print '<input type="hidden" name="tablename" value="'.$tablename.'">';
 	print '<input type="hidden" name="action" value="view">';
 	print '<table class="center"><tr>';
 	print '<td>'.$langs->trans("From").' ';
@@ -605,6 +606,7 @@ foreach ($listofreferent as $key => $value)
 				if ($key == 'invoice')
 				{
 				    if (! empty($element->close_code) && $element->close_code == 'replaced') $qualifiedfortotal=false;	// Replacement invoice, do not include into total
+				    if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS) && $element->type == Facture::TYPE_DEPOSIT) $qualifiedfortotal=false;	// If hidden option to use deposits as payment (deprecated, not recommended to use this), deposits are not included
 				}
 				if ($key == 'propal')
 				{
@@ -761,7 +763,8 @@ foreach ($listofreferent as $key => $value)
 				// Define form with the combo list of elements to link
 			    $addform.='<div class="inline-block valignmiddle">';
 			    $addform.='<form action="'.$_SERVER["PHP_SELF"].'?id='.$projectid.'" method="post">';
-				$addform.='<input type="hidden" name="tablename" value="'.$tablename.'">';
+			    $addform.='<input type="hidden" name="token" value="'.$_SESSION["newtoken"].'">';
+			    $addform.='<input type="hidden" name="tablename" value="'.$tablename.'">';
 				$addform.='<input type="hidden" name="action" value="addelement">';
 				$addform.='<input type="hidden" name="datesrfc" value="'.dol_print_date($dates, 'dayhourrfc').'">';
 				$addform.='<input type="hidden" name="dateerfc" value="'.dol_print_date($datee, 'dayhourrfc').'">';
@@ -776,7 +779,7 @@ foreach ($listofreferent as $key => $value)
 		if (empty($conf->global->PROJECT_CREATE_ON_OVERVIEW_DISABLED) && $urlnew)
 		{
 			$addform.='<div class="inline-block valignmiddle">';
-			if ($testnew) $addform.='<a class="buttonxxx" href="'.$urlnew.'"><span class="valignmiddle text-plus-circle">'.($buttonnew?$langs->trans($buttonnew):$langs->trans("Create")).'</span><span class="fa fa-plus-circle valignmiddle"></span></a>';
+			if ($testnew) $addform.='<a class="buttonxxx" href="'.$urlnew.'"><span class="valignmiddle text-plus-circle">'.($buttonnew?$langs->trans($buttonnew):$langs->trans("Create")).'</span><span class="fa fa-plus-circle valignmiddle paddingleft"></span></a>';
 			elseif (empty($conf->global->MAIN_BUTTON_HIDE_UNAUTHORIZED)) {
 				$addform.='<a class="buttonxxx buttonRefused" disabled="disabled" href="#"><span class="valignmiddle text-plus-circle">'.($buttonnew?$langs->trans($buttonnew):$langs->trans("Create")).'</span><span class="fa fa-plus-circle valignmiddle"></span></a>';
 			}
