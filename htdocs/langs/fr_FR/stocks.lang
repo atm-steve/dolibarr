@@ -206,3 +206,4 @@ StockSupportServicesDesc=Par défaut, seul les produits/services de type "produi
 ReceiveProducts=Recevoir produits
 NotEnoughStock=Stock non suffisant pour cet entrepôt
 EmptyStock=Stock vide pour cet entrepôt
+StockCategoriesShort=Tags d'entrepôts
