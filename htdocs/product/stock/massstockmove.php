@@ -51,7 +51,6 @@ $id_tw = GETPOST('id_tw', 'int');
 $batch = GETPOST('batch');
 $qty = GETPOST('qty');
 $idline = GETPOST('idline');
-
 $sortfield = GETPOST('sortfield','alpha');
 $sortorder = GETPOST('sortorder','alpha');
 $page = GETPOST('page','int');
@@ -226,6 +225,8 @@ if ($action == 'delline' && $idline != '')
 
 if ($action == 'createmovements')
 {
+    var_dump($listofdata);
+    var_dump($_REQUEST); exit;
 	$error=0;
 
 	/*if (! GETPOST("label"))
@@ -239,6 +240,7 @@ if ($action == 'createmovements')
 	if (! $error)
 	{
 		$product = new Product($db);
+
 
 		foreach($listofdata as $key => $val)	// Loop on each movement to do
 		{
@@ -492,7 +494,6 @@ print '</tr>';
 foreach($listofdata as $key => $val)
 {
 
-
 	$productstatic->fetch($val['id_product']);
 	$warehousestatics->fetch($val['id_sw']);
 	$warehousestatict->fetch($val['id_tw']);
@@ -562,6 +563,20 @@ foreach($listofdata as $key => $val)
 
 	}
 
+	else {
+	    print '<tr class="oddeven">';
+
+        print '<td>';
+        print '<input type="hidden" name="parent_id" value="'.$val['id'].'">';
+
+        print '<div style="">';
+        print 'Date de mouvement : '.$form->select_date(dol_now('gmt'),'date_mouv_st',0, 0, 0, '', 1, 0, 0);
+        print '</div>';
+        print '</td>';
+
+        print '</tr>';
+
+    }
 }
 
 print '</table>';
@@ -604,6 +619,11 @@ print '</form>';
 ?>
 	<script type="text/javascript">
 		$(document).ready(function(){
+		    $('#date_mouv_st').on('change', function(e){
+		        val = $(this).val();
+		        console.log(val);
+            })
+
 		    $('.savetransfert').on('click', function(e){
 		        var tr = $(this).closest('tr');
 		        var id = $(this).data('id');
