@@ -32,7 +32,7 @@ $langs->load("stocks");
 
 // Security check
 $result=restrictedArea($user,'stock');
-
+$hookmanager->initHooks(array('stocklist'));
 $sall=trim((GETPOST('search_all', 'alphanohtml')!='')?GETPOST('search_all', 'alphanohtml'):GETPOST('sall', 'alphanohtml'));
 $search_ref=GETPOST("sref","alpha")?GETPOST("sref","alpha"):GETPOST("search_ref","alpha");
 $search_label=GETPOST("snom","alpha")?GETPOST("snom","alpha"):GETPOST("search_label","alpha");
@@ -58,6 +58,7 @@ $fieldstosearchall = array(
     'e.zip'=>'Zip',
     'e.town'=>'Town',
 );
+
 
 
 /*
