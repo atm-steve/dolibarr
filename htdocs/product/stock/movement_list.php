@@ -432,8 +432,8 @@ $sql.= " m.type_mouvement,";
 $sql.= " pl.rowid as lotid, pl.eatby, pl.sellby,";
 $sql.= " u.login, u.photo, u.lastname, u.firstname";
 $sql.= '
-(
-	SELECT CASE
+,
+	CASE
 		WHEN m.fk_origin > 0 AND m.origintype = "commande" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'commande WHERE rowid = m.fk_origin)
 		WHEN m.fk_origin > 0 AND m.origintype = "shipping" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'expedition WHERE rowid = m.fk_origin)
 		WHEN m.fk_origin > 0 AND m.origintype = "facture" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'facture WHERE rowid = m.fk_origin)
@@ -441,8 +441,7 @@ $sql.= '
 		WHEN m.fk_origin > 0 AND m.origintype = "invoice_supplier" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'facture_fourn WHERE rowid = m.fk_origin)
 		WHEN m.fk_origin > 0 AND m.origintype = "project" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'projet WHERE rowid = m.fk_origin)
 		ELSE NULL
-	END
-) as fk_soc_origin,';
+	END as fk_soc_origin ';
 // Add fields from extrafields
 foreach ($extrafields->attribute_label as $key => $val) $sql.=($extrafields->attribute_type[$key] != 'separate' ? ",ef.".$key.' as options_'.$key : '');
 // Add fields from hooks
