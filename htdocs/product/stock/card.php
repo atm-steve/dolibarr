@@ -33,6 +33,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/stock.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/product.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
+require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+
 
 // Load translation files required by the page
 $langs->loadLangs(array('products', 'stocks', 'companies', 'categories'));
@@ -95,6 +97,8 @@ if (empty($reshook))
 			{
 				setEventMessages($langs->trans("RecordSaved"), null, 'mesgs');
 
+				$categories = GETPOST('categories', 'array');
+				$object->setCategories($categories);
 				if (! empty($backtopage))
 				{
 					header("Location: ".$backtopage);
@@ -154,6 +158,8 @@ if (empty($reshook))
 
 			if ( $object->update($id, $user) > 0)
 			{
+				$categories = GETPOST('categories', 'array');
+				$object->setCategories($categories);
 				$action = '';
 			}
 			else
@@ -267,6 +273,13 @@ if ($action == 'create')
 	$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
 	print $hookmanager->resPrint;
 
+	if ($conf->categorie->enabled) {
+		// Categories
+		print '<tr><td>'.$langs->trans("Categories").'</td><td colspan="3">';
+		$cate_arbo = $form->select_all_categories(Categorie::TYPE_STOCK, '', 'parent', 64, 0, 1);
+		print $form->multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, '', 0, '100%');
+		print "</td></tr>";
+	}
 	print '</table>';
 
 	dol_fiche_end();
@@ -407,7 +420,12 @@ else
 			$parameters=array();
 			$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
 			print $hookmanager->resPrint;
-
+			// Categories
+			if($conf->categorie->enabled) {
+				print '<tr><td valign="middle">'.$langs->trans("Categories").'</td><td colspan="3">';
+				print $form->showCategories($object->id,'stock',1);
+				print "</td></tr>";
+			}
 			print "</table>";
 
 			print '</div>';
@@ -666,7 +684,20 @@ else
 			$parameters=array();
 			$reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
 			print $hookmanager->resPrint;
-
+			// Tags-Categories
+			if ($conf->categorie->enabled)
+			{
+				print '<tr><td class="tdtop">'.$langs->trans("Categories").'</td><td colspan="3">';
+				$cate_arbo = $form->select_all_categories(Categorie::TYPE_STOCK, '', 'parent', 64, 0, 1);
+				$c = new Categorie($db);
+				$cats = $c->containing($object->id,Categorie::TYPE_STOCK);
+				$arrayselected=array();
+				foreach($cats as $cat) {
+					$arrayselected[] = $cat->id;
+				}
+				print $form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, '', 0, '100%');
+				print "</td></tr>";
+			}
 			print '</table>';
 
 			dol_fiche_end();
