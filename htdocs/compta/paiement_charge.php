@@ -68,7 +68,7 @@ if ($action == 'add_payment' || ($action == 'confirm_paiement' && $confirm=='yes
 		$mesg = $langs->trans("ErrorFieldRequired",$langs->transnoentities("Date"));
 		$error++;
 	}
-    if (! empty($conf->banque->enabled) && ! $_POST["accountid"] > 0)
+    if (! empty($conf->banque->enabled) && $_POST["accountid"] <= 0)
     {
         $mesg = $langs->trans("ErrorFieldRequired",$langs->transnoentities("AccountToCredit"));
         $error++;
@@ -141,7 +141,7 @@ if ($action == 'add_payment' || ($action == 'confirm_paiement' && $confirm=='yes
         }
 	}
 
-	$_GET["action"]='create';
+	$action='create';
 }
 
 
