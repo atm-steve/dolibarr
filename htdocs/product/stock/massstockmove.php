@@ -32,6 +32,7 @@ require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
 dol_include_once('/cliama/class/assettransfert.class.php');
 dol_include_once('/cliama/class/typeentrepot.class.php');
+dol_include_once('/categories/class/categorie.class.php');
 
 // Load translation files required by the page
 $langs->loadLangs(array('products', 'stocks', 'orders', 'productbatch', 'cliama@cliama'));
@@ -128,6 +129,26 @@ if ($action == 'addline')
 		$error++;
 	    setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Qty")), null, 'errors');
 	}
+	/*
+	 * Spé AMA
+	 * ajouter un contrôle en plus empêchant de transférer
+	 * des produits non sérialisés d'un entrepôt "neuf" vers un entrepôt "occasion" (lié à la catégorisation des entrepôts)
+	 */
+	if(!empty($conf->global->CLIAMA_NEW_WAREHOUSE_CATEGORY)
+		&& !empty($conf->global->CLIAMA_USED_WAREHOUSE_CATEGORY)) {
+		$categoryNew = new Categorie($db);
+		$categoryUsed = new Categorie($db);
+		$categoryNew->fetch($conf->global->CLIAMA_NEW_WAREHOUSE_CATEGORY);
+		$categoryUsed->fetch($conf->global->CLIAMA_USED_WAREHOUSE_CATEGORY);
+
+		if($categoryNew->containsObject('stock', $id_sw) && $categoryUsed->containsObject('stock', $id_tw)) {
+			$error++;
+			setEventMessages($langs->trans("NewCategoryCantGoToUsed"), null, 'errors');
+		}
+	}
+	/*
+	 * Fin Spé
+	 */
 
 	// Check a batch number is provided if product need it
 	if (! $error)

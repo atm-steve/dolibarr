@@ -206,3 +206,4 @@ ListInventory=List
 StockSupportServices=Stock management support services
 StockSupportServicesDesc=By default, you can stock only product with type "product". If on, and if module service is on, you can also stock a product with type "service"
 ReceiveProducts=Receive items
+NewCategoryCantGoToUsed=L'entrepôt est catégorisé comme neuf, il ne peut pas transférer un équipement vers un entrepôt catégorisé d'occassion
