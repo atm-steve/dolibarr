@@ -311,6 +311,18 @@ llxHeader();
 
 $form=new Form($db);
 
+// Ticket 10119 - Pour empêcher le double clic, à refaire mieux ou à virer si un jour ils migrent sur une version plus récente
+?>
+
+<script type="text/javascript" language="javascript">
+        $(document).ready(function() {
+                $('input[value="Valider"]').click(function() {
+                        $(this).hide();
+                });
+        });
+</script>
+
+<?php
 
 if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paiement')
 {
