@@ -1188,9 +1188,7 @@ if ($resql)
 							foreach ($cmdfourn->lines as $line)
 							{
 								if ($line->fk_product == $servFrais->id && !empty($line->array_options['options_fee'])){
-									if(!empty($conf->global->CLIAMA_FREIGHT_CHARGES_TRANSPORT)
-										&& ($line->fk_product == $conf->global->CLIAMA_FREIGHT_CHARGES_TRANSPORT)
-										&& !empty($line->pu_ht)){
+									if(!empty($line->pu_ht)){
 
 											$nbline = 0;
 											foreach($cmdfourn->lines as $cmdfournline) {
