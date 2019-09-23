@@ -179,6 +179,9 @@ class DiscountAbsolute
             return -1;
         }
 
+	$invoice = new Facture($this->db);
+	$invoice->fetch($this->fk_facture_source);
+
         // Insert request
         $sql = "INSERT INTO ".MAIN_DB_PREFIX."societe_remise_except";
         $sql.= " (entity, datec, fk_soc, discount_type, fk_user, description,";
@@ -186,7 +189,7 @@ class DiscountAbsolute
         $sql.= " multicurrency_amount_ht, multicurrency_amount_tva, multicurrency_amount_ttc,";
         $sql.= " fk_facture_source, fk_invoice_supplier_source";
         $sql.= ")";
-        $sql.= " VALUES (".$conf->entity.", '".$this->db->idate($this->datec!=''?$this->datec:dol_now())."', ".$this->fk_soc.", ".(empty($this->discount_type)?0:intval($this->discount_type)).", ".$user->id.", '".$this->db->escape($this->description)."',";
+        $sql.= " VALUES (".$invoice->entity.", '".$this->db->idate($this->datec!=''?$this->datec:dol_now())."', ".$this->fk_soc.", ".(empty($this->discount_type)?0:intval($this->discount_type)).", ".$user->id.", '".$this->db->escape($this->description)."',";
         $sql.= " ".$this->amount_ht.", ".$this->amount_tva.", ".$this->amount_ttc.", ".$this->tva_tx.",";
         $sql.= " ".$this->multicurrency_amount_ht.", ".$this->multicurrency_amount_tva.", ".$this->multicurrency_amount_ttc.", ";
         $sql.= " ".($this->fk_facture_source ? "'".$this->db->escape($this->fk_facture_source)."'":"null").",";
