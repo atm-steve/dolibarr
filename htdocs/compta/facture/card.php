@@ -1557,7 +1557,7 @@ if (empty($reshook))
 						$line->origin_id = $line->id;
 						$line->fk_prev_id = $line->id;
 						$line->fetch_optionals($line->id);
-						$line->situation_percent =  $line->get_prev_progress($object->id); // get good progress including credit note
+						$line->situation_percent =  $line->get_prev_progress($object->id, true); // get good progress including credit note
 
 						// Si fk_remise_except defini on vérifie si la réduction à déjà été appliquée
 						if ($line->fk_remise_except)
@@ -2091,7 +2091,7 @@ if (empty($reshook))
 
 		$line = new FactureLigne($db);
 		$line->fetch(GETPOST('lineid'));
-		$percent = $line->get_prev_progress($object->id);
+		$percent = $line->get_prev_progress($object->id, true);
 
 		if($object->type == Facture::TYPE_CREDIT_NOTE && $object->situation_cycle_ref>0)
 		{
@@ -2242,7 +2242,7 @@ if (empty($reshook))
 		{
 			foreach ($object->lines as $line)
 			{
-				$percent = $line->get_prev_progress($object->id);
+				$percent = $line->get_prev_progress($object->id, true);
 				if (GETPOST('all_progress') < $percent) {
 					$mesg = '<div class="warning">' . $langs->trans("CantBeLessThanMinPercent") . '</div>';
 					$result = -1;

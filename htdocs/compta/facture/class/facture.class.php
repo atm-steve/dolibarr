@@ -1605,11 +1605,10 @@ class Facture extends CommonInvoice
 		$sql.= " note_private=".(isset($this->note_private)?"'".$this->db->escape($this->note_private)."'":"null").",";
 		$sql.= " note_public=".(isset($this->note_public)?"'".$this->db->escape($this->note_public)."'":"null").",";
 		$sql.= " model_pdf=".(isset($this->modelpdf)?"'".$this->db->escape($this->modelpdf)."'":"null").",";
-		$sql.= " import_key=".(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null");
-		$sql.= ", situation_cycle_ref=".$this->situation_cycle_ref;
-		$sql.= ", situation_counter=".$this->situation_counter;
-		$sql.= ", situation_final=".$this->situation_final;
-
+		$sql.= " import_key=".(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null").",";
+		$sql.= " situation_cycle_ref=".(empty($this->situation_cycle_ref)?"null":$this->db->escape($this->situation_cycle_ref)).",";
+		$sql.= " situation_counter=".(empty($this->situation_counter)?"null":$this->db->escape($this->situation_counter)).",";
+		$sql.= " situation_final=".(empty($this->situation_counter)?"0":$this->db->escape($this->situation_counter)).",";
 		$sql.= " WHERE rowid=".$this->id;
 
 		$this->db->begin();
@@ -2383,7 +2382,7 @@ class Facture extends CommonInvoice
                 	$final = true;
     				$nboflines = count($this->lines);
     				while (($i < $nboflines) && $final) {
-    					$final = ($this->lines[$i]->situation_percent == 100);
+    				    $final = ($this->lines[$i]->situation_percent == 100 || $this->lines[$i]->product_type == 9);
     					$i++;
     				}
 
@@ -4857,7 +4856,7 @@ class FactureLigne extends CommonInvoiceLine
 				    $res = $this->db->query($sql);
 				    if($res) {
 				        while($obj = $this->db->fetch_object($res)) {
-				            $returnPercent = $returnPercent + floatval($obj->situation_percent);
+				            $returnPercent = $returnPercent - floatval($obj->situation_percent);
 				        }
 				    }
 				}
