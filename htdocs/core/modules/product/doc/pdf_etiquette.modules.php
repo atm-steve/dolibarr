@@ -161,10 +161,10 @@ class pdf_etiquette extends ModelePDFProduct
 				// New page
 				$pdf->SetMargins(1,2,0);
 				$pdf->AddPage();
-				$pdf->SetFont('','', 24);
+				$pdf->SetFont('','', 18);
 				$pdf->MultiCell(70, 5, dol_htmlentitiesbr($object->ref), 0, 'C');
-                $pdf->SetFont('','', 10);
-                $label = substr(dol_htmlentitiesbr($object->label),0,50);
+                $pdf->SetFont('','', 8);
+                $label = dol_htmlentitiesbr($object->label);
 				$pdf->MultiCell(70, 27.5, $label, 0, 'C');
 				//$pdf->MultiCell(70, 27.5, $conf->barcode->dir_output."/temp/barcode_".$object->ref."_C128.png", 0, 'C');
 				$pdf->Image($conf->barcode->dir_output."/temp/barcode_".$object->ref."_C128.png", 9, 22, 55, 10, 'PNG', 'http://www.tcpdf.org', '', true, 150, '', false, false, 1, false, false, false);
