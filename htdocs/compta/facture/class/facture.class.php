@@ -549,6 +549,23 @@ class Facture extends CommonInvoice
 					$newinvoiceline->origin = $this->lines[$i]->element;
 					$newinvoiceline->origin_id = $this->lines[$i]->id;
 
+					// FIX new situation invoice amount
+					if($this->type === $this::TYPE_SITUATION){
+						include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
+						$percent = $newinvoiceline->get_prev_progress($this->id, true);
+						$newinvoiceline->situation_percent = $percent;
+						$tabprice = calcul_price_total($newinvoiceline->qty, $newinvoiceline->subprice, $newinvoiceline->remise_percent, $newinvoiceline->tva_tx, $newinvoiceline->localtax1_tx, $newinvoiceline->localtax2_tx, 0, 'HT', 0, $newinvoiceline->product_type, $mysoc, '', $percent);
+						$newinvoiceline->total_ht = $tabprice[0];
+						$newinvoiceline->total_tva = $tabprice[1];
+						$newinvoiceline->total_ttc = $tabprice[2];
+						$newinvoiceline->total_localtax1 = $tabprice[9];
+						$newinvoiceline->total_localtax2 = $tabprice[10];
+						$newinvoiceline->multicurrency_total_ht  = $tabprice[16];
+						$newinvoiceline->multicurrency_total_tva = $tabprice[17];
+						$newinvoiceline->multicurrency_total_ttc = $tabprice[18];
+					}
+
+
 					if ($result >= 0)
 					{
 						// Reset fk_parent_line for no child products and special product
