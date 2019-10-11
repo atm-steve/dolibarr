@@ -2103,7 +2103,7 @@ if (empty($reshook))
 		        $error++;
 		        $result = -1;
 		    }
-		    elseif (GETPOST('progress') < $line->situation_percent) // TODO : use a modified $line->get_prev_progress($object->id) result
+		    elseif (GETPOST('progress') < $percent)
 		    {
 		        $mesg = $langs->trans("CantBeLessThanMinPercent");
 		        setEventMessages($mesg, null, 'warnings');

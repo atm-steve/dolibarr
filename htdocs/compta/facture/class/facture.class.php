@@ -4856,7 +4856,7 @@ class FactureLigne extends CommonInvoiceLine
 				    $res = $this->db->query($sql);
 				    if($res) {
 				        while($obj = $this->db->fetch_object($res)) {
-				            $returnPercent = $returnPercent - floatval($obj->situation_percent);
+				            $returnPercent = $returnPercent + doubleval($obj->situation_percent);
 				        }
 				    }
 				}

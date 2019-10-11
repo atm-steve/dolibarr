@@ -1160,7 +1160,12 @@ class pdf_crabe extends ModelePDFFactures
 					}
 
 					if($sum_pdf_tva!=$object->total_tva) { // apply coef to recover the VAT object amount (the good one)
-						$coef_fix_tva = $object->total_tva / $sum_pdf_tva;
+
+						if(empty($sum_pdf_tva)){
+							$coef_fix_tva = 1;
+						}else{
+							$coef_fix_tva = $object->total_tva / $sum_pdf_tva;
+						}
 
 						foreach($this->tva as $tvakey => $tvaval) {
 							$this->tva[$tvakey]=$tvaval * $coef_fix_tva;

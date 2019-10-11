@@ -256,7 +256,13 @@ if (empty($outputalsopricetotalwithtax)) $outputalsopricetotalwithtax=0;
 
 	<td class="linecoldelete" align="center"><?php $coldisplay++; ?>
 		<?php
-		if (($this->situation_counter == 1 || !$this->situation_cycle_ref) && empty($disableremove)) {
+
+		$objectIsDeposit = false;
+		if ($object->element == 'facture' && intval($object->type) === $object::TYPE_CREDIT_NOTE){
+			$objectIsDeposit = true;
+		}
+
+		if (( ($this->situation_counter == 1 || $objectIsDeposit ) || !$this->situation_cycle_ref) && empty($disableremove)) {
 			print '<a href="' . $_SERVER["PHP_SELF"] . '?id=' . $this->id . '&amp;action=ask_deleteline&amp;lineid=' . $line->id . '">';
 			print img_delete();
 			print '</a>';
