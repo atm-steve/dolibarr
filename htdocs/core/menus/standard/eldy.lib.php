@@ -1210,6 +1210,7 @@ function print_left_eldy_menu($db,$menu_array_before,$menu_array_after,&$tabMenu
 				{
 					$newmenu->add("/product/stats/card.php?id=all&leftmenu=stats&type=0", $langs->trans("Statistics"), 1, $user->rights->produit->lire && $user->rights->propale->lire);
 				}
+				$newmenu->add("/custom/cliacropose/impressionEtiquettes.php", "Planche etiquettes", 1, $user->rights->produit->lire);				
 			}
 
 			// Services
