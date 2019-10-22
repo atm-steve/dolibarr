@@ -94,7 +94,7 @@ if (! $error && $massaction == 'confirm_presend')
 
                 if ($objectclass == 'Facture') {
                     $tmparraycontact = array();
-                    $tmparraycontact = $objecttmp->liste_contact(-1, 'external', 0, 'BILLING');
+                    $tmparraycontact = $objecttmp->liste_contact(-1, 'external', 0, 'EMAIL_DEST');
                     if (is_array($tmparraycontact) && count($tmparraycontact) > 0) {
                         foreach ($tmparraycontact as $data_email) {
                             if(!empty($data_email['email'])) $listofobjectcontacts[$toselectid][$data_email['id']] = $data_email['email'];
