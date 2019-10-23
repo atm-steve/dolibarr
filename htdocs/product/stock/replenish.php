@@ -535,7 +535,7 @@ if ($usevirtualstock == 1) $stocklabel = $langs->trans('VirtualStock');
 if ($usevirtualstock == 0) $stocklabel = $langs->trans('PhysicalStock');
 if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0)
 {
-	$stocklabel.=' ('.$langs->trans("AllWarehouses").')';
+	$stocklabel.=' ('.$langs->trans("Warehouse").')';
 }
 print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST" name="formulaire">'.
 	'<input type="hidden" name="token" value="' .$_SESSION['newtoken'] . '">'.
@@ -625,7 +625,8 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		}
 		else
 		{
-			$stock = $prod->stock_reel;
+//			$stock = $prod->stock_reel;
+            $stock = $objp->stock_physique;
 		}
 
 		// Force call prod->load_stats_xxx to choose status to count (otherwise it is loaded by load_stock function)
