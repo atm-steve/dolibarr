@@ -538,7 +538,11 @@ function pdf_build_address($outputlangs, $sourcecompany, $targetcompany = '', $t
     		{
     			if ($targetcompany->tva_intra) $stringaddress.=($stringaddress ? "\n" : '' ).$outputlangs->transnoentities("VATIntraShort").': '.$outputlangs->convToOutputCharset($targetcompany->tva_intra);
     		}
-
+		
+		// Nauvica dev show fourn number
+		if (!empty($targetcompany->array_options["options_fourn_number"])){
+			$stringaddress.="\r\n".$outputlangs->transnoentities("SupplierNumber").": ".$targetcompany->array_options["options_fourn_number"];
+		}
     		// Professionnal Ids
     		if (! empty($conf->global->MAIN_PROFID1_IN_ADDRESS) && ! empty($targetcompany->idprof1))
     		{
