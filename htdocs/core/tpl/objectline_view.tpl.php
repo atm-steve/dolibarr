@@ -262,7 +262,13 @@ if (empty($outputalsopricetotalwithtax)) $outputalsopricetotalwithtax=0;
 			$objectIsDeposit = true;
 		}
 
-		if (( ($this->situation_counter == 1 || $objectIsDeposit ) || !$this->situation_cycle_ref) && empty($disableremove)) {
+		$lineCreditNote =0;
+		if($object->element == 'facture' && intval($object->type) === $object::TYPE_SITUATION && method_exists($line, 'creditNotePersentOfLine' ))
+		{
+			$lineCreditNote = $line->creditNotePersentOfLine($this->id);
+		}
+
+		if (( ($this->situation_counter == 1 || $objectIsDeposit || $lineCreditNote == 100 ) || !$this->situation_cycle_ref) && empty($disableremove)) {
 			print '<a href="' . $_SERVER["PHP_SELF"] . '?id=' . $this->id . '&amp;action=ask_deleteline&amp;lineid=' . $line->id . '">';
 			print img_delete();
 			print '</a>';

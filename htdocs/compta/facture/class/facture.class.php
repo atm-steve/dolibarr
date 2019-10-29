@@ -4873,12 +4873,68 @@ class FactureLigne extends CommonInvoiceLine
 				    $res = $this->db->query($sql);
 				    if($res) {
 				        while($obj = $this->db->fetch_object($res)) {
-				            $returnPercent = $returnPercent + doubleval($obj->situation_percent);
+				            $returnPercent = $returnPercent - abs(doubleval($obj->situation_percent));
 				        }
 				    }
 				}
 
 				return $returnPercent;
+			} else {
+				$this->error = $this->db->error();
+				dol_syslog(get_class($this) . "::select Error " . $this->error, LOG_ERR);
+				$this->db->rollback();
+				return -1;
+			}
+		}
+	}
+
+	/**
+	 * Returns situation_percent of the previous line.
+	 * Warning: If invoice is a replacement invoice, this->fk_prev_id is id of the replaced line.
+	 *
+	 * @param  int     $invoiceid      Invoice id
+	 * @param  bool    $returnRelativePercent
+	 * @return int                     >= 0
+	 */
+	function creditNotePersentOfLine($invoiceid, $returnRelativePercent=true)
+	{
+		// phpcs:enable
+		if (is_null($this->fk_prev_id) || empty($this->fk_prev_id) || $this->fk_prev_id == "") {
+			return 0;
+		} else {
+			// If invoice is not a situation invoice, this->fk_prev_id is used for something else
+			$tmpinvoice=new Facture($this->db);
+			$tmpinvoice->fetch($invoiceid);
+			if ($tmpinvoice->type != Facture::TYPE_SITUATION) return 0;
+
+			$sql = 'SELECT situation_percent FROM ' . MAIN_DB_PREFIX . 'facturedet WHERE rowid=' . $this->fk_prev_id;
+			$resql = $this->db->query($sql);
+			if ($resql && $resql->num_rows > 0) {
+				$res = $this->db->fetch_array($resql);
+
+				$returnPercent = floatval($res['situation_percent']);
+				$creditNotePersent = 0;
+
+
+				$sql = 'SELECT fd.situation_percent FROM ' . MAIN_DB_PREFIX . 'facturedet fd';
+				$sql.= ' JOIN ' . MAIN_DB_PREFIX . 'facture f ON (f.rowid = fd.fk_facture) ';
+				$sql.= ' WHERE fd.fk_prev_id =' . $this->fk_prev_id;
+				$sql.= ' AND f.situation_cycle_ref = '.$tmpinvoice->situation_cycle_ref; // Prevent cycle outed
+				$sql.= ' AND f.type = '.Facture::TYPE_CREDIT_NOTE;
+
+				$res = $this->db->query($sql);
+				if($res) {
+					while($obj = $this->db->fetch_object($res)) {
+						$creditNotePersent = abs(doubleval($obj->situation_percent));
+					}
+				}
+
+				if($returnRelativePercent){
+					return $creditNotePersent / $returnPercent * 100;
+				}
+				else{
+					return $creditNotePersent;
+				}
 			} else {
 				$this->error = $this->db->error();
 				dol_syslog(get_class($this) . "::select Error " . $this->error, LOG_ERR);
