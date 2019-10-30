@@ -121,15 +121,7 @@ class pdf_squille extends ModelePdfReception
 		// For backward compatibility with FPDF, force output charset to ISO, because FPDF expect text to be encoded in ISO
 		if (! empty($conf->global->MAIN_USE_FPDF)) $outputlangs->charset_output='ISO-8859-1';
 
-		$outputlangs->load("main");
-		$outputlangs->load("dict");
-		$outputlangs->load("companies");
-		$outputlangs->load("bills");
-		$outputlangs->load("products");
-		$outputlangs->load("propal");
-		$outputlangs->load("deliveries");
-        $outputlangs->load("receptions");
-		$outputlangs->load("productbatch");
+		$outputlangs->loadLangs(array("main","dict","companies","bills","products","propal","deliveries","receptions","productbatch","sendings"));
 
 		$nblignes = count($object->lines);
 
@@ -459,12 +451,12 @@ class pdf_squille extends ModelePdfReception
 					$weighttxt='';
 					if ($object->lines[$i]->fk_product_type == 0 && $object->lines[$i]->product->weight)
 					{
-					    $weighttxt=round($object->lines[$i]->product->weight * $object->lines[$i]->qty, 5).' '.measuring_units_string($object->lines[$i]->product->weight_units, "weight");
+						$weighttxt=round($object->lines[$i]->product->weight * $object->lines[$i]->qty, 5).' '.measuringUnitString(0, "weight", $object->lines[$i]->product->weight_units);
 					}
 					$voltxt='';
 					if ($object->lines[$i]->fk_product_type == 0 && $object->lines[$i]->product->volume)
 					{
-					    $voltxt=round($object->lines[$i]->product->volume * $object->lines[$i]->qty, 5).' '.measuring_units_string($object->lines[$i]->product->volume_units?$object->lines[$i]->product->volume_units:0, "volume");
+						$voltxt=round($object->lines[$i]->product->volume * $object->lines[$i]->qty, 5).' '.measuringUnitString(0, "volume", $object->lines[$i]->product->volume_units?$object->lines[$i]->product->volume_units:0);
 					}
 
 					$pdf->writeHTMLCell($this->posxqtyordered - $this->posxweightvol + 2, 3, $this->posxweightvol - 1, $curY, $weighttxt.(($weighttxt && $voltxt)?'<br>':'').$voltxt, 0, 0, false, true, 'C');

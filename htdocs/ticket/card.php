@@ -97,7 +97,7 @@ $url_page_current = DOL_URL_ROOT.'/ticket/card.php';
 //if ($user->societe_id > 0) $socid = $user->societe_id;
 $result = restrictedArea($user, 'ticket', $object->id);
 
-$triggermodname = 'TICKETSUP_MODIFY';
+$triggermodname = 'TICKET_MODIFY';
 $permissiontoadd = $user->rights->ticket->write;
 
 $actionobject = new ActionsTicket($db);
@@ -371,7 +371,7 @@ if ($action == "assign_user" && GETPOST('btn_assign_user', 'aplha') && $user->ri
     $action = 'view';
 }
 
-if ($action == "add_message" && GETPOST('btn_add_message') && $user->rights->ticket->read) {
+if ($action == 'add_message' && GETPOSTISSET('btn_add_message') && $user->rights->ticket->read) {
     $ret = $object->newMessage($user, $action, (GETPOST('private_message', 'alpha') == "on" ? 1 : 0));
 
     if ($ret > 0) {
@@ -570,9 +570,9 @@ if ($action == "change_property" && GETPOST('btn_update_ticket_prop', 'alpha') &
 {
 	$object->fetch(GETPOST('id', 'int'), '', GETPOST('track_id', 'alpha'));
 
-	$object->type_code = GETPOST('update_value_type', 'az09');
-	$object->severity_code = GETPOST('update_value_severity', 'az09');
-	$object->category_code = GETPOST('update_value_category', 'az09');
+	$object->type_code = GETPOST('update_value_type', 'aZ09');
+	$object->severity_code = GETPOST('update_value_severity', 'aZ09');
+	$object->category_code = GETPOST('update_value_category', 'aZ09');
 
 	$ret = $object->update($user);
 	if ($ret > 0) {
@@ -769,7 +769,7 @@ if (empty($action) || $action == 'view' || $action == 'addlink' || $action == 'd
         }
         if (!empty($object->origin_email)) {
         	$morehtmlref .= '<br>' . $langs->trans("CreatedBy") . ' : ';
-        	$morehtmlref .= $object->origin_email . ' <small>(' . $langs->trans("TicketEmailOriginIssuer") . ')</small>';
+        	$morehtmlref .= dol_escape_htmltag($object->origin_email) . ' <small>(' . $langs->trans("TicketEmailOriginIssuer") . ')</small>';
         }
 
         // Thirdparty
@@ -1290,10 +1290,8 @@ if (empty($action) || $action == 'view' || $action == 'addlink' || $action == 'd
 			//$formticket->param['socid']=$object->fk_soc;
 			$formticket->param['returnurl']=$_SERVER["PHP_SELF"].'?track_id='.$object->track_id;
 
-
 			$formticket->withsubstit = 1;
 			$formticket->substit = $substitutionarray;
-
 			$formticket->showMessageForm('100%');
 			print '</div>';
 	    }

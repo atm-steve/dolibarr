@@ -293,9 +293,9 @@ if ($action != 'export_csv')
 
 		print '<td>' . length_accountg($line->numero_compte) . '</td>';
 		print '<td>' . $description . '</td>';
-		print '<td class="right">' . price($line->debit) . '</td>';
-		print '<td class="right">' . price($line->credit) . '</td>';
-		print '<td class="right">' . price($line->credit - $line->debit) . '</td>';
+		print '<td class="nowraponall right">' . price($line->debit) . '</td>';
+		print '<td class="nowraponall right">' . price($line->credit) . '</td>';
+		print '<td class="nowraponall right">' . price($line->credit - $line->debit) . '</td>';
 		print '<td class="center">' . $link;
 		print '</td>';
 		print "</tr>\n";
