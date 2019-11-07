@@ -224,8 +224,8 @@ if ($_POST) {
 		}
 
 		$prodcomb->variation_price_percentage = $price_impact_percent;
-		$prodcomb->variation_price = $price_impact;
-		$prodcomb->variation_weight = $weight_impact;
+		$prodcomb->variation_price = price2num($price_impact);
+		$prodcomb->variation_weight = price2num($weight_impact);
 
 		if ($prodcomb->update($user) > 0) {
 			setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
