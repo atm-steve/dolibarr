@@ -256,7 +256,9 @@ if ($action == 'createmovements')
 	}*/
 
 	$db->begin();
-
+	foreach($listofdata as $data){
+		if(empty($data['batch'])) $error++;
+	}
 	if (! $error)
 	{
 		$product = new Product($db);
