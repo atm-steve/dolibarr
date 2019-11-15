@@ -254,11 +254,7 @@ if ($action == 'createmovements')
 		$error++;
 		setEventMessages($langs->trans("ErrorFieldRequired"),$langs->transnoentitiesnoconv("LabelMovement"), null, 'errors');
 	}*/
-
 	$db->begin();
-	foreach($listofdata as $data){
-		if(empty($data['batch'])) $error++;
-	}
 	if (! $error)
 	{
 		$product = new Product($db);
