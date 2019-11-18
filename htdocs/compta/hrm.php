@@ -205,7 +205,8 @@ if (! empty($conf->expensereport->enabled) && $user->rights->expensereport->lire
 {
 	$sql = "SELECT u.rowid as uid, u.lastname, u.firstname, x.rowid, x.ref, x.date_debut as date, x.tms as dm, x.total_ttc, x.fk_statut as status";
 	$sql.= " FROM ".MAIN_DB_PREFIX."expensereport as x, ".MAIN_DB_PREFIX."user as u";
-	if (!$user->rights->societe->client->voir && !$user->societe_id) $sql.= ", ".MAIN_DB_PREFIX."societe as s, ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+	// [Flo M] Je commente la ligne ci-dessous (tk10126) car une jointure sans clause de jointure fait exploser le recordset.
+	//if (!$user->rights->societe->client->voir && !$user->societe_id) $sql.= ", ".MAIN_DB_PREFIX."societe as s, ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 	$sql.= " WHERE u.rowid = x.fk_user_author";
 	$sql.= " AND x.entity = ".$conf->entity;
 	if (empty($user->rights->expensereport->readall) && empty($user->rights->expensereport->lire_tous)) $sql.=' AND x.fk_user_author IN ('.join(',',$childids).')';
