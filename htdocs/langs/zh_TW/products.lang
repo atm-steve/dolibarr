@@ -2,6 +2,7 @@
 ProductRef=產品編號
 ProductLabel=產品標簽
 ProductLabelTranslated=Translated product label
+ProductDescription=Product description
 ProductDescriptionTranslated=Translated product description
 ProductNoteTranslated=Translated product note
 ProductServiceCard=產品服務卡
@@ -159,7 +160,7 @@ SuppliersPrices=Vendor prices
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=原產地
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=簡短標籤
 Unit=單位
 p=u.

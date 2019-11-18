@@ -2,6 +2,7 @@
 ProductRef=Produkt ref.
 ProductLabel=Produktmærke
 ProductLabelTranslated=Oversat produktmærke
+ProductDescription=Product description
 ProductDescriptionTranslated=Oversat produktbeskrivelse
 ProductNoteTranslated=Oversat produkt notat
 ProductServiceCard=Produkter / Tjenester kortet
@@ -159,7 +160,7 @@ SuppliersPrices=Leverandørpriser
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Told / vare / HS-kode
 CountryOrigin=Oprindelsesland
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Kort etiket
 Unit=Enhed
 p=u.

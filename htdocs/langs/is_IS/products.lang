@@ -2,6 +2,7 @@
 ProductRef=Vara dómari.
 ProductLabel=Merkimiða vöru
 ProductLabelTranslated=Translated product label
+ProductDescription=Product description
 ProductDescriptionTranslated=Translated product description
 ProductNoteTranslated=Translated product note
 ProductServiceCard=Vörur / Þjónusta kort
@@ -159,7 +160,7 @@ SuppliersPrices=Vendor prices
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=Uppruni land
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Short label
 Unit=Unit
 p=u.

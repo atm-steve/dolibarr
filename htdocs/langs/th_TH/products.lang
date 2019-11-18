@@ -2,6 +2,7 @@
 ProductRef=สินค้าอ้างอิง
 ProductLabel=ฉลากสินค้า
 ProductLabelTranslated=Translated product label
+ProductDescription=Product description
 ProductDescriptionTranslated=Translated product description
 ProductNoteTranslated=Translated product note
 ProductServiceCard=สินค้า / บริการบัตร
@@ -159,7 +160,7 @@ SuppliersPrices=Vendor prices
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=ประเทศแหล่งกำเนิดสินค้า
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=ป้ายสั้น
 Unit=หน่วย
 p=ยู

@@ -4,12 +4,12 @@
  * Copyright (C) 2011       Juanjo Menent           <jmenent@2byte.es>
  * Copyright (C) 2012       Regis Houssin           <regis.houssin@inodbox.com>
  * Copyright (C) 2013       Christophe Battarel     <christophe.battarel@altairis.fr>
- * Copyright (C) 2013-2018  Alexandre Spangaro      <aspangaro@open-dsi.fr>
+ * Copyright (C) 2013-2019  Alexandre Spangaro      <aspangaro@open-dsi.fr>
  * Copyright (C) 2013-2014  Florian Henry           <florian.henry@open-concept.pro>
  * Copyright (C) 2013-2014  Olivier Geffroy         <jeff@jeffinfo.com>
  * Copyright (C) 2017-2018  Frédéric France         <frederic.france@netlogic.fr>
- * Copyright (C) 2018		Ferran Marcet	    <fmarcet@2byte.es>
- * Copyright (C) 2018		Eric Seigne	    <eric.seigne@cap-rel.fr>
+ * Copyright (C) 2018		Ferran Marcet           <fmarcet@2byte.es>
+ * Copyright (C) 2018		Eric Seigne             <eric.seigne@cap-rel.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -387,7 +387,9 @@ if ($result) {
 					$tabpay[$obj->rowid]["paymentvariousid"] = $paymentvariousstatic->id;
 					$paymentvariousstatic->fetch($paymentvariousstatic->id);
 					$account_various = (! empty($paymentvariousstatic->accountancy_code) ? $paymentvariousstatic->accountancy_code : 'NotDefined');	// NotDefined is a reserved word
-					$tabtp[$obj->rowid][$account_various] += $obj->amount;
+                    $account_subledger = (! empty($paymentvariousstatic->subledger_account) ? $paymentvariousstatic->subledger_account : '');	// NotDefined is a reserved word
+                    $tabpay[$obj->rowid]["account_various"] = $account_various;
+                    $tabtp[$obj->rowid][$account_subledger] += $obj->amount;
 				} elseif ($links[$key]['type'] == 'payment_loan') {
 					$paymentloanstatic->id = $links[$key]['url_id'];
 					$paymentloanstatic->ref = $links[$key]['url_id'];
@@ -573,7 +575,14 @@ if (! $error && $action == 'writebookkeeping') {
 					{
 						$reflabel = '';
 						if (! empty($val['lib'])) $reflabel .= dol_string_nohtmltag($val['lib']) . ($val['soclib']?" - ":"");
-						$reflabel.= dol_string_nohtmltag($val['soclib']);
+						if ($tabtype[$key] == 'banktransfert')
+						{
+							$reflabel.= dol_string_nohtmltag($langs->transnoentitiesnoconv('TransitionalAccount').' '.$account_transfer);
+						}
+						else
+						{
+							$reflabel.= dol_string_nohtmltag($val['soclib']);
+						}
 
 						$bookkeeping = new BookKeeping($db);
 						$bookkeeping->doc_date = $val["date"];
@@ -623,7 +632,9 @@ if (! $error && $action == 'writebookkeeping') {
 							$bookkeeping->subledger_account = '';
 							$bookkeeping->subledger_label = '';
 							$bookkeeping->numero_compte = $k;
-							$bookkeeping->label_compte = $objmid->labelc;
+
+							$accountingaccount->fetch(null, $k, true);
+							$bookkeeping->label_compte = $accountingaccount->label;
 						} elseif ($tabtype[$key] == 'payment_vat') {
 							$bookkeeping->subledger_account = '';
 							$bookkeeping->subledger_label = '';
@@ -653,11 +664,11 @@ if (! $error && $action == 'writebookkeeping') {
 							$accountingaccount->fetch(null, $k, true);
 							$bookkeeping->label_compte = $accountingaccount->label;
 						} elseif ($tabtype[$key] == 'payment_various') {
-							$bookkeeping->subledger_account = '';
-							$bookkeeping->subledger_label = '';
-							$bookkeeping->numero_compte = $k;
+							$bookkeeping->subledger_account = $k;
+                            $bookkeeping->subledger_label = $tabcompany[$key]['name'];
+							$bookkeeping->numero_compte = $tabpay[$obj->rowid]["account_various"];
 
-							$accountingaccount->fetch(null, $k, true);
+							$accountingaccount->fetch(null, $bookkeeping->numero_compte, true);
 							$bookkeeping->label_compte = $accountingaccount->label;
 						} elseif ($tabtype[$key] == 'banktransfert') {
 							$bookkeeping->subledger_account = '';
@@ -702,7 +713,7 @@ if (! $error && $action == 'writebookkeeping') {
 					}
 				}
 			}
-			else {	// If thirdparty unkown, output the waiting account
+			else {	// If thirdparty unknown, output the waiting account
 				foreach ($tabbq[$key] as $k => $mt) {
 					if ($mt)
 					{
@@ -831,7 +842,6 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 	print '"' . $langs->transnoentitiesnoconv("Note")  . '"' . $sep;
 	print "\n";
 
-
 	foreach ($tabpay as $key => $val)
 	{
 		$date = dol_print_date($db->jdate($val["date"]), 'day');
@@ -869,7 +879,14 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 				{
 					$reflabel = '';
 					if (! empty($val['lib'])) $reflabel .= dol_string_nohtmltag($val['lib']) . ($val['soclib']?" - ":"");
-					$reflabel.= dol_string_nohtmltag($val['soclib']);
+					if ($tabtype[$key] == 'banktransfert')
+					{
+						$reflabel.= dol_string_nohtmltag($langs->transnoentitiesnoconv('TransitionalAccount').' '.$account_transfer);
+					}
+					else
+					{
+						$reflabel.= dol_string_nohtmltag($val['soclib']);
+					}
 
 					print '"' . $key . '"' . $sep;
 					print '"' . $date . '"' . $sep;
@@ -951,7 +968,7 @@ if (empty($action) || $action == 'view') {
 
 	$varlink = 'id_journal=' . $id_journal;
 
-	journalHead($nom, $nomlink, $period, $periodlink, $description, $builddate, $exportlink, array('action' => ''), '', $varlink);
+	journalHead($nom, '', $period, $periodlink, $description, $builddate, $exportlink, array('action' => ''), '', $varlink);
 
 
 	// Test that setup is complete
@@ -1087,7 +1104,14 @@ if (empty($action) || $action == 'view') {
 				{
 					$reflabel = '';
 					if (! empty($val['lib'])) $reflabel .= $val['lib'] . ($val['soclib']?" - ":"");
-					$reflabel.= $val['soclib'];
+					if ($tabtype[$key] == 'banktransfert')
+					{
+						$reflabel.= $langs->trans('TransitionalAccount').' '.$account_transfer;
+					}
+					else
+					{
+						$reflabel.= $val['soclib'];
+					}
 
 					print '<!-- Thirdparty bank.rowid='.$key.' -->';
 					print '<tr class="oddeven">';
@@ -1103,6 +1127,7 @@ if (empty($action) || $action == 'view') {
 					if ($tabtype[$key] == 'payment_salary')			$account_ledger = $conf->global->SALARIES_ACCOUNTING_ACCOUNT_PAYMENT;
 					if ($tabtype[$key] == 'payment_vat')			$account_ledger = $conf->global->ACCOUNTING_VAT_PAY_ACCOUNT;
 					if ($tabtype[$key] == 'member')					$account_ledger = $conf->global->ADHERENT_SUBSCRIPTION_ACCOUNTINGACCOUNT;
+					if ($tabtype[$key] == 'payment_various')	    $account_ledger = $tabpay[$key]["account_various"];
 					$accounttoshow = length_accounta($account_ledger);
 					if (empty($accounttoshow) || $accounttoshow == 'NotDefined')
 					{
@@ -1115,7 +1140,7 @@ if (empty($action) || $action == 'view') {
 							}
 							else
 							{
-								print '<span class="warning">'.$langs->trans('UnknownAccountForThirdparty', length_accountg($conf->global->ACCOUNTING_ACCOUNT_SUSPENSE)).'</span>';	// We will a waiting account
+								print '<span class="warning">'.$langs->trans('UnknownAccountForThirdparty', length_accountg($conf->global->ACCOUNTING_ACCOUNT_SUSPENSE)).'</span>';	// We will use a waiting account
 							}
 						}
 						else
@@ -1136,7 +1161,7 @@ if (empty($action) || $action == 'view') {
 					// Subledger account
 					print "<td>";
 
-					if (in_array($tabtype[$key], array('payment', 'payment_supplier', 'payment_expensereport', 'payment_salary')))	// Type of payment with subledger
+					if (in_array($tabtype[$key], array('payment', 'payment_supplier', 'payment_expensereport', 'payment_salary', 'payment_various')))	// Type of payment with subledger
 					{
 						$accounttoshowsubledger = length_accounta($k);
 						if ($accounttoshow != $accounttoshowsubledger)

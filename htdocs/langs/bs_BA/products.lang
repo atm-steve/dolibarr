@@ -2,6 +2,7 @@
 ProductRef=Ref. proizvoda
 ProductLabel=Oznaka proizvoda
 ProductLabelTranslated=Prevedeni naslov proizvoda
+ProductDescription=Product description
 ProductDescriptionTranslated=Prevedeni opis proizvoda
 ProductNoteTranslated=Prevedena napomena proizvoda
 ProductServiceCard=Kartica proizvoda/usluge
@@ -159,7 +160,7 @@ SuppliersPrices=Vendor prices
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=Origin country
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Short label
 Unit=Jedinica
 p=u.

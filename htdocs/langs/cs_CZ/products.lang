@@ -2,6 +2,7 @@
 ProductRef=Produkt čj.
 ProductLabel=Štítek produktu
 ProductLabelTranslated=Přeložený štítek produktu
+ProductDescription=Product description
 ProductDescriptionTranslated=Přeložený popis produktu
 ProductNoteTranslated=Přeložená poznámka k produktu
 ProductServiceCard=Karta produktů/služeb
@@ -159,7 +160,7 @@ SuppliersPrices=Ceny prodejců
 SuppliersPricesOfProductsOrServices=Ceny prodejců (produktů nebo služeb)
 CustomCode=Kód cla / komodity / HS
 CountryOrigin=Země původu
-Nature=Typ produktu (materiál / hotový)
+Nature=Nature of produt (material/finished)
 ShortLabel=Krátký štítek
 Unit=Jednotka
 p=u.

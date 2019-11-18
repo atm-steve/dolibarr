@@ -2,6 +2,7 @@
 ProductRef=Tham chiếu sản phẩm.
 ProductLabel=Nhãn sản phẩm
 ProductLabelTranslated=Nhãn sản phẩm đã dịch
+ProductDescription=Product description
 ProductDescriptionTranslated=Mô tả sản phẩm đã dịch
 ProductNoteTranslated=Ghi chú sản phẩm đã dịch
 ProductServiceCard=Thẻ Sản phẩm/Dịch vụ
@@ -159,7 +160,7 @@ SuppliersPrices=Vendor prices
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=Nước xuất xứ
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Nhãn ngắn
 Unit=Đơn vị
 p=u.

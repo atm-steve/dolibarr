@@ -2,6 +2,7 @@
 ProductRef=Tuote nro.
 ProductLabel=Tuotenimike
 ProductLabelTranslated=Translated product label
+ProductDescription=Product description
 ProductDescriptionTranslated=Translated product description
 ProductNoteTranslated=Translated product note
 ProductServiceCard=Tuotteet / Palvelut kortti
@@ -159,7 +160,7 @@ SuppliersPrices=Vendor prices
 SuppliersPricesOfProductsOrServices=Vendor prices (of products or services)
 CustomCode=Customs / Commodity / HS code
 CountryOrigin=Alkuperä maa
-Nature=Product Type (material/finished)
+Nature=Nature of produt (material/finished)
 ShortLabel=Short label
 Unit=Yksikkö
 p=u.
