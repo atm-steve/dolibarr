@@ -69,7 +69,9 @@ if (! $error && $massaction == 'confirm_presend')
 
 	$listofobjectid=array();
 	$listofobjectthirdparties=array();
+    $listofobjectcontacts = array();
 	$listofobjectref=array();
+    $contactidtosend=array();
 	$attachedfilesThirdpartyObj=array();
 	$oneemailperrecipient=(GETPOST('oneemailperrecipient')=='on'?1:0);
 
@@ -89,6 +91,17 @@ if (! $error && $massaction == 'confirm_presend')
 				$thirdpartyid=$objecttmp->fk_soc?$objecttmp->fk_soc:$objecttmp->socid;
 				if ($objecttmp->element == 'societe') $thirdpartyid=$objecttmp->id;
 				if ($objecttmp->element == 'expensereport') $thirdpartyid=$objecttmp->fk_user_author;
+
+                if ($objectclass == 'Facture') {
+                    $tmparraycontact = array();
+                    $tmparraycontact = $objecttmp->liste_contact(-1, 'external', 0, 'EMAIL_DEST');
+                    if (is_array($tmparraycontact) && count($tmparraycontact) > 0) {
+                        foreach ($tmparraycontact as $data_email) {
+                            if(!empty($data_email['email'])) $listofobjectcontacts[$toselectid][$data_email['id']] = $data_email['email'];
+                        }
+                    }
+                }
+
 				$listofobjectthirdparties[$thirdpartyid]=$thirdpartyid;
 				$listofobjectref[$thirdpartyid][$toselectid]=$objecttmp;
 			}
@@ -199,6 +212,7 @@ if (! $error && $massaction == 'confirm_presend')
 			$listofqualifiedobj=array();
 			$listofqualifiedref=array();
 			$thirdpartywithoutemail=array();
+			$TSendTo = array();
 
 			foreach($listofobjectref[$thirdpartyid] as $objectid => $objectobj)
 			{
@@ -225,8 +239,29 @@ if (! $error && $massaction == 'confirm_presend')
 					continue; // Payment done or started or canceled
 				}
 
+
 				// Test recipient
-				if (empty($sendto)) 	// For the case, no recipient were set (multi thirdparties send)
+                if (empty($sendto)) {
+                    if($objectobj->element == 'facture' && !empty($listofobjectcontacts[$objectid])) {
+                        $emails_to_sends = array();
+                        $objectobj->fetch_thirdparty();
+                        $contactidtosend = array();
+                        foreach($listofobjectcontacts[$objectid] as $contactemailid => $contactemailemail) {
+                            $emails_to_sends[] = $objectobj->thirdparty->contact_get_property($contactemailid, 'email');
+                            if(!in_array($contactemailid, $contactidtosend)) {
+                                $contactidtosend[] = $contactemailid;
+                            }
+                        }
+                        if(count($emails_to_sends) > 0) {
+                            if(!$oneemailperrecipient) $TSendTo[$objectid] = implode(',', $emails_to_sends);
+                            else {
+                                $TSendTo[$objectid] = $emails_to_sends;
+                            }
+                        }
+                    }
+                }
+
+				if (empty($sendto) && empty($TSendTo[$objectid])) 	// For the case, no recipient were set (multi thirdparties send)
 				{
 					if ($objectobj->element == 'expensereport')
 					{
@@ -239,9 +274,10 @@ if (! $error && $massaction == 'confirm_presend')
 						$objectobj->fetch_thirdparty();
 						$sendto = $objectobj->thirdparty->email;
 					}
-				}
 
-				if (empty($sendto))
+				}
+                if($objectobj->element == 'facture' && $oneemailperrecipient && empty($TSendTo[$objectid])) $TSendTo[$objectid] = array($sendto);
+				if (empty($sendto) && empty($TSendTo[$objectid]))
 				{
 				   	//print "No recipient for thirdparty ".$objectobj->thirdparty->name;
 				   	$nbignored++;
@@ -289,6 +325,20 @@ if (! $error && $massaction == 'confirm_presend')
 
 				//var_dump($listofqualifiedref);
 			}
+
+			//On reformate le tableau
+            $TInvoiceBySendto = array();
+            if(!empty($TSendTo) && $oneemailperrecipient) {
+                foreach($TSendTo as $fk_invoice => $TEmails) {
+                    if(!empty($TEmails)) {
+                        foreach($TEmails as $email) {
+                            $TInvoiceBySendto[$email][$fk_invoice] = $fk_invoice;
+                            $listofqualifiedobj[$email][$fk_invoice] = $listofqualifiedobj[$fk_invoice];
+                            $listofqualifiedref[$email][$fk_invoice] = $listofqualifiedobj[$fk_invoice]->ref;
+                        }
+                    }
+                }
+            }
 
 			// Send email if there is at least one qualified record
 			if (count($listofqualifiedobj) > 0)
@@ -348,19 +398,33 @@ if (! $error && $massaction == 'confirm_presend')
 				}
 				else
 				{
-					$objectforloop=new $objectclass($db);
-					$objectforloop->thirdparty = $thirdparty;
-					$looparray[0]=$objectforloop;
+                    $objectforloop = new $objectclass($db);
+                    $objectforloop->thirdparty = $thirdparty;
+                    if(!empty($TInvoiceBySendto)) {
+                        foreach($TInvoiceBySendto as $email => $TInvoices) $looparray[$email] = $objectforloop; // Pour pouvoir boucler sur les emails à envoyer
+                    } else $looparray[0] = $objectforloop;
 				}
 				//var_dump($looparray);exit;
                 dol_syslog("We have set an array of ".count($looparray)." emails to send. oneemailperrecipient=".$oneemailperrecipient);
                 //var_dump($oneemailperrecipient); var_dump($listofqualifiedobj); var_dump($listofqualifiedref);
                 foreach ($looparray as $objectid => $objecttmp)		// $objecttmp is a real object or an empty object if we choose to send one email per thirdparty instead of one per object
 				{
+
+				    $substitution_id = $objecttmp->id;
+				    $substitution_ref = $objecttmp->ref;
+                    if($oneemailperrecipient) {
+                        if(empty($TInvoiceBySendto)) {
+                            $substitution_id = join(', ', array_keys($listofqualifiedobj));
+                            $substitution_ref = join(', ', $listofqualifiedref);
+                        } else {
+                            $substitution_id = join(', ', array_keys($listofqualifiedobj[$objectid]));
+                            $substitution_ref = join(', ', $listofqualifiedref[$objectid]);
+                        }
+                    }
 					// Make substitution in email content
 					$substitutionarray=getCommonSubstitutionArray($langs, 0, null, $objecttmp);
-					$substitutionarray['__ID__']    = ($oneemailperrecipient ? join(', ',array_keys($listofqualifiedobj)) : $objecttmp->id);
-					$substitutionarray['__REF__']   = ($oneemailperrecipient ? join(', ',$listofqualifiedref) : $objecttmp->ref);
+					$substitutionarray['__ID__']    = $substitution_id;
+					$substitutionarray['__REF__']   = $substitution_ref;
 					$substitutionarray['__EMAIL__'] = $thirdparty->email;
 					$substitutionarray['__CHECK_READ__'] = '<img src="'.DOL_MAIN_URL_ROOT.'/public/emailing/mailing-read.php?tag='.$thirdparty->tag.'&securitykey='.urlencode($conf->global->MAILING_EMAIL_UNSUBSCRIBE_KEY).'" width="1" height="1" style="width:1px;height:1px" border="0"/>';
 
@@ -387,11 +451,13 @@ if (! $error && $massaction == 'confirm_presend')
 						{
 							foreach ($attachedfilesThirdpartyObj[$thirdparty->id] as $keyObjId =>  $objAttachedFiles){
 								// Create form object
-								$attachedfiles=array(
-									'paths'=>array_merge($attachedfiles['paths'], $objAttachedFiles['paths']),
-									'names'=>array_merge($attachedfiles['names'], $objAttachedFiles['names']),
-									'mimes'=>array_merge($attachedfiles['mimes'], $objAttachedFiles['mimes'])
-								);
+                                if(empty($TInvoiceBySendto) || in_array($keyObjId, $TInvoiceBySendto[$objectid])) {
+                                    $attachedfiles=array(
+                                        'paths'=>array_merge($attachedfiles['paths'], $objAttachedFiles['paths']),
+                                        'names'=>array_merge($attachedfiles['names'], $objAttachedFiles['names']),
+                                        'mimes'=>array_merge($attachedfiles['mimes'], $objAttachedFiles['mimes'])
+                                    );
+								}
 							}
 						}
 					}
@@ -412,6 +478,8 @@ if (! $error && $massaction == 'confirm_presend')
 
 					// Send mail (substitutionarray must be done just before this)
                     require_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
+                    if(!empty($TSendTo[$objectid]) && !$oneemailperrecipient) $sendto = $TSendTo[$objectid];
+                    if(!empty($TInvoiceBySendto) && $oneemailperrecipient) $sendto = $objectid;
                     $mailfile = new CMailFile($subjectreplaced, $sendto, $from, $messagereplaced, $filepath, $mimetype, $filename, $sendtocc, $sendtobcc, $deliveryreceipt, -1);
 					if ($mailfile->error)
 					{
@@ -427,7 +495,10 @@ if (! $error && $massaction == 'confirm_presend')
 							$error=0;
 
 							// Insert logs into agenda
-                            foreach($listofqualifiedobj as $objid2 => $objectobj2)
+                            if(!empty($TInvoiceBySendto) && $oneemailperrecipient) {
+                                $TQualifiedObj = $listofqualifiedobj[$objectid];
+                            } else $TQualifiedObj = $listofqualifiedobj;
+                            foreach($TQualifiedObj as $objid2 => $objectobj2)
 							{
                                 if ((! $oneemailperrecipient) && $objid2 != $objectid) continue;  // We discard this pass to avoid duplicate with other pass in looparray at higher level
 
@@ -451,7 +522,7 @@ if (! $error && $massaction == 'confirm_presend')
 								$actionmsg2='';
 
 								// Initialisation donnees
-                                $objectobj2->sendtoid		= 0;
+                                $objectobj2->sendtoid		= (empty($contactidtosend)?0:$contactidtosend);
                                 $objectobj2->actionmsg		= $actionmsg;  // Long text
                                 $objectobj2->actionmsg2		= $actionmsg2; // Short text
                                 $objectobj2->fk_element		= $objid2;
