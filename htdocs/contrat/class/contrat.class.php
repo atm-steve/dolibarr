@@ -2142,8 +2142,24 @@ class Contrat extends CommonObject
 			$clause = "AND";
 		}
 		$sql.= " ".$clause." c.entity = ".$conf->entity;
+
+		/*
+		 * Spécifique Bonne Impression : on ne compte que les contrats non concurrents et qui sont l'objet du run de
+		 * facturation trimestrielle
+		 */
         $sql.= " AND ef.concurrent = 0";
-        $sql.= " AND c.rowid IN (SELECT DISTINCT c.rowid FROM ".MAIN_DB_PREFIX."contrat as c LEFT JOIN ".MAIN_DB_PREFIX."contratdet as cd ON c.rowid = cd.fk_contrat WHERE cd.statut=4 AND (cd.date_fin_validite IS NULL OR cd.date_fin_validite >= '".$this->db->idate(dol_now())."'))";
+		$sql.= " AND c.statut = 1";
+        $sql.= " AND c.rowid IN (
+            SELECT DISTINCT c.rowid
+
+            FROM ".MAIN_DB_PREFIX."contrat as c
+            INNER JOIN ".MAIN_DB_PREFIX."contratdet as cd ON c.rowid = cd.fk_contrat
+            INNER JOIN ".MAIN_DB_PREFIX."contratabonnement as ca ON ca.fk_contratdet = cd.rowid
+            INNER JOIN ".MAIN_DB_PREFIX."contratabonnement_term as cat ON cat.fk_contratabonnement = ca.rowid
+
+            WHERE ca.statut = 1
+            AND cat.facture = 0
+        )";
         
 		$resql=$this->db->query($sql);
 		if ($resql)
