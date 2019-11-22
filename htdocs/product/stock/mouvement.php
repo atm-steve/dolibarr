@@ -1090,7 +1090,7 @@ if ($resql)
         if (! empty($arrayfields['m.datem']['checked']))
         {
 	        // Date
-	        print '<td>'.dol_print_date($db->jdate($objp->datem),'dayhour').'</td>';
+	        print '<td id="datem_'. $objp->mid .'">'.dol_print_date($db->jdate($objp->datem),'dayhour').'</td>';
         }
         if (! empty($arrayfields['p.ref']['checked']))
         {
