@@ -1228,7 +1228,7 @@ function dol_delete_file($file,$disableglob=0,$nophperrors=0,$nohook=0,$object=n
 		else
 		{
 			$ok=false;
-			if ($nophperrors) $ok=@unlink($file_osencoded);
+			if ($nophperrors || empty($file_osencoded)) $ok=@unlink($file_osencoded);
 			else $ok=unlink($file_osencoded);
 			if ($ok) dol_syslog("Removed file ".$file_osencoded, LOG_DEBUG);
 			else dol_syslog("Failed to remove file ".$file_osencoded, LOG_WARNING);
