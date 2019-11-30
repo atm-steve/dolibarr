@@ -1537,7 +1537,7 @@ class CommandeFournisseur extends CommonOrder
 			$desc=trim($desc);
 
 			// Check parameters
-			if ($qty < 1 && ! $fk_product)
+			if ($qty < 0 && ! $fk_product)
 			{
 				$this->error=$langs->trans("ErrorFieldRequired",$langs->trans("Product"));
 				return -1;
@@ -3442,6 +3442,8 @@ class CommandeFournisseurLigne extends CommonOrderLine
         global $conf,$user;
 
         $error=0;
+
+        $this->db->begin();
 
         // Mise a jour ligne en base
         $sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element." SET";
