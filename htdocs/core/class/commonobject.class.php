@@ -1936,8 +1936,14 @@ abstract class CommonObject
 				{
 					foreach ($this->lines as &$line)
 					{
+						// Amounts in company currency will be recalculated
 						if($mode == 1) {
 							$line->subprice = 0;
+						}
+
+						// Amounts in foreign currency will be recalculated
+						if($mode == 2) {
+							$line->multicurrency_subprice = 0;
 						}
 
 						switch ($this->element) {
@@ -3687,23 +3693,24 @@ abstract class CommonObject
 			if (empty($totalVolume)) $totalVolume=0;  // Avoid warning because $totalVolume is ''
 
 			//var_dump($line->volume_units);
-			if ($weight_units < 50)   // >50 means a standard unit (power of 10 of official unit), > 50 means an exotic unit (like inch)
+			if ($weight_units < 50)   // < 50 means a standard unit (power of 10 of official unit), > 50 means an exotic unit (like inch)
 			{
 				$trueWeightUnit=pow(10, $weightUnit);
 				$totalWeight += $weight * $qty * $trueWeightUnit;
 			}
 			else {
-		if ($weight_units == 99) {
-			// conversion 1 Pound = 0.45359237 KG
-			$trueWeightUnit = 0.45359237;
-			$totalWeight += $weight * $qty * $trueWeightUnit;
-		} elseif ($weight_units == 98) {
-			// conversion 1 Ounce = 0.0283495 KG
-			$trueWeightUnit = 0.0283495;
-			$totalWeight += $weight * $qty * $trueWeightUnit;
-		}
-		else
+				if ($weight_units == 99) {
+					// conversion 1 Pound = 0.45359237 KG
+					$trueWeightUnit = 0.45359237;
+					$totalWeight += $weight * $qty * $trueWeightUnit;
+				} elseif ($weight_units == 98) {
+					// conversion 1 Ounce = 0.0283495 KG
+					$trueWeightUnit = 0.0283495;
+					$totalWeight += $weight * $qty * $trueWeightUnit;
+				}
+				else {
 					$totalWeight += $weight * $qty;   // This may be wrong if we mix different units
+				}
 			}
 			if ($volume_units < 50)   // >50 means a standard unit (power of 10 of official unit), > 50 means an exotic unit (like inch)
 			{
@@ -4798,6 +4805,11 @@ abstract class CommonObject
 	{
 		// phpcs:enable
 		global $langs,$conf;
+
+		if (! is_object($langs)) {	// If lang was not defined, we set it. It is required by run_triggers.
+			include_once DOL_DOCUMENT_ROOT.'/core/class/translate.class.php';
+			$langs = new Translate('', $conf);
+		}
 
 		include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
 		$interface=new Interfaces($this->db);
@@ -6721,16 +6733,9 @@ abstract class CommonObject
 
 		$dir = $sdir . '/';
 		$pdir = '/';
-		if ($modulepart == 'ticket')
-		{
-			$dir .= get_exdir(0, 0, 0, 0, $this, $modulepart).$this->track_id.'/';
-			$pdir .= get_exdir(0, 0, 0, 0, $this, $modulepart).$this->track_id.'/';
-		}
-		else
-		{
-			$dir .= get_exdir(0, 0, 0, 0, $this, $modulepart).$this->ref.'/';
-			$pdir .= get_exdir(0, 0, 0, 0, $this, $modulepart).$this->ref.'/';
-		}
+
+		$dir .= get_exdir(0, 0, 0, 0, $this, $modulepart).$this->ref.'/';
+		$pdir .= get_exdir(0, 0, 0, 0, $this, $modulepart).$this->ref.'/';
 
 		// For backward compatibility
 		if ($modulepart == 'product' && ! empty($conf->global->PRODUCT_USE_OLD_PATH_FOR_PHOTO))
@@ -7080,13 +7085,13 @@ abstract class CommonObject
 				if ($field == 'entity' && is_null($this->{$field})) $queryarray[$field]=$conf->entity;
 				else
 				{
-					$queryarray[$field] = (int) price2num($this->{$field});
+					$queryarray[$field] = (int) $this->{$field};
 					if (empty($queryarray[$field])) $queryarray[$field]=0;		// May be reset to null later if property 'notnull' is -1 for this field.
 				}
 			}
 			elseif($this->isFloat($info))
 			{
-				$queryarray[$field] = (double) price2num($this->{$field});
+				$queryarray[$field] = (double) $this->{$field};
 				if (empty($queryarray[$field])) $queryarray[$field]=0;
 			}
 			else

@@ -71,6 +71,7 @@ function llxFooter()
 
 require 'main.inc.php';	// Load $user and permissions
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/images.lib.php';
 
 $encoding = '';
 $action=GETPOST('action', 'alpha');
@@ -159,6 +160,8 @@ if (! empty($conf->global->MAIN_DISABLE_FORCE_SAVEAS)) $attachment=false;
 $type = 'application/octet-stream';
 if (GETPOST('type', 'alpha')) $type=GETPOST('type', 'alpha');
 else $type=dol_mimetype($original_file);
+// Security: Force to octet-stream if file is a dangerous file
+if (preg_match('/\.noexe$/i', $original_file)) $type = 'application/octet-stream';
 
 // Security: Delete string ../ into $original_file
 $original_file = str_replace("../", "/", $original_file);
@@ -215,7 +218,7 @@ if (! $accessallowed)
 }
 
 // Security:
-// On interdit les remontees de repertoire ainsi que les pipe dans les noms de fichiers.
+// We refuse directory transversal change and pipes in file names
 if (preg_match('/\.\./', $fullpath_original_file) || preg_match('/[<>|]/', $fullpath_original_file))
 {
 	dol_syslog("Refused to deliver file ".$fullpath_original_file);
@@ -227,6 +230,7 @@ if (preg_match('/\.\./', $fullpath_original_file) || preg_match('/[<>|]/', $full
 clearstatcache();
 
 $filename = basename($fullpath_original_file);
+$filename = preg_replace('/\.noexe$/i', '', $filename);
 
 // Output file on browser
 dol_syslog("document.php download $fullpath_original_file filename=$filename content-type=$type");
@@ -247,11 +251,20 @@ if ($encoding)   header('Content-Encoding: '.$encoding);
 // Add MIME Content-Disposition from RFC 2183 (inline=automatically displayed, attachment=need user action to open)
 if ($attachment) header('Content-Disposition: attachment; filename="'.$filename.'"');
 else header('Content-Disposition: inline; filename="'.$filename.'"');
-header('Content-Length: ' . dol_filesize($fullpath_original_file));
 // Ajout directives pour resoudre bug IE
 header('Cache-Control: Public, must-revalidate');
 header('Pragma: public');
+$readfile = true;
 
-readfile($fullpath_original_file_osencoded);
+// on view document, can output images with good orientation according to exif infos
+if (!$attachment && !empty($conf->global->MAIN_USE_EXIF_ROTATION) && image_format_supported($fullpath_original_file_osencoded) == 1) {
+	$imgres = correctExifImageOrientation($fullpath_original_file_osencoded, null);
+	$readfile = !$imgres;
+}
+
+if($readfile){
+	header('Content-Length: ' . dol_filesize($fullpath_original_file));
+	readfile($fullpath_original_file_osencoded);
+}
 
 if (is_object($db)) $db->close();
