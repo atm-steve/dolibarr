@@ -279,7 +279,7 @@ function dol_imageResizeOrCrop($file, $mode, $newWidth, $newHeight, $src_x = 0, 
 			imagepng($imgThumb, $imgThumbName, $newquality);
 			break;
 		case 4:	// Bmp
-			image2wbmp($imgThumb, $imgThumbName);
+			imagewbmp($imgThumb, $imgThumbName);
 			break;
 	}
 
@@ -321,7 +321,8 @@ function dolRotateImage($file_path)
 function correctExifImageOrientation($fileSource, $fileDest, $quality = 95)
 {
 	if (function_exists('exif_read_data') ) {
-		$exif = exif_read_data($fileSource);
+		$exif = @exif_read_data($fileSource); // Of course, suppressing warnings is not a good idea, but there doesn't seem to be a way of avoiding this warning: there's no function to test the validity of the EXIF data without trying to read it and getting the warning.
+
 		if($exif && isset($exif['Orientation'])) {
 
 			$infoImg = getimagesize($fileSource); // Get image infos
@@ -379,7 +380,7 @@ function correctExifImageOrientation($fileSource, $fileDest, $quality = 95)
 							// Not supported by PHP GD
 							break;
 						case IMAGETYPE_WBMP:    // 15
-							$image = image2wbmp($img, $fileDest);
+							$image = imagewbmp($img, $fileDest);
 							break;
 					}
 
@@ -453,7 +454,7 @@ function vignette($file, $maxWidth = 160, $maxHeight = 120, $extName = '_small',
 	$imgWidth = $infoImg[0]; // Largeur de l'image
 	$imgHeight = $infoImg[1]; // Hauteur de l'image
 
-	$exif = exif_read_data($filetoread);
+	$exif = @exif_read_data($filetoread); // Of course, suppressing warnings is not a good idea, but there doesn't seem to be a way of avoiding this warning: there's no function to test the validity of the EXIF data without trying to read it and getting the warning.
 	$ort= false;
 	if($exif && !empty($exif['Orientation'])){
 		$ort = $exif['Orientation'];
@@ -696,7 +697,7 @@ function vignette($file, $maxWidth = 160, $maxHeight = 120, $extName = '_small',
             // Not supported by PHP GD
 			break;
 		case IMAGETYPE_WBMP:    // 15
-			image2wbmp($imgThumb, $imgThumbName);
+			imagewbmp($imgThumb, $imgThumbName);
 			break;
 	}
 
