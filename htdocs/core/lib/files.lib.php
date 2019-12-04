@@ -1556,6 +1556,7 @@ function dol_add_file_process($upload_dir, $allowoverwrite=0, $donotupdatesessio
 				$info = pathinfo($destfile);
 
 				$destfile = dol_sanitizeFileName($info['filename'].($info['extension']!='' ? ('.'.strtolower($info['extension'])) : ''));
+
 				// We apply dol_string_nohtmltag also to clean file names (this remove duplicate spaces) because
 				// this function is also applied when we make try to download file (by the GETPOST(filename, 'alphanohtml') call).
 				$destfile = dol_string_nohtmltag($destfile);
@@ -1842,10 +1843,15 @@ function dol_convert_file($fileinput, $ext='png', $fileoutput='')
 				if (empty($fileoutput)) $fileoutput=$fileinput.".".$ext;
 
 				$count = $image->getNumberImages();
-
 				if (! dol_is_file($fileoutput) || is_writeable($fileoutput))
 				{
-					$ret = $image->writeImages($fileoutput, true);
+				    try {
+					   $ret = $image->writeImages($fileoutput, true);
+				    }
+				    catch(Exception $e)
+				    {
+				        dol_syslog($e->getMessage(), LOG_WARNING);
+				    }
 				}
 				else
 				{

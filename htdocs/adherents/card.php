@@ -646,7 +646,7 @@ if (empty($reshook))
 
 				if (empty($labeltouse) || (int) $labeltouse === -1) {
 					//fallback on the old configuration.
-					setEventMessages('WarningMandatorySetupNotComplete', [], 'errors');
+					setEventMessages('WarningMandatorySetupNotComplete', null, 'errors');
 					$error++;
 				}
 				else {
@@ -1161,7 +1161,7 @@ else
 		}
 		// Morphy
 		$morphys["phy"] = $langs->trans("Physical");
-		$morphys["mor"] = $langs->trans("Morale");
+		$morphys["mor"] = $langs->trans("Moral");
 		print '<tr><td><span class="fieldrequired">'.$langs->trans("Nature").'</span></td><td>';
 		print $form->selectarray("morphy", $morphys, (GETPOSTISSET("morphy")?GETPOST("morphy",'alpha'):$object->morphy));
 		print "</td></tr>";

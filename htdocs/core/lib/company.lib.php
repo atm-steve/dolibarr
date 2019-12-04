@@ -52,7 +52,7 @@ function societe_prepare_head(Societe $object)
 
     if (empty($conf->global->MAIN_SUPPORT_SHARED_CONTACT_BETWEEN_THIRDPARTIES))
     {
-	    if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB))
+	    if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB) && $user->rights->societe->contact->lire)
 		{
 		    //$nbContact = count($object->liste_contact(-1,'internal')) + count($object->liste_contact(-1,'external'));
 			$nbContact = 0;	// TODO
@@ -172,7 +172,8 @@ function societe_prepare_head(Societe $object)
 	}
 
 	// Related items
-    if (! empty($conf->commande->enabled) || ! empty($conf->propal->enabled) || ! empty($conf->facture->enabled) || ! empty($conf->ficheinter->enabled) || ! empty($conf->fournisseur->enabled))
+    if ((! empty($conf->commande->enabled) || ! empty($conf->propal->enabled) || ! empty($conf->facture->enabled) || ! empty($conf->ficheinter->enabled) || ! empty($conf->fournisseur->enabled))
+        && empty($conf->global->THIRPARTIES_DISABLE_RELATED_OBJECT_TAB))
     {
         $head[$h][0] = DOL_URL_ROOT.'/societe/consumption.php?socid='.$object->id;
         $head[$h][1] = $langs->trans("Referers");
@@ -817,7 +818,7 @@ function show_projects($conf, $langs, $db, $object, $backtopage='', $nocreatelin
             }
             else
 			{
-            	print '<tr class="oddeven"><td colspan="5" class="opacitymedium">'.$langs->trans("None").'</td></tr>';
+            	print '<tr class="oddeven"><td colspan="8" class="opacitymedium">'.$langs->trans("None").'</td></tr>';
             }
             $db->free($result);
         }
@@ -1317,7 +1318,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
     if (! empty($conf->agenda->enabled))
     {
         // Recherche histo sur actioncomm
- 	if (is_object($objcon) && $objcon->id) {
+ 	if (is_object($objcon) && $objcon->id > 0) {
 		$sql = "SELECT DISTINCT a.id, a.label,";
 	}
 	else
@@ -1340,7 +1341,7 @@ function show_actions_done($conf, $langs, $db, $filterobj, $objcon='', $noprint=
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_actioncomm as c ON a.fk_action = c.id";
 
         if (is_object($objcon) && $objcon->id) {
-		    $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."actioncomm_resources as r ON a.id = r.fk_actioncomm";
+		    $sql.= " INNER JOIN ".MAIN_DB_PREFIX."actioncomm_resources as r ON a.id = r.fk_actioncomm";
 		    $sql.= " AND r.element_type = '" . $db->escape($objcon->table_element) . "' AND r.fk_element = " . $objcon->id;
 	    }
 

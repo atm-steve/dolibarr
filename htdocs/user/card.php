@@ -209,7 +209,7 @@ if (empty($reshook)) {
 			$object->facebook = GETPOST("facebook", 'alphanohtml');
 
 			$object->email = preg_replace('/\s+/', '', GETPOST("email", 'alpha'));
-			$object->job = GETPOST("job", 'alpha');
+			$object->job = GETPOST("job", 'nohtml');
 			$object->signature = GETPOST("signature", 'none');
 			$object->accountancy_code = GETPOST("accountancy_code", 'alphanohtml');
 			$object->note = GETPOST("note", 'none');
@@ -218,8 +218,11 @@ if (empty($reshook)) {
 			$object->employee = GETPOST('employee', 'alphanohtml');
 
 			$object->thm = GETPOST("thm", 'alphanohtml') != '' ? GETPOST("thm", 'alphanohtml') : '';
+			$object->thm = price2num($object->thm);
 			$object->tjm = GETPOST("tjm", 'alphanohtml') != '' ? GETPOST("tjm", 'alphanohtml') : '';
+			$object->tjm =  price2num($object->tjm);
 			$object->salary = GETPOST("salary", 'alphanohtml') != '' ? GETPOST("salary", 'alphanohtml') : '';
+			$object->salary = price2num($object->salary);
 			$object->salaryextra = GETPOST("salaryextra", 'alphanohtml') != '' ? GETPOST("salaryextra", 'alphanohtml') : '';
 			$object->weeklyhours = GETPOST("weeklyhours", 'alphanohtml') != '' ? GETPOST("weeklyhours", 'alphanohtml') : '';
 
@@ -318,12 +321,12 @@ if (empty($reshook)) {
 		{
 			$error = 0;
 
-			if (!$_POST["lastname"]) {
+			if (! GETPOST("lastname", 'alpha')) {
 				setEventMessages($langs->trans("NameNotDefined"), null, 'errors');
 				$action = "edit";       // Go back to create page
 				$error ++;
 			}
-			if (!$_POST["login"]) {
+			if (! GETPOST("login", 'alpha')) {
 				setEventMessages($langs->trans("LoginNotDefined"), null, 'errors');
 				$action = "edit";       // Go back to create page
 				$error ++;
@@ -358,7 +361,7 @@ if (empty($reshook)) {
 				$object->twitter = GETPOST("twitter", 'alpha');
 				$object->facebook = GETPOST("facebook", 'alpha');
 				$object->email = preg_replace('/\s+/', '', GETPOST("email", 'alpha'));
-				$object->job = GETPOST("job", 'alpha');
+				$object->job = GETPOST("job", 'nohtml');
 				$object->signature = GETPOST("signature",'none');
 				$object->accountancy_code = GETPOST("accountancy_code",'alpha');
 				$object->openid = GETPOST("openid",'alpha');
@@ -366,8 +369,11 @@ if (empty($reshook)) {
 				$object->employee = GETPOST('employee','int');
 
 				$object->thm = GETPOST("thm",'alphanohtml') != '' ? GETPOST("thm",'alphanohtml') : '';
+				$object->thm = price2num($object->thm);
 				$object->tjm = GETPOST("tjm",'alphanohtml') != '' ? GETPOST("tjm",'alphanohtml') : '';
+				$object->tjm =  price2num($object->tjm);
 				$object->salary = GETPOST("salary",'alphanohtml') != '' ? GETPOST("salary",'alphanohtml') : '';
+				$object->salary = price2num($object->salary);
 				$object->salaryextra = GETPOST("salaryextra",'alphanohtml') != '' ? GETPOST("salaryextra",'alphanohtml') : '';
 				$object->weeklyhours = GETPOST("weeklyhours",'alphanohtml') != '' ? GETPOST("weeklyhours",'alphanohtml') : '';
 
@@ -1156,7 +1162,7 @@ if ($action == 'create' || $action == 'adduserldap')
 	// Position/Job
 	print '<tr><td class="titlefieldcreate">'.$langs->trans("PostOrFunction").'</td>';
 	print '<td>';
-	print '<input class="maxwidth200" type="text" name="job" value="'.GETPOST('job').'">';
+	print '<input class="maxwidth200" type="text" name="job" value="'.GETPOST('job', 'nohtml').'">';
 	print '</td></tr>';
 
 

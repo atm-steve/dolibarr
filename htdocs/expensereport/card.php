@@ -989,6 +989,62 @@ if (empty($reshook))
     	}
     }
 
+    if ($action == 'set_unpaid' && $id > 0 && $user->rights->expensereport->to_paid)
+    {
+    	$object = new ExpenseReport($db);
+    	$object->fetch($id);
+
+    	$result = $object->set_unpaid($user);
+
+    	if ($result > 0)
+    	{
+    		// Define output language
+    		if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+    		{
+    			$outputlangs = $langs;
+    			$newlang = '';
+    			if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) $newlang = GETPOST('lang_id', 'aZ09');
+    			if ($conf->global->MAIN_MULTILANGS && empty($newlang))	$newlang = $object->thirdparty->default_lang;
+    			if (! empty($newlang)) {
+    				$outputlangs = new Translate("", $conf);
+    				$outputlangs->setDefaultLang($newlang);
+    			}
+    			$model=$object->modelpdf;
+    			$ret = $object->fetch($id); // Reload to get new records
+
+    			$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+    		}
+    	}
+    }
+
+    if ($action == 'set_unpaid' && $id > 0 && $user->rights->expensereport->to_paid)
+    {
+    	$object = new ExpenseReport($db);
+    	$object->fetch($id);
+
+    	$result = $object->set_unpaid($user);
+
+    	if ($result > 0)
+    	{
+    		// Define output language
+    		if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+    		{
+    			$outputlangs = $langs;
+    			$newlang = '';
+    			if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) $newlang = GETPOST('lang_id', 'aZ09');
+    			if ($conf->global->MAIN_MULTILANGS && empty($newlang))	$newlang = $object->thirdparty->default_lang;
+    			if (! empty($newlang)) {
+    				$outputlangs = new Translate("", $conf);
+    				$outputlangs->setDefaultLang($newlang);
+    			}
+    			$model=$object->modelpdf;
+    			$ret = $object->fetch($id); // Reload to get new records
+
+    			$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+    		}
+    	}
+    }
+
     if ($action == 'set_paid' && $id > 0 && $user->rights->expensereport->to_paid)
     {
     	$object = new ExpenseReport($db);
@@ -1921,7 +1977,7 @@ else
 				if ($resql)
 				{
 				    $num = $db->num_rows($resql);
-				    $i = 0; $total = 0;
+				    $i = 0; $totalpaid = 0;
 				    while ($i < $num)
 				    {
 				        $objp = $db->fetch_object($resql);
@@ -2020,12 +2076,12 @@ else
 					$i = 0;$total = 0;
 
 					print '<tr class="liste_titre">';
-					print '<td style="text-align:center;">'.$langs->trans('LineNb').'</td>';
-					//print '<td style="text-align:center;">'.$langs->trans('Piece').'</td>';
-					print '<td style="text-align:center;">'.$langs->trans('Date').'</td>';
+					print '<td class="center">'.$langs->trans('LineNb').'</td>';
+					//print '<td class="center">'.$langs->trans('Piece').'</td>';
+					print '<td class="center">'.$langs->trans('Date').'</td>';
 					if (! empty($conf->projet->enabled)) print '<td class="minwidth100imp">'.$langs->trans('Project').'</td>';
 					if (!empty($conf->global->MAIN_USE_EXPENSE_IK)) print '<td>'.$langs->trans('CarCategory').'</td>';
-					print '<td style="text-align:center;">'.$langs->trans('Type').'</td>';
+					print '<td class="center">'.$langs->trans('Type').'</td>';
 					print '<td style="text-align:left;">'.$langs->trans('Description').'</td>';
 					print '<td style="text-align:right;">'.$langs->trans('VAT').'</td>';
 					print '<td style="text-align:right;">'.$langs->trans('PriceUTTC').'</td>';
@@ -2050,16 +2106,16 @@ else
 						{
 							print '<tr class="oddeven">';
 
-							print '<td style="text-align:center;">';
+							print '<td class="center">';
 							print $numline;
 							print '</td>';
 
-							/*print '<td style="text-align:center;">';
+							/*print '<td class="center">';
 							print img_picto($langs->trans("Document"), "object_generic");
 							print ' <span>'.$piece_comptable.'</span>';
 							print '</td>';*/
 
-							print '<td style="text-align:center;">'.dol_print_date($db->jdate($line->date), 'day').'</td>';
+							print '<td class="center">'.dol_print_date($db->jdate($line->date), 'day').'</td>';
 							if (! empty($conf->projet->enabled))
 							{
 								print '<td>';
@@ -2114,7 +2170,9 @@ else
 						{
 								print '<tr class="oddeven">';
 
-								print '<td></td>';
+								print '<td class="center">';
+								print $numline;
+								print '</td>';
 
 								// Select date
 								print '<td class="center">';
@@ -2159,7 +2217,7 @@ else
 
 								// Quantity
 								print '<td style="text-align:right;">';
-								print '<input type="number" min="0" class="maxwidth100" name="qty" value="'.dol_escape_htmltag($line->qty).'" />';
+								print '<input type="text" min="0" class="right maxwidth50" name="qty" value="'.dol_escape_htmltag($line->qty).'" />';
 								print '</td>';
 
 								if ($action != 'editline')
@@ -2168,7 +2226,7 @@ else
 									print '<td style="text-align:right;">'.$langs->trans('AmountTTC').'</td>';
 								}
 
-								print '<td style="text-align:center;">';
+								print '<td class="center">';
 								print '<input type="hidden" name="rowid" value="'.$line->rowid.'">';
 								print '<input type="submit" class="button" name="save" value="'.$langs->trans('Save').'">';
 								print '<br><input type="submit" class="button" name="cancel" value="'.$langs->trans('Cancel').'">';
@@ -2373,8 +2431,8 @@ if ($action != 'create' && $action != 'edit')
 	}
 
 
-	// If status is Appoved
-	// --------------------
+	// If status is Approved
+	// ---------------------
 
 	if ($user->rights->expensereport->approve && $object->fk_statut == 5)
 	{
@@ -2418,9 +2476,15 @@ if ($action != 'create' && $action != 'edit')
 	    print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?action=cancel&id='.$object->id.'">'.$langs->trans('Cancel').'</a></div>';
 	}
 
+	if ($user->rights->expensereport->to_paid && $object->paid && $object->fk_statut == ExpenseReport::STATUS_CLOSED)
+	{
+		// Set unpaid
+		print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?action=set_unpaid&id='.$object->id.'">'.$langs->trans('ClassifyUnPaid').'</a></div>';
+	}
+
 	// Clone
 	if ($user->rights->expensereport->creer) {
-	    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&amp;action=clone">' . $langs->trans("ToClone") . '</a></div>';
+	    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=clone">' . $langs->trans("ToClone") . '</a></div>';
 	}
 
 	/* If draft, validated, cancel, and user can create, he can always delete its card before it is approved */

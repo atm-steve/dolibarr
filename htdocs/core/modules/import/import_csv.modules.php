@@ -558,15 +558,24 @@ class ImportCsv extends ModeleImports
 							if (! empty($objimport->array_import_regex[0][$val]) && ($newval != ''))
 							{
 								// If test is "Must exist in a field@table"
-								if (preg_match('/^(.*)@(.*)$/',$objimport->array_import_regex[0][$val],$reg))
+								if (preg_match('/^(.+)@([^:]+)(:.+)?$/',$objimport->array_import_regex[0][$val],$reg))
 								{
 									$field=$reg[1];
 									$table=$reg[2];
+									$filter=!empty($reg[3])?substr($reg[3], 1):'';
+
+									$cachekey = $field.'@'.$table;
+									if(! empty($filter)) $cachekey.= ':'.$filter;
 
 									// Load content of field@table into cache array
-									if (! is_array($this->cachefieldtable[$field.'@'.$table])) // If content of field@table not already loaded into cache
+									if (! is_array($this->cachefieldtable[$cachekey])) // If content of field@table not already loaded into cache
 									{
 										$sql="SELECT ".$field." as aliasfield FROM ".$table;
+										if(! empty($filter))
+										{
+											$sql.= ' WHERE ' . $filter;
+										}
+
 										$resql=$this->db->query($sql);
 										if ($resql)
 										{
@@ -575,7 +584,7 @@ class ImportCsv extends ModeleImports
 											while ($i < $num)
 											{
 												$obj=$this->db->fetch_object($resql);
-												if ($obj) $this->cachefieldtable[$field.'@'.$table][]=$obj->aliasfield;
+												if ($obj) $this->cachefieldtable[$cachekey][]=$obj->aliasfield;
 												$i++;
 											}
 										}
@@ -586,9 +595,11 @@ class ImportCsv extends ModeleImports
 									}
 
 									// Now we check cache is not empty (should not) and key is into cache
-									if (! is_array($this->cachefieldtable[$field.'@'.$table]) || ! in_array($newval,$this->cachefieldtable[$field.'@'.$table]))
+									if (! is_array($this->cachefieldtable[$cachekey]) || ! in_array($newval,$this->cachefieldtable[$cachekey]))
 									{
-										$this->errors[$error]['lib']=$langs->transnoentitiesnoconv('ErrorFieldValueNotIn',$key,$newval,$field,$table);
+										$tableforerror = $table;
+										if(! empty($filter)) $tableforerror.= ':'.$filter;
+										$this->errors[$error]['lib']=$langs->transnoentitiesnoconv('ErrorFieldValueNotIn',$key,$newval,$field,$tableforerror);
 										$this->errors[$error]['type']='FOREIGNKEY';
 									    $errorforthistable++;
 										$error++;
@@ -633,17 +644,29 @@ class ImportCsv extends ModeleImports
     				    if (! preg_match('/^'.preg_quote($alias).'\./', $key)) continue;    // Not a field of current table
     				    if ($val == 'user->id')
     				    {
-    				        $listfields[] = preg_replace('/^'.preg_quote($alias).'\./','',$key);
+    				        $listfields[] = preg_replace('/^'.preg_quote($alias, '/').'\./', '', $key);
     				        $listvalues[] = $user->id;
     				    }
     				    elseif (preg_match('/^lastrowid-/',$val))
     				    {
     				        $tmp=explode('-',$val);
     				        $lastinsertid=(isset($last_insert_id_array[$tmp[1]]))?$last_insert_id_array[$tmp[1]]:0;
-							$keyfield = preg_replace('/^'.preg_quote($alias).'\./','',$key);
+							$keyfield = preg_replace('/^'.preg_quote($alias, '/').'\./', '', $key);
     				        $listfields[] = $keyfield;
                             $listvalues[] = $lastinsertid;
     				        //print $key."-".$val."-".$listfields."-".$listvalues."<br>";exit;
+    				    }
+    				    elseif (preg_match('/^const-/', $val))
+    				    {
+    				    	$tmp=explode('-', $val, 2);
+    				    	$listfields[] = preg_replace('/^'.preg_quote($alias, '/').'\./', '', $key);
+    				    	$listvalues[] = "'".$tmp[1]."'";
+    				    }
+    				    else
+    				    {
+    				    	$this->errors[$error]['lib']='Bad value of profile setup '.$val.' for array_import_fieldshidden';
+    				    	$this->errors[$error]['type']='Import profile setup';
+    				    	$error++;
     				    }
     				}
 				}
