@@ -1159,7 +1159,8 @@ class pdf_crabe extends ModelePDFFactures
 						$sum_pdf_tva+=$tvaval; // sum VAT amounts to compare to object
 					}
 
-					if($sum_pdf_tva!=$object->total_tva) { // apply coef to recover the VAT object amount (the good one)
+					/* // Pour ceribois vu qu'ils affiche les vrai montant de la ligne et pas le total de la situation il ne faut pas faire ce calcule
+					 * if($sum_pdf_tva!=$object->total_tva) { // apply coef to recover the VAT object amount (the good one)
 
 						if(empty($sum_pdf_tva)){
 							$coef_fix_tva = 1;
@@ -1170,7 +1171,7 @@ class pdf_crabe extends ModelePDFFactures
 						foreach($this->tva as $tvakey => $tvaval) {
 							$this->tva[$tvakey]=$tvaval * $coef_fix_tva;
 						}
-					}
+					}*/
 
 				}
 
