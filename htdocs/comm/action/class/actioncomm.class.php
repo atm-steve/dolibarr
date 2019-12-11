@@ -1566,7 +1566,7 @@ class ActionComm extends CommonObject
                     $diff++;
                 }
 
-				$parameters=array('filters' => $filters, 'eventarray' => $eventarray);
+				$parameters=array('filters' => $filters, 'eventarray' => &$eventarray);
 				$reshook=$hookmanager->executeHooks('addMoreEventsExport', $parameters);    // Note that $action and $object may have been modified by hook
 				if ($reshook > 0)
 				{
