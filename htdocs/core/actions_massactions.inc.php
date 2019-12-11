@@ -734,7 +734,10 @@ if ($massaction == 'confirm_createbills')
 							$lines[$i]->fk_fournprice,
 							$lines[$i]->pa_ht,
 							$lines[$i]->label,
-							$array_options
+							$array_options,
+							100,
+							0,
+							$lines[$i]->fk_unit
 							);
 						if ($result > 0)
 						{
@@ -1079,7 +1082,7 @@ if (! $error && $massaction == 'validate' && $permtocreate)
 {
 	$objecttmp=new $objectclass($db);
 
-	if ($objecttmp->element == 'invoice' && ! empty($conf->stock->enabled) && ! empty($conf->global->STOCK_CALCULATE_ON_BILL))
+	if (($objecttmp->element == 'facture' || $objecttmp->element == 'invoice') && ! empty($conf->stock->enabled) && ! empty($conf->global->STOCK_CALCULATE_ON_BILL))
 	{
 		$langs->load("errors");
 		setEventMessages($langs->trans('ErrorMassValidationNotAllowedWhenStockIncreaseOnAction'), null, 'errors');
