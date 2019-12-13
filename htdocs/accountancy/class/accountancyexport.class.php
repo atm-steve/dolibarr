@@ -625,12 +625,12 @@ class AccountancyExport
 		dol_include_once('/compta/facture/class/facture.class.php');
 		dol_include_once('/accountancy/class/accountingaccount.class.php');
 		$separator = "\t";
-		$end_line = "\n";
+		$end_line = "\n\r";
 
 		/*
 		 * Charlemagne export need header
 		 */
-		/*print $langs->transnoentitiesnoconv('Date') . $separator;
+		print $langs->transnoentitiesnoconv('Date') . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('Journal'), 6) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('Account'), 15) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('LabelAccount'), 60) . $separator;
@@ -644,7 +644,7 @@ class AccountancyExport
 		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 2', 60) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 3', 15) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 3', 60) . $separator;
-		print $end_line;*/
+		print $end_line;
 		$extrafields = new ExtraFields($this->db);
 		$extrafields->fetch_name_optionals_label('facturedet');
 		foreach($objectLines as $line) {
