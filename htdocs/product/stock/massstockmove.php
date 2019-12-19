@@ -418,7 +418,7 @@ if ($action == 'createmovements')
 	{
 		$db->rollback();
 //		setEventMessages($langs->trans("Error"), null, 'errors');
-        setEventMessage($nb_transfer . " tranferts ont été réalisés", 'mesgs');
+        setEventMessage($nb_transfer . " tranferts réalisés", 'mesgs');
 	}
 }
 
