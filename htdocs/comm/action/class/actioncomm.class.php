@@ -1479,6 +1479,11 @@ class ActionComm extends CommonObject
                 if ($key == 'project')      $sql.=" AND a.fk_project=".(is_numeric($value)?$value:0);
                 if ($key == 'actiontype')    $sql.=" AND c.type = '".$this->db->escape($value)."'";
                 if ($key == 'notactiontype') $sql.=" AND c.type <> '".$this->db->escape($value)."'";
+                if ($key == 'notactioncode' && is_array($value) && !empty($value)) {
+					$codeArray = array();
+					foreach ($value as $c_code) $codeArray[] = $this->db->escape($c_code);
+					$sql.=" AND c.code NOT IN ('".implode("','", $codeArray)."')";
+				}
                 // We must filter on assignement table
 				if ($key == 'logint')       $sql.= " AND ar.fk_actioncomm = a.id AND ar.element_type='user'";
                 if ($key == 'logina')
