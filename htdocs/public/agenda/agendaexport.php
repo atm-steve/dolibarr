@@ -80,6 +80,7 @@ if (GETPOST("project",'apha'))       $filters['project']=GETPOST("project",'apha
 if (GETPOST("logina",'apha'))        $filters['logina']=GETPOST("logina",'apha');
 if (GETPOST("logint",'apha'))        $filters['logint']=GETPOST("logint",'apha');
 if (GETPOST("notactiontype",'apha')) $filters['notactiontype']=GETPOST("notactiontype",'apha');
+if (GETPOST("notactioncode",'array')) $filters['notactioncode']=GETPOST("notactioncode",'array');
 if (GETPOST("actiontype",'apha'))    $filters['actiontype']=GETPOST("actiontype",'apha');
 if (GETPOST("notolderthan",'int'))   $filters['notolderthan']=GETPOST("notolderthan","int");
 else $filters['notolderthan']=$conf->global->MAIN_AGENDA_EXPORT_PAST_DELAY;
