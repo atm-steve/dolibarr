@@ -630,21 +630,21 @@ class AccountancyExport
 		/*
 		 * Charlemagne export need header
 		 */
-		/*print $langs->transnoentitiesnoconv('Date') . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('Journal'), 6) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('Account'), 15) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('LabelAccount'), 60) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('Piece'), 20) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('LabelOperation'), 60) . $separator;
-		print $langs->transnoentitiesnoconv('Amount') . $separator;
-		print 'S' . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 1', 15) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 1', 60) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 2', 15) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 2', 60) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 3', 15) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 3', 60) . $separator;
-		print $end_line;*/
+		print $langs->transnoentitiesnoconv('Date de l’écriture') . $separator;
+		print $langs->transnoentitiesnoconv('Journal'). $separator;
+		print $langs->transnoentitiesnoconv('Compte') . $separator;
+		print $langs->transnoentitiesnoconv('Libellé du Compte') . $separator;
+		print $langs->transnoentitiesnoconv('Numéro de Pièce'). $separator;
+		print $langs->transnoentitiesnoconv('Libellé de l’écriture') . $separator;
+		print $langs->transnoentitiesnoconv('Montant de l’écriture') . $separator;
+		print 'Sens de l’écriture' . $separator;
+		print $langs->transnoentitiesnoconv('Poste Analytique plan 1') . $separator;
+		print $langs->transnoentitiesnoconv('Libellé Poste Analytique plan 1')  . $separator;
+		print $langs->transnoentitiesnoconv('Poste Analytique plan 2') . $separator;
+		print $langs->transnoentitiesnoconv('Libellé Poste Analytique plan 2')  . $separator;
+		print $langs->transnoentitiesnoconv('Poste Analytique plan 3') . $separator;
+		print $langs->transnoentitiesnoconv('Libellé Poste Analytique plan 3')  . $separator;
+		print $end_line;
 		$extrafields = new ExtraFields($this->db);
 		$extrafields->fetch_name_optionals_label('facturedet');
 		foreach($objectLines as $line) {
