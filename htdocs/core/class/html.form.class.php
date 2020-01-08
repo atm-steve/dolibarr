@@ -2083,6 +2083,13 @@ class Form
 		}
 
 		$selectFields = " p.rowid, p.label, p.ref, p.description, p.barcode, p.fk_product_type, p.price, p.price_ttc, p.price_base_type, p.tva_tx, p.duration, p.fk_price_expression";
+		/*
+		 * Spécifique
+		 */
+		$selectFields .= ", pextra.num_plan";
+		/*
+		 * Fin Spécifique
+		 */
 		if (count($warehouseStatusArray))
 		{
 		    $selectFieldsGrouped = ", sum(".$db->ifsql("e.statut IS NULL", "0", "ps.reel").") as stock";           // e.statut is null if there is no record in stock
@@ -2138,6 +2145,13 @@ class Form
 			$selectFields.= ", price_rowid, price_by_qty";
 		}
 		$sql.= " FROM ".MAIN_DB_PREFIX."product as p";
+		/*
+		 * Spécifique
+		 */
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_extrafields as pextra ON (pextra.fk_object = p.rowid)";
+		/*
+		 * Fin spécifique
+		 */
 		if (count($warehouseStatusArray))
 		{
 			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_stock as ps on ps.fk_product = p.rowid";
@@ -2216,6 +2230,13 @@ class Form
 					if (! empty($conf->global->MAIN_MULTILANGS)) $sql.=" OR pl.description LIKE '".$db->escape($prefix.$crit)."%'";
 				}
 				if (! empty($conf->global->MAIN_SEARCH_PRODUCT_BY_FOURN_REF)) $sql.=" OR pfp.ref_fourn LIKE '".$db->escape($prefix.$crit)."%'";
+				/*
+				 * Spécifique
+				 */
+				$sql.=" OR pextra.num_plan LIKE '".$db->escape($prefix.$crit)."%'";
+				/*
+				 * Fin spécifique
+				 */
 				$sql.=")";
 				$i++;
 			}
@@ -2337,6 +2358,13 @@ class Form
 							$objp->price_ttc = price2num($objp->price_ttc, 'MU');
 						}
 					}
+					/*
+					 * Spécifique
+					 */
+					$objp->ref .= ' - Plan : '.$objp->num_plan;
+					/*
+					 * Fin spécifique
+					 */
 					$this->constructProductListOption($objp, $opt, $optJson, $price_level, $selected, $hidepriceinlabel, $filterkey);
 					// Add new entry
 					// "key" value of json key array is used by jQuery automatically as selected value
