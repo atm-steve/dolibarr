@@ -2361,7 +2361,7 @@ class Form
 					/*
 					 * Spécifique
 					 */
-					$objp->ref .= ' - Plan : '.$objp->num_plan;
+					if(!empty($objp->num_plan)) $objp->ref .= ' - Plan : '.$objp->num_plan;
 					/*
 					 * Fin spécifique
 					 */
