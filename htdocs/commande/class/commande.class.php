@@ -3393,7 +3393,7 @@ class Commande extends CommonOrder
 		}
 		$sql.= $clause." c.entity IN (".getEntity('commande').")";
 		//$sql.= " AND c.fk_statut IN (1,2,3) AND c.facture = 0";
-		$sql.= " AND ((c.fk_statut IN (".self::STATUS_VALIDATED.",".self::STATUS_SHIPMENTONPROCESS.")) OR (c.fk_statut = ".self::STATUS_CLOSED." AND c.facture = 0))";    // If status is 2 and facture=1, it must be selected
+		$sql.= " AND ((c.fk_statut IN (".self::STATUS_VALIDATED.",".self::STATUS_SHIPMENTONPROCESS.")))";    // If status is 2 and facture=1, it must be selected
 		if ($user->societe_id) $sql.=" AND c.fk_soc = ".$user->societe_id;
 
 		$resql=$this->db->query($sql);
@@ -3402,7 +3402,7 @@ class Commande extends CommonOrder
 			$response = new WorkboardResponse();
 			$response->warning_delay=$conf->commande->client->warning_delay/60/60/24;
 			$response->label=$langs->trans("OrdersToProcess");
-			$response->url=DOL_URL_ROOT.'/commande/list.php?viewstatut=-3&mainmenu=commercial&leftmenu=orders';
+			$response->url=DOL_URL_ROOT.'/commande/list.php?viewstatut=-4&mainmenu=commercial&leftmenu=orders';
 			$response->img=img_object('', "order");
 
 			$generic_commande = new Commande($this->db);

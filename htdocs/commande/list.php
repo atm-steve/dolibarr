@@ -304,6 +304,11 @@ if ($viewstatut <> '')
 		//$sql.= ' AND c.facture = 0'; // invoice not created
 		$sql .= ' AND ((c.fk_statut IN (1,2)) OR (c.fk_statut = 3 AND c.facture = 0))'; // validated, in process or closed but not billed
 	}
+	if ($viewstatut == -4)	// To process
+	{
+		//$sql.= ' AND c.fk_statut IN (1,2,3) AND c.facture = 0';
+		$sql.= " AND c.fk_statut IN (1,2)";    // If status is 2 and facture=1, it must be selected
+	}
 }
 $sql.= dolSqlDateFilter("c.date_commande", $search_orderday, $search_ordermonth, $search_orderyear);
 $sql.= dolSqlDateFilter("c.date_livraison", $search_deliveryday, $search_deliverymonth, $search_deliveryyear);
@@ -377,6 +382,8 @@ if ($resql)
 	$title.=' - '.$langs->trans('StatusOrderToProcessShort');
 	if ($viewstatut == -3)
 	$title.=' - '.$langs->trans('StatusOrderValidated').', '.(empty($conf->expedition->enabled)?'':$langs->trans("StatusOrderSent").', ').$langs->trans('StatusOrderToBill');
+	if ($viewstatut == -4)
+	$title.=' - '.$langs->trans('StatusOrderValidated').', '.(empty($conf->expedition->enabled)?'':$langs->trans("StatusOrderSent"));
 
 	$num = $db->num_rows($resql);
 
@@ -703,6 +710,7 @@ if ($resql)
 			Commande::STATUS_SHIPMENTONPROCESS=>$langs->trans("StatusOrderSentShort"),
 			Commande::STATUS_CLOSED=>$langs->trans("StatusOrderDelivered"),
 			-3=>$langs->trans("StatusOrderValidatedShort").'+'.$langs->trans("StatusOrderSentShort").'+'.$langs->trans("StatusOrderDelivered"),
+			-4=>$langs->trans("StatusOrderValidatedShort").'+'.$langs->trans("StatusOrderSentShort"),
 			Commande::STATUS_CANCELED=>$langs->trans("StatusOrderCanceledShort")
 		);
 		print $form->selectarray('viewstatut', $liststatus, $viewstatut, -4, 0, 0, '', 0, 0, 0, '', 'maxwidth100');
