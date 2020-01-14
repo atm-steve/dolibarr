@@ -42,7 +42,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("errors","admin","main","companies","resource","holiday","accountancy","hrm","orders","contracts","projects","propal","bills","interventions"));
+$langs->loadLangs(array("errors","admin","main","companies","resource","holiday","accountancy","hrm","orders","contracts","projects","propal","bills","interventions","mails"));
 
 $action=GETPOST('action', 'alpha')?GETPOST('action', 'alpha'):'view';
 $confirm=GETPOST('confirm', 'alpha');
@@ -182,7 +182,7 @@ $tabsql[7] = "SELECT a.id    as rowid, a.code as code, a.libelle AS libelle, a.a
 $tabsql[8] = "SELECT t.id	 as rowid, t.code as code, t.libelle, t.fk_country as country_id, c.code as country_code, c.label as country, t.position, t.active FROM ".MAIN_DB_PREFIX."c_typent as t LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON t.fk_country=c.rowid";
 $tabsql[9] = "SELECT c.code_iso as code, c.label, c.unicode, c.active FROM ".MAIN_DB_PREFIX."c_currencies AS c";
 $tabsql[10]= "SELECT t.rowid, t.code, t.taux, t.localtax1_type, t.localtax1, t.localtax2_type, t.localtax2, c.label as country, c.code as country_code, t.fk_pays as country_id, t.recuperableonly, t.note, t.active, t.accountancy_code_sell, t.accountancy_code_buy FROM ".MAIN_DB_PREFIX."c_tva as t, ".MAIN_DB_PREFIX."c_country as c WHERE t.fk_pays=c.rowid";
-$tabsql[11]= "SELECT t.rowid as rowid, t.element, t.source, t.code, t.libelle, t.position, t.active FROM ".MAIN_DB_PREFIX."c_type_contact AS t";
+$tabsql[11]= "SELECT t.rowid as rowid, t.element, t.source, t.code, t.libelle, t.mail_dest_type, t.position, t.active FROM ".MAIN_DB_PREFIX."c_type_contact AS t";
 $tabsql[12]= "SELECT c.rowid as rowid, c.code, c.libelle, c.libelle_facture, c.nbjour, c.type_cdr, c.decalage, c.active, c.sortorder, c.entity FROM ".MAIN_DB_PREFIX."c_payment_term AS c WHERE c.entity = " . getEntity($tabname[12]);
 $tabsql[13]= "SELECT c.id    as rowid, c.code, c.libelle, c.type, c.active, c.entity FROM ".MAIN_DB_PREFIX."c_paiement AS c WHERE c.entity = " . getEntity($tabname[13]);
 $tabsql[14]= "SELECT e.rowid as rowid, e.code as code, e.label, e.price, e.organization, e.fk_pays as country_id, c.code as country_code, c.label as country, e.active FROM ".MAIN_DB_PREFIX."c_ecotaxe AS e, ".MAIN_DB_PREFIX."c_country as c WHERE e.fk_pays=c.rowid and c.active=1";
@@ -222,7 +222,7 @@ $tabsqlsort[7] ="country ASC, code ASC, a.libelle ASC";
 $tabsqlsort[8] ="country DESC,".(! empty($conf->global->SOCIETE_SORT_ON_TYPEENT)?' t.position ASC,':'')." libelle ASC";
 $tabsqlsort[9] ="label ASC";
 $tabsqlsort[10]="country ASC, code ASC, taux ASC, recuperableonly ASC, localtax1 ASC, localtax2 ASC";
-$tabsqlsort[11]="t.element ASC, t.source ASC, t.position ASC, t.code ASC";
+$tabsqlsort[11]="t.element ASC, t.source ASC, t.position ASC, t.code ASC, t.mail_dest_type ASC";
 $tabsqlsort[12]="sortorder ASC, code ASC";
 $tabsqlsort[13]="code ASC";
 $tabsqlsort[14]="country ASC, e.organization ASC, code ASC";
@@ -262,7 +262,7 @@ $tabfield[7] = "code,libelle,country,accountancy_code,deductible";
 $tabfield[8] = "code,libelle,country_id,country".(! empty($conf->global->SOCIETE_SORT_ON_TYPEENT)?',position':'');
 $tabfield[9] = "code,label,unicode";
 $tabfield[10]= "country_id,country,code,taux,localtax1_type,localtax1,localtax2_type,localtax2,recuperableonly,accountancy_code_sell,accountancy_code_buy,note";
-$tabfield[11]= "element,source,code,libelle,position";
+$tabfield[11]= "element,source,code,libelle,mail_dest_type,position";
 $tabfield[12]= "code,libelle,libelle_facture,nbjour,type_cdr,decalage,sortorder,entity";
 $tabfield[13]= "code,libelle,type,entity";
 $tabfield[14]= "code,label,price,organization,country";
@@ -302,7 +302,7 @@ $tabfieldvalue[7] = "code,libelle,country,accountancy_code,deductible";
 $tabfieldvalue[8] = "code,libelle,country".(! empty($conf->global->SOCIETE_SORT_ON_TYPEENT)?',position':'');
 $tabfieldvalue[9] = "code,label,unicode";
 $tabfieldvalue[10]= "country,code,taux,localtax1_type,localtax1,localtax2_type,localtax2,recuperableonly,accountancy_code_sell,accountancy_code_buy,note";
-$tabfieldvalue[11]= "element,source,code,libelle,position";
+$tabfieldvalue[11]= "element,source,code,libelle,mail_dest_type,position";
 $tabfieldvalue[12]= "code,libelle,libelle_facture,nbjour,type_cdr,decalage,sortorder";
 $tabfieldvalue[13]= "code,libelle,type";
 $tabfieldvalue[14]= "code,label,price,organization,country";
@@ -342,7 +342,7 @@ $tabfieldinsert[7] = "code,libelle,fk_pays,accountancy_code,deductible";
 $tabfieldinsert[8] = "code,libelle,fk_country".(! empty($conf->global->SOCIETE_SORT_ON_TYPEENT)?',position':'');
 $tabfieldinsert[9] = "code_iso,label,unicode";
 $tabfieldinsert[10]= "fk_pays,code,taux,localtax1_type,localtax1,localtax2_type,localtax2,recuperableonly,accountancy_code_sell,accountancy_code_buy,note";
-$tabfieldinsert[11]= "element,source,code,libelle,position";
+$tabfieldinsert[11]= "element,source,code,libelle,mail_dest_type,position";
 $tabfieldinsert[12]= "code,libelle,libelle_facture,nbjour,type_cdr,decalage,sortorder,entity";
 $tabfieldinsert[13]= "code,libelle,type,entity";
 $tabfieldinsert[14]= "code,label,price,organization,fk_pays";
@@ -544,9 +544,10 @@ if (empty($sortfield))
     $sortfield=preg_replace('/^.*\./', '', $tmp2[0]);
 }
 
-// Define elementList and sourceList (used for dictionary type of contacts "llx_c_type_contact")
+// Define elementList, sourceList and mailDestType (used for dictionary type of contacts "llx_c_type_contact")
 $elementList = array();
 $sourceList=array();
+$mailDestType=array();
 if ($id == 11)
 {
 	$elementList = array(
@@ -580,6 +581,13 @@ if ($id == 11)
 			'internal' => $langs->trans('Internal'),
 			'external' => $langs->trans('External')
 	);
+	$mailDestType = array(
+		'0' => $langs->trans('No'),
+		'1' => $langs->trans('MailRecipient'),
+		'2' => $langs->trans('MailCCWthtTo'),
+		'3' => $langs->trans('MailCCCWthtTo')
+	);
+
 }
 
 // Define localtax_typeList (used for dictionary "llx_c_tva")
@@ -1060,6 +1068,7 @@ if ($id)
 
             if ($fieldlist[$field]=='pos')             { $valuetoshow=$langs->trans("Position"); $class='maxwidth100'; }
             if ($fieldlist[$field]=='source')          { $valuetoshow=$langs->trans("Contact"); }
+            if ($fieldlist[$field]=='mail_dest_type')          { $valuetoshow=$form->textwithtooltip($langs->trans("MailDestType"), $langs->trans("MailDestTypeDesc"), 2, 1, img_help(1, '')); }
             if ($fieldlist[$field]=='price')           { $valuetoshow=$langs->trans("PriceUHT"); }
             if ($fieldlist[$field]=='taux')            {
 				if ($tabname[$id] != MAIN_DB_PREFIX."c_revenuestamp") $valuetoshow=$langs->trans("Rate");
@@ -1287,7 +1296,9 @@ if ($id)
 
             // Special cases
             if ($fieldlist[$field]=='source')          { $valuetoshow=$langs->trans("Contact"); }
-            if ($fieldlist[$field]=='price')           { $valuetoshow=$langs->trans("PriceUHT"); }
+			if ($fieldlist[$field]=='mail_dest_type')          { $valuetoshow=$langs->trans("MailDestType"); }
+
+			if ($fieldlist[$field]=='price')           { $valuetoshow=$langs->trans("PriceUHT"); }
             if ($fieldlist[$field]=='taux')            {
 				if ($tabname[$id] != MAIN_DB_PREFIX."c_revenuestamp") $valuetoshow=$langs->trans("Rate");
 				else $valuetoshow=$langs->trans("Amount");
@@ -1421,6 +1432,10 @@ if ($id)
                             elseif ($value == 'source')
                             {
                                 $valuetoshow = isset($sourceList[$valuetoshow])?$sourceList[$valuetoshow]:$valuetoshow;
+                            }
+                            elseif ($value == 'mail_dest_type')
+                            {
+                                $valuetoshow = isset($mailDestType[$valuetoshow])?$mailDestType[$valuetoshow]:$valuetoshow;
                             }
                             elseif ($valuetoshow=='all') {
                                 $valuetoshow=$langs->trans('All');
@@ -1778,7 +1793,7 @@ function fieldList($fieldlist, $obj = '', $tabname = '', $context = '')
 	global $conf,$langs,$db,$mysoc;
 	global $form;
 	global $region_id;
-	global $elementList,$sourceList,$localtax_typeList;
+	global $elementList,$sourceList,$mailDestType,$localtax_typeList;
 
 	$formadmin = new FormAdmin($db);
 	$formcompany = new FormCompany($db);
@@ -1855,6 +1870,12 @@ function fieldList($fieldlist, $obj = '', $tabname = '', $context = '')
 		{
 			print '<td>';
 			print $form->selectarray('source', $sourceList, (! empty($obj->{$fieldlist[$field]})?$obj->{$fieldlist[$field]}:''));
+			print '</td>';
+		}
+	    elseif ($fieldlist[$field] == 'mail_dest_type')
+		{
+			print '<td>';
+			print $form->selectarray('mail_dest_type', $mailDestType, (! empty($obj->{$fieldlist[$field]})?$obj->{$fieldlist[$field]}:''));
 			print '</td>';
 		}
 		elseif ($fieldlist[$field] == 'private')

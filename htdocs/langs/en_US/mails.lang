@@ -168,3 +168,7 @@ OutGoingEmailSetupForEmailing=Outgoing email setup (for mass emailing)
 DefaultOutgoingEmailSetup=Default outgoing email setup
 Information=Information
 ContactsWithThirdpartyFilter=Contacts with third-party filter
+MailDestType=Email recipient type
+MailDestTypeDesc=Recipients types which the contact is preselected on an email sending form or during mass sending
+MailCCWthtTo=Copy
+MailCCCWthtTo=Cached copy

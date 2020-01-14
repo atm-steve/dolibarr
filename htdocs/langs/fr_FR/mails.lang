@@ -168,3 +168,7 @@ OutGoingEmailSetupForEmailing=Configuration des e-mail sortant (pour les e-mails
 DefaultOutgoingEmailSetup=Configuration des emails sortant
 Information=Information
 ContactsWithThirdpartyFilter=Contacts ayant pour tiers
+MailDestType=Type de destinataire e-mail
+MailDestTypeDesc=Types de destinataires pour lesquels le contact est préselectionné sur une fiche d'envoi d'email ou lors de l'envoi en masse
+MailCCWthtTo=Copie
+MailCCCWthtTo=Copie cachée

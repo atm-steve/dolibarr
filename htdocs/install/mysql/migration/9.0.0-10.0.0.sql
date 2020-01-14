@@ -407,3 +407,4 @@ ALTER TABLE llx_ticket_extrafields ADD INDEX idx_ticket_extrafields (fk_object);
 
 UPDATE llx_website_page set fk_user_creat = fk_user_modif WHERE fk_user_creat IS NULL and fk_user_modif IS NOT NULL;
 
+ALTER TABLE llx_c_type_contact ADD COLUMN mail_dest_type integer DEFAULT 0;
