@@ -1209,7 +1209,58 @@ abstract class CommonObject
 			return null;
 		}
 	}
+	/**
+	 *		Return array with list of contacts type by mail_dest_type
+	 *
+	 *      @param	string	$source     'internal', 'external' or 'all'
+	 *      @param	string	$order		Sort order by : 'position', 'code', 'rowid'...
+	 *      @param  int		$activeonly 0=all status of contact, 1=only the active
+	 *		@param	string	$code		Type of contact (Example: 'CUSTOMER', 'SERVICE')
+	 *      @return array       		Array list of type of contacts
+	 */
+	public function getMailRecipientContactType($source = 'internal', $order = 'position',  $activeonly = 0, $code = '') {
+		global $langs;
 
+		if (empty($order)) $order='position';
+		if ($order == 'position') $order.=',code';
+
+		$TContactType = array();
+		$sql = "SELECT DISTINCT tc.rowid, tc.code, tc.source, tc.libelle, tc.position, tc.mail_dest_type";
+		$sql.= " FROM ".MAIN_DB_PREFIX."c_type_contact as tc";
+		$sql.= " WHERE tc.element='".$this->db->escape($this->element)."'
+					AND tc.mail_dest_type > 0";
+		if ($activeonly == 1) $sql.= " AND tc.active=1"; // only the active types
+		if (! empty($source) && $source != 'all') $sql.= " AND tc.source='".$this->db->escape($source)."'";
+		if (! empty($code)) $sql.= " AND tc.code='".$this->db->escape($code)."'";
+		$sql.= $this->db->order($order, 'ASC');
+
+		//print "sql=".$sql;
+		$resql=$this->db->query($sql);
+		if ($resql)
+		{
+			$num=$this->db->num_rows($resql);
+			$i=0;
+			while ($i < $num)
+			{
+				$obj = $this->db->fetch_object($resql);
+
+				$transkey="TypeContact_".$this->element."_".$source."_".$obj->code;
+				$libelle_type=($langs->trans($transkey)!=$transkey ? $langs->trans($transkey) : $obj->libelle);
+
+				$TContactType[$obj->mail_dest_type][] = array('id' => $obj->rowid, 'label'=> $libelle_type, 'code'=> $obj->code, 'source'=> $obj->source);
+
+				$i++;
+			}
+			return $TContactType;
+		}
+		else
+		{
+			$this->error=$this->db->lasterror();
+			//dol_print_error($this->db);
+			return null;
+		}
+
+	}
 	/**
 	 *      Return id of contacts for a source and a contact code.
 	 *      Example: contact client de facturation ('external', 'BILLING')

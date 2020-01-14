@@ -161,6 +161,7 @@ if (($action == 'send' || $action == 'relance') && ! $_POST['addfile'] && ! $_PO
 		$sendtoid = array();
 		$sendtouserid=array();
 		$sendtoccuserid=array();
+		$sendtocccuserid=array();
 
 		// Define $sendto
 		$receiver=$_POST['receiver'];
@@ -314,7 +315,54 @@ if (($action == 'send' || $action == 'relance') && ! $_POST['addfile'] && ! $_PO
 			// <img alt="" src="'.$urlwithroot.'viewimage.php?modulepart=medias&amp;entity=1&amp;file=image/ldestailleur_166x166.jpg" style="height:166px; width:166px" />
 			$message=preg_replace('/(<img.*src=")[^\"]*viewimage\.php([^\"]*)modulepart=medias([^\"]*)file=([^\"]*)("[^\/]*\/>)/', '\1'.$urlwithroot.'/viewimage.php\2modulepart=medias\3file=\4\5', $message);
 
-			$sendtobcc= GETPOST('sendtoccc');
+//			$sendtobcc= GETPOST('sendtoccc');
+			// Define $sendtobcc
+			$receiverccc=$_POST['receiverccc'];
+			if (! is_array($receiverccc))
+			{
+				if ($receiverccc == '-1') $receiverccc=array();
+				else $receiverccc=array($receiverccc);
+			}
+			$tmparray=array();
+			if (trim($_POST['sendtoccc']))
+			{
+				$tmparray[] = trim($_POST['sendtoccc']);
+			}
+			if (count($receiverccc) > 0)
+			{
+				foreach($receiverccc as $key=>$val)
+				{
+					// Recipient was provided from combo list
+					if ($val == 'thirdparty')	// Key selected means currentthird party (may be usd for current member or current user too)
+					{
+						$tmparray[] = dol_string_nospecial($thirdparty->name, ' ', array(",")).' <'.$thirdparty->email.'>';
+					}
+					// Recipient was provided from combo list
+					elseif ($val == 'contact')	// Key selected means current contact
+					{
+						$tmparray[] = dol_string_nospecial($contact->name, ' ', array(",")).' <'.$contact->email.'>';
+					}
+					elseif ($val)				// $val is the Id of a contact
+					{
+						$tmparray[] = $thirdparty->contact_get_property((int) $val, 'email');
+						//$sendtoid[] = $val;  TODO Add also id of contact in CC ?
+					}
+				}
+			}
+			if (!empty($conf->global->MAIN_MAIL_ENABLED_USER_DEST_SELECT)) {
+				$receivercccuser=$_POST['receivercccuser'];
+
+				if (is_array($receivercccuser) && count($receivercccuser)>0)
+				{
+					$fuserdest = new User($db);
+					foreach($receivercccuser as $key=>$val)
+					{
+						$tmparray[] = $fuserdest->user_get_property($val, 'email');
+						$sendtocccuserid[] = $val;
+					}
+				}
+			}
+			$sendtobcc=implode(',', $tmparray);
 			// Autocomplete the $sendtobcc
 			// $autocopy can be MAIN_MAIL_AUTOCOPY_PROPOSAL_TO, MAIN_MAIL_AUTOCOPY_ORDER_TO, MAIN_MAIL_AUTOCOPY_INVOICE_TO, MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO...
 			if (! empty($autocopy))

@@ -86,10 +86,16 @@ class FormMail extends Form
 	 * @var int|int[]
 	 */
 	public $withto;				// Show recipient emails
+	public $withtoselected;				// Show recipient emails
+	public $withtouserselected;				// Show recipient emails
 
 	public $withtofree;			// Show free text for recipient emails
 	public $withtocc;
+	public $withtoccselected;
+	public $withtoccuserselected;
 	public $withtoccc;
+	public $withtocccselected;
+	public $withtocccuserselected;
 	public $withtopic;
 	public $withfile;				// 0=No attaches files, 1=Show attached files, 2=Can add new attached files
 	public $withmaindocfile;		// 1=Add a checkbox "Attach also main document" for mass actions (checked by default), -1=Add checkbox (not checked by default)
@@ -112,6 +118,7 @@ class FormMail extends Form
 
 	public $withtouser=array();
 	public $withtoccuser=array();
+	public $withtocccuser=array();
 
 	public $lines_model;
 
@@ -129,9 +136,15 @@ class FormMail extends Form
 
 		$this->withfrom=1;
 		$this->withto=1;
+		$this->withtoselected=array();
+		$this->withtouserselected=array();
 		$this->withtofree=1;
 		$this->withtocc=1;
+		$this->withtoccselected=array();
+		$this->withtoccuserselected=array();
 		$this->withtoccc=0;
+		$this->withtocccselected=array();
+		$this->withtocccuserselected=array();
 		$this->witherrorsto=0;
 		$this->withtopic=1;
 		$this->withfile=0;			// 1=Add section "Attached files". 2=Can add files.
@@ -656,6 +669,7 @@ class FormMail extends Form
 						{
 							$withtoselected = array_keys($tmparray);
 						}
+						if(empty($withtoselected) && !empty($this->withtoselected)) $withtoselected = $this->withtoselected;
 						$out.= $form->multiselectarray("receiver", $tmparray, $withtoselected, null, null, 'inline-block minwidth500', null, "");
 					}
 				}
@@ -680,6 +694,7 @@ class FormMail extends Form
 				{
 					$withtoselected = array_keys($tmparray);
 				}
+				if(empty($withtoselected) && !empty($this->withtouserselected)) $withtoselected = $this->withtouserselected;
 				$out.= $form->multiselectarray("receiveruser", $tmparray, $withtoselected, null, null, 'inline-block minwidth500', null, "");
 				$out.= "</td></tr>\n";
 			}
@@ -722,12 +737,12 @@ class FormMail extends Form
 							$tmparray[$key]=dol_htmlentities($tmparray[$key], null, 'UTF-8', true);
 						}
 						$withtoccselected=GETPOST("receivercc");     // Array of selected value
+						if(empty($withtoccselected) && !empty($this->withtoccselected)) $withtoccselected = $this->withtoccselected;
 						$out.= $form->multiselectarray("receivercc", $tmparray, $withtoccselected, null, null, 'inline-block minwidth500', null, "");
 					}
 				}
 				$out.= "</td></tr>\n";
 			}
-
 			// To User cc
 			if (! empty($this->withtoccuser) && is_array($this->withtoccuser) && !empty($conf->global->MAIN_MAIL_ENABLED_USER_DEST_SELECT))
 			{
@@ -746,6 +761,7 @@ class FormMail extends Form
 				{
 					$withtoselected = array_keys($tmparray);
 				}
+				if(empty($withtoselected) && !empty($this->withtoccuserselected)) $withtoselected = $this->withtoccuserselected;
 				$out.= $form->multiselectarray("receiverccuser", $tmparray, $withtoselected, null, null, 'inline-block minwidth500', null, "");
 				$out.= "</td></tr>\n";
 			}
@@ -1031,7 +1047,8 @@ class FormMail extends Form
 					$tmparray[$key]=dol_htmlentities($tmparray[$key], null, 'UTF-8', true);
 				}
 				$withtocccselected=GETPOST("receiverccc");     // Array of selected value
-				$out.= $form->multiselectarray("receiverccc", $tmparray, $withtocccselected, null, null, null, null, "90%");
+				if(empty($withtocccselected)) $withtocccselected = $this->withtocccselected;
+				$out.= $form->multiselectarray("receiverccc", $tmparray, $withtocccselected, null, null, 'inline-block minwidth500', null, "");
 			}
 		}
 
@@ -1045,6 +1062,27 @@ class FormMail extends Form
 		if (! empty($conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO) && ! empty($this->param['models']) && $this->param['models'] == 'project') $showinfobcc=$conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO;
 		if ($showinfobcc) $out.=' + '.$showinfobcc;
 		$out.= "</td></tr>\n";
+		if (! empty($this->withtocccuser) && is_array($this->withtocccuser) && !empty($conf->global->MAIN_MAIL_ENABLED_USER_DEST_SELECT))
+		{
+			$out.= '<tr><td>';
+			$out.= $langs->trans("MailToCCCUsers");
+			$out.= '</td><td>';
+
+			// multiselect array convert html entities into options tags, even if we dont want this, so we encode them a second time
+			$tmparray = $this->withtocccuser;
+			foreach($tmparray as $key => $val)
+			{
+				$tmparray[$key]=dol_htmlentities($tmparray[$key], null, 'UTF-8', true);
+			}
+			$withtoselected=GETPOST("receivercccuser", 'none');     // Array of selected value
+			if (empty($withtoselected) && count($tmparray) == 1 && GETPOST('action', 'aZ09') == 'presend')
+			{
+				$withtoselected = array_keys($tmparray);
+			}
+			if(empty($withtoselected) && !empty($this->withtocccuserselected)) $withtoselected = $this->withtocccuserselected;
+			$out.= $form->multiselectarray("receivercccuser", $tmparray, $withtoselected, null, null, 'inline-block minwidth500', null, "");
+			$out.= "</td></tr>\n";
+		}
 		return $out;
 	}
 

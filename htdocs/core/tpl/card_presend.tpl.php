@@ -138,8 +138,37 @@ if ($action == 'presend')
 		$formmail->frommail=dolAddEmailTrackId($formmail->frommail, $trackid);
 	}
 	$formmail->withfrom = 1;
-
-	// Fill list of recipient with email inside <>.
+	//Prepare mail contact array
+	//Check if contact type has mail recipient type
+	$TMailContactType = $object->getMailRecipientContactType('all');
+	$TContactRecipient = $TContactMailCC = $TContactMailCCC = array();
+	$TUserRecipient = $TUserMailCC = $TUserMailCCC = array();
+	if(!empty($TMailContactType)) {
+		 // $mailDestType (1 => Recipient, 2 => Copy, 3 => Cached Copy)
+		foreach($TMailContactType as $mailDestType => $TContactType) {
+			//Check if a contact is linked to object
+			if(!empty($TContactType)) {
+				foreach($TContactType as $contactType) {
+					$TContact = $object->liste_contact(-1, $contactType['source'], 0, $contactType['code']);
+					if(!empty($TContact)) {
+						foreach($TContact as $contact) {
+							if(!empty($contact['email'])) {
+								if($contactType['source'] == 'internal') {
+									if($mailDestType == 1) $TUserRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+									if($mailDestType == 2) $TUserMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+									if($mailDestType == 3) $TUserMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+								} else {
+									if($mailDestType == 1) $TContactRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+									if($mailDestType == 2) $TContactMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+									if($mailDestType == 3) $TContactMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	$liste = array();
 	if ($object->element == 'expensereport')
 	{
@@ -185,12 +214,22 @@ if ($action == 'presend')
 		if (count($listeuser)>0) {
 			$formmail->withtouser = $listeuser;
 			$formmail->withtoccuser = $listeuser;
+			$formmail->withtocccuser = $listeuser;
 		}
 	}
-
+	if(!empty($TContactRecipient)) $liste += $TContactRecipient;
+	if(!empty($TContactMailCC)) $liste += $TContactMailCC;
+	if(!empty($TContactMailCCC)) $liste += $TContactMailCCC;
 	$formmail->withto = GETPOST('sendto') ? GETPOST('sendto') : $liste;
 	$formmail->withtocc = $liste;
-	$formmail->withtoccc = $conf->global->MAIN_EMAIL_USECCC;
+	if(is_numeric($conf->global->MAIN_EMAIL_USECCC) && $conf->global->MAIN_EMAIL_USECCC > 0) $formmail->withtoccc = $liste;
+	else $formmail->withtoccc = $conf->global->MAIN_EMAIL_USECCC;
+	if(!empty($TContactRecipient)) $formmail->withtoselected = array_keys($TContactRecipient);
+	if(!empty($TContactMailCC)) $formmail->withtoccselected = array_keys($TContactMailCC);
+	if(!empty($TContactMailCCC)) $formmail->withtocccselected = array_keys($TContactMailCCC);
+	if(!empty($TUserRecipient)) $formmail->withtouserselected = array_keys($TUserRecipient);
+	if(!empty($TUserMailCC)) $formmail->withtoccuserselected = array_keys($TUserMailCC);
+	if(!empty($TUserMailCCC)) $formmail->withtocccuserselected = array_keys($TUserMailCCC);
 	$formmail->withtopic = $topicmail;
 	$formmail->withfile = 2;
 	$formmail->withbody = 1;

@@ -15,6 +15,7 @@ MailToUsers=Aux utilisateurs
 MailCC=Copie à
 MailToCCUsers=Copie aux utilisateurs
 MailCCC=Copie cachée à
+MailToCCCUsers=Copie cachée aux utilisateurs
 MailTopic=Sujet du mail
 MailText=Message
 MailFile=Fichiers joints
