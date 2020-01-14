@@ -262,6 +262,7 @@ class Utils
 			if (GETPOST("disable_fk", "alpha") || $usedefault) $param.=" -K";
 			if (GETPOST("sql_compat", "alpha") && GETPOST("sql_compat", "alpha") != 'NONE') $param.=" --compatible=".escapeshellarg(GETPOST("sql_compat", "alpha"));
 			if (GETPOST("drop_database", "alpha"))        $param.=" --add-drop-database";
+			if (GETPOST("use_mysql_quick_param", "alpha"))$param.=" --quick";
 			if (GETPOST("sql_structure", "alpha") || $usedefault)
 			{
 				if (GETPOST("drop", "alpha") || $usedefault)	$param.=" --add-drop-table=TRUE";
@@ -707,7 +708,7 @@ class Utils
 				$outfile=$dirofmoduletmp.'/out.tmp';
 
 				require_once DOL_DOCUMENT_ROOT.'/core/class/utils.class.php';
-				$utils = new Utils($db);
+				$utils = new Utils($this->db);
 				$resarray = $utils->executeCLI($command, $outfile);
 				if ($resarray['result'] != '0')
 				{

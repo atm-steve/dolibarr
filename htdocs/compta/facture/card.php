@@ -1320,7 +1320,7 @@ if (empty($reshook))
 								if (empty($amount)) continue;
 
 								$arraylist = array('amount' => 'FixAmount','variable' => 'VarAmount');
-								$descline = $langs->trans('Deposit');
+								$descline = '(DEPOSIT)';
 								//$descline.= ' - '.$langs->trans($arraylist[$typeamount]);
 								if ($typeamount=='amount') {
 									$descline.= ' ('. price($valuedeposit, '', $langs, 0, - 1, - 1, (!empty($object->multicurrency_code) ? $object->multicurrency_code : $conf->currency)).')';
@@ -3047,7 +3047,7 @@ if ($action == 'create')
 			{
 				print '<div class="tagtr listofinvoicetype"><div class="tagtd listofinvoicetype">';
 				$tmp='<input type="radio" id="radio_creditnote" name="type" value="2"' . (GETPOST('type') == 2 ? ' checked' : '');
-				if (! $optionsav) $tmp.=' disabled';
+				if (! $optionsav && empty($conf->global->INVOICE_CREDIT_NOTE_STANDALONE)) $tmp.=' disabled';
 				$tmp.= '> ';
 				// Show credit note options only if we checked credit note
 				print '<script type="text/javascript" language="javascript">

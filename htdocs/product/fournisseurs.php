@@ -49,7 +49,6 @@ $contextpage=GETPOST('contextpage','aZ')?GETPOST('contextpage','aZ'):'pricesuppl
 
 $socid=GETPOST('socid', 'int');
 $cost_price=GETPOST('cost_price', 'alpha');
-
 $backtopage=GETPOST('backtopage','alpha');
 $error=0;
 
@@ -60,6 +59,7 @@ if (! empty($_REQUEST['search_fourn_id']))
 	$_POST['id_fourn'] = $_POST['search_fourn_id'];
 	$_REQUEST['id_fourn'] = $_REQUEST['search_fourn_id'];
 }
+
 // Security check
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref : ''));
 $fieldtype = (! empty($ref) ? 'ref' : 'rowid');
@@ -800,13 +800,17 @@ SCRIPT;
                 if($conf->barcode->enabled) {
                     print_liste_field_titre("BarcodeValue", $_SERVER["PHP_SELF"], "pfp.barcode", "", $param, 'align="center"', $sortfield, $sortorder);
                     print_liste_field_titre("BarcodeType", $_SERVER["PHP_SELF"], "pfp.fk_barcode_type", "", $param, 'align="center"', $sortfield, $sortorder);
-                }
-                print_liste_field_titre('');
+
+				if (is_object($hookmanager))
+				{
+				    $parameters=array('id_fourn'=>$id_fourn, 'prod_id'=>$object->id);
+				    $reshook=$hookmanager->executeHooks('printFieldListTitle', $parameters, $object, $action);
+				}
+				print_liste_field_titre('');
 				print "</tr>\n";
 
 				if (is_array($product_fourn_list))
 				{
-
 					foreach($product_fourn_list as $productfourn)
 					{
 						print '<tr class="oddeven">';

@@ -552,6 +552,7 @@ if (empty($reshook))
 	    	header('Location: ' . $_SERVER["PHP_SELF"] . '?id=' . $object->id);
 	    	exit();
 	    }
+		setEventMessages($object->error, $object->errors, 'errors');
 	}
 
 	elseif ($action == 'classifyclosed')
@@ -562,6 +563,7 @@ if (empty($reshook))
 	    	header('Location: ' . $_SERVER["PHP_SELF"] . '?id=' . $object->id);
 	    	exit();
 	    }
+		setEventMessages($object->error, $object->errors, 'errors');
 	}
 
 	/*
@@ -697,7 +699,7 @@ if (empty($reshook))
 							if ($lines[$i]->entrepot_id > 0)
 							{
 								// single warehouse shipment line
-								if ($lines[i]->entrepot_id == $lotStock->warehouseid)
+								if ($lines[$i]->entrepot_id == $lotStock->warehouseid)
 								{
 									$lineIdToAddLot = $line_id;
 								}
