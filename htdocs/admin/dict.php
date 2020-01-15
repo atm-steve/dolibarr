@@ -1874,9 +1874,14 @@ function fieldList($fieldlist, $obj = '', $tabname = '', $context = '')
 		}
 	    elseif ($fieldlist[$field] == 'mail_dest_type')
 		{
+			if(empty($conf->global->MAIN_EMAIL_USECCC)){
+				$tmpMailDestType = $mailDestType;
+				unset($mailDestType[3]);
+			}
 			print '<td>';
 			print $form->selectarray('mail_dest_type', $mailDestType, (! empty($obj->{$fieldlist[$field]})?$obj->{$fieldlist[$field]}:''));
 			print '</td>';
+			if(empty($conf->global->MAIN_EMAIL_USECCC)) $mailDestType = $tmpMailDestType;
 		}
 		elseif ($fieldlist[$field] == 'private')
 		{
