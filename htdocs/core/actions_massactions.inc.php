@@ -99,15 +99,8 @@ if (! $error && $massaction == 'confirm_presend')
 				if ($objecttmp->element == 'holiday')       $thirdpartyid=$objecttmp->fk_user;
 				if (empty($thirdpartyid)) $thirdpartyid=0;
 
-				if ($objectclass == 'Facture') {
-					$tmparraycontact = array();
-					$tmparraycontact = $objecttmp->liste_contact(-1, 'external', 0, 'BILLING');
-					if (is_array($tmparraycontact) && count($tmparraycontact) > 0) {
-						foreach ($tmparraycontact as $data_email) {
-							$listofobjectcontacts[$toselectid][$data_email['id']] = $data_email['email'];
-						}
-					}
-				}
+				$listofobjectcontacts[$toselectid] = $objecttmp->getMailRecipientContact('all');
+
 				$listofobjectthirdparties[$thirdpartyid]=$thirdpartyid;
 				$listofobjectref[$thirdpartyid][$toselectid]=$objecttmp;
 			}
@@ -188,7 +181,7 @@ if (! $error && $massaction == 'confirm_presend')
 			$receivercc=$_POST['receivercc'];
 			if (! is_array($receivercc))
 			{
-				if ($receivercc == '-1') $receivercc=array();
+				if ($receivercc == '-1' || empty($receivercc)) $receivercc=array();
 				else $receivercc=array($receivercc);
 			}
 			$tmparray=array();
@@ -214,11 +207,43 @@ if (! $error && $massaction == 'confirm_presend')
 			}
 			$sendtocc=implode(',', $tmparray);
 
+			if(!empty($conf->global->MAIN_EMAIL_USECCC)) {
+				// Define $sendtobcc
+				$receiverccc = $_POST['receiverccc'];
+				if(!is_array($receiverccc)) {
+					if($receiverccc == '-1' || empty($receiverccc)) $receiverccc = array();
+					else $receiverccc = array($receiverccc);
+				}
+				$tmparray = array();
+				if(trim($_POST['sendtoccc'])) {
+					$tmparray[] = trim($_POST['sendtoccc']);
+				}
+				if(count($receiverccc) > 0) {
+					foreach($receiverccc as $key => $val) {
+						// Recipient was provided from combo list
+						if($val == 'thirdparty') // Id of third party
+						{
+							$tmparray[] = $thirdparty->name . ' <' . $thirdparty->email . '>';
+						}
+						else if($val)    // Id du contact
+						{
+							$tmparray[] = $thirdparty->contact_get_property((int)$val, 'email');
+							//$sendtoid[] = $val;  TODO Add also id of contact in CCC ?
+						}
+					}
+				}
+
+				$sendtobcc = implode(',', $tmparray);
+			}
+
 			//var_dump($listofobjectref);exit;
 			$listofqualifiedobj=array();
 			$listofqualifiedref=array();
 			$thirdpartywithoutemail=array();
-
+			//Check if $sendto vars have been changed by user
+			$sendtoSetByUser = (!empty($sendto) ? true : false);
+			$sendtoccSetByUser = (!empty($sendtocc) ? true : false);
+			$sendtobccSetByUser = (!empty($sendtobcc) ? true : false);
 			foreach($listofobjectref[$thirdpartyid] as $objectid => $objectobj)
 			{
 				//var_dump($thirdpartyid.' - '.$objectid.' - '.$objectobj->statut);
@@ -245,7 +270,7 @@ if (! $error && $massaction == 'confirm_presend')
 				}
 
 				// Test recipient
-				if (empty($sendto)) 	// For the case, no recipient were set (multi thirdparties send)
+				if (empty($sendtoSetByUser)) 	// For the case, no recipient were set (multi thirdparties send)
 				{
 					if ($objectobj->element == 'expensereport')
 					{
@@ -259,19 +284,27 @@ if (! $error && $massaction == 'confirm_presend')
 					    $fuser->fetch($objectobj->fk_user);
 					    $sendto = $fuser->email;
 					}
-					elseif ($objectobj->element == 'facture' && !empty($listofobjectcontacts[$objectid]))
+					elseif (!empty($listofobjectcontacts[$objectid]['ContactRecipient']) || !empty($listofobjectcontacts[$objectid]['UserRecipient']))
 					{
 						$emails_to_sends = array();
 						$objectobj->fetch_thirdparty();
 						$contactidtosend=array();
-						foreach ($listofobjectcontacts[$objectid] as $contactemailid => $contactemailemail) {
-							$emails_to_sends[] = $objectobj->thirdparty->contact_get_property($contactemailid, 'email');
-							if (!in_array($contactemailid, $contactidtosend)) {
-								$contactidtosend[] = $contactemailid;
+						if(!empty($listofobjectcontacts[$objectid]['ContactRecipient'])) {
+							foreach($listofobjectcontacts[$objectid]['ContactRecipient'] as $contactemailid => $contactemailemail) {
+								$emails_to_sends[] = $contactemailemail;
+								if(!in_array($contactemailid, $contactidtosend)) {
+									$contactidtosend[] = $contactemailid;
+								}
+							}
+						}
+						if(!empty($listofobjectcontacts[$objectid]['UserRecipient'])) {
+							foreach($listofobjectcontacts[$objectid]['UserRecipient'] as $useremailid => $useremailemail) {
+								$emails_to_sends[] = $useremailemail;
 							}
 						}
 						if (count($emails_to_sends) > 0) {
-							$sendto = implode(',', $emails_to_sends);
+							if(empty($sendto) && !is_array($sendto)) $sendto = array();
+							$sendto[$objectid] = implode(',', $emails_to_sends); //We use an array because sendto can be different on document & we arent in the sending loop
 						}
 					}
 					else
@@ -292,6 +325,50 @@ if (! $error && $massaction == 'confirm_presend')
 					dol_syslog('No recipient for thirdparty: '.$objectobj->thirdparty->name, LOG_WARNING);
 					$thirdpartywithoutemail[$objectobj->thirdparty->id]=1;
 				   	continue;
+				}
+
+				// sendtocc
+				if (empty($sendtoccSetByUser) && (!empty($listofobjectcontacts[$objectid]['ContactMailCC']) || !empty($listofobjectcontacts[$objectid]['UserMailCC'])))
+				{
+					$tmparray = array();
+					if(!empty($listofobjectcontacts[$objectid]['ContactMailCC'])) {
+						foreach($listofobjectcontacts[$objectid]['ContactMailCC'] as $contactemailid => $contactemailemail) {
+							$tmparray[] = $contactemailemail;
+						}
+					}
+					if(!empty($listofobjectcontacts[$objectid]['UserMailCC'])) {
+						foreach($listofobjectcontacts[$objectid]['UserMailCC'] as $useremailid => $useremailemail) {
+							$tmparray[] = $useremailemail;
+						}
+					}
+					if(empty($sendtocc) && !is_array($sendtocc)) $sendtocc = array();
+					$sendtocc[$objectid]=implode(',', $tmparray);
+				}
+
+				//sendtobcc
+				if (!empty($conf->global->MAIN_EMAIL_USECCC) && empty($sendtobccSetByUser) && (!empty($listofobjectcontacts[$objectid]['ContactMailCCC']) || !empty($listofobjectcontacts[$objectid]['UserMailCCC'])))
+				{
+					$tmparray = array();
+					if(!empty($listofobjectcontacts[$objectid]['ContactMailCCC'])) {
+						foreach($listofobjectcontacts[$objectid]['ContactMailCCC'] as $contactemailid => $contactemailemail) {
+							$tmparray[] = $contactemailemail;
+						}
+					}
+					if(!empty($listofobjectcontacts[$objectid]['UserMailCCC'])) {
+						foreach($listofobjectcontacts[$objectid]['UserMailCCC'] as $useremailid => $useremailemail) {
+							$tmparray[] = $useremailemail;
+						}
+					}
+					if(empty($sendtobcc) && !is_array($sendtobcc)) $sendtobcc = array();
+					$sendtobcc[$objectid]=implode(',', $tmparray);
+
+					if($objectclass == 'Propal') $sendtobcc[$objectid] .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_PROPOSAL_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_PROPOSAL_TO));
+					if($objectclass == 'Commande') $sendtobcc[$objectid] .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_ORDER_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_ORDER_TO));
+					if($objectclass == 'Facture') $sendtobcc[$objectid] .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_INVOICE_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_INVOICE_TO));
+					if($objectclass == 'Supplier_Proposal') $sendtobcc[$objectid] .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO));
+					if($objectclass == 'CommandeFournisseur') $sendtobcc[$objectid] .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO));
+					if($objectclass == 'FactureFournisseur') $sendtobcc[$objectid] .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO));
+					if($objectclass == 'Project') $sendtobcc[$objectid] .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO));
 				}
 
 				if ($_POST['addmaindocfile'])
@@ -378,14 +455,15 @@ if (! $error && $massaction == 'confirm_presend')
 				$subject = GETPOST('subject', 'none');
 				$message = GETPOST('message', 'none');
 
-				$sendtobcc = GETPOST('sendtoccc');
-				if ($objectclass == 'Propal') 				$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_PROPOSAL_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_PROPOSAL_TO));
-				if ($objectclass == 'Commande') 			$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_ORDER_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_ORDER_TO));
-				if ($objectclass == 'Facture') 				$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_INVOICE_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_INVOICE_TO));
-				if ($objectclass == 'Supplier_Proposal') 	$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO));
-				if ($objectclass == 'CommandeFournisseur')	$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO));
-				if ($objectclass == 'FactureFournisseur')	$sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO));
-				if ($objectclass == 'Project') 			    $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO) ? '' : (($sendtobcc?", ":"").$conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO));
+				if(!is_array($sendtobcc)) {
+					if($objectclass == 'Propal') $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_PROPOSAL_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_PROPOSAL_TO));
+					if($objectclass == 'Commande') $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_ORDER_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_ORDER_TO));
+					if($objectclass == 'Facture') $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_INVOICE_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_INVOICE_TO));
+					if($objectclass == 'Supplier_Proposal') $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_PROPOSAL_TO));
+					if($objectclass == 'CommandeFournisseur') $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_ORDER_TO));
+					if($objectclass == 'FactureFournisseur') $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_SUPPLIER_INVOICE_TO));
+					if($objectclass == 'Project') $sendtobcc .= (empty($conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO) ? '' : (($sendtobcc ? ", " : "") . $conf->global->MAIN_MAIL_AUTOCOPY_PROJECT_TO));
+				}
 
 				// $listofqualifiedobj is array with key = object id and value is instance of qualified objects, for the current thirdparty (but thirdparty property is not loaded yet)
 				// $looparray will be an array with number of email to send for the current thirdparty (so 1 or n if n object for same thirdparty)
@@ -486,7 +564,24 @@ if (! $error && $massaction == 'confirm_presend')
 
 					// Send mail (substitutionarray must be done just before this)
                     require_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
-                    $mailfile = new CMailFile($subjectreplaced, $sendto, $from, $messagereplaced, $filepath, $mimetype, $filename, $sendtocc, $sendtobcc, $deliveryreceipt, -1, '', '', $trackid);
+					if($oneemailperrecipient) { //should be rename one mail per thirdparty
+						if(is_array($sendto)){
+							$sendto = implode(',', $sendto); // a line can contains multiple mail separated by comma
+							$sendto = array_unique(explode(',', $sendto));
+							$sendto = implode(',', $sendto);
+						}
+						if(is_array($sendtocc)){
+							$sendtocc = implode(',', $sendtocc);
+							$sendtocc = array_unique(explode(',', $sendtocc));
+							$sendtocc = implode(',', $sendtocc);
+						}
+						if(is_array($sendtobcc)){
+							$sendtobcc = implode(',', $sendtobcc);
+							$sendtobcc = array_unique(explode(',', $sendtobcc));
+							$sendtobcc = implode(',', $sendtobcc);
+						}
+					}
+                    $mailfile = new CMailFile($subjectreplaced, is_array($sendto) ? $sendto[$objectid] : $sendto, $from, $messagereplaced, $filepath, $mimetype, $filename, is_array($sendtocc) ? $sendtocc[$objectid] : $sendtocc, is_array($sendtobcc) ? $sendtobcc[$objectid] : $sendtobcc, $deliveryreceipt, -1, '', '', $trackid);
 					if ($mailfile->error)
 					{
 						$resaction.='<div class="error">'.$mailfile->error.'</div>';
@@ -496,7 +591,7 @@ if (! $error && $massaction == 'confirm_presend')
 						$result=$mailfile->sendfile();
 						if ($result)
 						{
-							$resaction.=$langs->trans('MailSuccessfulySent', $mailfile->getValidAddress($from, 2), $mailfile->getValidAddress($sendto, 2)).'<br>';		// Must not contain "
+							$resaction.=$langs->trans('MailSuccessfulySent', $mailfile->getValidAddress($from, 2), $mailfile->getValidAddress(is_array($sendto) ? $sendto[$objectid] : $sendto, 2)).'<br>';		// Must not contain "
 
 							$error=0;
 
@@ -514,7 +609,7 @@ if (! $error && $massaction == 'confirm_presend')
 	                            if ($objectclass == 'CommandeFournisseur') $actiontypecode='AC_SUP_ORD';
 	                            if ($objectclass == 'FactureFournisseur') $actiontypecode='AC_SUP_INV';*/
 
-								$actionmsg=$langs->transnoentities('MailSentBy').' '.$from.' '.$langs->transnoentities('To').' '.$sendto;
+								$actionmsg=$langs->transnoentities('MailSentBy').' '.$from.' '.$langs->transnoentities('To').' '.is_array($sendto) ? $sendto[$objectid] : $sendto;
 								if ($message)
 								{
 									if ($sendtocc) $actionmsg = dol_concatdesc($actionmsg, $langs->transnoentities('Bcc') . ": " . $sendtocc);
@@ -565,7 +660,7 @@ if (! $error && $massaction == 'confirm_presend')
 							$langs->load("other");
 							if ($mailfile->error)
 							{
-								$resaction.=$langs->trans('ErrorFailedToSendMail', $from, $sendto);
+								$resaction.=$langs->trans('ErrorFailedToSendMail', $from, is_array($sendto) ? $sendto[$objectid] : $sendto);
 								$resaction.='<br><div class="error">'.$mailfile->error.'</div>';
 							}
 							else

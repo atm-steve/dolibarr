@@ -1266,12 +1266,13 @@ abstract class CommonObject
 	 *		Return array with contacts by mail_dest_type
 	 *
 	 *      @param	string	$source     'internal', 'external' or 'all'
+	 *		@param	string	$onlyemail	0 is fk_contact => Name <email>, 1 is fk_contact => email
 	 *      @param	string	$order		Sort order by : 'position', 'code', 'rowid'...
 	 *      @param  int		$activeonly 0=all status of contact, 1=only the active
 	 *		@param	string	$code		Type of contact (Example: 'CUSTOMER', 'SERVICE')
 	 *      @return array       		Array list  of contacts
 	 */
-	public function getMailRecipientContact($source = 'internal', $order = 'position',  $activeonly = 0, $code = '') {
+	public function getMailRecipientContact($source = 'internal', $onlyemail = 0, $order = 'position',  $activeonly = 0, $code = '') {
 		$TMailContactType = $this->getMailRecipientContactType($source, $order, $activeonly, $code);
 		$TContactRecipient = $TContactMailCC = $TContactMailCCC = array();
 		$TUserRecipient = $TUserMailCC = $TUserMailCCC = array();
@@ -1286,13 +1287,13 @@ abstract class CommonObject
 							foreach($TContact as $contact) {
 								if(!empty($contact['email'])) {
 									if($contactType['source'] == 'internal') {
-										if($mailDestType == 1) $TUserRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-										if($mailDestType == 2) $TUserMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-										if($mailDestType == 3) $TUserMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+										if($mailDestType == 1) $TUserRecipient[$contact['id']] = (!empty($onlyemail) ? $contact['email'] : trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . ' <' . $contact['email'] . '>');
+										if($mailDestType == 2) $TUserMailCC[$contact['id']] = (!empty($onlyemail) ? $contact['email'] : trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . ' <' . $contact['email'] . '>');
+										if($mailDestType == 3) $TUserMailCCC[$contact['id']] = (!empty($onlyemail) ? $contact['email'] : trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . ' <' . $contact['email'] . '>');
 									} else {
-										if($mailDestType == 1) $TContactRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-										if($mailDestType == 2) $TContactMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-										if($mailDestType == 3) $TContactMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+										if($mailDestType == 1) $TContactRecipient[$contact['id']] = (!empty($onlyemail) ? $contact['email'] : trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . ' <' . $contact['email'] . '>');
+										if($mailDestType == 2) $TContactMailCC[$contact['id']] = (!empty($onlyemail) ? $contact['email'] : trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . ' <' . $contact['email'] . '>');
+										if($mailDestType == 3) $TContactMailCCC[$contact['id']] = (!empty($onlyemail) ? $contact['email'] : trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . ' <' . $contact['email'] . '>');
 									}
 								}
 							}
