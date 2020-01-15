@@ -140,35 +140,14 @@ if ($action == 'presend')
 	$formmail->withfrom = 1;
 	//Prepare mail contact array
 	//Check if contact type has mail recipient type
-	$TMailContactType = $object->getMailRecipientContactType('all');
-	$TContactRecipient = $TContactMailCC = $TContactMailCCC = array();
-	$TUserRecipient = $TUserMailCC = $TUserMailCCC = array();
-	if(!empty($TMailContactType)) {
-		 // $mailDestType (1 => Recipient, 2 => Copy, 3 => Cached Copy)
-		foreach($TMailContactType as $mailDestType => $TContactType) {
-			//Check if a contact is linked to object
-			if(!empty($TContactType)) {
-				foreach($TContactType as $contactType) {
-					$TContact = $object->liste_contact(-1, $contactType['source'], 0, $contactType['code']);
-					if(!empty($TContact)) {
-						foreach($TContact as $contact) {
-							if(!empty($contact['email'])) {
-								if($contactType['source'] == 'internal') {
-									if($mailDestType == 1) $TUserRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-									if($mailDestType == 2) $TUserMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-									if($mailDestType == 3) $TUserMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-								} else {
-									if($mailDestType == 1) $TContactRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-									if($mailDestType == 2) $TContactMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-									if($mailDestType == 3) $TContactMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	$TMailContact = $object->getMailRecipientContact('all');
+	$TUserRecipient = $TMailContact['UserRecipient'];
+	$TUserMailCC = $TMailContact['UserMailCC'];
+	$TUserMailCCC = $TMailContact['UserMailCCC'];
+	$TContactRecipient = $TMailContact['ContactRecipient'];
+	$TContactMailCC = $TMailContact['ContactMailCC'];
+	$TContactMailCCC = $TMailContact['ContactMailCCC'];
+
 	$liste = array();
 	if ($object->element == 'expensereport')
 	{

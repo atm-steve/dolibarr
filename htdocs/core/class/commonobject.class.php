@@ -1261,6 +1261,53 @@ abstract class CommonObject
 		}
 
 	}
+
+	/**
+	 *		Return array with contacts by mail_dest_type
+	 *
+	 *      @param	string	$source     'internal', 'external' or 'all'
+	 *      @param	string	$order		Sort order by : 'position', 'code', 'rowid'...
+	 *      @param  int		$activeonly 0=all status of contact, 1=only the active
+	 *		@param	string	$code		Type of contact (Example: 'CUSTOMER', 'SERVICE')
+	 *      @return array       		Array list  of contacts
+	 */
+	public function getMailRecipientContact($source = 'internal', $order = 'position',  $activeonly = 0, $code = '') {
+		$TMailContactType = $this->getMailRecipientContactType($source, $order, $activeonly, $code);
+		$TContactRecipient = $TContactMailCC = $TContactMailCCC = array();
+		$TUserRecipient = $TUserMailCC = $TUserMailCCC = array();
+		if(!empty($TMailContactType)) {
+			// $mailDestType (1 => Recipient, 2 => Copy, 3 => Cached Copy)
+			foreach($TMailContactType as $mailDestType => $TContactType) {
+				//Check if a contact is linked to object
+				if(!empty($TContactType)) {
+					foreach($TContactType as $contactType) {
+						$TContact = $this->liste_contact(-1, $contactType['source'], 0, $contactType['code']);
+						if(!empty($TContact)) {
+							foreach($TContact as $contact) {
+								if(!empty($contact['email'])) {
+									if($contactType['source'] == 'internal') {
+										if($mailDestType == 1) $TUserRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+										if($mailDestType == 2) $TUserMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+										if($mailDestType == 3) $TUserMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+									} else {
+										if($mailDestType == 1) $TContactRecipient[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+										if($mailDestType == 2) $TContactMailCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+										if($mailDestType == 3) $TContactMailCCC[$contact['id']] = trim(dolGetFirstLastname($contact['firstname'], $contact['lastname'])) . '<' . $contact['email'] . '>';
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return array('UserRecipient' => $TUserRecipient,
+					 'UserMailCC' => $TUserMailCC,
+					 'UserMailCCC' => $TUserMailCCC,
+					 'ContactRecipient' => $TContactRecipient,
+					 'ContactMailCC' => $TContactMailCC,
+					 'ContactMailCCC' => $TContactMailCCC);
+	}
 	/**
 	 *      Return id of contacts for a source and a contact code.
 	 *      Example: contact client de facturation ('external', 'BILLING')
