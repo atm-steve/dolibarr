@@ -171,6 +171,19 @@ class Odf
     	    // Result after clean must be "MYPODUCT - Desc bold with é accent\n\nUn texto en espa&ntilde;ol ?"
 
 			// We want to ignore \n and we want all <br> to be \n
+
+			// Spécifique Multigraphic : traduire certaines balises HTML en balises ODT
+			$value=preg_replace('/<br \/>/i',"__n__",$value);
+			$value=preg_replace('/<strong>/','__g__',$value);
+			$value=preg_replace('/<\/strong>/','__g2__',$value);
+
+			$value=preg_replace('/<em>/','__i__',$value);
+			$value=preg_replace('/<\/em>/','__i2__',$value);
+			$value=preg_replace('/<u>/','__u__',$value);
+			$value=preg_replace('/<\/u>/','__u2__',$value);
+			// Fin Spécifique Multigraphic
+
+/* Code original
 			$value=preg_replace('/(\r\n|\r|\n)/i','',$value);
 			$value=preg_replace('/<br>/i',"\n",$value);
 			$value=preg_replace('/<br\s+[^<>\/]*>/i',"\n",$value);
@@ -178,7 +191,7 @@ class Odf
 
 			//$value=preg_replace('/<strong>/','__lt__text:p text:style-name=__quot__bold__quot____gt__',$value);
 			//$value=preg_replace('/<\/strong>/','__lt__/text:p__gt__',$value);
-
+*/
 			$value=dol_string_nohtmltag($value, 0);
 		}
 
@@ -193,12 +206,23 @@ class Odf
 	 */
 	public function preOdfToOdf($value)
 	{
+		// Spécifique Multigraphic : traduire certaines balises HTML en balises ODT
+		$value = str_replace('__n__', '<text:line-break/>', $value);
+		$value = str_replace('__g__','<text:span text:style-name="bold">',$value);
+		$value = str_replace('__g2__','</text:span>',$value);
+		$value = str_replace('__u__','<text:span text:style-name="underline">',$value);
+		$value = str_replace('__u2__','</text:span>',$value);
+		$value = str_replace('__i__','<text:span text:style-name="italic">',$value);
+		$value = str_replace('__i2__','</text:span>',$value);
+		// Fin Spécifique Multigraphic
+
+/* Code original
 		$value = str_replace("\n", "<text:line-break/>", $value);
 
 		//$value = str_replace("__lt__", "<", $value);
 		//$value = str_replace("__gt__", ">", $value);
 		//$value = str_replace("__quot__", '"', $value);
-
+*/
 		return $value;
 	}
 
