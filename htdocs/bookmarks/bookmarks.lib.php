@@ -45,7 +45,6 @@ function printBookmarksList($aDb, $aLangs)
 		$langs->load("bookmarks");
 
 		$url= $_SERVER["PHP_SELF"];
-
 		if (! empty($_SERVER["QUERY_STRING"]))
 		{
 		    $url.=(dol_escape_htmltag($_SERVER["QUERY_STRING"])?'?'.dol_escape_htmltag($_SERVER["QUERY_STRING"]):'');
@@ -61,7 +60,7 @@ function printBookmarksList($aDb, $aLangs)
 		    {
 	    	    foreach($_POST as $key => $val)
 	    	    {
-	                if (preg_match('/^search_/', $key) && $val != '') $tmpurl.=($tmpurl?'&':'').$key.'='.$val;
+	                if ((preg_match('/^search_/', $key) || $key == 'viewstatut') && $val != '') $tmpurl.=($tmpurl?'&':'').$key.'='.$val;
 	    	    }
 		    }
 		    $url.=($tmpurl?'?'.$tmpurl:'');
