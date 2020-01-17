@@ -59,6 +59,10 @@ if (GETPOST('subcat', 'alpha') === 'yes') {
 $selected_type = GETPOST('search_type', 'int');
 if ($selected_type =='') $selected_type = -1;
 
+// Supplier
+$selected_supplier = GETPOST('search_supplier', 'int');
+if ($selected_supplier =='') $selected_supplier = -1;
+
 // Date range
 $year=GETPOST("year");
 $month=GETPOST("month");
@@ -227,6 +231,9 @@ if ($modecompta == 'CREANCES-DETTES')
 	$sql.= " SUM(CASE WHEN f.type = 2 THEN -l.qty ELSE l.qty END) as qty";
 	$sql.= " FROM ".MAIN_DB_PREFIX."facture as f, ".MAIN_DB_PREFIX."facturedet as l";
 	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product as p ON l.fk_product = p.rowid";
+    if($selected_supplier != -1){
+        $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_fournisseur_price as pfp ON p.rowid = pfp.fk_product";
+    }
 	if ($selected_cat === -2)	// Without any category
 	{
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."categorie_product as cp ON p.rowid = cp.fk_product";
@@ -249,6 +256,9 @@ if ($modecompta == 'CREANCES-DETTES')
 	{
 		$sql.= " AND l.product_type = ".$selected_type;
 	}
+    if($selected_supplier != -1){
+        $sql.=" AND pfp.fk_soc = " . $selected_supplier;
+    }
 	if ($selected_cat === -2)	// Without any category
 	{
 		$sql.=" AND cp.fk_product is null";
@@ -313,6 +323,12 @@ if ($modecompta == 'CREANCES-DETTES')
     print ' ';
     print $langs->trans("Type"). ': ';
     $form->select_type_of_lines(isset($selected_type)?$selected_type:-1,'search_type',1,1,1);
+
+    // supplier filter
+    print ' ';
+    print $langs->trans("Supplier"). ': ';
+    print $form->select_thirdparty_list(isset($selected_supplier)?$selected_supplier:-1, 'search_supplier', 's.fournisseur = 1', 1, '', 0);
+
     print '</td>';
 
     print '<td colspan="5" align="right">';
