@@ -1130,7 +1130,8 @@ function pdf_writeLinkedObjects(&$pdf, $object, $outputlangs, $posx, $posy, $w, 
 	{
 		foreach($linkedobjects as $linkedobject)
 		{
-		    $reftoshow = $linkedobject["ref_title"].' : '.$linkedobject["ref_value"];
+			if(empty($linkedobject["ref_title"])) continue;
+			$reftoshow = $linkedobject["ref_title"].' : '.$linkedobject["ref_value"];
 		    if (! empty($linkedobject["date_value"]))
 		    {
 		        $reftoshow .= ' / '.$linkedobject["date_value"];
