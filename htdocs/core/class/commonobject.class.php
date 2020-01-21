@@ -3789,9 +3789,10 @@ abstract class CommonObject
 	 *	@param		string	$resource_type		'resource'
 	 *	@param		int		$busy				Busy or not
 	 *	@param		int		$mandatory			Mandatory or not
+	 * 	@param 		int     $notrigger          NOT Used
 	 *	@return		int							<=0 if KO, >0 if OK
 	 */
-	function add_element_resource($resource_id, $resource_type, $busy=0, $mandatory=0)
+	function add_element_resource($resource_id, $resource_type, $busy=0, $mandatory=0, $notrigger=0)
 	{
 		$this->db->begin();
 
