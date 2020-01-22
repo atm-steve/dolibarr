@@ -538,7 +538,7 @@ class Expedition extends CommonObject
 
 				$this->db->free($result);
 
-				if ($this->statut == 0) $this->brouillon = 1;
+				if ($this->statut == self::STATUS_DRAFT) $this->brouillon = 1;
 
 				// Tracking url
 				$this->GetUrlTrackingStatus($obj->tracking_number);
@@ -782,7 +782,7 @@ class Expedition extends CommonObject
 		if (! $error)
 		{
 			$this->ref = $numref;
-			$this->statut = 1;
+			$this->statut = self::STATUS_VALIDATED;
 		}
 
 		if (! $error)
@@ -815,7 +815,7 @@ class Expedition extends CommonObject
 
 		if ($conf->livraison_bon->enabled)
 		{
-			if ($this->statut == 1 || $this->statut == 2)
+			if ($this->statut == self::STATUS_VALIDATED || $this->statut == self::STATUS_CLOSED)
 			{
 				// Expedition validee
 				include_once DOL_DOCUMENT_ROOT.'/livraison/class/livraison.class.php';
@@ -1110,7 +1110,7 @@ class Expedition extends CommonObject
 
 		$this->db->begin();
 		// Stock control
-		if ($conf->stock->enabled && $conf->global->STOCK_CALCULATE_ON_SHIPMENT && $this->statut > 0)
+		if ($conf->stock->enabled && $conf->global->STOCK_CALCULATE_ON_SHIPMENT && $this->statut > self::STATUS_DRAFT)
 		{
 			require_once(DOL_DOCUMENT_ROOT."/product/stock/class/mouvementstock.class.php");
 
@@ -1662,7 +1662,7 @@ class Expedition extends CommonObject
 		$this->id=0;
 		$this->ref = 'SPECIMEN';
 		$this->specimen=1;
-		$this->statut               = 1;
+		$this->statut               = self::STATUS_VALIDATED;
 		$this->livraison_id         = 0;
 		$this->date                 = $now;
 		$this->date_creation        = $now;
@@ -2036,6 +2036,7 @@ class Expedition extends CommonObject
 		}
 		else
 		{
+			$this->statut = self::STATUS_VALIDATED;
 			$this->db->rollback();
 			return -1;
 		}
@@ -2059,7 +2060,7 @@ class Expedition extends CommonObject
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
-			$this->statut=2;
+			$this->statut=self::STATUS_CLOSED;
 			$this->billed=1;
 
 			// Call trigger
@@ -2079,6 +2080,8 @@ class Expedition extends CommonObject
 		}
 		else
 		{
+			$this->statut=self::STATUS_VALIDATED;
+			$this->billed=0;
 			$this->db->rollback();
 			return -1;
 		}
@@ -2103,13 +2106,15 @@ class Expedition extends CommonObject
 
 		$this->db->begin();
 
+		$oldbilled=$this->billed;
+
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.'expedition SET fk_statut=1';
 		$sql .= ' WHERE rowid = '.$this->id.' AND fk_statut > 0';
 
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
-			$this->statut=1;
+			$this->statut=self::STATUS_VALIDATED;
 			$this->billed=0;
 
 			// If stock increment is done on closing
@@ -2207,6 +2212,8 @@ class Expedition extends CommonObject
 		}
 		else
 		{
+			$this->statut=self::STATUS_CLOSED;
+			$this->billed=$oldbilled;
 			$this->db->rollback();
 			return -1;
 		}
