@@ -157,7 +157,7 @@ class mod_facture_mercure extends ModeleNumRefFactures
         //else $where.=" AND type != 2";
 
 		// Get entities
-		$entity = getEntity('invoicenumber', 1, $facture);
+		$entity = getEntity('invoicenumber', 0, $facture);
 
         $numFinal=get_next_value($db,$mask,'facture','facnumber',$where,$objsoc,$facture->date,$mode, false, null, $entity);
         if (! preg_match('/([0-9])+/',$numFinal)) $this->error = $numFinal;
