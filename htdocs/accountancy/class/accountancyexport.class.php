@@ -690,7 +690,6 @@ class AccountancyExport
 					print $separator;//Analytic
 					print $separator;//Analytic
 					print $separator;//Analytic
-					print $separator;//Analytic
 
 					print $end_line;
 				}
