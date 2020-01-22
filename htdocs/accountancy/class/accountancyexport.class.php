@@ -643,7 +643,7 @@ class AccountancyExport
 		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 2', 15) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 2', 60) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 3', 15) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 3', 60) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('AnalyticLabel') . ' 3', 60);
 		print $end_line;
 		$extrafields = new ExtraFields($this->db);
 		$extrafields->fetch_name_optionals_label('facturedet');
@@ -689,7 +689,6 @@ class AccountancyExport
 					print $separator;//Analytic
 					print $separator;//Analytic
 					print $separator;//Analytic
-					print $separator;//Analytic
 
 					print $end_line;
 				}
@@ -712,7 +711,6 @@ class AccountancyExport
 				print price(abs($line->montant)) . $separator;//Amount
 				print $line->sens . $separator;//Direction
 
-				print $separator;//Analytic
 				print $separator;//Analytic
 				print $separator;//Analytic
 				print $separator;//Analytic
