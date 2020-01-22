@@ -625,7 +625,7 @@ class AccountancyExport
 		dol_include_once('/compta/facture/class/facture.class.php');
 		dol_include_once('/accountancy/class/accountingaccount.class.php');
 		$separator = "\t";
-		$end_line = "\n";
+		$end_line = "\r\n";
 
 		/*
 		 * Charlemagne export need header
