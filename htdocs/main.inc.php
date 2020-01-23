@@ -166,6 +166,51 @@ function analyseVarsForSqlAndScriptsInjection(&$var, $type)
 	}
 }
 
+function getEntityUser($username) {
+    global $db, $conf;
+
+    if(empty($username)) return 0;
+
+    dol_include_once('/user/class/user.class.php');
+    dol_include_once('/usergroup/class/user.class.php');
+
+    $u = new User($db);
+    $u->fetch('', $username);
+    $u->getrights('financement');
+    if($u->rights->financement->admin->write) return 17;
+
+    $TGroupEntities_conf = unserialize($conf->global->MULTICOMPANY_USER_GROUP_ENTITY);
+    $TGroupEntities = array();
+    if(! empty($TGroupEntities_conf)) {
+        foreach($TGroupEntities_conf as $TData) {
+            $TGroupEntities[$TData['group_id']][] = $TData['entity_id'];
+        }
+    }
+    $TGroupEntities = array_keys($TGroupEntities);
+
+    if($u->id > 0) {
+        // On récupère la première entité du 1er groupe dans lequel se trouve l'utilisateur
+        $sql = 'SELECT fk_usergroup, entity FROM '.MAIN_DB_PREFIX.'usergroup_user WHERE fk_user = '.$u->id.' ORDER BY entity';
+        $resql = $db->query($sql);
+        $res = $db->fetch_object($resql);
+        $entity = $res->entity;
+
+        // Ici on cherche le premier groupe appartenant à la conf financement pour connecter l'utilisateur dans la bonne entité.
+        // S'il n'y en a pas, on le connecte dans la première entité trouvée au dessus
+        if (! empty($TGroupEntities)) {
+            if (! in_array($entity, $TGroupEntities)) {
+                while ($res = $db->fetch_object($resql)) {
+                    if (in_array($res->fk_usergroup, $TGroupEntities)) {
+                        $entity = $res->entity;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if($entity > 0) return $entity;
+    }
+}
 
 // Check consistency of NOREQUIREXXX DEFINES
 if ((defined('NOREQUIREDB') || defined('NOREQUIRETRAN')) && ! defined('NOREQUIREMENU'))
@@ -558,6 +603,14 @@ if (! defined('NOLOGIN'))
 		$usertotest		= (! empty($_COOKIE['login_dolibarr']) ? $_COOKIE['login_dolibarr'] : GETPOST("username", "alpha", $allowedmethodtopostusername));
 		$passwordtotest	= GETPOST('password', 'none', $allowedmethodtopostusername);
 		$entitytotest	= (GETPOST('entity', 'int') ? GETPOST('entity', 'int') : (!empty($conf->entity) ? $conf->entity : 1));
+
+		$ent_id = getEntityUser(GETPOST('username'));
+        if (! empty($ent_id) && $ent_id != $conf->entity) {
+            $conf->entity = $ent_id;
+            $entitytotest = $ent_id;
+            $_SESSION['dol_entity'] = $ent_id;
+            $conf->setValues($db);
+        }
 
 		// Define if we received data to test the login.
 		$goontestloop=false;
