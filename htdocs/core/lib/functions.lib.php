@@ -553,7 +553,7 @@ function GETPOST($paramname, $check = 'none', $method = 0, $filter = null, $opti
 	// Save data into session if key start with 'search_' or is 'smonth', 'syear', 'month', 'year'
 	if (empty($method) || $method == 3 || $method == 4)
 	{
-		if (preg_match('/^search_/', $paramname) || in_array($paramname, array('sortorder','sortfield')))
+		if (preg_match('/^search_/', $paramname) || in_array($paramname, array('sortorder','sortfield','viewstatut')))
 		{
 			//var_dump($paramname.' - '.$out.' '.$user->default_values[$relativepathstring]['filters'][$paramname]);
 
