@@ -4264,6 +4264,7 @@ function print_fleche_navigation($page, $file, $options = '', $nextpage = 0, $be
                 	jQuery(document).ready(function () {
             	  		jQuery(".selectlimit").change(function() {
                             console.log("Change limit. Send submit");
+                            console.log($(this).parents(\'form:first\'));
                             $(this).parents(\'form:first\').submit();
             	  		});
                 	});
