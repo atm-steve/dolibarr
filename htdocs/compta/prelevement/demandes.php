@@ -57,6 +57,16 @@ if (! $sortfield) $sortfield="f.ref";
 
 $massactionbutton = '';
 
+$hookmanager->initHooks(array('withdrawalstodolist'));
+
+
+/*
+ * Actions
+ */
+
+$parameters = array('socid' => $socid, 'limit' => $limit, 'page' => $page, 'offset' => $offset);
+$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
 /*
  * View
@@ -136,13 +146,10 @@ else
 	$num = $db->num_rows($resql);
 }
 
-
-
 $newcardbutton = '<a href="'.DOL_URL_ROOT.'/compta/prelevement/index.php">'.$langs->trans("Back").'</a>';
 
-print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'title_generic', 0, $newcardbutton, '', $limit);
+print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST"  id="searchFormList" name="searchFormList">';
 
-print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 if ($optioncss != '') print '<input type="hidden" name="optioncss" value="'.$optioncss.'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
@@ -152,6 +159,7 @@ print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 print '<input type="hidden" name="page" value="'.$page.'">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 
+print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'title_generic', 0, $newcardbutton, '', $limit);
 
 print '<table class="liste" width="100%">';
 
