@@ -57,6 +57,16 @@ if (! $sortfield) $sortfield="f.ref";
 
 $massactionbutton = '';
 
+$hookmanager->initHooks(array('withdrawalstodolist'));
+
+
+/*
+ * Actions
+ */
+
+$parameters = array('socid' => $socid, 'limit' => $limit, 'page' => $page, 'offset' => $offset);
+$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
 /*
  * View
@@ -138,7 +148,7 @@ else
 
 $newcardbutton = '<a href="'.DOL_URL_ROOT.'/compta/prelevement/index.php">'.$langs->trans("Back").'</a>';
 
-print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
+print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST"  id="searchFormList" name="searchFormList">';
 
 if ($optioncss != '') print '<input type="hidden" name="optioncss" value="'.$optioncss.'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
