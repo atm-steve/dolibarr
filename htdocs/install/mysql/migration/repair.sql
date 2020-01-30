@@ -77,14 +77,14 @@ ALTER TABLE llx_propal DROP FOREIGN KEY fk_propal_fk_currency;
 ALTER TABLE llx_commande DROP FOREIGN KEY fk_commande_fk_currency;
 ALTER TABLE llx_facture DROP FOREIGN KEY fk_facture_fk_currency;
 
-delete from llx_facturedet where fk_facture in (select rowid from llx_facture where facnumber in ('(PROV)','ErrorBadMask'));
-delete from llx_facture where facnumber in ('(PROV)','ErrorBadMask');
+delete from llx_facturedet where fk_facture in (select rowid from llx_facture where ref in ('(PROV)','ErrorBadMask'));
+delete from llx_facture where ref in ('(PROV)','ErrorBadMask');
 delete from llx_commandedet where fk_commande in (select rowid from llx_commande where ref in ('(PROV)','ErrorBadMask'));
 delete from llx_commande where ref in ('(PROV)','ErrorBadMask');
 delete from llx_propaldet where fk_propal in (select rowid from llx_propal where ref in ('(PROV)','ErrorBadMask'));
 delete from llx_propal where ref in ('(PROV)','ErrorBadMask');
-delete from llx_facturedet where fk_facture in (select rowid from llx_facture where facnumber = '');
-delete from llx_facture where facnumber = '';
+delete from llx_facturedet where fk_facture in (select rowid from llx_facture where ref = '');
+delete from llx_facture where ref = '';
 delete from llx_commandedet where fk_commande in (select rowid from llx_commande where ref = '');
 delete from llx_commande where ref = '';
 delete from llx_propaldet where fk_propal in (select rowid from llx_propal where ref = '');
@@ -177,6 +177,8 @@ delete from llx_categorie_member where fk_categorie not in (select rowid from ll
 delete from llx_categorie_contact where fk_categorie not in (select rowid from llx_categorie where type = 4);
 delete from llx_categorie_project where fk_categorie not in (select rowid from llx_categorie where type = 6);
 
+-- Fix: delete orphelins in ecm_files
+delete from llx_ecm_files where src_object_type = 'expensereport' and src_object_id NOT IN (select rowid from llx_expensereport);
 
 -- Fix: delete orphelin deliveries. Note: deliveries are linked to shipment by llx_element_element only. No other links.
 delete from llx_livraisondet where fk_livraison not in (select fk_target from llx_element_element where targettype = 'delivery') AND fk_livraison not in (select fk_source from llx_element_element where sourcetype = 'delivery');
@@ -204,8 +206,6 @@ DROP table tmp_user;
 CREATE TABLE tmp_user as (select * from llx_user);
 UPDATE llx_user SET fk_user = NULL where fk_user NOT IN (select rowid from tmp_user);
 
-
-update llx_user set fk_user = null where fk_user not in (select rowid from llx_user);
 
 
 UPDATE llx_product SET canvas = NULL where canvas = 'default@product';
@@ -409,6 +409,7 @@ ALTER TABLE llx_accounting_account ADD UNIQUE INDEX uk_accounting_account (accou
 -- p.tva_tx = 0
 -- where price = 17.5
 
+UPDATE llx_chargesociales SET date_creation = tms WHERE date_creation IS NULL;
 
 -- VMYSQL4.1 SET sql_mode = 'ALLOW_INVALID_DATES';
 -- VMYSQL4.1 update llx_accounting_account set tms = datec where DATE(STR_TO_DATE(tms, '%Y-%m-%d')) IS NULL;
