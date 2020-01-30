@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -233,7 +233,7 @@ class modUser extends DolibarrModules
 			'u.fk_socpeople'=>"IdContact",'u.fk_soc'=>"IdCompany",'u.fk_member'=>"MemberId"
 		);
 		$this->export_TypeFields_array[$r]=array(
-			'u.login'=>"Text",'u.lastname'=>"Text",'u.firstname'=>"Text",'u.employee'=>'Boolean','u.job'=>'Text',
+			'u.rowid'=>'Numeric', 'u.login'=>"Text",'u.lastname'=>"Text",'u.firstname'=>"Text",'u.employee'=>'Boolean','u.job'=>'Text',
 		    'u.accountancy_code'=>'Text',
 		    'u.address'=>"Text",'u.zip'=>"Text",'u.town'=>"Text",
 		    'u.office_phone'=>'Text','u.user_mobile'=>'Text','u.office_fax'=>'Text',
