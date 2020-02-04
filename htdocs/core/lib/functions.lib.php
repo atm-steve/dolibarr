@@ -1425,6 +1425,7 @@ function dol_banner_tab($object, $paramid, $morehtml='', $shownav=1, $fieldid='r
 					$fileimagebis = $file.'_preview-0.png';         // If PDF has more than one page
 					$relativepathimage = $relativepath.'_preview.png';
 
+
 					// Si fichier PDF existe
 					if (file_exists($file))
 					{
@@ -1436,6 +1437,7 @@ function dol_banner_tab($object, $paramid, $morehtml='', $shownav=1, $fieldid='r
 						{
 							if (empty($conf->global->MAIN_DISABLE_PDF_THUMBS))		// If you experienc trouble with pdf thumb generation and imagick, you can disable here.
 							{
+							    include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 								$ret = dol_convert_file($file, 'png', $fileimage);
 								if ($ret < 0) $error++;
 							}
