@@ -40,6 +40,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formpropal.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/supplier_proposal/class/supplier_proposal.class.php';
+//Spé
+require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 if (! empty($conf->projet->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 
@@ -59,6 +61,8 @@ $search_user=GETPOST('search_user', 'int');
 $search_sale=GETPOST('search_sale', 'int');
 $search_ref=GETPOST('sf_ref')?GETPOST('sf_ref', 'alpha'):GETPOST('search_ref', 'alpha');
 $search_societe=GETPOST('search_societe', 'alpha');
+//Spé
+$search_propal_ref=GETPOST('search_propal_ref', 'alpha');
 $search_author=GETPOST('search_author', 'alpha');
 $search_town=GETPOST('search_town', 'alpha');
 $search_zip=GETPOST('search_zip', 'alpha');
@@ -151,6 +155,7 @@ $arrayfields=array(
 	'sp.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
 	'sp.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500),
 	'sp.fk_statut'=>array('label'=>$langs->trans("Status"), 'checked'=>1, 'position'=>1000),
+	'propal.ref'=>array('label'=>$langs->trans("ProposalShort"), 'checked'=>1, 'position'=>1001),//Spé
 );
 // Extra fields
 if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
@@ -204,6 +209,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$month='';
 	$day='';
 	$search_status='';
+	$search_propal_ref=''; //Spé
 	$object_statut='';
 }
 
@@ -244,6 +250,8 @@ $sql.= " state.code_departement as state_code, state.nom as state_name,";
 $sql.= ' sp.rowid, sp.note_private, sp.total_ht, sp.tva as total_vat, sp.total as total_ttc, sp.localtax1, sp.localtax2, sp.ref, sp.fk_statut, sp.fk_user_author, sp.date_valid, sp.date_livraison as dp,';
 $sql.= ' sp.datec as date_creation, sp.tms as date_update,';
 $sql.= " p.rowid as project_id, p.ref as project_ref,";
+//Spé
+$sql.= " propal.ref as propal_ref, propal.rowid as fk_propal,";
 if (! $user->rights->societe->client->voir && ! $socid) $sql .= " sc.fk_soc, sc.fk_user,";
 $sql.= " u.firstname, u.lastname, u.photo, u.login";
 // Add fields from extrafields
@@ -262,6 +270,9 @@ if ($sall || $search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'
 if ($search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product as cp ON cp.fk_product=pd.fk_product';
 $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'user as u ON sp.fk_user_author = u.rowid';
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON p.rowid = sp.fk_projet";
+//Spé
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as ee ON (ee.fk_target=sp.rowid AND ee.targettype='supplier_proposal' AND ee.sourcetype='propal')";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."propal as propal ON (ee.fk_source=propal.rowid AND ee.targettype='supplier_proposal' AND ee.sourcetype='propal')";
 // We'll need this table joined to the select in order to filter by sale
 if ($search_sale > 0 || (! $user->rights->societe->client->voir && ! $socid)) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 if ($search_user > 0)
@@ -286,6 +297,8 @@ if ($search_author)  $sql .= natural_search('u.login', $search_author);
 if ($search_montant_ht) $sql.= natural_search('sp.total_ht=', $search_montant_ht, 1);
 if ($search_montant_vat != '') $sql.= natural_search("sp.tva", $search_montant_vat, 1);
 if ($search_montant_ttc != '') $sql.= natural_search("sp.total", $search_montant_ttc, 1);
+//Spé
+if ($search_propal_ref) $sql.= natural_search("propal.ref", $search_propal_ref);
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
 if ($socid) $sql.= ' AND s.rowid = '.$socid;
 if ($search_status >= 0 && $search_status != '') $sql.= ' AND sp.fk_statut IN ('.$db->escape($search_status).')';
@@ -325,6 +338,7 @@ $resql=$db->query($sql);
 if ($resql)
 {
 	$objectstatic=new SupplierProposal($db);
+	$objectstaticpropal=new Propal($db); //Spé
 	$userstatic=new User($db);
 
 	if ($socid > 0)
@@ -369,6 +383,8 @@ if ($resql)
 	if ($search_author)  	 $param.='&search_author='.$search_author;
 	if ($search_town)		 $param.='&search_town='.$search_town;
 	if ($search_zip)		 $param.='&search_zip='.$search_zip;
+	//Spé
+	if ($search_propal_ref)		 $param.='&search_propal_ref='.$search_propal_ref;
 	if ($socid > 0)          $param.='&socid='.$socid;
 	if ($search_status != '') $param.='&search_status='.$search_status;
 	if ($optioncss != '') $param.='&optioncss='.$optioncss;
@@ -577,6 +593,15 @@ if ($resql)
 		$formpropal->selectProposalStatus($search_status, 1, 0, 1, 'supplier', 'search_status');
 		print '</td>';
 	}
+	//Spé
+	// Référence proposition commerciale
+	if (! empty($arrayfields['propal.ref']['checked']))
+	{
+		// Author
+		print '<td class="liste_titre center">';
+		print '<input class="flat" size="4" type="text" name="search_propal_ref" value="'.dol_escape_htmltag($search_propal_ref).'">';
+		print '</td>';
+	}
 	// Action column
 	print '<td class="liste_titre middle">';
 	$searchpicto=$form->showFilterButtons();
@@ -609,6 +634,8 @@ if ($resql)
 	if (! empty($arrayfields['sp.datec']['checked']))     print_liste_field_titre($arrayfields['sp.datec']['label'], $_SERVER["PHP_SELF"], "sp.datec", "", $param, '', $sortfield, $sortorder, 'center nowrap ');
 	if (! empty($arrayfields['sp.tms']['checked']))       print_liste_field_titre($arrayfields['sp.tms']['label'], $_SERVER["PHP_SELF"], "sp.tms", "", $param, '', $sortfield, $sortorder, 'center nowrap');
 	if (! empty($arrayfields['sp.fk_statut']['checked'])) print_liste_field_titre($arrayfields['sp.fk_statut']['label'], $_SERVER["PHP_SELF"], "sp.fk_statut", "", $param, '', $sortfield, $sortorder, 'right ');
+	//Spé
+	if (! empty($arrayfields['propal.ref']['checked']))   print_liste_field_titre($arrayfields['propal.ref']['label'], $_SERVER["PHP_SELF"], "propal.ref", "", $param, '', $sortfield, $sortorder, 'center ');
 	print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 	print '</tr>'."\n";
 
@@ -803,6 +830,18 @@ if ($resql)
 		if (! empty($arrayfields['sp.fk_statut']['checked']))
 		{
 			print '<td class="right">'.$objectstatic->LibStatut($obj->fk_statut, 5)."</td>\n";
+			if (! $i) $totalarray['nbfield']++;
+		}
+		//Spé
+		// Proposition commerciale
+		if (! empty($arrayfields['propal.ref']['checked']))
+		{
+			$objectstaticpropal->id=$obj->fk_propal;
+			$objectstaticpropal->ref=$obj->propal_ref;
+			$tmppropal = '';
+			if(!empty($objectstaticpropal->id)) $tmppropal = $objectstaticpropal->getNomUrl(1);
+
+			print '<td class="center">'.$tmppropal.'</td>';
 			if (! $i) $totalarray['nbfield']++;
 		}
 
