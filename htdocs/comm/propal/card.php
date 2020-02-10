@@ -59,6 +59,9 @@ if (!empty($conf->variants->enabled)) {
 
 // Load translation files required by the page
 $langs->loadLangs(array('companies', 'propal', 'compta', 'bills', 'orders', 'products', 'deliveries', 'sendings', 'other'));
+
+$langs->load('cliatm@cliatm');
+
 if (!empty($conf->incoterm->enabled)) $langs->load('incoterm');
 if (!empty($conf->margin->enabled))
 	$langs->load('margins');
@@ -2345,6 +2348,22 @@ if ($action == 'create')
 		print '<td class="nowrap">'.price($object->multicurrency_total_ttc, '', $langs, 0, - 1, - 1, (!empty($object->multicurrency_code) ? $object->multicurrency_code : $conf->currency)).'</td>';
 		print '</tr>';
 	}
+
+    if(! function_exists('pdfGetLineTotalDiscountAmount')) {
+        require_once DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
+    }
+
+    foreach($object->lines as $i => $dummy) $total_line_remise += pdfGetLineTotalDiscountAmount($object, $i, $langs, 2);
+
+    if(! empty($conf->global->MAIN_SHOW_AMOUNT_BEFORE_DISCOUNT)) {
+        print '<tr><td height="10">'.$langs->trans('AmountHTBeforeDiscount').'</td>';
+        print '<td class="nowrap" colspan="2">'.price($object->total_ht+$total_line_remise, '', $langs, 0, -1, -1, $conf->currency).'</td>';
+    }
+
+    if(! empty($conf->global->MAIN_SHOW_AMOUNT_DISCOUNT)) {
+        print '<tr><td height="10">' . $langs->trans('AmountDiscount') . '</td>';
+        print '<td class="nowrap" colspan="2">'.price($total_line_remise, '', $langs, 0, -1, -1, $conf->currency).'</td>';
+    }
 
 	// Amount HT
 	print '<tr><td class="titlefieldmiddle">'.$langs->trans('AmountHT').'</td>';
