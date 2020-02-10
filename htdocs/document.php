@@ -79,6 +79,10 @@ $hashp=GETPOST('hashp', 'aZ09');
 $modulepart=GETPOST('modulepart', 'alpha');
 $urlsource=GETPOST('urlsource', 'alpha');
 $entity=GETPOST('entity', 'int')?GETPOST('entity', 'int'):$conf->entity;
+if($entity != $conf->entity) {
+    $conf->entity = $entity;
+    $conf->setValues($db);
+}
 
 // Security check
 if (empty($modulepart) && empty($hashp)) accessforbidden('Bad link. Bad value for parameter modulepart', 0, 0, 1);
