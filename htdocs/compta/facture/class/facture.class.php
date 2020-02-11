@@ -4252,7 +4252,6 @@ class Facture extends CommonInvoice
 		if ($this->statut != Facture::STATUS_VALIDATED) return false;
 
 		$hasDelay = $this->date_lim_reglement < ($now - $conf->facture->client->warning_delay);
-		
 		if($hasDelay && !empty($this->retained_warranty) && !empty($this->retained_warranty_date_limit))
 		{
 		    $totalpaye = $this->getSommePaiement();
@@ -4282,12 +4281,13 @@ class Facture extends CommonInvoice
 	/**
 	 * @return number or -1 if not available
 	 */
-	function getRetainedWarrantyAmount() {
-	    
+	function getRetainedWarrantyAmount($rounding=-1) {
+	    global $conf;
+
 	    if(empty($this->retained_warranty) ){
 	        return -1;
 	    }
-	    
+
 	    $retainedWarrantyAmount = 0;
 	    
 	    // Billed - retained warranty
@@ -4327,7 +4327,12 @@ class Facture extends CommonInvoice
 	        // Because one day retained warranty could be used on standard invoices
 	        $retainedWarrantyAmount = $this->total_ttc * $this->retained_warranty / 100;
 	    }
-	    
+
+		if ($rounding < 0){
+			$rounding=min($conf->global->MAIN_MAX_DECIMALS_UNIT,$conf->global->MAIN_MAX_DECIMALS_TOT);
+			return round($retainedWarrantyAmount, 2);
+		}
+
 	    return $retainedWarrantyAmount;
 	}
 	
