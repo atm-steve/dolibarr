@@ -263,6 +263,7 @@ Modelcsv_ebp=Export vers EBP
 Modelcsv_cogilog=Export vers Cogilog
 Modelcsv_agiris=Export vers Agiris
 Modelcsv_configurable=Export configurable
+Modelcsv_LDCompta=Export pour LD Compta (v9 et supérieur) (Test)
 ChartofaccountsId=Id plan comptable
 
 ## Tools - Init accounting account on product / service
