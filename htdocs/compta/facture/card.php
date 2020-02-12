@@ -118,6 +118,12 @@ if ($user->societe_id) $socid = $user->societe_id;
 $isdraft = (($object->statut == Facture::STATUS_DRAFT) ? 1 : 0);
 $result = restrictedArea($user, 'facture', $id, '', '', 'fk_soc', $fieldid, null, $isdraft);
 
+// retained warranty invoice available type
+if(empty($conf->global->USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION)) {
+	$RetainedWarrantyInvoiceAvailableType = array( Facture::TYPE_SITUATION, Facture::TYPE_STANDARD);
+} else {
+	$RetainedWarrantyInvoiceAvailableType = array( Facture::TYPE_SITUATION );
+}
 
 /*
  * Actions
@@ -1207,16 +1213,18 @@ if (empty($reshook))
 					$object->situation_counter = 1;
 					$object->situation_final = 0;
 					$object->situation_cycle_ref = $object->newCycle();
-					
-					$object->retained_warranty  = GETPOST('retained_warranty', 'int');
-					$object->retained_warranty_fk_cond_reglement  = GETPOST('retained_warranty_fk_cond_reglement', 'int');
-					
-					$retained_warranty_date_limit = GETPOST('retained_warranty_date_limit');
-					if(!empty($retained_warranty_date_limit) && $db->jdate($retained_warranty_date_limit)){
-					    $object->retained_warranty_date_limit = $db->jdate($retained_warranty_date_limit);
-					}
-					$object->retained_warranty_date_limit = !empty($object->retained_warranty_date_limit) ? $object->retained_warranty_date_limit : $object->calculate_date_lim_reglement($object->retained_warranty_fk_cond_reglement);
+
 				}
+
+				$object->retained_warranty  = GETPOST('retained_warranty', 'int');
+				$object->retained_warranty_fk_cond_reglement  = GETPOST('retained_warranty_fk_cond_reglement', 'int');
+
+				$retained_warranty_date_limit = GETPOST('retained_warranty_date_limit');
+				if(!empty($retained_warranty_date_limit) && $db->jdate($retained_warranty_date_limit)){
+					$object->retained_warranty_date_limit = $db->jdate($retained_warranty_date_limit);
+				}
+				$object->retained_warranty_date_limit = !empty($object->retained_warranty_date_limit) ? $object->retained_warranty_date_limit : $object->calculate_date_lim_reglement($object->retained_warranty_fk_cond_reglement);
+
 
 				$object->fetch_thirdparty();
 
@@ -1602,7 +1610,7 @@ if (empty($reshook))
 					
 					
 					// retained warranty
-					if(!empty($conf->global->INVOICE_USE_SITUATION_RETAINED_WARRANTY))
+					if(!empty($conf->global->INVOICE_USE_RETAINED_WARRANTY))
 					{
 					    $retained_warranty = GETPOST('retained_warranty');
 					    if(price2num($retained_warranty) > 0)
@@ -3219,42 +3227,41 @@ if ($action == 'create')
 	$form->select_conditions_paiements(isset($_POST['cond_reglement_id']) ? $_POST['cond_reglement_id'] : $cond_reglement_id, 'cond_reglement_id');
 	print '</td></tr>';
 
-	if (! empty($conf->global->INVOICE_USE_SITUATION))
-	{
-	    if($conf->global->INVOICE_USE_SITUATION_RETAINED_WARRANTY){
-	        
-	        $rwStyle = 'display:none;';
-	        if(GETPOST('type', 'int') == Facture::TYPE_SITUATION){
-	            $rwStyle = '';
-	        }
-	        
-	        
-	        $retained_warranty = GETPOST('retained_warranty', 'int');
-	        $retained_warranty = !empty($retained_warranty)?$retained_warranty:$conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_PERCENT;
-	        print '<tr class="retained-warranty-line" style="'.$rwStyle.'" ><td class="nowrap">' . $langs->trans('RetainedWarranty') . '</td><td colspan="2">';
-	        print '<input id="new-situation-invoice-retained-warranty" name="retained_warranty" type="number" value="'.$retained_warranty.'" step="0.01" min="0" max="100" />%';
-	        
-	        // Retained warranty payment term
-	        print '<tr class="retained-warranty-line" style="'.$rwStyle.'" ><td class="nowrap">' . $langs->trans('PaymentConditionsShortRetainedWarranty') . '</td><td colspan="2">';
-	        $retained_warranty_fk_cond_reglement = GETPOST('retained_warranty_fk_cond_reglement', 'int');
-	        $retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_COND_ID;
-	        $form->select_conditions_paiements($retained_warranty_fk_cond_reglement, 'retained_warranty_fk_cond_reglement', -1, 1);
-	        print '</td></tr>';
-	        
-	        print '<script type="text/javascript" language="javascript">
-    		$(document).ready(function() {
-    			$("[name=\'type\'").change(function() {
-    				if($( this ).prop("checked") && $( this ).val() == '.Facture::TYPE_SITUATION.')
-                    {
-                        $(".retained-warranty-line").show();
-                    }
-                    else{
-                        $(".retained-warranty-line").hide();
-                    }
-    			});
-    		});
-    		</script>';
-	    }
+
+	if($conf->global->INVOICE_USE_RETAINED_WARRANTY){
+
+		$rwStyle = 'display:none;';
+		if(in_array(GETPOST('type', 'int'), $RetainedWarrantyInvoiceAvailableType)){
+			$rwStyle = '';
+		}
+
+
+		$retained_warranty = GETPOST('retained_warranty', 'int');
+		$retained_warranty = !empty($retained_warranty)?$retained_warranty:$conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_PERCENT;
+		print '<tr class="retained-warranty-line" style="'.$rwStyle.'" ><td class="nowrap">' . $langs->trans('RetainedWarranty') . '</td><td colspan="2">';
+		print '<input id="new-situation-invoice-retained-warranty" name="retained_warranty" type="number" value="'.$retained_warranty.'" step="0.01" min="0" max="100" />%';
+
+		// Retained warranty payment term
+		print '<tr class="retained-warranty-line" style="'.$rwStyle.'" ><td class="nowrap">' . $langs->trans('PaymentConditionsShortRetainedWarranty') . '</td><td colspan="2">';
+		$retained_warranty_fk_cond_reglement = GETPOST('retained_warranty_fk_cond_reglement', 'int');
+		$retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_COND_ID;
+		$form->select_conditions_paiements($retained_warranty_fk_cond_reglement, 'retained_warranty_fk_cond_reglement', -1, 1);
+		print '</td></tr>';
+
+		print '<script type="text/javascript" language="javascript">
+		$(document).ready(function() {
+			$("[name=\'type\']").change(function() {
+
+				if($( this ).prop("checked") && $.inArray(parseInt($( this ).val()), '.json_encode($RetainedWarrantyInvoiceAvailableType).' ) !== -1)
+				{
+					$(".retained-warranty-line").show();
+				}
+				else{
+					$(".retained-warranty-line").hide();
+				}
+			});
+		});
+		</script>';
 	}
 	
 	// Payment mode
@@ -4112,29 +4119,33 @@ else if ($id > 0 || ! empty($ref))
 		print '</td></tr>';
 	}
 
-	
-	
-	$displayWarranty = false;
-	if( ( $object->type == Facture::TYPE_SITUATION && (!empty($object->retained_warranty) || !empty($conf->global->INVOICE_USE_SITUATION_RETAINED_WARRANTY)) ) )
-	{
-	    // Check if this situation invoice is 100% for real
-	    if(!empty($object->situation_final)){
-	        $displayWarranty = true;
-	    }
-	    elseif(!empty($object->lines) && $object->status == Facture::STATUS_DRAFT ){
-	        // $object->situation_final need validation to be done so this test is need for draft
-	        $displayWarranty = true;
-	        foreach( $object->lines as $i => $line ){
-	            if($line->product_type < 2 && $line->situation_percent < 100){
-	                $displayWarranty = false;
-	                break;
-	            }
-	        }
-	    }
-	    
-	    
-	    
-	    
+
+
+	if(!empty($object->retained_warranty) || !empty($conf->global->INVOICE_USE_RETAINED_WARRANTY)) {
+		$displayWarranty = true;
+
+		if($object->type == Facture::TYPE_SITUATION && !empty($conf->global->USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION_FINAL)){
+			$displayWarranty = false;
+			// Check if this situation invoice is 100% for real
+			if (!empty($object->situation_final)) {
+				$displayWarranty = true;
+			} elseif (!empty($object->lines) && $object->status == Facture::STATUS_DRAFT) {
+				// $object->situation_final need validation to be done so this test is need for draft
+				$displayWarranty = true;
+				foreach ($object->lines as $i => $line) {
+					if ($line->product_type < 2 && $line->situation_percent < 100) {
+						$displayWarranty = false;
+						break;
+					}
+				}
+			}
+		}
+
+		if(!in_array($object->type, $RetainedWarrantyInvoiceAvailableType)){
+			$displayWarranty = false;
+		}
+
+
 	    
 	    // Retained Warranty
 	    print '<tr class="retained-warranty-lines"  ><td>';
