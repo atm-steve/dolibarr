@@ -4277,7 +4277,41 @@ class Facture extends CommonInvoice
 		return $hasDelay;
 	}
 	
-	
+
+	function displayRetainedWarranty(){
+		global $conf;
+
+
+		// TODO : add a flag on invoices to store this conf USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION_FINAL
+
+		// note : we dont need to test USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION because if $this->retained_warranty is not empty it's because it was set when this conf was active
+
+		$displayWarranty = false;
+		if(!empty($this->retained_warranty)) {
+			$displayWarranty = true;
+
+			if ($this->type == Facture::TYPE_SITUATION && !empty($conf->global->USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION_FINAL)) {
+				// Check if this situation invoice is 100% for real
+				$displayWarranty = false;
+				if (!empty($this->situation_final)) {
+					$displayWarranty = true;
+				} elseif (!empty($this->lines) && $this->status == Facture::STATUS_DRAFT) {
+					// $object->situation_final need validation to be done so this test is need for draft
+					$displayWarranty = true;
+
+					foreach ($this->lines as $i => $line) {
+						if ($line->product_type < 2 && $line->situation_percent < 100) {
+							$displayWarranty = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		return $displayWarranty;
+	}
+
 	/**
 	 * @return number or -1 if not available
 	 */
@@ -4289,9 +4323,9 @@ class Facture extends CommonInvoice
 	    }
 
 	    $retainedWarrantyAmount = 0;
-	    
+
 	    // Billed - retained warranty
-	    if($this->type == Facture::TYPE_SITUATION)
+	    if($this->type == Facture::TYPE_SITUATION && !empty($conf->global->USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION_FINAL))
 	    {
 	        $displayWarranty = true;
 	        // Check if this situation invoice is 100% for real
