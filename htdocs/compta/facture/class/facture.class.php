@@ -546,9 +546,25 @@ class Facture extends CommonInvoice
 					$newinvoiceline=$this->lines[$i];
 					$newinvoiceline->fk_facture=$this->id;
 
-					// TODO This seems not used. Here we put origin 'facture' but after,  we put an id of object !
-					$newinvoiceline->origin = $this->element;
-                    $newinvoiceline->origin_id = $this->lines[$i]->id;
+					$newinvoiceline->origin = $this->lines[$i]->element;
+					$newinvoiceline->origin_id = $this->lines[$i]->id;
+
+					// FIX new situation invoice amount
+					if($this->type === $this::TYPE_SITUATION){
+						include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
+						$percent = $newinvoiceline->get_prev_progress($this->id, true);
+						$newinvoiceline->situation_percent = $percent;
+						$tabprice = calcul_price_total($newinvoiceline->qty, $newinvoiceline->subprice, $newinvoiceline->remise_percent, $newinvoiceline->tva_tx, $newinvoiceline->localtax1_tx, $newinvoiceline->localtax2_tx, 0, 'HT', 0, $newinvoiceline->product_type, $mysoc, '', $percent);
+						$newinvoiceline->total_ht = $tabprice[0];
+						$newinvoiceline->total_tva = $tabprice[1];
+						$newinvoiceline->total_ttc = $tabprice[2];
+						$newinvoiceline->total_localtax1 = $tabprice[9];
+						$newinvoiceline->total_localtax2 = $tabprice[10];
+						$newinvoiceline->multicurrency_total_ht  = $tabprice[16];
+						$newinvoiceline->multicurrency_total_tva = $tabprice[17];
+						$newinvoiceline->multicurrency_total_ttc = $tabprice[18];
+					}
+
 
 					if ($result >= 0)
 					{
@@ -864,7 +880,7 @@ class Facture extends CommonInvoice
 		}
 		elseif ($this->type == self::TYPE_SITUATION && !empty($conf->global->INVOICE_USE_SITUATION))
 		{
-			$this->fetchObjectLinked('', '', $object->id, 'facture');
+			$this->fetchObjectLinked('', '', $facture->id, 'facture');
 
 			foreach ($this->linkedObjectsIds as $typeObject => $Tfk_object)
 			{
@@ -1606,11 +1622,10 @@ class Facture extends CommonInvoice
 		$sql.= " note_private=".(isset($this->note_private)?"'".$this->db->escape($this->note_private)."'":"null").",";
 		$sql.= " note_public=".(isset($this->note_public)?"'".$this->db->escape($this->note_public)."'":"null").",";
 		$sql.= " model_pdf=".(isset($this->modelpdf)?"'".$this->db->escape($this->modelpdf)."'":"null").",";
-		$sql.= " import_key=".(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null");
-		$sql.= ", situation_cycle_ref=".$this->situation_cycle_ref;
-		$sql.= ", situation_counter=".$this->situation_counter;
-		$sql.= ", situation_final=".$this->situation_final;
-
+		$sql.= " import_key=".(isset($this->import_key)?"'".$this->db->escape($this->import_key)."'":"null").",";
+		$sql.= " situation_cycle_ref=".(empty($this->situation_cycle_ref)?"null":$this->db->escape($this->situation_cycle_ref)).",";
+		$sql.= " situation_counter=".(empty($this->situation_counter)?"null":$this->db->escape($this->situation_counter)).",";
+		$sql.= " situation_final=".(empty($this->situation_counter)?"0":$this->db->escape($this->situation_counter)).",";
 		$sql.= " WHERE rowid=".$this->id;
 
 		$this->db->begin();
@@ -2381,10 +2396,10 @@ class Facture extends CommonInvoice
 
                 if (!empty($conf->global->INVOICE_USE_SITUATION))
                 {
-    				$final = True;
+                	$final = true;
     				$nboflines = count($this->lines);
     				while (($i < $nboflines) && $final) {
-    					$final = ($this->lines[$i]->situation_percent == 100);
+    				    $final = ($this->lines[$i]->situation_percent == 100 || $this->lines[$i]->product_type == 9);
     					$i++;
     				}
 
@@ -2752,7 +2767,7 @@ class Facture extends CommonInvoice
 				if ($result > 0)
 				{
 					$this->db->commit();
-					return $this->line->rowid;
+					return $this->line->id;
 				}
 				else
 				{
@@ -3512,18 +3527,6 @@ class Facture extends CommonInvoice
 
 		$return = array();
 
-		
-		// Select the last situation invoice
-		$sqlSit = 'SELECT MAX(fs.rowid)';
-		$sqlSit.= " FROM ".MAIN_DB_PREFIX."facture as fs";
-		$sqlSit.= " WHERE fs.entity = ".$conf->entity;
-		$sqlSit.= " AND fs.type != ".self::TYPE_SITUATION;
-		$sqlSit.= " AND fs.fk_statut in (".self::STATUS_VALIDATED.",".self::STATUS_CLOSED.")";
-		$sqlSit.= " GROUP BY fs.situation_cycle_ref";
-		$sqlSit.= " ORDER BY fs.situation_counter";
-		
-		
-		
 		$sql = "SELECT f.rowid as rowid, f.facnumber, f.fk_statut, f.type, f.paye, pf.fk_paiement";
 		$sql.= " FROM ".MAIN_DB_PREFIX."facture as f";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON f.rowid = pf.fk_facture";
@@ -3535,7 +3538,23 @@ class Facture extends CommonInvoice
 		//	$sql.= " OR f.close_code IS NOT NULL)";	// Classee payee partiellement
 		$sql.= " AND ff.type IS NULL";			// Renvoi vrai si pas facture de remplacement
 		$sql.= " AND f.type != ".self::TYPE_CREDIT_NOTE;				// Type non 2 si facture non avoir
-		//$sql.= " AND ( f.type != ".self::TYPE_SITUATION . " OR f.rowid IN (".$sqlSit.") )";				    // Type non 5 si facture non avoir
+
+		if($conf->global->INVOICE_USE_SITUATION_CREDIT_NOTE){
+		    // Select the last situation invoice
+		    $sqlSit = 'SELECT MAX(fs.rowid)';
+		    $sqlSit.= " FROM ".MAIN_DB_PREFIX."facture as fs";
+		    $sqlSit.= " WHERE fs.entity = ".$conf->entity;
+		    $sqlSit.= " AND fs.type = ".self::TYPE_SITUATION;
+		    $sqlSit.= " AND fs.fk_statut in (".self::STATUS_VALIDATED.",".self::STATUS_CLOSED.")";
+		    $sqlSit.= " GROUP BY fs.situation_cycle_ref";
+		    $sqlSit.= " ORDER BY fs.situation_counter";
+            $sql.= " AND ( f.type != ".self::TYPE_SITUATION . " OR f.rowid IN (".$sqlSit.") )";	// Type non 5 si facture non avoir
+		}
+		else
+		{
+		    $sql.= " AND f.type != ".self::TYPE_SITUATION ; // Type non 5 si facture non avoir
+		}
+
 		if ($socid > 0) $sql.=" AND f.fk_soc = ".$socid;
 		$sql.= " ORDER BY f.facnumber";
 
@@ -4419,7 +4438,7 @@ class FactureLigne extends CommonInvoiceLine
 		if (empty($this->subprice)) $this->subprice=0;
 		if (empty($this->special_code)) $this->special_code=0;
 		if (empty($this->fk_parent_line)) $this->fk_parent_line=0;
-		if (empty($this->fk_prev_id)) $this->fk_prev_id = 'null';
+		if (empty($this->fk_prev_id)) $this->fk_prev_id = 0;
 		if (! isset($this->situation_percent) || $this->situation_percent > 100 || (string) $this->situation_percent == '') $this->situation_percent = 100;
 
 		if (empty($this->pa_ht)) $this->pa_ht=0;
@@ -4502,7 +4521,7 @@ class FactureLigne extends CommonInvoiceLine
 		$sql.= " ".price2num($this->total_localtax1).",";
 		$sql.= " ".price2num($this->total_localtax2);
 		$sql.= ", " . $this->situation_percent;
-		$sql.= ", " . $this->fk_prev_id;
+		$sql.= ", " . (!empty($this->fk_prev_id)?$this->fk_prev_id:"null");
 		$sql.= ", ".(!$this->fk_unit ? 'NULL' : $this->fk_unit);
 		$sql.= ", ".$user->id;
 		$sql.= ", ".$user->id;
@@ -4518,7 +4537,8 @@ class FactureLigne extends CommonInvoiceLine
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
-			$this->rowid=$this->db->last_insert_id(MAIN_DB_PREFIX.'facturedet');
+			$this->id=$this->db->last_insert_id(MAIN_DB_PREFIX.'facturedet');
+			$this->rowid=$this->id;	// For backward compatibility
 
             if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
             {
@@ -4821,14 +4841,16 @@ class FactureLigne extends CommonInvoiceLine
 	 * Warning: If invoice is a replacement invoice, this->fk_prev_id is id of the replaced line.
 	 *
 	 * @param  int     $invoiceid      Invoice id
+	 * @param  bool    $include_credit_note		Include credit note or not
 	 * @return int                     >= 0
 	 */
-	function get_prev_progress($invoiceid)
+	function get_prev_progress($invoiceid, $include_credit_note=true)
 	{
+        // phpcs:enable
 		if (is_null($this->fk_prev_id) || empty($this->fk_prev_id) || $this->fk_prev_id == "") {
 			return 0;
 		} else {
-		    // If invoice is a not a situation invoice, this->fk_prev_id is used for something else
+		    // If invoice is not a situation invoice, this->fk_prev_id is used for something else
             $tmpinvoice=new Facture($this->db);
             $tmpinvoice->fetch($invoiceid);
             if ($tmpinvoice->type != Facture::TYPE_SITUATION) return 0;
@@ -4837,7 +4859,26 @@ class FactureLigne extends CommonInvoiceLine
 			$resql = $this->db->query($sql);
 			if ($resql && $resql->num_rows > 0) {
 				$res = $this->db->fetch_array($resql);
-				return floatval($res['situation_percent']);
+
+				$returnPercent = floatval($res['situation_percent']);
+
+				if($include_credit_note) {
+
+				    $sql = 'SELECT fd.situation_percent FROM ' . MAIN_DB_PREFIX . 'facturedet fd';
+				    $sql.= ' JOIN ' . MAIN_DB_PREFIX . 'facture f ON (f.rowid = fd.fk_facture) ';
+				    $sql.= ' WHERE fd.fk_prev_id =' . $this->fk_prev_id;
+				    $sql.= ' AND f.situation_cycle_ref = '.$tmpinvoice->situation_cycle_ref; // Prevent cycle outed
+				    $sql.= ' AND f.type = '.Facture::TYPE_CREDIT_NOTE;
+
+				    $res = $this->db->query($sql);
+				    if($res) {
+				        while($obj = $this->db->fetch_object($res)) {
+				            $returnPercent = $returnPercent + doubleval($obj->situation_percent);
+				        }
+				    }
+				}
+
+				return $returnPercent;
 			} else {
 				$this->error = $this->db->error();
 				dol_syslog(get_class($this) . "::select Error " . $this->error, LOG_ERR);
