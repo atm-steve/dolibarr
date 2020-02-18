@@ -224,7 +224,54 @@ function dol_shutdown()
  */
 function GETPOSTISSET($paramname)
 {
-	return (isset($_POST[$paramname]) || isset($_GET[$paramname]));
+	$isset = 0;
+
+	$relativepathstring = $_SERVER["PHP_SELF"];
+	// Clean $relativepathstring
+	if (constant('DOL_URL_ROOT')) $relativepathstring = preg_replace('/^'.preg_quote(constant('DOL_URL_ROOT'), '/').'/', '', $relativepathstring);
+	$relativepathstring = preg_replace('/^\//', '', $relativepathstring);
+	$relativepathstring = preg_replace('/^custom\//', '', $relativepathstring);
+	//var_dump($relativepathstring);
+	//var_dump($user->default_values);
+
+	// Code for search criteria persistence.
+	// Retrieve values if restore_lastsearch_values
+	if (!empty($_GET['restore_lastsearch_values']))        // Use $_GET here and not GETPOST
+	{
+		if (!empty($_SESSION['lastsearch_values_'.$relativepathstring]))	// If there is saved values
+		{
+			$tmp = json_decode($_SESSION['lastsearch_values_'.$relativepathstring], true);
+			if (is_array($tmp))
+			{
+				foreach ($tmp as $key => $val)
+				{
+					if ($key == $paramname)	// We are on the requested parameter
+					{
+						$isset = 1;
+						break;
+					}
+				}
+			}
+		}
+		// If there is saved contextpage, page or limit
+		if ($paramname == 'contextpage' && !empty($_SESSION['lastsearch_contextpage_'.$relativepathstring]))
+		{
+			$isset = 1;
+		}
+		elseif ($paramname == 'page' && !empty($_SESSION['lastsearch_page_'.$relativepathstring]))
+		{
+			$isset = 1;
+		}
+		elseif ($paramname == 'limit' && !empty($_SESSION['lastsearch_limit_'.$relativepathstring]))
+		{
+			$isset = 1;
+		}
+	}
+	else {
+		$isset = (isset($_POST[$paramname]) || isset($_GET[$paramname]));
+	}
+
+	return $isset;
 }
 
 /**
@@ -770,7 +817,7 @@ function dol_buildpath($path, $type = 0, $returnemptyifnotfound = 0)
  *  With native = 1: Use PHP clone. Property that are reference are same pointer. This means $this->db of new object is still valid but point to same this->db than original object.
  *
  * 	@param	object	$object		Object to clone
- *  @param	int		$native		Native method or full isolation method
+ *  @param	int		$native		0=Full isolation method, 1=Native PHP method
  *	@return object				Clone object
  *  @see https://php.net/manual/language.oop5.cloning.php
  */
@@ -1058,10 +1105,13 @@ function dol_syslog($message, $level = LOG_INFO, $ident = 0, $suffixinfilename =
 			'ip' => false
 		);
 
-		// This is when server run behind a reverse proxy
-		if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $data['ip'] = $_SERVER['HTTP_X_FORWARDED_FOR'].(empty($_SERVER["REMOTE_ADDR"]) ? '' : '->'.$_SERVER['REMOTE_ADDR']);
-		// This is when server run normally on a server
-		elseif (!empty($_SERVER["REMOTE_ADDR"])) $data['ip'] = $_SERVER['REMOTE_ADDR'];
+		$remoteip = getUserRemoteIP();	// Get ip when page run on a web server
+		if (! empty($remoteip)) {
+			$data['ip'] = $remoteip;
+			// This is when server run behind a reverse proxy
+			if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != $remoteip) $data['ip'] = $_SERVER['HTTP_X_FORWARDED_FOR'].' -> '.$data['ip'];
+			elseif (!empty($_SERVER['HTTP_CLIENT_IP']) && $_SERVER['HTTP_CLIENT_IP'] != $remoteip) $data['ip'] = $_SERVER['HTTP_CLIENT_IP'].' -> '.$data['ip'];
+		}
 		// This is when PHP session is ran inside a web server but not inside a client request (example: init code of apache)
 		elseif (!empty($_SERVER['SERVER_ADDR'])) $data['ip'] = $_SERVER['SERVER_ADDR'];
 		// This is when PHP session is ran outside a web server, like from Windows command line (Not always defined, but useful if OS defined it).
@@ -5294,10 +5344,10 @@ function get_default_localtax($thirdparty_seller, $thirdparty_buyer, $local, $id
 /**
  *	Return yes or no in current language
  *
- *	@param	string	$yesno			Value to test (1, 'yes', 'true' or 0, 'no', 'false')
- *	@param	integer	$case			1=Yes/No, 0=yes/no, 2=Disabled checkbox, 3=Disabled checkbox + Yes/No
- *	@param	int		$color			0=texte only, 1=Text is formated with a color font style ('ok' or 'error'), 2=Text is formated with 'ok' color.
- *	@return	string					HTML string
+ *	@param	string|int	$yesno			Value to test (1, 'yes', 'true' or 0, 'no', 'false')
+ *	@param	integer		$case			1=Yes/No, 0=yes/no, 2=Disabled checkbox, 3=Disabled checkbox + Yes/No
+ *	@param	int			$color			0=texte only, 1=Text is formated with a color font style ('ok' or 'error'), 2=Text is formated with 'ok' color.
+ *	@return	string						HTML string
  */
 function yn($yesno, $case = 1, $color = 0)
 {
@@ -5509,22 +5559,27 @@ function dol_string_nohtmltag($stringtoclean, $removelinefeed = 1, $pagecodeto =
 /**
  *	Clean a string to keep only desirable HTML tags.
  *
- *	@param	string	$stringtoclean		String to clean
- *	@return string	    				String cleaned
+ *	@param	string	$stringtoclean			String to clean
+ *  @param	string	$cleanalsosomestyles	Clean also some tags
+ *	@return string	    					String cleaned
  *
  * 	@see	dol_escape_htmltag() strip_tags() dol_string_nohtmltag() dol_string_neverthesehtmltags()
  */
-function dol_string_onlythesehtmltags($stringtoclean)
+function dol_string_onlythesehtmltags($stringtoclean, $cleanalsosomestyles = 1)
 {
 	$allowed_tags = array(
-		"html", "head", "meta", "body", "article", "a", "b", "br", "div", "em", "font", "img", "ins", "hr", "i", "li", "link",
+		"html", "head", "meta", "body", "article", "a", "b", "br", "div", "dl", "dd", "dt", "em", "font", "img", "ins", "hr", "i", "li", "link",
 		"ol", "p", "s", "section", "span", "strong", "title",
 		"table", "tr", "th", "td", "u", "ul"
 	);
-
 	$allowed_tags_string = join("><", $allowed_tags);
 	$allowed_tags_string = preg_replace('/^>/', '', $allowed_tags_string);
 	$allowed_tags_string = preg_replace('/<$/', '', $allowed_tags_string);
+	$allowed_tags_string = '<'.$allowed_tags_string.'>';
+
+	if ($cleanalsosomestyles) {
+		$stringtoclean = preg_replace('/position\s*:\s*(absolute|fixed)\s*!\s*important/', '', $stringtoclean);	// Note: If hacker try to introduce css comment into string to avoid this, string should be encoded by the dol_htmlentitiesbr so be harmless
+	}
 
 	$temp = strip_tags($stringtoclean, $allowed_tags_string);
 
@@ -5533,14 +5588,16 @@ function dol_string_onlythesehtmltags($stringtoclean)
 
 /**
  *	Clean a string from some undesirable HTML tags.
+ *  Note. Not enough secured as dol_string_onlythesehtmltags().
  *
- *	@param	string	$stringtoclean		String to clean
- *  @param	array	$disallowed_tags	Array of tags not allowed
- *	@return string	    				String cleaned
+ *	@param	string	$stringtoclean			String to clean
+ *  @param	array	$disallowed_tags		Array of tags not allowed
+ *  @param	string	$cleanalsosomestyles	Clean also some tags
+ *	@return string	    					String cleaned
  *
  * 	@see	dol_escape_htmltag() strip_tags() dol_string_nohtmltag() dol_string_onlythesehtmltags()
  */
-function dol_string_neverthesehtmltags($stringtoclean, $disallowed_tags = array('textarea'))
+function dol_string_neverthesehtmltags($stringtoclean, $disallowed_tags = array('textarea'), $cleanalsosomestyles = 0)
 {
 	$temp = $stringtoclean;
 	foreach ($disallowed_tags as $tagtoremove)
@@ -5548,6 +5605,11 @@ function dol_string_neverthesehtmltags($stringtoclean, $disallowed_tags = array(
 		$temp = preg_replace('/<\/?'.$tagtoremove.'>/', '', $temp);
 		$temp = preg_replace('/<\/?'.$tagtoremove.'\s+[^>]*>/', '', $temp);
 	}
+
+	if ($cleanalsosomestyles) {
+		$temp = preg_replace('/position\s*:\s*(absolute|fixed)\s*!\s*important/', '', $temp);	// Note: If hacker try to introduce css comment into string to avoid this, string should be encoded by the dol_htmlentitiesbr so be harmless
+	}
+
 	return $temp;
 }
 

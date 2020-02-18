@@ -164,8 +164,8 @@ $arrayfields = array(
 	'p.total_ht'=>array('label'=>"AmountHT", 'checked'=>1),
 	'p.total_vat'=>array('label'=>"AmountVAT", 'checked'=>0),
 	'p.total_ttc'=>array('label'=>"AmountTTC", 'checked'=>0),
-	'p.total_ht_invoiced'=>array('label'=>$langs->trans("AmountInvoicedHT"), 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
-	'p.total_invoiced'=>array('label'=>$langs->trans("AmountInvoicedTTC"), 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
+	'p.total_ht_invoiced'=>array('label'=>"AmountInvoicedHT", 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
+	'p.total_invoiced'=>array('label'=>"AmountInvoicedTTC", 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
 	'u.login'=>array('label'=>"Author", 'checked'=>1, 'position'=>10),
 	'sale_representative'=>array('label'=>"SaleRepresentativesOfThirdParty", 'checked'=>1),
 	'p.datec'=>array('label'=>"DateCreation", 'checked'=>0, 'position'=>500),
@@ -765,6 +765,7 @@ if ($resql)
 
 		$objectstatic->id = $obj->rowid;
 		$objectstatic->ref = $obj->ref;
+		$objectstatic->ref_client = $obj->ref_client;
 		$objectstatic->note_public = $obj->note_public;
 		$objectstatic->note_private = $obj->note_private;
 
@@ -813,7 +814,7 @@ if ($resql)
 		if (!empty($arrayfields['p.ref_client']['checked']))
 		{
 			// Customer ref
-			print '<td class="nowrap">';
+			print '<td class="nowrap tdoverflowmax200">';
 			print $obj->ref_client;
 			print '</td>';
 			if (!$i) $totalarray['nbfield']++;

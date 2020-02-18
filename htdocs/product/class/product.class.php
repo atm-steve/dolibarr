@@ -1457,7 +1457,7 @@ class Product extends CommonObject
         $sql .= "$field = '".$this->db->escape($value)."'";
         $sql .= " WHERE rowid = ".$this->id;
 
-        dol_syslog(get_class($this)."::".__FUNCTION__." sql=".$sql, LOG_DEBUG);
+        dol_syslog(__METHOD__." sql=".$sql, LOG_DEBUG);
         $resql = $this->db->query($sql);
 
         if ($resql) {
@@ -4307,6 +4307,9 @@ class Product extends CommonObject
         }
         if (!empty($this->label)) {
             $label .= '<br><b>'.$langs->trans('ProductLabel').':</b> '.$this->label;
+        }
+        if (!empty($conf->barcode->enabled)) {
+        	$label .= '<br><b>'.$langs->trans('BarCode').':</b> '.$this->barcode;
         }
 
         if ($this->type == Product::TYPE_PRODUCT)
