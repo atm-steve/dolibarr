@@ -486,7 +486,6 @@ print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="addtime">';
 print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
-print '<input type="hidden" name="mode" value="'.$mode.'">';
 print '<input type="hidden" name="day" value="'.$day.'">';
 print '<input type="hidden" name="month" value="'.$month.'">';
 print '<input type="hidden" name="year" value="'.$year.'">';
@@ -552,6 +551,11 @@ $moreforfilter.='<div class="inline-block hideonsmartphone">'.$langs->trans('Use
 $includeonly='hierachyme';
 if (empty($user->rights->user->user->lire)) $includeonly=array($user->id);
 $moreforfilter.=$form->select_dolusers($search_usertoprocessid?$search_usertoprocessid:$usertoprocess->id, 'search_usertoprocessid', $user->rights->user->user->lire?0:0, null, 0, $includeonly, null, 0, 0, 0, '', 0, '', 'maxwidth200');
+$moreforfilter.='</div>';
+
+$moreforfilter.='<div class="divsearchfield">';
+$moreforfilter.='<input id="mode" type="checkbox"' . ($mode==='mine' ? ' checked' : '') . ' name="mode" value="mine" class="flat maxwidthonsmartphone"> ';
+$moreforfilter.='<label class="checkp" for="mode">' . $langs->trans('FilterOutTasksNotAssignedToUser') . '</label>';
 $moreforfilter.='</div>';
 
 if (! empty($moreforfilter))
