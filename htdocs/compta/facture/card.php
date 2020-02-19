@@ -3318,7 +3318,6 @@ if ($action == 'create')
 
 
 	if($conf->global->INVOICE_USE_RETAINED_WARRANTY){
-
 		$rwStyle = 'display:none;';
 		if(in_array(GETPOST('type', 'int'), $RetainedWarrantyInvoiceAvailableType)){
 			$rwStyle = '';
