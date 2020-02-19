@@ -172,7 +172,7 @@ function getEntityUser($username) {
     if(empty($username)) return 0;
 
     dol_include_once('/user/class/user.class.php');
-    dol_include_once('/usergroup/class/user.class.php');
+    dol_include_once('/user/class/usergroup.class.php');
 
     $u = new User($db);
     $u->fetch('', $username);
@@ -194,11 +194,12 @@ function getEntityUser($username) {
         $resql = $db->query($sql);
         $res = $db->fetch_object($resql);
         $entity = $res->entity;
+        $fk_usergroup = $res->fk_usergroup;
 
         // Ici on cherche le premier groupe appartenant à la conf financement pour connecter l'utilisateur dans la bonne entité.
         // S'il n'y en a pas, on le connecte dans la première entité trouvée au dessus
         if (! empty($TGroupEntities)) {
-            if (! in_array($entity, $TGroupEntities)) {
+            if (! in_array($fk_usergroup, $TGroupEntities)) {
                 while ($res = $db->fetch_object($resql)) {
                     if (in_array($res->fk_usergroup, $TGroupEntities)) {
                         $entity = $res->entity;
