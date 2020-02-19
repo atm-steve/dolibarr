@@ -1289,8 +1289,10 @@ class Societe extends CommonObject
 		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_incoterms as i ON s.fk_incoterms = i.rowid';
 		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'societe_remise as sr ON sr.rowid = (SELECT MAX(rowid) FROM '.MAIN_DB_PREFIX.'societe_remise WHERE fk_soc = s.rowid AND entity IN ('.getEntity('discount').'))';
 
-		$sql .= ' WHERE s.entity IN ('.getEntity($this->element).')';
+		$sql .= ' WHERE 1 = 1';
 		if ($rowid)     $sql .= ' AND s.rowid = '.$rowid;
+		else            $sql .= ' AND s.entity IN ('.getEntity($this->element).')';
+
 		if ($ref)       $sql .= " AND s.nom = '".$this->db->escape($ref)."'";
 		if ($ref_alias) $sql .= " AND s.name_alias = '".$this->db->escape($ref_alias)."'";
 		if ($ref_ext)   $sql .= " AND s.ref_ext = '".$this->db->escape($ref_ext)."'";
