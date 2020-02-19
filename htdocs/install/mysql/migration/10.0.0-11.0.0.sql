@@ -571,3 +571,5 @@ ALTER TABLE llx_emailcollector_emailcollector ADD UNIQUE INDEX uk_emailcollector
 ALTER TABLE llx_website ADD COLUMN use_manifest integer;
 
 ALTER TABLE llx_facture_rec MODIFY COLUMN fk_cond_reglement integer NOT NULL DEFAULT 1;
+
+UPDATE llx_const SET name = 'INVOICE_USE_RETAINED_WARRANTY' WHERE name = 'INVOICE_USE_SITUATION_RETAINED_WARRANTY'
