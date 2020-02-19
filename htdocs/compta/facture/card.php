@@ -4123,99 +4123,77 @@ else if ($id > 0 || ! empty($ref))
 
 	if(!empty($object->retained_warranty) || !empty($conf->global->INVOICE_USE_RETAINED_WARRANTY)) {
 		$displayWarranty = true;
-
-		if($object->type == Facture::TYPE_SITUATION && !empty($conf->global->USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION_FINAL)){
+		if(!in_array($object->type, $RetainedWarrantyInvoiceAvailableType) && empty($object->retained_warranty)){
 			$displayWarranty = false;
-			// Check if this situation invoice is 100% for real
-			if (!empty($object->situation_final)) {
-				$displayWarranty = true;
-			} elseif (!empty($object->lines) && $object->status == Facture::STATUS_DRAFT) {
-				// $object->situation_final need validation to be done so this test is need for draft
-				$displayWarranty = true;
-				foreach ($object->lines as $i => $line) {
-					if ($line->product_type < 2 && $line->situation_percent < 100) {
-						$displayWarranty = false;
-						break;
-					}
+		}
+
+		if($displayWarranty)
+		{
+	    
+			// Retained Warranty
+			print '<tr class="retained-warranty-lines"  ><td>';
+			print '<table id="retained-warranty-table" class="nobordernopadding" width="100%"><tr><td>';
+			print $langs->trans('RetainedWarranty');
+			print '</td>';
+			if ($action != 'editretainedwarranty' && $user->rights->facture->creer){
+				print '<td align="right"><a href="' . $_SERVER["PHP_SELF"] . '?action=editretainedwarranty&amp;facid=' . $object->id . '">' . img_edit($langs->trans('setretainedwarranty'), 1) . '</a></td>';
+			}
+
+			print '</tr></table>';
+			print '</td><td>';
+			if ($action == 'editretainedwarranty')
+			{
+				print '<form  id="retained-warranty-form"  method="POST" action="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'">';
+				print '<input type="hidden" name="action" value="setretainedwarranty">';
+				print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+				print '<input name="retained_warranty" type="number" step="0.01" min="0" max="100" value="'.$object->retained_warranty.'" >';
+				print '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
+				print '</form>';
+			}
+			else
+			{
+				print price($object->retained_warranty).'%';
+			}
+			print '</td></tr>';
+
+			// Retained warranty payment term
+			print '<tr class="retained-warranty-lines"  ><td>';
+			print '<table id="retained-warranty-cond-reglement-table"  class="nobordernopadding" width="100%"><tr><td>';
+			print $langs->trans('PaymentConditionsShortRetainedWarranty');
+			print '</td>';
+			if ($action != 'editretainedwarrantypaymentterms' && $user->rights->facture->creer){
+				print '<td align="right"><a href="' . $_SERVER["PHP_SELF"] . '?action=editretainedwarrantypaymentterms&amp;facid=' . $object->id . '">' . img_edit($langs->trans('setPaymentConditionsShortRetainedWarranty'), 1) . '</a></td>';
+			}
+
+			print '</tr></table>';
+			print '</td><td>';
+			$defaultDate =  !empty($object->retained_warranty_date_limit)?$object->retained_warranty_date_limit:strtotime('-1 years', $object->date_lim_reglement);
+			if($object->date > $defaultDate){
+				$defaultDate = $object->date;
+			}
+
+			if ($action == 'editretainedwarrantypaymentterms')
+			{
+				//date('Y-m-d',$object->date_lim_reglement)
+				print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'">';
+				print '<input type="hidden" name="action" value="setretainedwarrantyconditions">';
+				print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+				$retained_warranty_fk_cond_reglement = GETPOST('retained_warranty_fk_cond_reglement', 'int');
+				$retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $object->retained_warranty_fk_cond_reglement;
+				$retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_COND_ID;
+				$form->select_conditions_paiements($retained_warranty_fk_cond_reglement, 'retained_warranty_fk_cond_reglement', -1, 1);
+				print '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
+				print '</form>';
+			}
+			else
+			{
+				print $form->form_conditions_reglement($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $object->retained_warranty_fk_cond_reglement, 'none');
+				if(!$displayWarranty){
+					print img_picto($langs->trans('RetainedWarrantyNeed100Percent'), 'warning.png', 'class="pictowarning valignmiddle" ');
 				}
 			}
-		}
+			print '</td></tr>';
 
-		if(!in_array($object->type, $RetainedWarrantyInvoiceAvailableType)){
-			$displayWarranty = false;
-		}
-
-
-	    
-	    // Retained Warranty
-	    print '<tr class="retained-warranty-lines"  ><td>';
-	    print '<table id="retained-warranty-table" class="nobordernopadding" width="100%"><tr><td>';
-	    print $langs->trans('RetainedWarranty');
-	    print '</td>';
-	    if ($action != 'editretainedwarranty' && $user->rights->facture->creer){
-	        print '<td align="right"><a href="' . $_SERVER["PHP_SELF"] . '?action=editretainedwarranty&amp;facid=' . $object->id . '">' . img_edit($langs->trans('setretainedwarranty'), 1) . '</a></td>';
-	    }
-	    
-	    print '</tr></table>';
-	    print '</td><td>';
-	    if ($action == 'editretainedwarranty')
-	    {
-	        print '<form  id="retained-warranty-form"  method="POST" action="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'">';
-	        print '<input type="hidden" name="action" value="setretainedwarranty">';
-	        print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-	        print '<input name="retained_warranty" type="number" step="0.01" min="0" max="100" value="'.$object->retained_warranty.'" >';
-	        print '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
-	        print '</form>';
-	    }
-	    else
-	    {
-	        print price($object->retained_warranty).'%';
-	    }
-	    print '</td></tr>';
-	    
-	    // Retained warranty payment term
-	    print '<tr class="retained-warranty-lines"  ><td>';
-	    print '<table id="retained-warranty-cond-reglement-table"  class="nobordernopadding" width="100%"><tr><td>';
-	    print $langs->trans('PaymentConditionsShortRetainedWarranty');
-	    print '</td>';
-	    if ($action != 'editretainedwarrantypaymentterms' && $user->rights->facture->creer){
-	        print '<td align="right"><a href="' . $_SERVER["PHP_SELF"] . '?action=editretainedwarrantypaymentterms&amp;facid=' . $object->id . '">' . img_edit($langs->trans('setPaymentConditionsShortRetainedWarranty'), 1) . '</a></td>';
-	    }
-	    
-	    print '</tr></table>';
-	    print '</td><td>';
-	    $defaultDate =  !empty($object->retained_warranty_date_limit)?$object->retained_warranty_date_limit:strtotime('-1 years', $object->date_lim_reglement);
-	    if($object->date > $defaultDate){
-	        $defaultDate = $object->date;
-	    }
-	    
-	    if ($action == 'editretainedwarrantypaymentterms')
-	    {
-	        //date('Y-m-d',$object->date_lim_reglement)
-	        print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'">';
-	        print '<input type="hidden" name="action" value="setretainedwarrantyconditions">';
-	        print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-	        $retained_warranty_fk_cond_reglement = GETPOST('retained_warranty_fk_cond_reglement', 'int');
-	        $retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $object->retained_warranty_fk_cond_reglement;
-	        $retained_warranty_fk_cond_reglement = !empty($retained_warranty_fk_cond_reglement)? $retained_warranty_fk_cond_reglement : $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_COND_ID;
-	        $form->select_conditions_paiements($retained_warranty_fk_cond_reglement, 'retained_warranty_fk_cond_reglement', -1, 1);
-	        print '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
-	        print '</form>';
-	    }
-	    else
-	    {
-	        print $form->form_conditions_reglement($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $object->retained_warranty_fk_cond_reglement, 'none');
-	        if(!$displayWarranty){
-	            print img_picto($langs->trans('RetainedWarrantyNeed100Percent'), 'warning.png', 'class="pictowarning valignmiddle" ');
-	        }
-	    }
-	    print '</td></tr>';
-	    
-	    
-	    
-	    
-	    if($displayWarranty)
-	    {
 	        // Retained Warranty payment date limit
 	        print '<tr class="retained-warranty-lines"  ><td>';
 	        print '<table id="retained-warranty-date-limit-table"  class="nobordernopadding" width="100%"><tr><td>';
