@@ -1866,7 +1866,7 @@ class Societe extends CommonObject
 		{
 			$sql.= ", ".MAIN_DB_PREFIX."usergroup_user as ug";
 			$sql.= " WHERE ((ug.fk_user = sc.fk_user";
-			$sql.= " AND ug.entity = ".$conf->entity.")";
+			$sql.= " AND ug.entity IN (1, ".$conf->entity."))";
 			$sql.= " OR u.admin = 1)";
 		}
 		else
