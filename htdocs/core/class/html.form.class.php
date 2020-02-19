@@ -1644,7 +1644,8 @@ class Form
 			{
 				$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."usergroup_user as ug";
 				$sql.= " ON ug.fk_user = u.rowid";
-				$sql.= " WHERE ug.entity IN (1, ".$force_entity.')';
+				if(! empty($force_entity)) $sql.= " WHERE ug.entity IN (1, ".$force_entity.')';
+				else $sql.= " WHERE ug.entity IN (1, ".$conf->entity.')';
 			}
 			else
 			{
