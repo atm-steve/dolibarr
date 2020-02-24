@@ -139,6 +139,7 @@ $fieldstosearchall = array(
 	's.ape'=>"ProfId3",
 	's.phone'=>"Phone",
 	's.fax'=>"Fax",
+	's.address'=>"Address",
 );
 if (($tmp = $langs->transnoentities("ProfId4".$mysoc->country_code)) && $tmp != "ProfId4".$mysoc->country_code && $tmp != '-') $fieldstosearchall['s.idprof4']='ProfId4';
 if (($tmp = $langs->transnoentities("ProfId5".$mysoc->country_code)) && $tmp != "ProfId5".$mysoc->country_code && $tmp != '-') $fieldstosearchall['s.idprof5']='ProfId5';
