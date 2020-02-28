@@ -545,6 +545,8 @@ class DiscountAbsolute
     {
         dol_syslog(get_class($this)."::getSumCreditNotesUsed", LOG_DEBUG);
 
+	include_once DOL_DOCUMENT_ROOT .'/compta/facture/class/facture.class.php';
+
         if ($invoice->element == 'facture' || $invoice->element == 'invoice')
         {
             $sql = 'SELECT sum(rc.amount_ttc) as amount, sum(rc.multicurrency_amount_ttc) as multicurrency_amount';
