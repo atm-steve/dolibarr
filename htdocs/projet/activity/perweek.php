@@ -46,8 +46,8 @@ $taskid=GETPOST('taskid','int');
 
 $contextpage=GETPOST('contextpage', 'aZ')?GETPOST('contextpage', 'aZ'):'perweekcard';
 
-$mine=0;
-if ($mode == 'mine') $mine=1;
+$mine = 1;
+if ($mode === 'view_all') $mine=0;
 
 $projectid='';
 $projectid=isset($_GET["id"])?$_GET["id"]:$_POST["projectid"];
@@ -554,7 +554,7 @@ $moreforfilter.=$form->select_dolusers($search_usertoprocessid?$search_usertopro
 $moreforfilter.='</div>';
 
 $moreforfilter.='<div class="divsearchfield">';
-$moreforfilter.='<input id="mode" type="checkbox"' . ($mode==='mine' ? ' checked' : '') . ' name="mode" value="mine" class="flat maxwidthonsmartphone"> ';
+$moreforfilter.='<input id="mode" type="checkbox"' . ($mode === 'view_all' ? ' checked' : '') . ' name="mode" value="view_all" class="flat maxwidthonsmartphone"> ';
 $moreforfilter.='<label class="checkp" for="mode">' . $langs->trans('FilterOutTasksNotAssignedToUser') . '</label>';
 $moreforfilter.='</div>';
 
