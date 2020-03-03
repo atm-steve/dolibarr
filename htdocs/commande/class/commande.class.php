@@ -1231,6 +1231,8 @@ class Commande extends CommonOrder
 			$line->marge_tx			= $marginInfos[1];
 			$line->marque_tx		= $marginInfos[2];
 
+			$line->id = $object->lines[$i]->id;
+
 			// get extrafields from original line
 			$object->lines[$i]->fetch_optionals();
 			foreach($object->lines[$i]->array_options as $options_key => $value)
