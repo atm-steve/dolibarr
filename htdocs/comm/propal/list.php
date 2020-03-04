@@ -43,7 +43,11 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
-
+//Spé
+if ($conf->margin->enabled) {
+    require_once DOL_DOCUMENT_ROOT . '/core/class/html.formmargin.class.php';
+}
+//Fin Spé
 // Load translation files required by the page
 $langs->loadLangs(array('companies', 'propal', 'compta', 'bills', 'orders', 'products', 'deliveries', 'categories'));
 
@@ -173,6 +177,12 @@ $arrayfields = array(
 	'p.date_cloture'=>array('label'=>"DateClosing", 'checked'=>0, 'position'=>500),
 	'p.fk_statut'=>array('label'=>"Status", 'checked'=>1, 'position'=>1000),
 );
+// Spe
+if (! empty($conf->margin->enabled)){
+    $arrayfields['margin'] = array('label'=>$langs->trans("Margin"), 'checked'=>1);
+    $arrayfields['markRate'] = array('label'=>$langs->trans("MarkRate"), 'checked'=>1);
+}
+// Fin Spe
 // Extra fields
 if (is_array($extrafields->attributes[$object->table_element]['label']) && count($extrafields->attributes[$object->table_element]['label']) > 0)
 {
@@ -263,6 +273,12 @@ $formpropal = new FormPropal($db);
 $companystatic = new Societe($db);
 $projectstatic = new Project($db);
 $formcompany = new FormCompany($db);
+// Spe
+if (! empty($conf->margin->enabled)) {
+    $formmargin = new FormMargin($db);
+    $rounding = min($conf->global->MAIN_MAX_DECIMALS_UNIT, $conf->global->MAIN_MAX_DECIMALS_TOT);
+}
+// Fin Spe
 
 $help_url = 'EN:Commercial_Proposals|FR:Proposition_commerciale|ES:Presupuestos';
 //llxHeader('',$langs->trans('Proposal'),$help_url);
@@ -666,6 +682,18 @@ if ($resql)
 		print '<td class="liste_titre right">';
 		print '</td>';
 	}
+	/* Spé */
+    if (! empty($conf->margin->enabled)) {
+        if (!empty($arrayfields['margin']['checked'])) {
+            // Margin
+            print '<td class="liste_titre" align="center"></td>';
+        }
+        if (!empty($arrayfields['markRate']['checked'])) {
+            // MarkRate
+            print '<td class="liste_titre" align="center"></td>';
+        }
+    }
+    /* Fin Spe */
 	if (!empty($arrayfields['u.login']['checked']))
 	{
 		// Author
@@ -739,6 +767,12 @@ if ($resql)
 	if (!empty($arrayfields['p.total_ttc']['checked']))      print_liste_field_titre($arrayfields['p.total_ttc']['label'], $_SERVER["PHP_SELF"], 'p.total', '', $param, 'class="right"', $sortfield, $sortorder);
 	if (!empty($arrayfields['p.total_ht_invoiced']['checked'])) print_liste_field_titre($arrayfields['p.total_ht_invoiced']['label'], $_SERVER["PHP_SELF"], '', '', $param, 'class="right"', $sortfield, $sortorder);
 	if (!empty($arrayfields['p.total_invoiced']['checked'])) print_liste_field_titre($arrayfields['p.total_invoiced']['label'], $_SERVER["PHP_SELF"], '', '', $param, 'class="right"', $sortfield, $sortorder);
+    // Spe
+       if (! empty($conf->margin->enabled)) {
+        if (!empty($arrayfields['margin']['checked'])) print_liste_field_titre($arrayfields['margin']['label'], $_SERVER["PHP_SELF"], "", "", "$param", 'align="center"', $sortfield, $sortorder);
+        if (!empty($arrayfields['markRate']['checked'])) print_liste_field_titre($arrayfields['markRate']['label'], $_SERVER["PHP_SELF"], "", "", "$param", 'align="center"', $sortfield, $sortorder);
+    }
+    // Fin Spe
 	if (!empty($arrayfields['u.login']['checked']))       	  print_liste_field_titre($arrayfields['u.login']['label'], $_SERVER["PHP_SELF"], 'u.login', '', $param, 'align="center"', $sortfield, $sortorder);
 	if (!empty($arrayfields['sale_representative']['checked'])) print_liste_field_titre($arrayfields['sale_representative']['label'], $_SERVER["PHP_SELF"], "", "", "$param", '', $sortfield, $sortorder);
 	// Extra fields
@@ -762,6 +796,12 @@ if ($resql)
 	while ($i < min($num, $limit))
 	{
 		$obj = $db->fetch_object($resql);
+
+        if (! empty($conf->margin->enabled)) {
+            $propal = new Propal($db);
+            $propal->fetch($obj->rowid);
+            $marginInfos = $formmargin->getMarginInfosArray($propal);
+        }
 
 		$objectstatic->id = $obj->rowid;
 		$objectstatic->ref = $obj->ref;
@@ -1005,7 +1045,22 @@ if ($resql)
             if (!$i) $totalarray['pos'][$totalarray['nbfield']] = 'p.total_invoiced';
             $totalarray['val']['p.total_invoiced'] += $obj->total_invoiced;
         }
-
+        /* Spe */
+        if(! empty($conf->margin->enabled)) {
+            // Margin
+            if(! empty($arrayfields['margin']['checked'])) {
+                print '<td align="right" nowrap>'.price($marginInfos['total_margin'])."</td>\n";
+                if (! $i) $totalarray['nbfield']++;
+                if (! $i) $totalarray['pos'][$totalarray['nbfield']] = 'margin';
+                $totalarray['val']['margin'] += $marginInfos['total_margin'];
+            }
+            // MarkRate
+            if(! empty($arrayfields['markRate']['checked'])) {
+                if (! $i) $totalarray['nbfield']++;
+                print '<td align="right">'.(($marginInfos['total_mark_rate'] == '') ? '' : price($marginInfos['total_mark_rate'], null, null, null, null, $rounding).'%').'</td>';
+            }
+        }
+            /* Fin Spe */
 		$userstatic->id = $obj->fk_user_author;
 		$userstatic->login = $obj->login;
 
