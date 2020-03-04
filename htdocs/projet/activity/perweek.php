@@ -153,10 +153,10 @@ $search_array_options=array();
 $search_array_options_project=$extrafields->getOptionalsFromPost($extralabels_project, '', 'search_');
 $search_array_options_task=$extrafields->getOptionalsFromPost($extralabels_project_task, '', 'search_task_');
 
-// T2004 (retour) - filtrer sur "PROJET" quand on arrive sur la page, mais permettre à l’utilisateur
+// T2004 (retour) - filtrer sur état "EN COURS" quand on arrive sur la page, mais permettre à l’utilisateur
 // de modifier ce filtrage
-if (!isset($_REQUEST['search_task_options_categorie'])) {
-	$search_array_options_task['search_task_options_categorie'] = 1;
+if (!isset($_REQUEST['search_task_options_statut'])) {
+	$search_array_options_task['search_task_options_statut'] = 2;
 }
 //var_dump($search_array_options_task, $_REQUEST);exit;
 
