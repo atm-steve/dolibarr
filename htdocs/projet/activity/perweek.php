@@ -153,6 +153,11 @@ $search_array_options=array();
 $search_array_options_project=$extrafields->getOptionalsFromPost($extralabels_project, '', 'search_');
 $search_array_options_task=$extrafields->getOptionalsFromPost($extralabels_project_task, '', 'search_task_');
 
+// T2004 (retour) - filtrer sur "PROJET" quand on arrive sur la page, mais permettre à l’utilisateur
+// de modifier ce filtrage
+if (!isset($_REQUEST['search_task_options_categorie'])) {
+	$search_array_options_task['search_task_options_categorie'] = 1;
+}
 //var_dump($search_array_options_task, $_REQUEST);exit;
 
 $timespentoutputformat='allhourmin';
@@ -579,6 +584,18 @@ print '<td class="liste_titre"><input type="text" size="4" name="search_thirdpar
 print '<td class="liste_titre"><input type="text" size="4" name="search_task_label" value="'.dol_escape_htmltag($search_task_label).'"></td>';
 
 $varpage=empty($contextpage)?$_SERVER["PHP_SELF"]:$contextpage;
+
+// T2004 (retour) : forcer affichage des colonnes État et Catégorie (elles n’apparaîtront pas cochées, mais elles seront quand même affichées)
+if (!empty($user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage})) {
+	$tmp_user_conf_fields = explode(',', $user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage});
+	foreach (array('efpt.statut', 'efpt.categorie') as $k) {
+		if (!in_array($k, $tmp_user_conf_fields)) {
+			$tmp_user_conf_fields[] = $k;
+		}
+	}
+	$user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage} = join(',', $tmp_user_conf_fields);
+}
+
 $selectedfields=$form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage);	// This also change content of $arrayfields
 
 $addcolspan=0;
