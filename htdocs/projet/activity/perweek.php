@@ -586,15 +586,21 @@ print '<td class="liste_titre"><input type="text" size="4" name="search_task_lab
 $varpage=empty($contextpage)?$_SERVER["PHP_SELF"]:$contextpage;
 
 // T2004 (retour) : forcer affichage des colonnes État et Catégorie (elles n’apparaîtront pas cochées, mais elles seront quand même affichées)
+$TAlwaysVisibleExtrafields = array('efpt.statut', 'efpt.categorie');
 if (!empty($user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage})) {
 	$tmp_user_conf_fields = explode(',', $user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage});
-	foreach (array('efpt.statut', 'efpt.categorie') as $k) {
+	foreach ($TAlwaysVisibleExtrafields as $k) {
 		if (!in_array($k, $tmp_user_conf_fields)) {
 			$tmp_user_conf_fields[] = $k;
 		}
 	}
-	$user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage} = join(',', $tmp_user_conf_fields);
+} else {
+	$tmp_user_conf_fields = array();
+	foreach($arrayfields as $k => $v) {
+		if ($v['checked'] || in_array($k, $TAlwaysVisibleExtrafields)) $tmp_user_conf_fields[] = $k;
+	}
 }
+$user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage} = join(',', $tmp_user_conf_fields);
 
 $selectedfields=$form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage);	// This also change content of $arrayfields
 
