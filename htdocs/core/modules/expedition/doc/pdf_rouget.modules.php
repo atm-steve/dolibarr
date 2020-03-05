@@ -868,13 +868,13 @@ class pdf_rouget extends ModelePdfExpedition
 		$pdf->MultiCell($w, 4, $outputlangs->transnoentities("RefSending") ." : ".$object->ref, '', 'R');
 
 		// Date planned delivery
-		if (! empty($object->date_delivery))
-		{
+		//if (! empty($object->date_delivery))
+		//{
     			$posy+=4;
     			$pdf->SetXY($posx,$posy);
     			$pdf->SetTextColor(0,0,60);
-    			$pdf->MultiCell($w, 4, $outputlangs->transnoentities("DateDeliveryPlanned")." : ".dol_print_date($object->date_delivery,"day",false,$outputlangs,true), '', 'R');
-		}
+    			$pdf->MultiCell($w, 4, $outputlangs->transnoentities("DateDeliveryPlanned")." : ".dol_print_date(dol_now(),"day",false,$outputlangs,true), '', 'R');
+		//}
 
 		if (! empty($object->thirdparty->code_client))
 		{
