@@ -817,7 +817,7 @@ function dol_buildpath($path, $type = 0, $returnemptyifnotfound = 0)
  *  With native = 1: Use PHP clone. Property that are reference are same pointer. This means $this->db of new object is still valid but point to same this->db than original object.
  *
  * 	@param	object	$object		Object to clone
- *  @param	int		$native		Native method or full isolation method
+ *  @param	int		$native		0=Full isolation method, 1=Native PHP method
  *	@return object				Clone object
  *  @see https://php.net/manual/language.oop5.cloning.php
  */
@@ -1301,7 +1301,7 @@ function dol_get_fiche_head($links = array(), $active = '', $title = '', $notab 
 		$tabsname = str_replace("@", "", $picto);
 		$out .= '<div id="moretabs'.$tabsname.'" class="inline-block tabsElem">';
 		$out .= '<a href="#" class="tab moretab inline-block tabunactive reposition">'.$langs->trans("More").'... ('.$nbintab.')</a>';
-		$out .= '<div id="moretabsList'.$tabsname.'" style="position: absolute; '.$left.': -999em; text-align: '.$left.'; margin:0px; padding:2px">';
+		$out .= '<div id="moretabsList'.$tabsname.'" style="position: absolute; '.$left.': -999em; text-align: '.$left.'; margin:0px; padding:2px; z-index:10;">';
 		$out .= $outmore;
 		$out .= '</div>';
 		$out .= '<div></div>';
@@ -1881,6 +1881,7 @@ function dol_print_date($time, $format = '', $tzoutput = 'tzserver', $outputlang
 		$format = str_replace('%a', '__a__', $format);
 		$format = str_replace('%A', '__A__', $format);
 	}
+
 
 	// Analyze date
 	$reg = array();
@@ -7804,12 +7805,11 @@ function natural_search($fields, $value, $mode = 0, $nofirstand = 0)
 			}
 			else    // $mode=0
 			{
-				$textcrit = '';
 				$tmpcrits = explode('|', $crit);
 				$i3 = 0;
 				foreach ($tmpcrits as $tmpcrit)
 				{
-					if (empty($tmpcrit)) continue;
+                    if ($tmpcrit !== '0' && empty($tmpcrit)) continue;
 
 					$newres .= (($i2 > 0 || $i3 > 0) ? ' OR ' : '');
 
