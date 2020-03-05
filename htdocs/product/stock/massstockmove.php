@@ -248,6 +248,7 @@ if ($action == 'delline' && $idline != '')
 if ($action == 'createmovements')
 {
 	$error=0;
+	$nb_transfer=0;
 
 	/*if (! GETPOST("label"))
 	{
@@ -386,6 +387,11 @@ if ($action == 'createmovements')
 						{
 							$error++;
 							setEventMessages("Erreur : ", $trans->errors, 'errors');
+						} else {
+                            $id_arrayelement = array_search($at_id, $assets);       //element du tableau d'assets concerné
+                            unset($listofdata[$key]['assets'][$id_arrayelement]);   //on supprime l'équipement dont le transfert a été effectué
+                            $_SESSION['massstockmove'] = json_encode($listofdata);
+                            $nb_transfer ++;                                        //on ajoute 1 au compteur de transferts
 						}
 					}
 				}
@@ -411,7 +417,8 @@ if ($action == 'createmovements')
 	else
 	{
 		$db->rollback();
-		setEventMessages($langs->trans("Error"), null, 'errors');
+//		setEventMessages($langs->trans("Error"), null, 'errors');
+        setEventMessage($nb_transfer . " tranferts réalisés", 'mesgs');
 	}
 }
 
