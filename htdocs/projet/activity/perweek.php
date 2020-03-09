@@ -46,8 +46,8 @@ $taskid=GETPOST('taskid','int');
 
 $contextpage=GETPOST('contextpage', 'aZ')?GETPOST('contextpage', 'aZ'):'perweekcard';
 
-$mine=0;
-if ($mode == 'mine') $mine=1;
+$mine = 1;
+if ($mode === 'view_all') $mine=0;
 
 $projectid='';
 $projectid=isset($_GET["id"])?$_GET["id"]:$_POST["projectid"];
@@ -153,6 +153,11 @@ $search_array_options=array();
 $search_array_options_project=$extrafields->getOptionalsFromPost($extralabels_project, '', 'search_');
 $search_array_options_task=$extrafields->getOptionalsFromPost($extralabels_project_task, '', 'search_task_');
 
+// T2004 (retour) - filtrer sur état "EN COURS" quand on arrive sur la page, mais permettre à l’utilisateur
+// de modifier ce filtrage
+if (!isset($_REQUEST['search_task_options_statut'])) {
+	$search_array_options_task['search_task_options_statut'] = 2;
+}
 //var_dump($search_array_options_task, $_REQUEST);exit;
 
 $timespentoutputformat='allhourmin';
@@ -486,7 +491,6 @@ print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 print '<input type="hidden" name="action" value="addtime">';
 print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
-print '<input type="hidden" name="mode" value="'.$mode.'">';
 print '<input type="hidden" name="day" value="'.$day.'">';
 print '<input type="hidden" name="month" value="'.$month.'">';
 print '<input type="hidden" name="year" value="'.$year.'">';
@@ -519,7 +523,7 @@ dol_fiche_end();
 
 print '<div class="floatright right'.($conf->dol_optimize_smallscreen?' centpercent':'').'">'.$nav.'</div>';     // We move this before the assign to components so, the default submit button is not the assign to.
 
-print '<div class="colorback float valignmiddle">';
+/*print '<div class="colorback float valignmiddle">';
 $titleassigntask = $langs->transnoentities("AssignTaskToMe");
 if ($usertoprocess->id != $user->id) $titleassigntask = $langs->transnoentities("AssignTaskToUser", $usertoprocess->getFullName($langs));
 print '<div class="taskiddiv inline-block">';
@@ -528,7 +532,7 @@ print '</div>';
 print ' ';
 print $formcompany->selectTypeContact($object, '', 'type','internal','rowid', 0, 'maxwidth200');
 print '<input type="submit" class="button valignmiddle" name="assigntask" value="'.dol_escape_htmltag($titleassigntask).'">';
-print '</div>';
+print '</div>';*/
 
 print '<div class="clearboth" style="padding-bottom: 8px;"></div>';
 
@@ -554,6 +558,11 @@ if (empty($user->rights->user->user->lire)) $includeonly=array($user->id);
 $moreforfilter.=$form->select_dolusers($search_usertoprocessid?$search_usertoprocessid:$usertoprocess->id, 'search_usertoprocessid', $user->rights->user->user->lire?0:0, null, 0, $includeonly, null, 0, 0, 0, '', 0, '', 'maxwidth200');
 $moreforfilter.='</div>';
 
+$moreforfilter.='<div class="divsearchfield">';
+$moreforfilter.='<input id="mode" type="checkbox"' . ($mode === 'view_all' ? ' checked' : '') . ' name="mode" value="view_all" class="flat maxwidthonsmartphone"> ';
+$moreforfilter.='<label class="checkp" for="mode">' . $langs->trans('FilterOutTasksNotAssignedToUser') . '</label>';
+$moreforfilter.='</div>';
+
 if (! empty($moreforfilter))
 {
 	print '<div class="liste_titre liste_titre_bydiv centpercent">';
@@ -575,6 +584,24 @@ print '<td class="liste_titre"><input type="text" size="4" name="search_thirdpar
 print '<td class="liste_titre"><input type="text" size="4" name="search_task_label" value="'.dol_escape_htmltag($search_task_label).'"></td>';
 
 $varpage=empty($contextpage)?$_SERVER["PHP_SELF"]:$contextpage;
+
+// T2004 (retour) : forcer affichage des colonnes État et Catégorie (elles n’apparaîtront pas cochées, mais elles seront quand même affichées)
+$TAlwaysVisibleExtrafields = array('efpt.statut', 'efpt.categorie');
+if (!empty($user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage})) {
+	$tmp_user_conf_fields = explode(',', $user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage});
+	foreach ($TAlwaysVisibleExtrafields as $k) {
+		if (!in_array($k, $tmp_user_conf_fields)) {
+			$tmp_user_conf_fields[] = $k;
+		}
+	}
+} else {
+	$tmp_user_conf_fields = array();
+	foreach($arrayfields as $k => $v) {
+		if ($v['checked'] || in_array($k, $TAlwaysVisibleExtrafields)) $tmp_user_conf_fields[] = $k;
+	}
+}
+$user->conf->{'MAIN_SELECTEDFIELDS_' . $varpage} = join(',', $tmp_user_conf_fields);
+
 $selectedfields=$form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage);	// This also change content of $arrayfields
 
 $addcolspan=0;
