@@ -288,11 +288,11 @@ class AccountancyExport
 			// NECR
 			print $line->id.$separator;
 			// NPIE
-			print $line->piece_num.$separator;
+			print $line->doc_ref.$separator;
 			// DATP
 			print $date_document.$separator;
 			// LIBE
-			print $line->label_operation.$separator;
+			print dol_trunc($line->label_operation,25,'right','UTF-8',1).$separator;
 			// DATH
 			print $date_lim_reglement.$separator;
 			// CNPI
@@ -333,7 +333,7 @@ class AccountancyExport
 			// CPTG
 			print length_accountg($line->numero_compte).$separator;
 			// DATE
-			print $date_creation.$separator;
+			print $date_document.$separator;
 			// CLET
 			print $line->lettering_code.$separator;
 			// DATL
