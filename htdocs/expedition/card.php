@@ -1245,7 +1245,7 @@ if ($action == 'create')
 							{
 	                            if (GETPOST('qtyl'.$indiceAsked, 'int')) $deliverableQty=GETPOST('qtyl'.$indiceAsked, 'int');
 	                            print '<input name="idl'.$indiceAsked.'" type="hidden" value="'.$line->id.'">';
-								print '<input name="qtyl'.$indiceAsked.'" id="qtyl'.$indiceAsked.'" type="text" size="4" value="'.$deliverableQty.'">';
+								print '<input name="qtyl'.$indiceAsked.'" id="qtyl'.$indiceAsked.'" type="number" size="4" value="'.$deliverableQty.'" min="0" max="'.$quantityToBeDelivered.'">';
 							}
 							else print $langs->trans("NA");
 							print '</td>';
