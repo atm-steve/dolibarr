@@ -87,7 +87,20 @@ print '<table class="noborder" width="100%">';
 
 _print_on_off('INVOICE_USE_SITUATION',$langs->trans('UseSituationInvoices'));
 _print_on_off('INVOICE_USE_SITUATION_CREDIT_NOTE',$langs->trans('UseSituationInvoicesCreditNote'));
-_print_on_off('INVOICE_USE_SITUATION_RETAINED_WARRANTY',$langs->trans('Retainedwarranty'));
+
+// for retrocompatibility
+if(!empty($conf->global->INVOICE_USE_RETAINED_WARRANTY)) {
+	// if INVOICE_USE_RETAINED_WARRANTY is set so INVOICE_USE_SITUATION_RETAINED_WARRANTY is useless
+	dolibarr_del_const($db, 'INVOICE_USE_SITUATION_RETAINED_WARRANTY');
+}
+elseif(empty($conf->global->INVOICE_USE_RETAINED_WARRANTY) && !empty($conf->global->INVOICE_USE_SITUATION_RETAINED_WARRANTY)) {
+	$conf->global->INVOICE_USE_RETAINED_WARRANTY = $conf->global->INVOICE_USE_SITUATION_RETAINED_WARRANTY;
+	dolibarr_set_const($db, 'INVOICE_USE_RETAINED_WARRANTY', $conf->global->INVOICE_USE_RETAINED_WARRANTY);
+}
+_print_on_off('INVOICE_USE_RETAINED_WARRANTY',$langs->trans('Retainedwarranty'));
+
+_print_on_off('USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION',$langs->trans('RetainedwarrantyOnlyForSituation'));
+_print_on_off('USE_RETAINED_WARRANTY_ONLY_FOR_SITUATION_FINAL',$langs->trans('RetainedwarrantyOnlyForSituationFinal'));
 
 $metas = array(
     'type' => 'number',
