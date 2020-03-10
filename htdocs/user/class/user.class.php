@@ -718,7 +718,7 @@ class User extends CommonObject
 		if (! empty($conf->global->MULTICOMPANY_BACKWARD_COMPATIBILITY))
 		{
 			if (! empty($conf->multicompany->enabled) && ! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE)) {
-				$sql.= " AND gu.entity IN (0,".$conf->entity.")";
+				$sql.= " AND gu.entity IN (0,".$conf->entity.") AND gr.entity IN (0,".$conf->entity.") ";
 			} else {
 				$sql.= " AND r.entity = ".$conf->entity;
 			}
