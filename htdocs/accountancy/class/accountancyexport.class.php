@@ -271,16 +271,133 @@ class AccountancyExport
 	 */
 	public function exportLDCompta($objectLines)
 	{
+        require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 
-		$separator = ';';
+        $separator = ';';
 		$end_line = "\r\n";
+		$last_codeinvoice = '';
 
 		foreach ($objectLines as $line) {
-			$date_document = dol_print_date($line->doc_date, '%Y%m%d');
-			$date_creation = dol_print_date($line->date_creation, '%Y%m%d');
-			$date_lim_reglement = dol_print_date($line->date_lim_reglement, '%Y%m%d');
 
-			// TYPE
+            // TYPE C
+            if($last_codeinvoice != $line->doc_ref){
+
+                //recherche societe en fonction de son code client
+			    $sql = "SELECT code_client, fk_forme_juridique, nom, address, zip, town, fk_pays, phone, siret FROM ".MAIN_DB_PREFIX."societe WHERE code_client = '".$line->thirdparty_code ."'";
+			    $resql = $this->db->query($sql);
+
+			    if($resql)
+                {
+                    $soc = $this->db->fetch_object($resql);
+
+                    $address = str_replace(array("\t", "\n", "\r"), " ", $soc->address);
+
+                    $type_enregistrement = 'C';
+                    print $type_enregistrement.$separator;
+                    //NOCL
+                    print $soc->code_client.$separator;
+                    //NMCM
+                    print $separator;
+                    //LIBI
+                    print $separator;
+                    //TITR
+                    print getFormeJuridiqueLabel($soc->fk_forme_juridique).$separator;
+                    //RSSO
+                    print $soc->nom.$separator;
+                    //CAD1
+                    print  substr($address, 0, 40).$separator;
+                    //CAD2
+                    print  substr($address, 41, 40).$separator;
+                    //CAD3
+                    print  substr($address, 82, 40).$separator;
+                    //COPO
+                    print  $soc->zip.$separator;
+                    //BUDI
+                    print  substr($soc->town, 0, 40).$separator;
+                    //CPAY
+                    print  $separator;
+                    //PAYS
+                    print  substr(getCountry($soc->fk_pays), 0, 40).$separator;
+                    //NTEL
+                    print $soc->phone.$separator;
+                    //TLEX
+                    print $separator;
+                    //TLPO
+                    print $separator;
+                    //TLCY
+                    print $separator;
+                    //NINT
+                    print $separator;
+                    //COMM
+                    print $separator;
+                    //SIRE
+                    print $soc->siret.$separator;
+                    //RIBP
+                    print $separator;
+                    //DOBQ
+                    print $separator;
+                    //IBBQ
+                    print $separator;
+                    //COBQ
+                    print $separator;
+                    //GUBQ
+                    print $separator;
+                    //CPBQ
+                    print $separator;
+                    //CLBQ
+                    print $separator;
+                    //BIBQ
+                    print $separator;
+                    //MOPM
+                    print $separator;
+                    //DJPM
+                    print $separator;
+                    //DMPM
+                    print $separator;
+                    //REFM
+                    print $separator;
+                    //SLVA
+                    print $separator;
+                    //PLCR
+                    print $separator;
+                    //ECFI
+                    print $separator;
+                    //CREP
+                    print $separator;
+                    //NREP
+                    print $separator;
+                    //TREP
+                    print $separator;
+                    //MREP
+                    print $separator;
+                    //GRRE
+                    print $separator;
+                    //LTTA
+                    print $separator;
+                    //CACT
+                    print $separator;
+                    //CODV
+                    print $separator;
+                    //GRTR
+                    print $separator;
+                    //NOFP
+                    print $separator;
+                    //BQAF
+                    print $separator;
+                    //BONP
+                    print $separator;
+                    //CESC
+                    print $separator;
+
+                    print $end_line;
+                }
+            }
+
+            $date_document = dol_print_date($line->doc_date, '%Y%m%d');
+            $date_creation = dol_print_date($line->date_creation, '%Y%m%d');
+            $date_lim_reglement = dol_print_date($line->date_lim_reglement, '%Y%m%d');
+
+			// TYPE E
 			$type_enregistrement = 'E'; // For write movement
 			print $type_enregistrement.$separator;
 			// JNAL
@@ -390,6 +507,8 @@ class AccountancyExport
 			print $separator;
 
 			print $end_line;
+
+            $last_codeinvoice = $line->doc_ref;
 		}
 	}
 
