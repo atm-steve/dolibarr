@@ -670,7 +670,7 @@ if (! $error && $action == 'writebookkeeping') {
 			}
 		}
 
-		if (price2num($totaldebit) != price2num($totalcredit))
+		if (price2num($totaldebit, 'MT') != price2num($totalcredit, 'MT'))
 		{
 			$error++;
 			$errorforline++;
@@ -771,8 +771,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 				print "  " . $sep;
 				print '"' . $reflabel . '"' . $sep;
-				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+				print '"' . ($mt >= 0 ? getAmountForExport($mt) : '') . '"' . $sep;
+				print '"' . ($mt < 0 ? getAmountForExport(- $mt) : '') . '"' . $sep;
 				print '"' . $journal . '"' . $sep;
 				print '"' . dol_string_nohtmltag($ref) . '"' . $sep;
 				print "\n";
@@ -805,8 +805,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 					}
 					print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
 					print '"' . $reflabel . '"' . $sep;
-					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+					print '"' . ($mt < 0 ? getAmountForExport(- $mt) : '') . '"' . $sep;
+					print '"' . ($mt >= 0 ? getAmountForExport($mt) : '') . '"' . $sep;
 					print '"' . $journal . '"' . $sep;
 					print '"' . dol_string_nohtmltag($ref) . '"' . $sep;
 					print "\n";
@@ -827,8 +827,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 					print '"' . length_accountg($conf->global->ACCOUNTING_ACCOUNT_SUSPENSE) . '"' . $sep;
 					print "" . $sep;
 					print '"' . $reflabel . '"' . $sep;
-					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+					print '"' . ($mt < 0 ? getAmountForExport(- $mt) : '') . '"' . $sep;
+					print '"' . ($mt >= 0 ? getAmountForExport($mt) : '') . '"' . $sep;
 					print '"' . $journal . '"' . $sep;
 					print '"' . dol_string_nohtmltag($ref) . '"' . $sep;
 					print "\n";

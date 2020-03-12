@@ -409,6 +409,8 @@ class DiscountAbsolute
      */
     function unlink_invoice()
     {
+        global $user, $langs, $conf;
+
         $sql ="UPDATE ".MAIN_DB_PREFIX."societe_remise_except";
 		if(! empty($this->discount_type)) {
        		$sql.=" SET fk_invoice_supplier_line = NULL, fk_invoice_supplier = NULL";
@@ -421,6 +423,15 @@ class DiscountAbsolute
         $resql = $this->db->query($sql);
         if ($resql)
         {
+            require_once DOL_DOCUMENT_ROOT.'/core/class/interfaces.class.php';
+            $interface = new Interfaces($this->db);
+            $result = $interface->run_triggers('DISCOUNT_UNLINK_INVOICE', $this, $user, $langs, $conf);
+            if ($result < 0)
+            {
+                $this->errors=$interface->errors;
+                return -1;
+            }
+            
             return 1;
         }
         else
@@ -534,19 +545,21 @@ class DiscountAbsolute
     {
         dol_syslog(get_class($this)."::getSumCreditNotesUsed", LOG_DEBUG);
 
+	include_once DOL_DOCUMENT_ROOT .'/compta/facture/class/facture.class.php';
+
         if ($invoice->element == 'facture' || $invoice->element == 'invoice')
         {
             $sql = 'SELECT sum(rc.amount_ttc) as amount, sum(rc.multicurrency_amount_ttc) as multicurrency_amount';
             $sql.= ' FROM '.MAIN_DB_PREFIX.'societe_remise_except as rc, '.MAIN_DB_PREFIX.'facture as f';
             $sql.= ' WHERE rc.fk_facture_source=f.rowid AND rc.fk_facture = '.$invoice->id;
-            $sql.= ' AND (f.type = 2 OR f.type = 0)';	// Find discount coming from credit note or excess received
+            $sql.= ' AND f.type IN (' . Facture::TYPE_STANDARD . ', ' . Facture::TYPE_CREDIT_NOTE . ', ' . Facture::TYPE_SITUATION . ')';	// Find discount coming from credit note or excess received
         }
         else if ($invoice->element == 'invoice_supplier')
         {
             $sql = 'SELECT sum(rc.amount_ttc) as amount, sum(rc.multicurrency_amount_ttc) as multicurrency_amount';
             $sql.= ' FROM '.MAIN_DB_PREFIX.'societe_remise_except as rc, '.MAIN_DB_PREFIX.'facture_fourn as f';
             $sql.= ' WHERE rc.fk_invoice_supplier_source=f.rowid AND rc.fk_invoice_supplier = '.$invoice->id;
-            $sql.= ' AND (f.type = 2 OR f.type = 0)';	// Find discount coming from credit note or excess paid
+            $sql.= ' AND f.type IN (' . Facture::TYPE_STANDARD . ', ' . Facture::TYPE_CREDIT_NOTE . ')';	// Find discount coming from credit note or excess paid
         }
         else
         {
