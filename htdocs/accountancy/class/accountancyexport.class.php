@@ -479,9 +479,13 @@ class AccountancyExport
 			print $separator;
 			// REFD
 			print $line->doc_ref.$separator;
+			// NECA
+			print '0'.$separator;
 			// CODH
 			print $separator;
 			// NSEQ
+			print $separator;
+			// CDES
 			print $separator;
 			// MTDV
 			print '0'.$separator;
