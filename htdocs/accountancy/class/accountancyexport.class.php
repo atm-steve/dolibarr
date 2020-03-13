@@ -676,7 +676,7 @@ class AccountancyExport
 					print  self::trunc($account_label, 60) . $separator;//Account label
 					print self::trunc($line->doc_ref, 20) . $separator;//Piece
 					print self::trunc($line->label_operation, 60) . $separator;//Operation label
-					print price(abs($amountByAnalytique)) . $separator;//Amount
+					print price2num(abs($amountByAnalytique)) . $separator;//Amount
 					print $line->sens . $separator;//Direction
 					if(!empty($code_analytique)) {
 						print self::trunc($code_analytique, 15) . $separator;//Analytic
@@ -708,7 +708,7 @@ class AccountancyExport
 				print self::trunc($account_label, 60) . $separator;//Account label
 				print self::trunc($line->doc_ref, 20) . $separator;//Piece
 				print self::trunc($line->label_operation, 60) . $separator;//Operation label
-				print price(abs($line->montant)) . $separator;//Amount
+				print price2num(abs($line->montant)) . $separator;//Amount
 				print $line->sens . $separator;//Direction
 
 				print $separator;//Analytic
