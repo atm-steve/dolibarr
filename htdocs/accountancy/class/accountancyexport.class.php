@@ -290,9 +290,24 @@ class AccountancyExport
                 {
                     $soc = $this->db->fetch_object($resql);
 
-                    $address = str_replace(array("\t", "\n", "\r"), " ", $soc->address);
+	                $address=array('','','');
+                    if (strpos($soc->address,"\n")!==false) {
+	                    $address = explode("\n",$soc->address);
+	                    if (is_array($address) && count($address)>0) {
+	                    	foreach($address as $key=>$data) {
+			                    $address[$key]=str_replace(array("\t", "\n", "\r"), "", $data);
+			                    $address[$key]=dol_trunc($address[$key],40,'right','UTF-8',1);
+		                    }
+	                    }
+                    } else {
+	                    $address[0] =  substr(str_replace(array("\t", "\r"), " ", $soc->address),0,40);
+	                    $address[1] =  substr(str_replace(array("\t", "\r"), " ", $soc->address),41,40);
+	                    $address[2] =  substr(str_replace(array("\t", "\r"), " ", $soc->address),82,40);
+
+                    }
 
                     $type_enregistrement = 'C';
+                    //TYPE
                     print $type_enregistrement.$separator;
                     //NOCL
                     print $soc->code_client.$separator;
@@ -301,15 +316,15 @@ class AccountancyExport
                     //LIBI
                     print $separator;
                     //TITR
-                    print getFormeJuridiqueLabel($soc->fk_forme_juridique).$separator;
+                    print $separator;
                     //RSSO
                     print $soc->nom.$separator;
                     //CAD1
-                    print  substr($address, 0, 40).$separator;
+                    print  $address[0].$separator;
                     //CAD2
-                    print  substr($address, 41, 40).$separator;
+                    print  $address[1].$separator;
                     //CAD3
-                    print  substr($address, 82, 40).$separator;
+                    print  $address[2].$separator;
                     //COPO
                     print  $soc->zip.$separator;
                     //BUDI
@@ -331,7 +346,7 @@ class AccountancyExport
                     //COMM
                     print $separator;
                     //SIRE
-                    print $soc->siret.$separator;
+                    print str_replace(" ", "", $soc->siret).$separator;
                     //RIBP
                     print $separator;
                     //DOBQ
@@ -469,8 +484,6 @@ class AccountancyExport
 			} else {
 				print $separator;
 			}
-			// SECT
-			print $separator;
 			// CTRE
 			print $separator;
 			// NORL
@@ -481,11 +494,13 @@ class AccountancyExport
 			print $line->doc_ref.$separator;
 			// NECA
 			print '0'.$separator;
-			// CODH
+			// CSEC
 			print $separator;
-			// NSEQ
+			// CAAF
 			print $separator;
 			// CDES
+			print $separator;
+			// QTUE
 			print $separator;
 			// MTDV
 			print '0'.$separator;
