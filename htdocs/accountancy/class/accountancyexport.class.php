@@ -633,9 +633,9 @@ class AccountancyExport
 		print $langs->transnoentitiesnoconv('Date') . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('Journal'), 6) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('Account'), 15) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('LabelAccount'), 60) . $separator;
-		print self::trunc($langs->transnoentitiesnoconv('Piece'), 20) . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('LabelOperation'), 60) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('Piece'), 20) . $separator;
+		print self::trunc($langs->transnoentitiesnoconv('LabelAccount'), 60) . $separator;
 		print $langs->transnoentitiesnoconv('Amount') . $separator;
 		print 'S' . $separator;
 		print self::trunc($langs->transnoentitiesnoconv('Analytic') . ' 1', 15) . $separator;
@@ -673,9 +673,9 @@ class AccountancyExport
 
 					if(!empty($line->label_compte)) $account_label = $line->label_compte;
 
-					print  self::trunc($account_label, 60) . $separator;//Account label
-					print self::trunc($line->doc_ref, 20) . $separator;//Piece
 					print self::trunc($line->label_operation, 60) . $separator;//Operation label
+					print self::trunc($line->doc_ref, 20) . $separator;//Piece
+					print  self::trunc($account_label, 60) . $separator;//Account label
 					print price2num(abs($amountByAnalytique)) . $separator;//Amount
 					print $line->sens . $separator;//Direction
 					if(!empty($code_analytique)) {
@@ -705,9 +705,9 @@ class AccountancyExport
 
 				if(!empty($line->label_compte)) $account_label = $line->label_compte;
 
-				print self::trunc($account_label, 60) . $separator;//Account label
-				print self::trunc($line->doc_ref, 20) . $separator;//Piece
 				print self::trunc($line->label_operation, 60) . $separator;//Operation label
+				print self::trunc($line->doc_ref, 20) . $separator;//Piece
+				print self::trunc($account_label, 60) . $separator;//Account label
 				print price2num(abs($line->montant)) . $separator;//Amount
 				print $line->sens . $separator;//Direction
 
