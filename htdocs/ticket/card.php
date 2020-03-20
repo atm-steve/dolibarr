@@ -1182,6 +1182,8 @@ if (empty($action) || $action == 'view' || $action == 'addlink' || $action == 'd
 		            print '<div class="inline-block divButAction"><a class="butAction" href="card.php?track_id=' . $object->track_id . '&action=close">' . $langs->trans('CloseTicket') . '</a></div>';
 		        }
 
+				print '<div class="inline-block divButAction"><a class="butAction" href="card.php?clone_id=' . $object->track_id . '&action=create">' . $langs->trans('Cloner') . '</a></div>';
+
 		        // Re-open ticket
 		        if (!$user->socid && $object->fk_statut == Ticket::STATUS_CLOSED && !$user->societe_id) {
 		            print '<div class="inline-block divButAction"><a class="butAction" href="card.php?track_id=' . $object->track_id . '&action=reopen">' . $langs->trans('ReOpen') . '</a></div>';
