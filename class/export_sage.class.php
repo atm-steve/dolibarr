@@ -7,9 +7,9 @@ dol_include_once("/exportcompta/class/export.class.php");
 
 class TExportComptaSage extends TExportCompta {
 	function __construct(&$db, $exportAllreadyExported=false, $addExportTime=false) {
-		
+
 		parent::__construct($db, $exportAllreadyExported, $addExportTime);
-		
+
 		$this->_format_ecritures_comptables_vente = array(
 			array('name' => 'date_piece',			'length' => 8,	'default' => '',	'type' => 'date',	'format' => 'dmY'),
 			array('name' => 'code_journal',			'length' => 3,	'default' => 'VEN',	'type' => 'text'),
@@ -29,7 +29,7 @@ class TExportComptaSage extends TExportCompta {
 
 		$this->_format_ecritures_comptables_ndf = $this->_format_ecritures_comptables_vente;
 		$this->_format_ecritures_comptables_ndf[1]['default'] = 'AC';
-		
+
 		$this->lineSeparator = "\r\n";
 		$this->fieldSeparator = ';';
 		$this->fieldPadding = false;
@@ -37,22 +37,22 @@ class TExportComptaSage extends TExportCompta {
 		unset($this->TTypeExport['produits']); // pas encore pris en charge
 		//unset($this->TTypeExport['reglement_tiers']); // pas encore pris en charge
 		//unset($this->TTypeExport['tiers']); // pas encore pris en charge
-		
+
 	}
-	
+
 	function get_file_ecritures_comptables_ventes($format, $dt_deb, $dt_fin) {
 		global $conf;
 
 		$TabFactures = parent::get_factures_client($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
 		if(empty($compte_general_client)) $compte_general_client = '41100000';
-		
+
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -63,7 +63,7 @@ class TExportComptaSage extends TExportCompta {
 				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
-			
+
 			$libelle = $tiers['nom'];
 			if(!empty($facture['ref_client'])) $libelle.= ' - '.$facture['ref_client'];
 
@@ -75,7 +75,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> $compte_general_client,
 					'numero_compte_tiers'			=> $code_compta,
-	
+
 					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
@@ -83,19 +83,19 @@ class TExportComptaSage extends TExportCompta {
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> $code_compta,
-					
+
 					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
@@ -103,10 +103,10 @@ class TExportComptaSage extends TExportCompta {
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				
+
 				// Ecriture analytique
 				//$ligneFichier['type_ecriture'] = 'A';
 				//$contenuFichier .= parent::get_line($format, $ligneFichier);
@@ -119,7 +119,7 @@ class TExportComptaSage extends TExportCompta {
 					'date_piece'					=> $facture['date'],
 					'numero_piece'					=> $facture['ref'],
 					'numero_compte_general'			=> $code_compta,
-					
+
 					'libelle'						=> $libelle,
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
@@ -127,12 +127,12 @@ class TExportComptaSage extends TExportCompta {
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -143,15 +143,15 @@ class TExportComptaSage extends TExportCompta {
 		global $conf;
 
 		$TabFactures = parent::get_factures_fournisseur($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
 		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '40100000';
-		
+
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
@@ -165,7 +165,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
 					'numero_compte_general'			=> $compte_general_fournisseur,
 					'numero_compte_tiers'			=> $code_compta,
-	
+
 //					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
@@ -174,12 +174,12 @@ class TExportComptaSage extends TExportCompta {
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -187,7 +187,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
 					'numero_compte_general'			=> $code_compta,
-					
+
 //					'libelle'						=> $tiers['nom'],
 					'libelle'						=> (!empty($facture['libelle']) ? $tiers['nom'].' '.$facture['libelle'] : $tiers['nom']),
 					'mode_rglt'						=> $facture['mode_reglement'],
@@ -196,10 +196,10 @@ class TExportComptaSage extends TExportCompta {
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				
+
 				// Ecriture analytique
 				//$ligneFichier['type_ecriture'] = 'A';
 				//$contenuFichier .= parent::get_line($format, $ligneFichier);
@@ -213,7 +213,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $facture['ref'],
 					'numero_piece_fournisseur'		=> $facture['ref_supplier'],
 					'numero_compte_general'			=> $code_compta,
-					
+
 					'libelle'						=> $tiers['nom'],
 					'mode_rglt'						=> $facture['mode_reglement'],
 					'date_echeance'					=> $facture['date_lim_reglement'],
@@ -221,12 +221,12 @@ class TExportComptaSage extends TExportCompta {
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -237,7 +237,7 @@ class TExportComptaSage extends TExportCompta {
 		global $conf;
 
 		$TabNDF = parent::get_notes_de_frais($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 
 		$numEcriture = 1;
@@ -245,7 +245,7 @@ class TExportComptaSage extends TExportCompta {
 
 		$compte_general_user = $conf->global->EXPORT_COMPTA_GENERAL_USER_ACCOUNT;
 		if(empty($compte_general_user)) $compte_general_user = '40100000';
-		
+
 		foreach ($TabNDF as $id_ndf => $infosNDF) {
 			$tiers = &$infosNDF['tiers'];
 			$ndf = &$infosNDF['ndf'];
@@ -265,19 +265,19 @@ class TExportComptaSage extends TExportCompta {
 					'numero_plan'					=> '0',
 					'numero_compte_general'			=> $compte_general_user,
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
-	
+
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
 					'montant_debit'					=> 0,
 					'montant_credit'				=> abs($montant),
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de produits
 			foreach($infosNDF['ligne_produit'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -286,17 +286,17 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> $ndf['ref'],
 					'numero_plan'					=> '2',
 					'numero_section'				=> $codeAnalytique,
-					
+
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
 					'montant_debit'					=> abs($montant),
 					'montant_credit'				=> 0,
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				
+
 				// Ecriture analytique
 				//$ligneFichier['type_ecriture'] = 'A';
 				//$contenuFichier .= parent::get_line($format, $ligneFichier);
@@ -310,19 +310,19 @@ class TExportComptaSage extends TExportCompta {
 					'numero_compte_general'			=> $code_compta,
 					'numero_piece'					=> $ndf['ref'],
 					'numero_plan'					=> '0',
-					
+
 					'libelle'						=> isset($entity) ? 'NF '.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'],
 					'date_echeance'					=> '',
 					'montant_debit'					=> abs($montant),
 					'montant_credit'				=> 0,
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -333,17 +333,17 @@ class TExportComptaSage extends TExportCompta {
 		global $conf;
 
 		$TabReglement = parent::get_reglement_tiers($dt_deb, $dt_fin);
-		
+
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		foreach ($TabReglement as $infosReglement) {
 			$tiers = &$infosReglement['client'];
 			$reglement = &$infosReglement['reglement'];
-			
+
 			// Ligne client
 			$ligneFichier = array(
 				'numero_compte'					=> $tiers['code_compta'],
@@ -356,10 +356,10 @@ class TExportComptaSage extends TExportCompta {
 				'num_unique'					=> $numLignes,
 				'date_systeme'					=> time(),
 			);
-			
+
 			$contenuFichier .= parent::get_line($format, $ligneFichier);
 			$numLignes++;
-			
+
 			// Ligne Banque
 			$ligneFichier = array(
 				'numero_compte'					=> $reglement['code_compta'],
@@ -372,10 +372,10 @@ class TExportComptaSage extends TExportCompta {
 				'num_unique'					=> $numLignes,
 				'date_systeme'					=> time(),
 			);
-			
+
 			$contenuFichier .= parent::get_line($format, $ligneFichier);
 			$numLignes++;
-			
+
 			$numEcriture++;
 		}
 
@@ -383,28 +383,28 @@ class TExportComptaSage extends TExportCompta {
 	}
 
 	function get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin) {
-		global $conf;
+		global $conf, $db, $langs;
 
 		$TabBank = parent::get_banque($dt_deb, $dt_fin);
 		//pre($TabBank, true);exit;
-		
+
 		$contenuFichier = '';
 		$separateurLigne = "\r\n";
 
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
 		if(empty($compte_general_client)) $compte_general_client = '41100000';
-		
+
 		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
 		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '40100000';
-		
+
 		foreach ($TabBank as $id_bank => $infosBank) {
 			$bankline = &$infosBank['bankline'];
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
-			
+
 			$label = $bankline['label'];
 			//pre($object, true);exit;
 			if(!empty($object)) {
@@ -422,6 +422,7 @@ class TExportComptaSage extends TExportCompta {
 			}
 
 			$datepiece = $bankline['datev'];
+			$mode_rglt = $langs->getLabelFromKey($db, $bankline['fk_type'], 'c_paiement', 'code', 'libelle', '', 1);
 
 			// Lignes client
 			foreach($infosBank['ligne_tiers'] as $code_compta => $montant) {
@@ -432,18 +433,19 @@ class TExportComptaSage extends TExportCompta {
 					'numero_plan'					=> '0',
 					'numero_compte_general'			=> $bankline['label'] == '(SupplierInvoicePayment)' ? $compte_general_fournisseur : $compte_general_client,
 					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
-	
+
 					'libelle'						=> $label,
+					'mode_rglt'						=> $mode_rglt,
 					'montant_debit'					=> ($montant < 0) ? abs($montant) : 0,
 					'montant_credit'				=> ($montant < 0) ? 0 : abs($montant),
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
-			
+
 			// Lignes de banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -453,17 +455,18 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> 'BK'.str_pad($bankline['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '2',
 					'numero_section'				=> $codeAnalytique,
-					
+
 					'libelle'						=> $label,
+					'mode_rglt'						=> $mode_rglt,
 					'montant_debit'					=> ($montant < 0) ? 0 : abs($montant),
 					'montant_credit'				=> ($montant < 0) ? abs($montant) : 0,
 					'type_ecriture'					=> 'G'
 				);
-				
+
 				// Ecriture générale
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 			}
-			
+
 			// Ajout de ligne de transfert de TVA lorsqu'une facture d'achat est totalement payée
 			if(in_array($bankline['label'], array('(SupplierInvoicePayment)','Règlement fournisseur'))) {
 				$TOD = $this->getODVATTransfer($infosBank);
@@ -471,7 +474,7 @@ class TExportComptaSage extends TExportCompta {
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
 				}
 			}
-			
+
 			$numEcriture++;
 		}
 
@@ -484,19 +487,19 @@ class TExportComptaSage extends TExportCompta {
 		$TabTiers = parent::get_tiers($dt_deb, $dt_fin);
 		$numEcriture = 1;
 		$numLignes = 1;
-		
+
 		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
 		if(empty($compte_general_client)) $compte_general_client = '41100000';
-		
+
 		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
 		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '40100000';
-		
+
 		foreach($TabTiers as $code_compta=>$tiers) {
-			
+
 			foreach($tiers as $key=>$value){
 				$tiers[$key] = strtr($value,array('amp;'=>'&','gt;'=>'>'));
 			}
-			
+
 			$ligneFichier=array_merge($tiers, array(
 				'numero_compte'=>$code_compta,
 				'numero_compte_general'	=> ($tiers['fournisseur']) ? $compte_general_fournisseur : $compte_general_client,
@@ -519,7 +522,7 @@ class TExportComptaSage extends TExportCompta {
 				'mode_rglt'	=> $this->TModeRglt[$tiers['mode_reglement_code']],
 				'tms'=>strtotime($tiers['tms']),
 			));
-			
+
 			$contenuFichier .= parent::get_line($format, $ligneFichier);
 		}
 
