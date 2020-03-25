@@ -26,23 +26,26 @@ if (file_exists("../main.inc.php")) {
 }
 
 require_once 'class/ticket.class.php';
-require_once 'class/ticketstats.class.php';
-require_once 'class/actions_ticket.class.php';
+require_once DOL_DOCUMENT_ROOT . '/ticket/class/actions_ticket.class.php';
+require_once DOL_DOCUMENT_ROOT . '/ticket/class/ticketstats.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/dolgraph.class.php';
 
 // Load traductions files requiredby by page
 $langs->load("companies");
 $langs->load("other");
-$langs->load("ticket@ticketr");
+$langs->load("ticket@ticket");
 
 $WIDTH = DolGraph::getDefaultGraphSizeForStats('width');
 $HEIGHT = DolGraph::getDefaultGraphSizeForStats('height');
 
+// Year
+$nowyear = strftime("%Y", dol_now());
+$startyear = $year - 1;
+
 // Get parameters
 $id = GETPOST('id', 'int');
 $msg_id = GETPOST('msg_id', 'int');
-
-$action = GETPOST('action', 'alpha', 3);
+$action = GETPOST('action', 'aZ09');
 
 if ($user->societe_id) {
 	$socid = $user->societe_id;
@@ -50,12 +53,6 @@ if ($user->societe_id) {
 
 // Security check
 $result = restrictedArea($user, 'ticket', 0, '', '', '', '');
-
-$nowyear = strftime("%Y", dol_now());
-$year = GETPOST('year') > 0 ? GETPOST('year') : $nowyear;
-//$startyear=$year-2;
-$startyear = $year - 1;
-$endyear = $year;
 
 $object = new ActionsTicket($db);
 $stats = new TicketStats($db, $socid, $userid);
@@ -67,38 +64,7 @@ $form = new Form($db);
  * Put here all code to do according to value of "action" parameter
  ********************************************************************/
 
-$dir = '';
-$filenamenb = $dir . "/" . $prefix . "ticketsupinyear-" . $endyear . ".png";
-$fileurlnb = DOL_URL_ROOT . '/viewimage.php?modulepart=ticketsup&amp;file=ticketsupinyear-' . $endyear . '.png';
 
-
-$param_year = 'DOLUSERCOOKIE_ticketsup_by_status_year';
-$param_shownb = 'DOLUSERCOOKIE_ticketsup_by_status_shownb';
-$param_showtot = 'DOLUSERCOOKIE_ticketsup_by_status_showtot';
-
-$autosetarray = preg_split("/[,;:]+/", GETPOST('DOL_AUTOSET_COOKIE'));
-if (in_array('DOLUSERCOOKIE_ticketsup_by_status', $autosetarray)) {
-	$endyear = GETPOST($param_year, 'int');
-	$shownb = GETPOST($param_shownb, 'alpha');
-	$showtot = GETPOST($param_showtot, 'alpha');
-} else {
-	$tmparray = json_decode($_COOKIE['DOLUSERCOOKIE_ticketsup_by_status'], true);
-	$endyear = $tmparray['year'];
-	$shownb = $tmparray['shownb'];
-	$showtot = $tmparray['showtot'];
-}
-if (empty($shownb) && empty($showtot)) {
-	$showtot = 1;
-}
-
-$nowarray = dol_getdate(dol_now(), true);
-if (empty($endyear)) {
-	$endyear = $nowarray['year'];
-}
-
-$startyear = $endyear - 1;
-$WIDTH = (($shownb && $showtot) || !empty($conf->dol_optimize_smallscreen)) ? '256' : '320';
-$HEIGHT = '192';
 
 /***************************************************
  * PAGE
@@ -117,29 +83,47 @@ print '<h3 id="NONASSIGNES">Tickets à prendre en charge</h3>';
  * Derniers tickets non attribués
  */
 $max = 50;
-$sql = "SELECT t.rowid, t.ref, t.track_id, t.datec, t.subject, t.type_code, t.category_code, t.severity_code";
-$sql .= ", type.label as type_label, category.label as category_label, severity.label as severity_label, extra.deadline as deadline,
-		IF(DATEDIFF(extra.deadline,NOW()) <=3,'Alerte','') AS 'Alerte', DATEDIFF(extra.deadline,NOW()) AS 'delais'";
-$sql .= " FROM " . MAIN_DB_PREFIX . "ticket as t";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_type as type ON type.code=t.type_code";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_category as category ON category.code=t.category_code";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_severity as severity ON severity.code=t.severity_code";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "ticket_extrafields as extra ON extra.fk_object=t.rowid";
+
+$sql ="SELECT ";
+$sql.=" t.rowid,";
+$sql.=" t.ref,";
+$sql.=" t.track_id,";
+$sql.=" t.datec,";
+$sql.=" t.subject,";
+$sql.=" t.type_code,";
+$sql.=" t.category_code,";
+$sql.=" t.severity_code, ";
+$sql.=" type.label as type_label,";
+$sql.=" category.label as category_label,";
+$sql.=" severity.label as severity_label,";
+$sql.=" extra.deadline as deadline,";
+$sql.=" IF(DATEDIFF(extra.deadline,NOW()) <=3,'Alerte','') AS 'Alerte',";
+$sql.=" DATEDIFF(extra.deadline,NOW()) AS 'delais'";
+$sql.=" FROM " . MAIN_DB_PREFIX . "ticket as t";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_type as type ON type.code=t.type_code";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_category as category ON category.code=t.category_code";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_severity as severity ON severity.code=t.severity_code";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "ticket_extrafields as extra ON extra.fk_object=t.rowid";
+
 if (!$user->rights->societe->client->voir && !$socid) {
-	$sql .= ", " . MAIN_DB_PREFIX . "societe_commerciaux as sc";
+	$sql.= ", " . MAIN_DB_PREFIX."societe_commerciaux as sc";
 }
 
-$sql .= ' WHERE t.entity IN (' . getEntity('ticket', 1) . ')';
-$sql .= " AND t.fk_statut<>8 AND t.fk_user_assign = 0 AND t.category_code IN ('INTERNE', 'CMD','EQUIPEMENT','INCIDENT','SUIVACT') AND extra.deadline <= DATE_ADD(NOW(), INTERVAL 15 DAY)";
+$sql.=" WHERE t.entity IN (".getEntity('ticket', 1).")";
+$sql.=" AND t.fk_statut<>8";
+$sql.=" AND t.fk_user_assign = 0";
+$sql.=" AND t.category_code IN ('INTERNE', 'CMD','EQUIPEMENT','INCIDENT','SUIVACT')";
+$sql.=" AND extra.deadline <= DATE_ADD(NOW(), INTERVAL 15 DAY)";
+
 if (!$user->rights->societe->client->voir && !$socid) {
-	$sql .= " AND t.fk_soc = sc.fk_soc AND sc.fk_user = " . $user->id;
+	$sql .= " AND t.fk_soc = sc.fk_soc AND sc.fk_user = ".$user->id;
 }
 
 if ($user->societe_id > 0) {
-	$sql .= " AND t.fk_soc='" . $user->societe_id . "'";
+	$sql.= " AND t.fk_soc='" . $user->societe_id . "'";
 } else {
 	// Restricted to assigned user only
-	if ($conf->global->TICKETS_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
+	if ($conf->global->TICKET_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
 		$sql .= " AND t.fk_user_assign=" . $user->id;
 	}
 }
@@ -155,13 +139,10 @@ if ($result) {
 	$transRecordedType = $langs->trans("LastNewTickets", $max);
 	print '<table id ="nonassigne" class="display">';
 	print '<thead>';
-	//print '<tr><th>Tickets à prendre en charge</th>';
 	print '<th>' . $langs->trans('Ref') . '</th>';
 	print '<th>' . $langs->trans('Subject') . '</th>';
 	print '<th>' . $langs->trans('Deadline PEC') . '</th>';
-	//print '<th>' . $langs->trans('Type') . '</th>';
-	// print '<th>' . $langs->trans('Category') . '</th>';
-	//print '<th>' . $langs->trans('Severity') . '</th>';
+
 	print '<th></th>';
 	print '</tr></thead>';
 	print '<tbody>';
@@ -173,10 +154,6 @@ if ($result) {
 
 			$var = !$var;
 			print "<tr $bc[$var]>";
-			// Creation date
-			/* print '<td align="left">';
-			 print dol_print_date($db->jdate($objp->datec), 'dayhour');
-			 print "</td>";*/
 
 			// Ref
 			print '<td>';
@@ -195,22 +172,6 @@ if ($result) {
 			print '<td>';
 			print $objp->deadline;
 			print '</td>';
-
-			// Type
-			/*print '<td>';
-			print $objp->type_label;
-			print '</td>';*/
-
-
-			// Category
-			/* print '<td>';
-			 print $objp->category_label;
-			 print "</td>";
-
-			 // Severity
-			 print '<td>';
-			 print $objp->severity_label;
-			 print "</td>";*/
 
 			// Prendre en charge
 			print '<td>';
@@ -231,18 +192,19 @@ if ($result) {
 	dol_print_error($db);
 }
 
-print '<script type="text/javascript">
-$(document).ready(function() {
-    $(\'#nonassigne\').DataTable({
-		"iDisplayLength": 20,
-		"order": [[2,"asc"]]
-		});
-} );
-</script>';
+print '
+<script type="text/javascript">
+	$(document).ready(function() {
+		$(\'#nonassigne\').DataTable({
+			"iDisplayLength": 20,
+			"order": [[2,"asc"]]
+			});
+	} );
+</script>
+';
 
 print '</div><div class="fichetwothirdright">';
 print '<div class="ficheaddleft">';
-
 
 /*
  * Repartition de la charge par utilisateurs
@@ -354,8 +316,6 @@ print '
 /*
  * Modèles de tickets - nécessite Reportico pour fonctionner
  */
-
-
 print '<h3 id="MODELES">Modèles de tickets<div class="inline-block divButAction"><a class="butAction" href="#repartition">Top</a></h3><div>';
 set_include_path('/home/josselin/html/cellandco/dolibarr/reportico');
 require_once 'reportico.php';        // Include Reportico
@@ -382,15 +342,27 @@ print '</div>';
 print '<h3 id="LONGTERME">Planification à plus de deux semaines</h3>';
 
 $max = 50;
-$sql = "SELECT t.rowid, t.ref, t.track_id, t.datec, t.subject, t.type_code, t.category_code, t.severity_code";
-$sql .= "
-	, type.label as type_label, category.label as category_label, severity.label as severity_label, extra.deadline as deadline,
-	IF(DATEDIFF(extra.deadline,NOW()) <=1,'Alerte','') AS 'Alerte', DATEDIFF(extra.deadline,NOW()) AS 'delais'";
-$sql .= " FROM " . MAIN_DB_PREFIX . "ticket as t";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_type as type ON type.code=t.type_code";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_category as category ON category.code=t.category_code";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_severity as severity ON severity.code=t.severity_code";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "ticket_extrafields as extra ON extra.fk_object=t.rowid";
+$sql ="SELECT";
+$sql.=" t.rowid,";
+$sql.=" t.ref,";
+$sql.=" t.track_id,";
+$sql.=" t.datec,";
+$sql.=" t.subject,";
+$sql.=" t.type_code,";
+$sql.=" t.category_code," ;
+$sql.=" t.severity_code,";
+$sql.= "type.label as type_label,";
+$sql.="category.label as category_label,";
+$sql.="severity.label as severity_label,";
+$sql.="extra.deadline as deadline,";
+$sql.="IF(DATEDIFF(extra.deadline,NOW())<=1,'Alerte','') AS 'Alerte',";
+$sql.="DATEDIFF(extra.deadline,NOW()) AS 'delais'";
+$sql.=" FROM " . MAIN_DB_PREFIX . "ticket as t";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_type as type ON type.code=t.type_code";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_category as category ON category.code=t.category_code";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "c_ticket_severity as severity ON severity.code=t.severity_code";
+$sql.=" LEFT JOIN " . MAIN_DB_PREFIX . "ticket_extrafields as extra ON extra.fk_object=t.rowid";
+
 if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= ", " . MAIN_DB_PREFIX . "societe_commerciaux as sc";
 }
@@ -405,7 +377,7 @@ if ($user->societe_id > 0) {
 	$sql .= " AND t.fk_soc='" . $user->societe_id . "'";
 } else {
 	// Restricted to assigned user only
-	if ($conf->global->TICKETS_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
+	if ($conf->global->Cet_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
 		$sql .= " AND t.fk_user_assign=" . $user->id;
 	}
 }
@@ -466,7 +438,6 @@ if ($result) {
 			print '<td>';
 			print $objp->type_label;
 			print '</td>';
-
 
 			// Category
 			print '<td>';
@@ -535,7 +506,7 @@ if ($user->societe_id > 0) {
 	$sql .= " AND t.fk_soc='" . $user->societe_id . "'";
 } else {
 	// Restricted to assigned user only
-	if ($conf->global->TICKETS_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
+	if ($conf->global->TICKET_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
 		$sql .= " AND t.fk_user_assign=" . $user->id;
 	}
 }
@@ -647,7 +618,7 @@ if (!$user->rights->societe->client->voir && !$socid) {
 }
 
 $sql .= ' WHERE t.entity IN (' . getEntity('ticket', 1) . ')';
-$sql .= " AND t.fk_statut<>8 AND t.fk_user_assign IS NULL AND t.category_code IN ('BIOTRACKER', 'SIRIUS','DOLIBARR','FC')";
+$sql .= " AND t.fk_statut<>8 AND t.fk_user_assign IS NULL OR t.fk_user_assign = 0 AND t.category_code IN ('BIOTRACKER', 'SIRIUS','DOLIBARR','FC')";
 if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= " AND t.fk_soc = sc.fk_soc AND sc.fk_user = " . $user->id;
 }
@@ -656,7 +627,7 @@ if ($user->societe_id > 0) {
 	$sql .= " AND t.fk_soc='" . $user->societe_id . "'";
 } else {
 	// Restricted to assigned user only
-	if ($conf->global->TICKETS_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
+	if ($conf->global->TICKET_LIMIT_VIEW_ASSIGNED_ONLY && !$user->rights->ticket->manage) {
 		$sql .= " AND t.fk_user_assign=" . $user->id;
 	}
 }
@@ -758,16 +729,19 @@ $tick = array(
 	'inprogress' => 0,
 	'waiting' => 0,
 );
+
 $total = 0;
-$sql = "SELECT t.fk_statut, COUNT(t.fk_statut) as nb";
-$sql .= " FROM " . MAIN_DB_PREFIX . "ticket as t";
+$sql = "SELECT";
+$sql.=" t.fk_statut,";
+$sql.=" COUNT(t.fk_statut) as nb";
+$sql.=" FROM ".MAIN_DB_PREFIX."ticket as t";
+
 if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= ", " . MAIN_DB_PREFIX . "societe_commerciaux as sc";
 }
 
 $sql .= ' WHERE t.entity IN (' . getEntity('ticket', 1) . ')';
 $sql .= " AND t.fk_statut IS NOT NULL";
-/*$sql .= " AND date_format(datec,'%Y') = '" . $endyear . "'";*/
 if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= " AND t.fk_soc = sc.fk_soc AND sc.fk_user = " . $user->id;
 }
@@ -777,7 +751,7 @@ if ($user->societe_id > 0) {
 	$sql .= " AND t.fk_soc='" . $user->societe_id . "'";
 } else {
 	// For internals users,
-	if (!empty($conf->global->TICKETS_LIMIT_VIEW_ASSIGNED_ONLY) && !$user->rights->ticket->manage) {
+	if (!empty($conf->global->TICKET_LIMIT_VIEW_ASSIGNED_ONLY) && !$user->rights->ticket->manage) {
 		$sql .= " AND t.fk_user_assign=" . $user->id;
 	}
 }
@@ -820,49 +794,27 @@ if ($result) {
 	dol_print_error($db);
 }
 
-$stringtoshow = '';
-$stringtoshow .= '
-	<script type="text/javascript" language="javascript">
-		jQuery(document).ready(function() {
-			jQuery("#idsubimgDOLUSERCOOKIE_ticket_by_status").click(function() {
-				jQuery("#idfilterDOLUSERCOOKIE_ticket_by_status").toggle();
-			});
-		});
-    </script>
-    ';
-$stringtoshow .= '<div class="center hideobject" id="idfilterDOLUSERCOOKIE_ticketsup_by_status">'; // hideobject is to start hidden
-$stringtoshow .= '<form class="flat formboxfilter" method="POST" action="' . $_SERVER["PHP_SELF"] . '">';
-$stringtoshow .= '<input type="hidden" name="action" value="' . $refreshaction . '">';
-$stringtoshow .= '<input type="hidden" name="DOL_AUTOSET_COOKIE" value="DOLUSERCOOKIE_ticketsup_by_status:year,shownb,showtot">';
-$stringtoshow .= $langs->trans("Year") . ' <input class="flat" size="4" type="text" name="' . $param_year . '" value="' . $endyear . '">';
-$stringtoshow .= '<input type="image" alt="' . $langs->trans("Refresh") . '" src="' . img_picto($langs->trans("Refresh"), 'refresh.png', '', '', 1) . '">';
-$stringtoshow .= '</form>';
-$stringtoshow .= '</div>';
-
 
 print '<br/><br/><table class="noborder" width="100%">';
-print '<tr class="liste_titre"><th align = "center">' . $langs->trans("Statistics") . ' ' . img_picto('', 'filter.png', 'id="idsubimgDOLUSERCOOKIE_ticket_by_status" class="linkobject"') . '</th></tr>';
+print '<tr class="liste_titre"><th align = "center">' . $langs->trans("Statistics") .'</th></tr>';
 
 print '<tr><td align = "center">';
 
 // don't display graph if no series
 if (count($dataseries) >1) {
+
+	$filenamenb = $dir . "/" . $prefix . "ticket-" . $nowyear . ".png";
 	$data = array();
 	foreach ($dataseries as $key => $value) {
 		$data[] = array($value['label'], $value['data']);
 	}
+
 	$px1 = new DolGraph();
 	$mesg = $px1->isGraphKo();
 	if (!$mesg) {
 		$px1->SetData($data);
 		unset($data1);
 		$px1->SetPrecisionY(0);
-		$i = $startyear;
-		$legend = array();
-		while ($i <= $endyear) {
-			$legend[] = $i;
-			$i++;
-		}
 		$px1->SetType(array('pie'));
 		$px1->SetLegend($legend);
 		$px1->SetMaxValue($px1->GetCeilMaxValue());
@@ -874,20 +826,13 @@ if (count($dataseries) >1) {
 		$px1->SetPrecisionY(0);
 		$px1->SetCssPrefix("cssboxes");
 		$px1->mode = 'depth';
-		//$px1->SetTitle($langs->trans("TicketStatByStatus"));
-
-		$px1->draw($filenamenb, $fileurlnb);
+		$px1->draw($filenamenb);
 		print $px1->show();
-
-		print $stringtoshow;
 	}
 }
 print '</td></tr>';
 
 print '</table>';
-
-// Build graphic number of object
-$data = $stats->getNbByMonth($endyear, $startyear);
 
 /** Tableau statistiques urgents/normaux par catégories **/
 
