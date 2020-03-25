@@ -317,7 +317,7 @@ print '
  * Modèles de tickets - nécessite Reportico pour fonctionner
  */
 print '<h3 id="MODELES">Modèles de tickets<div class="inline-block divButAction"><a class="butAction" href="#repartition">Top</a></h3><div>';
-set_include_path('/home/josselin/html/cellandco/dolibarr/reportico');
+set_include_path(DOL_DOCUMENT_ROOT.'/../reportico');
 require_once 'reportico.php';        // Include Reportico
 $q = new reportico();                         // Create instance
 $q->initial_project = "CellAndCo";            // Name of report project folder
