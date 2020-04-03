@@ -64,7 +64,7 @@ $contextpage = 'banktransactionlist'.(empty($object->ref) ? '' : '-'.$object->id
 // Security check
 $fieldvalue = (!empty($id) ? $id : (!empty($ref) ? $ref : ''));
 $fieldtype = (!empty($ref) ? 'ref' : 'rowid');
-if ($fielvalue)
+if ($fieldvalue)
 {
 	if ($user->socid) $socid = $user->socid;
 	$result = restrictedArea($user, 'banque', $fieldvalue, 'bank_account&bank_account', '', '', $fieldtype);
@@ -93,6 +93,7 @@ $search_req_nb = GETPOST("req_nb", 'alpha');
 $search_num_releve = GETPOST("search_num_releve", 'alpha');
 $search_conciliated = GETPOST("search_conciliated", 'int');
 $num_releve = GETPOST("num_releve", "alpha");
+$search_user = GETPOST('search_user', 'int');
 if (empty($dateop)) $dateop = -1;
 
 $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
@@ -145,6 +146,7 @@ $arrayfields = array(
     'b.dateo'=>array('label'=>$langs->trans("DateOperationShort"), 'checked'=>1),
     'b.datev'=>array('label'=>$langs->trans("DateValueShort"), 'checked'=>1),
     'type'=>array('label'=>$langs->trans("Type"), 'checked'=>1),
+	'b.fk_user_author'=>array('label'=>$langs->trans("User"), 'checked'=>1, 'position'=>200),
     'b.num_chq'=>array('label'=>$langs->trans("Numero"), 'checked'=>1),
     'bu.label'=>array('label'=>$langs->trans("ThirdParty"), 'checked'=>1, 'position'=>500),
     'ba.ref'=>array('label'=>$langs->trans("BankAccount"), 'checked'=>(($id > 0 || !empty($ref)) ? 0 : 1), 'position'=>1000),
@@ -202,6 +204,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 
 	$search_account = "";
 	if ($id > 0 || !empty($ref)) $search_account = $object->id;
+	$search_user = '';
 }
 
 if (empty($reshook))
@@ -266,10 +269,10 @@ if ((GETPOST('confirm_savestatement', 'alpha') || GETPOST('confirm_reconcile', '
 		if ($search_thirdparty) $param .= '&search_thirdparty='.urlencode($search_thirdparty);
 		if ($search_num_releve) $param .= '&search_num_releve='.urlencode($search_num_releve);
 		if ($search_description) $param .= '&search_description='.urlencode($search_description);
-		if ($search_start_dt) $param .= '&search_start_dt='.urlencode($search_start_dt);
-		if ($search_end_dt) $param .= '&search_end_dt='.urlencode($search_end_dt);
-		if ($search_start_dv) $param .= '&search_start_dv='.urlencode($search_start_dv);
-		if ($search_end_dv) $param .= '&search_end_dv='.urlencode($search_end_dv);
+		if ($search_dt_start) $param .= '&search_start_dt='.urlencode($search_dt_start);
+		if ($search_dt_end) $param .= '&search_end_dt='.urlencode($search_dt_end);
+		if ($search_dv_start) $param .= '&search_start_dv='.urlencode($search_dv_start);
+		if ($search_dv_end) $param .= '&search_end_dv='.urlencode($search_dv_end);
 		if ($search_type) $param .= '&search_type='.urlencode($search_type);
 		if ($search_debit) $param .= '&search_debit='.urlencode($search_debit);
 		if ($search_credit) $param .= '&search_credit='.urlencode($search_credit);
@@ -418,6 +421,7 @@ if ($search_req_nb) $param .= '&req_nb='.urlencode($search_req_nb);
 if (GETPOST("search_thirdparty", 'int')) $param .= '&thirdparty='.urlencode(GETPOST("search_thirdparty", 'int'));
 if ($optioncss != '')       $param .= '&optioncss='.urlencode($optioncss);
 if ($action == 'reconcile') $param .= '&action=reconcile';
+if ($search_user) $param .= '&search_user='.urlencode($search_user);
 // Add $param from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
@@ -476,6 +480,7 @@ else
 }
 
 $sql = "SELECT b.rowid, b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro as conciliated, b.num_releve, b.num_chq,";
+$sql .= " b.fk_user_author as id_user_reglement,";
 $sql .= " b.fk_account, b.fk_type,";
 $sql .= " ba.rowid as bankid, ba.ref as bankref,";
 $sql .= " bu.url_id,";
@@ -539,6 +544,7 @@ $search_debit = price2num(str_replace('-', '', $search_debit));
 $search_credit = price2num(str_replace('-', '', $search_credit));
 if ($search_debit) $sql .= natural_search('- b.amount', $search_debit, 1);
 if ($search_credit) $sql .= natural_search('b.amount', $search_credit, 1);
+if ($search_user > 0) $sql .= " AND b.fk_user_author = ". $search_user;
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 
@@ -907,6 +913,12 @@ if ($resql)
         $form->select_types_paiements(empty($search_type)?'':$search_type, 'search_type', '', 2, 1, 1, 0, 1, 'maxwidth100');
         print '</td>';
 	}
+	if (! empty($arrayfields['b.fk_user_author']['checked']))
+	{
+        print '<td class="liste_titre" align="center">';
+        $form->select_users($search_user,"search_user", 1);
+        print '</td>';
+	}
 	if (! empty($arrayfields['b.num_chq']['checked']))
 	{
         // Numero
@@ -975,6 +987,7 @@ if ($resql)
 	if (!empty($arrayfields['b.dateo']['checked']))            print_liste_field_titre($arrayfields['b.dateo']['label'], $_SERVER['PHP_SELF'], 'b.dateo', '', $param, '', $sortfield, $sortorder, "center ");
 	if (!empty($arrayfields['b.datev']['checked']))            print_liste_field_titre($arrayfields['b.datev']['label'], $_SERVER['PHP_SELF'], 'b.datev,b.dateo,b.rowid', '', $param, 'align="center"', $sortfield, $sortorder);
 	if (!empty($arrayfields['type']['checked']))               print_liste_field_titre($arrayfields['type']['label'], $_SERVER['PHP_SELF'], '', '', $param, 'align="center"', $sortfield, $sortorder);
+	if (!empty($arrayfields['b.fk_user_author']['checked']))   print_liste_field_titre($arrayfields['b.fk_user_author']['label'], $_SERVER['PHP_SELF'], 'b.fk_user_author', '', $param, 'align="center"', $sortfield, $sortorder);
 	if (!empty($arrayfields['b.num_chq']['checked']))          print_liste_field_titre($arrayfields['b.num_chq']['label'], $_SERVER['PHP_SELF'], 'b.num_chq', '', $param, '', $sortfield, $sortorder, "center ");
 	if (!empty($arrayfields['bu.label']['checked']))           print_liste_field_titre($arrayfields['bu.label']['label'], $_SERVER['PHP_SELF'], 'bu.label', '', $param, '', $sortfield, $sortorder);
 	if (!empty($arrayfields['ba.ref']['checked']))             print_liste_field_titre($arrayfields['ba.ref']['label'], $_SERVER['PHP_SELF'], 'ba.ref', '', $param, '', $sortfield, $sortorder);
@@ -1362,6 +1375,21 @@ if ($resql)
 	        else print $labeltype;
 	        print "</td>\n";
             if (!$i) $totalarray['nbfield']++;
+    	}
+
+        // User
+    	if (!empty($arrayfields['b.fk_user_author']['checked']))
+    	{
+//    	    print '<td class="nowrap" align="center">'.($objp->id_user_reglement ? $objp->id_user_reglement : "")."</td>\n";
+    	    print '<td class="nowrap" align="center">';
+    	    if ($objp->id_user_reglement)
+			{
+				$staticUser = new User($db);
+				$staticUser->fetch($objp->id_user_reglement);
+				print $staticUser->getNomUrl(1);
+			}
+    	    print '</td>';
+    	    if (!$i) $totalarray['nbfield']++;
     	}
 
         // Num cheque
