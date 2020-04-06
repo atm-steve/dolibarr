@@ -262,3 +262,4 @@ RulesPurchaseTurnoverIn=- Il comprend tous les paiements effectifs des factures 
 RulesPurchaseTurnoverTotalPurchaseJournal=Il comprend toutes les lignes de débit du journal d'achat.
 ReportPurchaseTurnover=Achat facturé
 ReportPurchaseTurnoverCollected=Achat décaissé
+ThirdpartyInGraphic=Nombre de tiers dans le graphique

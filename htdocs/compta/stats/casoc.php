@@ -74,6 +74,8 @@ $date_startday = GETPOST("date_startday", 'alpha');
 $date_endyear = GETPOST("date_endyear", 'alpha');
 $date_endmonth = GETPOST("date_endmonth", 'alpha');
 $date_endday = GETPOST("date_endday", 'alpha');
+$maxQtyGraph = GETPOST('maxQtyGraph');
+if(empty($maxQtyGraph)) $maxQtyGraph=5;
 if (empty($year))
 {
 	$year_current = strftime("%Y", dol_now());
@@ -146,6 +148,7 @@ $tableparams['search_societe'] = $search_societe;
 $tableparams['search_zip'] = $search_zip;
 $tableparams['search_town'] = $search_town;
 $tableparams['search_country'] = $search_country;
+$tableparams['maxQtyGraph'] = $maxQtyGraph;
 $tableparams['subcat'] = ($subcat === true)?'yes':'';
 
 // Adding common parameters
@@ -378,7 +381,9 @@ if ($subcat) {
     print ' checked';
 }
 print'></td>';
-print '<td colspan="7" class="right">';
+print '<td > '.$langs->trans('ThirdpartyInGraphic').': <input type="number" step="1" name="maxQtyGraph" value="'.$maxQtyGraph.'" /></td>';
+
+print '<td colspan="6" class="right">';
 print '<input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"), 'search.png', '', '', 1).'"  value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
 print '</td>';
 print '</tr>';
@@ -537,13 +542,14 @@ if (count($amount)) {
 		arsort($address_pays);
 		$arrayforsort=$address_town;
 	}
-
+    $dataseries=array();
 	foreach($arrayforsort as $key=>$value) {
 
 		print '<tr class="oddeven">';
 
 		// Third party
 		$fullname=$name[$key];
+        $dataseries[$amount[$key]] = array($fullname, $amount[$key]);
 		if ($key > 0) {
 		    $thirdparty_static->id=$key;
 		    $thirdparty_static->name=$fullname;
@@ -639,6 +645,30 @@ if (count($amount)) {
 	print '</tr>';
 
 	$db->free($result);
+
+    krsort($dataseries);
+    $dataseries = array_values($dataseries); //reset key
+    $TData = array();
+//We regroup last ones
+    foreach($dataseries as $key => $data) {
+        if($key < $maxQtyGraph)  $TData[$key] = $data;
+        else {
+            $TData[$maxQtyGraph][0] = 'Autres';
+            $TData[$maxQtyGraph][1] += $data[1];
+        }
+    }
+    print '<tr><td class="center" colspan="8">';
+    include_once DOL_DOCUMENT_ROOT.'/core/class/dolgraph.class.php';
+    $dolgraph = new DolGraph();
+    $dolgraph->SetData($TData);
+    $dolgraph->setShowLegend(1);
+    $dolgraph->setShowPercent(1);
+    $dolgraph->SetType(array('pie'));
+    $dolgraph->setWidth('100%');
+    $dolgraph->SetHeight('400');
+    $dolgraph->draw('idgraphcathirdparties');
+    print $dolgraph->show();
+    print '</td></tr>'."\n";
 }
 
 print "</table>";
