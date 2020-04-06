@@ -63,7 +63,7 @@ $search_ref=GETPOST('sf_ref')?GETPOST('sf_ref', 'alpha'):GETPOST('search_ref', '
 $search_societe=GETPOST('search_societe', 'alpha');
 //Spé
 $search_propal_ref=GETPOST('search_propal_ref', 'alpha');
-$search_author=GETPOST('search_author', 'alpha');
+$search_login=GETPOST('search_login', 'alpha');
 $search_town=GETPOST('search_town', 'alpha');
 $search_zip=GETPOST('search_zip', 'alpha');
 $search_state=trim(GETPOST("search_state"));
@@ -201,7 +201,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_type='';
 	$search_country='';
 	$search_type_thirdparty='';
-	$search_author='';
+	$search_login='';
 	$yearvalid='';
 	$monthvalid='';
 	$dayvalid='';
@@ -293,7 +293,7 @@ if ($search_country) $sql .= " AND s.fk_pays IN (".$search_country.')';
 if ($search_type_thirdparty) $sql .= " AND s.fk_typent IN (".$search_type_thirdparty.')';
 if ($search_ref)     $sql .= natural_search('sp.ref', $search_ref);
 if ($search_societe) $sql .= natural_search('s.nom', $search_societe);
-if ($search_author)  $sql .= natural_search('u.login', $search_author);
+if ($search_login)  $sql .= natural_search('u.login', $search_login);
 if ($search_montant_ht) $sql.= natural_search('sp.total_ht=', $search_montant_ht, 1);
 if ($search_montant_vat != '') $sql.= natural_search("sp.tva", $search_montant_vat, 1);
 if ($search_montant_ttc != '') $sql.= natural_search("sp.total", $search_montant_ttc, 1);
@@ -380,7 +380,7 @@ if ($resql)
 	if ($search_user > 0)    $param.='&search_user='.$search_user;
 	if ($search_sale > 0)    $param.='&search_sale='.$search_sale;
 	if ($search_montant_ht)  $param.='&search_montant_ht='.$search_montant_ht;
-	if ($search_author)  	 $param.='&search_author='.$search_author;
+	if ($search_login)  	 $param.='&search_login='.$search_login;
 	if ($search_town)		 $param.='&search_town='.$search_town;
 	if ($search_zip)		 $param.='&search_zip='.$search_zip;
 	//Spé
@@ -565,7 +565,7 @@ if ($resql)
 	{
 		// Author
 		print '<td class="liste_titre center">';
-		print '<input class="flat" size="4" type="text" name="search_login" value="'.dol_escape_htmltag($search_author).'">';
+		print '<input class="flat" size="4" type="text" name="search_login" value="'.dol_escape_htmltag($search_login).'">';
 		print '</td>';
 	}
 	// Extra fields
