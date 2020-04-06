@@ -1849,7 +1849,7 @@ class SupplierProposal extends CommonObject
     public function createPriceFournisseur($product, $user)
     {
         global $conf;
-        if(!empty($conf->multicurrency->enabled)) include_once DOL_DOCUMENT_ROOT.'/multicurrency/class/multicurrency.class.php';
+
         $price=price2num($product->subprice*$product->qty, 'MU');
         $qty=price2num($product->qty);
         $unitPrice = price2num($product->subprice, 'MU');
@@ -1866,8 +1866,9 @@ class SupplierProposal extends CommonObject
             $user->id
         );
         if(!empty($conf->multicurrency->enabled)) {
+            if (!empty($product->multicurrency_code)) {
+				include_once DOL_DOCUMENT_ROOT.'/multicurrency/class/multicurrency.class.php';
             $multicurrency = new MultiCurrency($this->db); //need to fetch because empty fk_multicurrency and rate
-            if(!empty($product->multicurrency_code)) {
                 $multicurrency->fetch(0, $product->multicurrency_code);
                 if(! empty($multicurrency->id)) {
                     $values[] = $multicurrency->id;
