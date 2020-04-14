@@ -70,7 +70,8 @@ if ($cancel) $action ='';
 if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->service->creer))
 {
 	$error=0;
-	for ($i=0; $i<$_POST["max_prod"]; $i++)
+	// var_dump(GETPOST("max_prod", 'int'));
+	for ($i=0; $i < GETPOST("max_prod", 'int'); $i++)
 	{
 		if ($_POST["prod_qty_".$i] > 0)
 		{
@@ -94,7 +95,7 @@ if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->se
 		}
 		else
 		{
-			if ($object->del_sousproduit($id, $_POST["prod_id_".$i]) > 0)
+			if ($object->del_sousproduit($id, GETPOST("prod_id_".$i, 'int')) > 0)
 			{
 				$action = 'edit';
 			}
@@ -106,6 +107,7 @@ if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->se
 			}
 		}
 	}
+
 	if (! $error)
 	{
 		header("Location: ".$_SERVER["PHP_SELF"].'?id='.$object->id);
@@ -314,6 +316,7 @@ if ($id > 0 || ! empty($ref))
 		print load_fiche_titre($langs->trans("ProductAssociationList"), '', '');
 
 		print '<form name="formComposedProduct" action="'.$_SERVER['PHP_SELF'].'" method="post">';
+		print '<input type="hidden" name="token" value="'.newToken().'" />';
 		print '<input type="hidden" name="action" value="save_composed_product" />';
 		print '<input type="hidden" name="id" value="'.$id.'" />';
 
@@ -544,7 +547,9 @@ if ($id > 0 || ! empty($ref))
 
 				if($num == 0) print '<tr><td colspan="4">'.$langs->trans("NoMatchFound").'</td></tr>';
 
-				while ($i < $num)
+				$MAX = 100;
+
+				while ($i < min($num, $MAX))
 				{
 					$objp = $db->fetch_object($resql);
 					if($objp->rowid != $id)
@@ -576,7 +581,8 @@ if ($id > 0 || ! empty($ref))
 							}
 						}
 
-						print "\n".'<tr class="oddeven">';
+						print "\n";
+						print '<tr class="oddeven">';
 
 						$productstatic->id=$objp->rowid;
 						$productstatic->ref=$objp->ref;
@@ -636,6 +642,14 @@ if ($id > 0 || ! empty($ref))
 						print '</tr>';
 					}
 					$i++;
+				}
+				if ($num > $MAX) {
+					print '<tr class="oddeven">';
+					print '<td><span class="opacitymedium">'.$langs->trans("More").'...</span></td>';
+					print '<td></td>';
+					print '<td></td>';
+					print '<td></td>';
+					print '</tr>';
 				}
 			}
 			else
