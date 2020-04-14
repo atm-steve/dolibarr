@@ -930,7 +930,8 @@ class Categorie extends CommonObject
 	{
         // phpcs:enable
 		$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."categorie";
-		$sql.= " WHERE fk_parent = ".$this->id;
+		$sql .= " WHERE fk_parent = ".$this->id;
+		$sql .= " AND entity IN (".getEntity('category').")";
 
 		$res  = $this->db->query($sql);
 		if ($res)
@@ -1080,7 +1081,7 @@ class Categorie extends CommonObject
         // Include or exclude leaf including $markafterid from tree
         if (count($markafterid) > 0)
         {
-            $keyfiltercatid = implode('|', $markafterid);
+            $keyfiltercatid = '(' . implode('|', $markafterid) . ')';
 
             //print "Look to discard category ".$markafterid."\n";
             $keyfilter1 = '^' . $keyfiltercatid . '$';
