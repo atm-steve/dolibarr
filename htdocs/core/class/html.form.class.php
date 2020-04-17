@@ -646,12 +646,14 @@ class Form
     	  				/* console.log( index + ": " + $( this ).text() ); */
     	  				if ($(this).is(\':checked\')) atleastoneselected++;
     	  			});
+
 					console.log("initCheckForSelect mode="+mode+" atleastoneselected="+atleastoneselected);
+
     	  			if (atleastoneselected || '.$alwaysvisible.')
     	  			{
     	  				jQuery(".massaction").show();
-        			    '.($selected ? 'if (atleastoneselected) { jQuery(".massactionselect").val("'.$selected.'"); jQuery(".massactionconfirmed").prop(\'disabled\', false); }' : '').'
-        			    '.($selected ? 'if (! atleastoneselected) { jQuery(".massactionselect").val("0"); jQuery(".massactionconfirmed").prop(\'disabled\', true); } ' : '').'
+        			    '.($selected ? 'if (atleastoneselected) { jQuery(".massactionselect").val("'.$selected.'").trigger(\'change\'); jQuery(".massactionconfirmed").prop(\'disabled\', false); }' : '').'
+        			    '.($selected ? 'if (! atleastoneselected) { jQuery(".massactionselect").val("0").trigger(\'change\'); jQuery(".massactionconfirmed").prop(\'disabled\', true); } ' : '').'
     	  			}
     	  			else
     	  			{
@@ -6030,6 +6032,12 @@ class Form
 			}
 			if ($tmpfieldstoshow) $fieldstoshow = $tmpfieldstoshow;
 		}
+        else
+        {
+			// For backward compatibility
+			$objecttmp->fields['ref'] = array('type'=>'varchar(30)', 'label'=>'Ref', 'showoncombobox'=>1);
+        }
+
 		if (empty($fieldstoshow))
 		{
 			if (isset($objecttmp->fields['ref'])) {

@@ -302,11 +302,13 @@ if (empty($reshook))
 			// Note: Other solution if you want to add a negative line on invoice, is to create a discount for customer and consumme it (but this is possible on standard invoice only).
 			$array_of_total_ht_per_vat_rate = array();
 			$array_of_total_ht_devise_per_vat_rate = array();
-			foreach($object->lines as $line) {
-				if (empty($array_of_total_ht_per_vat_rate[$line->tva_tx.'_'.$line->vat_src_code])) $array_of_total_ht_per_vat_rate[$line->tva_tx.'_'.$line->vat_src_code] = 0;
-				if (empty($array_of_total_ht_devise_per_vat_rate[$line->tva_tx.'_'.$line->vat_src_code])) $array_of_total_ht_devise_per_vat_rate[$line->tva_tx.'_'.$line->vat_src_code] = 0;
-				$array_of_total_ht_per_vat_rate[$line->tva_tx.'_'.$line->vat_src_code] += $line->total_ht;
-				$array_of_total_ht_devise_per_vat_rate[$line->tva_tx.'_'.$line->vat_src_code] += $line->multicurrency_total_ht;
+			foreach ($object->lines as $line) {
+				//$vat_src_code_for_line = $line->vat_src_code;		// TODO We chek sign of total per vat without taking into account the vat code because for the moment the vat code is lost/unknown when we add a down payment.
+				$vat_src_code_for_line = '';
+				if (empty($array_of_total_ht_per_vat_rate[$line->tva_tx.'_'.$vat_src_code_for_line])) $array_of_total_ht_per_vat_rate[$line->tva_tx.'_'.$vat_src_code_for_line] = 0;
+				if (empty($array_of_total_ht_devise_per_vat_rate[$line->tva_tx.'_'.$vat_src_code_for_line])) $array_of_total_ht_devise_per_vat_rate[$line->tva_tx.'_'.$vat_src_code_for_line] = 0;
+				$array_of_total_ht_per_vat_rate[$line->tva_tx.'_'.$vat_src_code_for_line] += $line->total_ht;
+				$array_of_total_ht_devise_per_vat_rate[$line->tva_tx.'_'.$vat_src_code_for_line] += $line->multicurrency_total_ht;
 			}
 
 			//var_dump($array_of_total_ht_per_vat_rate);exit;
@@ -831,9 +833,9 @@ if (empty($reshook))
 						$amount_ht[$vatrate] = price2num($amount_ht[$vatrate] * $ratio, 'MU');
 						$amount_tva[$vatrate] = price2num($amount_tva[$vatrate] * $ratio, 'MU');
 						$amount_ttc[$vatrate] = price2num($amount_ttc[$vatrate] * $ratio, 'MU');
-						$multicurrency_amount_ht[$line->tva_tx] = price2num($multicurrency_amount_ht[$vatrate] * $ratio, 'MU');
-						$multicurrency_amount_tva[$line->tva_tx] = price2num($multicurrency_amount_tva[$vatrate] * $ratio, 'MU');
-						$multicurrency_amount_ttc[$line->tva_tx] = price2num($multicurrency_amount_ttc[$vatrate] * $ratio, 'MU');
+						$multicurrency_amount_ht[$vatrate] = price2num($multicurrency_amount_ht[$vatrate] * $ratio, 'MU');
+						$multicurrency_amount_tva[$vatrate] = price2num($multicurrency_amount_tva[$vatrate] * $ratio, 'MU');
+						$multicurrency_amount_ttc[$vatrate] = price2num($multicurrency_amount_ttc[$vatrate] * $ratio, 'MU');
 					}
 				}
 			}
@@ -5050,14 +5052,16 @@ elseif ($id > 0 || !empty($ref))
 			}
 
 			// Send by mail
-			if (($object->statut == Facture::STATUS_VALIDATED || $object->statut == Facture::STATUS_CLOSED) || !empty($conf->global->FACTURE_SENDBYEMAIL_FOR_ALL_STATUS)) {
-				if ($objectidnext) {
-					print '<span class="butActionRefused classfortooltip" title="'.$langs->trans("DisabledBecauseReplacedInvoice").'">'.$langs->trans('SendMail').'</span>';
-				} else {
-					if ($usercansend) {
-						print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&action=presend&mode=init#formmailbeforetitle">'.$langs->trans('SendMail').'</a>';
-					} else
-						print '<a class="butActionRefused classfortooltip" href="#">'.$langs->trans('SendMail').'</a>';
+			if (empty($user->socid)) {
+				if (($object->statut == Facture::STATUS_VALIDATED || $object->statut == Facture::STATUS_CLOSED) || !empty($conf->global->FACTURE_SENDBYEMAIL_FOR_ALL_STATUS)) {
+					if ($objectidnext) {
+						print '<span class="butActionRefused classfortooltip" title="'.$langs->trans("DisabledBecauseReplacedInvoice").'">'.$langs->trans('SendMail').'</span>';
+					} else {
+						if ($usercansend) {
+							print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&action=presend&mode=init#formmailbeforetitle">'.$langs->trans('SendMail').'</a>';
+						} else
+							print '<a class="butActionRefused classfortooltip" href="#">'.$langs->trans('SendMail').'</a>';
+					}
 				}
 			}
 
