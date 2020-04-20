@@ -109,7 +109,7 @@ if (!$user->rights->societe->client->voir && !$socid) {
 	$sql.= ", " . MAIN_DB_PREFIX."societe_commerciaux as sc";
 }
 
-$sql.=" WHERE t.entity IN (".getEntity('ticket', 1).")";
+$sql.=" WHERE t.entity IN (".getEntity('ticket').")";
 $sql.=" AND t.fk_statut<>8";
 $sql.=" AND t.fk_user_assign = 0";
 $sql.=" AND t.category_code IN ('INTERNE', 'CMD','EQUIPEMENT','INCIDENT','SUIVACT')";
@@ -617,7 +617,7 @@ if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= ", " . MAIN_DB_PREFIX . "societe_commerciaux as sc";
 }
 
-$sql .= ' WHERE t.entity IN (' . getEntity('ticket', 1) . ')';
+$sql .= ' WHERE t.entity IN (' . getEntity('ticket') . ')';
 $sql .= " AND t.fk_statut<>8 AND t.fk_user_assign IS NULL OR t.fk_user_assign = 0 AND t.category_code IN ('BIOTRACKER', 'SIRIUS','DOLIBARR','FC')";
 if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= " AND t.fk_soc = sc.fk_soc AND sc.fk_user = " . $user->id;
@@ -740,7 +740,7 @@ if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= ", " . MAIN_DB_PREFIX . "societe_commerciaux as sc";
 }
 
-$sql .= ' WHERE t.entity IN (' . getEntity('ticket', 1) . ')';
+$sql .= ' WHERE t.entity IN (' . getEntity('ticket') . ')';
 $sql .= " AND t.fk_statut IS NOT NULL";
 if (!$user->rights->societe->client->voir && !$socid) {
 	$sql .= " AND t.fk_soc = sc.fk_soc AND sc.fk_user = " . $user->id;
