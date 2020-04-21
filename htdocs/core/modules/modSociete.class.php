@@ -448,6 +448,7 @@ class modSociete extends DolibarrModules
             's.fk_multicurrency' => 'MulticurrencyUsed',
             's.multicurrency_code' => 'MulticurrencyCurrency'
         );
+        if (! empty($conf->global->PRODUIT_MULTIPRICES)) $this->import_fields_array[$r]['s.price_level']='PriceLevel';
         // Add extra fields
         $sql = "SELECT name, label, fieldrequired FROM ".MAIN_DB_PREFIX."extrafields WHERE elementtype = 'societe' AND entity IN (0, ".$conf->entity.")";
         $resql = $this->db->query($sql);
@@ -684,7 +685,9 @@ class modSociete extends DolibarrModules
             'sr.domiciliation' => "BankAccountDomiciliation",
             'sr.proprio' => "BankAccountOwner",
             'sr.owner_address' => "BankAccountOwnerAddress",
-            'sr.default_rib' => 'Default'
+            'sr.default_rib' => 'Default',
+            'sr.rum' => 'RUM',
+			'sr.type' => "Type ban is defaut",
         );
 
         $this->import_convertvalue_array[$r] = array(
@@ -711,7 +714,9 @@ class modSociete extends DolibarrModules
             'sr.domiciliation' => 'bank branch address eg. "PARIS"',
             'sr.proprio' => 'name on the bank account',
             'sr.owner_address' => 'address of account holder',
-            'sr.default_rib' => '1 (default account) / 0 (not default)'
+            'sr.default_rib' => '1 (default account) / 0 (not default)',
+            'sr.rum' => 'RUM code',
+			'sr.type' => 'ban',
         );
 
 		// Import Company Sales representatives

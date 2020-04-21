@@ -48,8 +48,8 @@ if (empty($page) || $page == -1) { $page = 0; }     // If $page is not defined, 
 $offset = $limit * $page;
 $pageprev = $page - 1;
 $pagenext = $page + 1;
-if (!$sortfield) $sortfield = "email";
-if (!$sortorder) $sortorder = "ASC";
+if (!$sortfield) $sortfield = "mc.statut,email";
+if (!$sortorder) $sortorder = "DESC,ASC";
 
 $id = GETPOST('id', 'int');
 $rowid = GETPOST('rowid', 'int');
@@ -673,7 +673,8 @@ if ($object->fetch($id) >= 0)
 					// Date sent
 					print '<td align="center">&nbsp;</td>';
 
-					print '<td class="nowrap right">'.$langs->trans("MailingStatusNotSent");
+					print '<td class="nowrap right">';
+					print $object::libStatutDest($obj->statut, 2, '');
 					print '</td>';
 				}
 				else

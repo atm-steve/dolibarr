@@ -433,8 +433,8 @@ if ($resql)
 	}
 
 	$param = '&socid='.$socid;
-	if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) $param .= '&contextpage='.$contextpage;
-	if ($limit > 0 && $limit != $conf->liste_limit) $param .= '&limit='.$limit;
+	if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) $param .= '&contextpage='.urlencode($contextpage);
+	if ($limit > 0 && $limit != $conf->liste_limit) $param .= '&limit='.urlencode($limit);
 	if ($search_all)			$param .= '&search_all='.urlencode($search_all);
 	if ($day) 					$param .= '&day='.urlencode($day);
 	if ($month) 				$param .= '&month='.urlencode($month);
@@ -455,9 +455,9 @@ if ($resql)
 	if ($search_amount_no_tax)	$param .= '&search_amount_no_tax='.urlencode($search_amount_no_tax);
 	if ($search_amount_all_tax)	$param .= '&search_amount_all_tax='.urlencode($search_amount_all_tax);
 	if ($search_status >= 0)  	$param .= "&search_status=".urlencode($search_status);
-	if ($show_files)            $param .= '&show_files='.$show_files;
-	if ($option)                $param .= "&option=".$option;
-	if ($optioncss != '')       $param .= '&optioncss='.$optioncss;
+	if ($show_files)            $param .= '&show_files='.urlencode($show_files);
+	if ($option)                $param .= "&option=".urlencode($option);
+	if ($optioncss != '')       $param .= '&optioncss='.urlencode($optioncss);
 	// Add $param from extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
@@ -488,7 +488,7 @@ if ($resql)
 	print '<input type="hidden" name="sortfield" value="'.$sortfield.'">';
 	print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 	print '<input type="hidden" name="page" value="'.$page.'">';
-	print '<input type="hidden" name="viewstatut" value="'.$viewstatut.'">';
+	print '<input type="hidden" name="search_status" value="'.$search_status.'">';
 	print '<input type="hidden" name="socid" value="'.$socid.'">';
 
 	print_barre_liste($langs->trans("BillsSuppliers").($socid ? ' '.$soc->name : ''), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'invoicing', 0, $newcardbutton, '', $limit);
@@ -879,7 +879,7 @@ if ($resql)
 			// Supplier ref
 			if (!empty($arrayfields['f.ref_supplier']['checked']))
 			{
-				print '<td class="nowrap">';
+				print '<td class="nowrap tdoverflowmax200">';
 				print $obj->ref_supplier;
 				print '</td>';
 				if (!$i) $totalarray['nbfield']++;

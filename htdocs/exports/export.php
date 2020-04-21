@@ -33,7 +33,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/modules/export/modules_export.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 
 // Load translation files required by the page
-$langs->loadlangs(array('admin', 'exports', 'other', 'users', 'companies', 'projects', 'suppliers', 'products', 'bank'));
+$langs->loadlangs(array('admin', 'exports', 'other', 'users', 'companies', 'projects', 'suppliers', 'products', 'bank', 'bills'));
 
 // Everybody should be able to go on this page
 //if (! $user->admin)
@@ -938,7 +938,7 @@ if ($step == 4 && $datatoexport)
     // List of filtered fiels
     if (isset($objexport->array_export_TypeFields[0]) && is_array($objexport->array_export_TypeFields[0]))
     {
-    	print '<tr><td width="25%">'.$langs->trans("FilteredFields").'</td>';
+    	print '<tr><td>'.$langs->trans("FilteredFields").'</td>';
     	$list = '';
     	if (!empty($array_filtervalue))
     	{
@@ -952,7 +952,7 @@ if ($step == 4 && $datatoexport)
     			}
     		}
     	}
-    	print '<td>'.(!empty($list) ? $list : $langs->trans("None")).'</td>';
+    	print '<td>'.(!empty($list) ? $list : '<span class="opacitymedium">'.$langs->trans("None").'</span>').'</td>';
     	print '</tr>';
     }
 

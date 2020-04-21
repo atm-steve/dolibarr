@@ -99,6 +99,7 @@ $triggersendname = ''; // Disable triggers
 $paramname = 'id';
 $mode = 'emailfortest';
 $trackid = (($action == 'testhtml') ? "testhtml" : "test");
+$sendcontext='';
 include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 
 if ($action == 'presend' && GETPOST('trackid', 'alphanohtml') == 'test')       $action = 'test';
@@ -134,9 +135,8 @@ $head = email_admin_prepare_head();
 // List of sending methods
 $listofmethods = array();
 $listofmethods['mail'] = 'PHP mail function';
-//$listofmethods['simplemail']='Simplemail class';
 $listofmethods['smtps'] = 'SMTP/SMTPS socket library';
-$listofmethods['swiftmailer'] = 'Swift Mailer socket library';
+if (version_compare(phpversion(), '7.0', '>=')) $listofmethods['swiftmailer'] = 'Swift Mailer socket library';
 
 
 if ($action == 'edit')
@@ -792,7 +792,7 @@ else
 		print load_fiche_titre($langs->trans("DoTestServerAvailability"));
 
 		include_once DOL_DOCUMENT_ROOT.'/core/class/CMailFile.class.php';
-		$mail = new CMailFile('', '', '', '');
+		$mail = new CMailFile('', '', '', '', array(), array(), array(), '', '', 0, '', '', '', '', $trackid, $sendcontext);
 		$result = $mail->check_server_port($server, $port);
 		if ($result) print '<div class="ok">'.$langs->trans("ServerAvailableOnIPOrPort", $server, $port).'</div>';
 		else

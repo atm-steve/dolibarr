@@ -89,7 +89,7 @@ $search_categ_cus = trim(GETPOST("search_categ_cus", 'int'));
 $search_btn = GETPOST('button_search', 'alpha');
 $search_remove_btn = GETPOST('button_removefilter', 'alpha');
 
-$viewstatut = GETPOST('viewstatut', 'alpha');
+$search_status = GETPOST('search_status', 'alpha');
 $optioncss = GETPOST('optioncss', 'alpha');
 $object_statut = GETPOST('search_statut', 'alpha');
 
@@ -164,8 +164,8 @@ $arrayfields = array(
 	'p.total_ht'=>array('label'=>"AmountHT", 'checked'=>1),
 	'p.total_vat'=>array('label'=>"AmountVAT", 'checked'=>0),
 	'p.total_ttc'=>array('label'=>"AmountTTC", 'checked'=>0),
-	'p.total_ht_invoiced'=>array('label'=>$langs->trans("AmountInvoicedHT"), 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
-	'p.total_invoiced'=>array('label'=>$langs->trans("AmountInvoicedTTC"), 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
+	'p.total_ht_invoiced'=>array('label'=>"AmountInvoicedHT", 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
+	'p.total_invoiced'=>array('label'=>"AmountInvoicedTTC", 'checked'=>0, 'enabled'=>$conf->global->PROPOSAL_SHOW_INVOICED_AMOUNT),
 	'u.login'=>array('label'=>"Author", 'checked'=>1, 'position'=>10),
 	'sale_representative'=>array('label'=>"SaleRepresentativesOfThirdParty", 'checked'=>1),
 	'p.datec'=>array('label'=>"DateCreation", 'checked'=>0, 'position'=>500),
@@ -229,13 +229,13 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_monthdelivery = '';
 	$search_daydelivery = '';
 	$search_availability = '';
-	$viewstatut = '';
+	$search_status = '';
 	$object_statut = '';
 	$toselect = '';
 	$search_array_options = array();
 	$search_categ_cus = 0;
 }
-if ($object_statut != '') $viewstatut = $object_statut;
+if ($object_statut != '') $search_status = $object_statut;
 
 if (empty($reshook))
 {
@@ -338,9 +338,9 @@ if ($search_categ_cus == -2)   $sql .= " AND cc.fk_categorie IS NULL";
 
 if ($search_product_category > 0) $sql .= " AND cp.fk_categorie = ".$db->escape($search_product_category);
 if ($socid > 0) $sql .= ' AND s.rowid = '.$socid;
-if ($viewstatut != '' && $viewstatut != '-1')
+if ($search_status != '' && $search_status != '-1')
 {
-	$sql .= ' AND p.fk_statut IN ('.$db->escape($viewstatut).')';
+	$sql .= ' AND p.fk_statut IN ('.$db->escape($search_status).')';
 }
 $sql .= dolSqlDateFilter("p.datep", $search_day, $search_month, $search_year);
 $sql .= dolSqlDateFilter("p.fin_validite", $search_dayfin, $search_month_end, $search_yearfin);
@@ -412,7 +412,7 @@ if ($resql)
 
 	llxHeader('', $langs->trans('Proposal'), $help_url);
 
-	$param = '&viewstatut='.urlencode($viewstatut);
+	$param = '&search_status='.urlencode($search_status);
 	if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) $param .= '&contextpage='.urlencode($contextpage);
 	if ($limit > 0 && $limit != $conf->liste_limit) $param .= '&limit='.urlencode($limit);
 	if ($sall)				 $param .= '&sall='.urlencode($sall);
@@ -706,7 +706,7 @@ if ($resql)
 	if (!empty($arrayfields['p.fk_statut']['checked']))
 	{
 		print '<td class="liste_titre maxwidthonsmartphone right">';
-		$formpropal->selectProposalStatus($viewstatut, 1, 0, 1, 'customer', 'search_statut');
+		$formpropal->selectProposalStatus($search_status, 1, 0, 1, 'customer', 'search_statut');
 		print '</td>';
 	}
 	// Action column
@@ -765,6 +765,7 @@ if ($resql)
 
 		$objectstatic->id = $obj->rowid;
 		$objectstatic->ref = $obj->ref;
+		$objectstatic->ref_client = $obj->ref_client;
 		$objectstatic->note_public = $obj->note_public;
 		$objectstatic->note_private = $obj->note_private;
 
@@ -813,7 +814,7 @@ if ($resql)
 		if (!empty($arrayfields['p.ref_client']['checked']))
 		{
 			// Customer ref
-			print '<td class="nowrap">';
+			print '<td class="nowrap tdoverflowmax200">';
 			print $obj->ref_client;
 			print '</td>';
 			if (!$i) $totalarray['nbfield']++;
@@ -1028,9 +1029,7 @@ if ($resql)
 				$nbofsalesrepresentative = count($listsalesrepresentatives);
 				if ($nbofsalesrepresentative > 3)   // We print only number
 				{
-					print '<a href="'.DOL_URL_ROOT.'/societe/commerciaux.php?socid='.$companystatic->id.'">';
 					print $nbofsalesrepresentative;
-					print '</a>';
 				}
 				elseif ($nbofsalesrepresentative > 0)
 				{

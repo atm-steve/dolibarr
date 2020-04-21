@@ -455,9 +455,10 @@ class FormCompany extends Form
 	 *    @param    int			$country_codeid     0=list for all countries, otherwise list only country requested
      *    @param    string		$filter          	Add a SQL filter on list
      *    @param	string		$htmlname			HTML name of select
+     *    @param	string		$morecss			More CSS
      *    @return	string							String with HTML select
 	 */
-	public function select_juridicalstatus($selected = '', $country_codeid = 0, $filter = '', $htmlname = 'forme_juridique_code')
+	public function select_juridicalstatus($selected = '', $country_codeid = 0, $filter = '', $htmlname = 'forme_juridique_code', $morecss = '')
 	{
         // phpcs:enable
 		global $conf, $langs, $user;
@@ -479,7 +480,7 @@ class FormCompany extends Form
 		if ($resql)
 		{
 			$out .= '<div id="particulier2" class="visible">';
-			$out .= '<select class="flat minwidth200" name="'.$htmlname.'" id="'.$htmlname.'">';
+			$out .= '<select class="flat minwidth200'.($morecss?' '.$morecss:'').'" name="'.$htmlname.'" id="'.$htmlname.'">';
 			if ($country_codeid) $out .= '<option value="0">&nbsp;</option>'; // When country_codeid is set, we force to add an empty line because it does not appears from select. When not set, we already get the empty line from select.
 
 			$num = $this->db->num_rows($resql);
@@ -729,6 +730,7 @@ class FormCompany extends Form
 		if (is_object($object) && method_exists($object, 'liste_type_contact'))
 		{
 			$lesTypes = $object->liste_type_contact($source, $sortorder, 0, 1);
+
 			print '<select class="flat valignmiddle'.($morecss ? ' '.$morecss : '').'" name="'.$htmlname.'" id="'.$htmlname.'">';
 			if ($showempty) print '<option value="0"></option>';
 			foreach ($lesTypes as $key=>$value)
@@ -767,7 +769,7 @@ class FormCompany extends Form
 
 		if ($rendermode === 'edit')
 		{
-			$contactType = $contact->listeTypeContacts('external', '', 1);
+			$contactType = $contact->listeTypeContacts('external', '', 1, '', '', 'agenda');	// We exclude agenda as there is no contact on such element
 			if (count($selected) > 0) {
 				$newselected = array();
 				foreach ($selected as $key=>$val) {

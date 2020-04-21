@@ -47,6 +47,7 @@ require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
+require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 require_once DOL_DOCUMENT_ROOT.'/mrp/class/mo.class.php';
 require_once DOL_DOCUMENT_ROOT.'/mrp/lib/mrp_mo.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/bom/class/bom.class.php';
@@ -496,7 +497,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$object->fetchLines();
 
     	print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '#addline' : '#line_'.GETPOST('lineid', 'int')).'" method="POST">
-    	<input type="hidden" name="token" value="' . $_SESSION ['newtoken'].'">
+    	<input type="hidden" name="token" value="' . newToken().'">
     	<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline').'">
     	<input type="hidden" name="mode" value="">
     	<input type="hidden" name="id" value="' . $object->id.'">
@@ -517,7 +518,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     		print '</tr>';
 
     		print '<tr class="oddeven">';
-    		print '<td>'.$langs->trans("ToConsume").'</td>';
+    		print '<td>'.$langs->trans("ProductsToConsume").'</td>';
     		print '<td>';
     		if (!empty($object->lines))
     		{
@@ -536,7 +537,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     		print '</tr>';
 
     		print '<tr class="oddeven">';
-    		print '<td>'.$langs->trans("ToProduce").'</td>';
+    		print '<td>'.$langs->trans("ProductsToProduce").'</td>';
     		print '<td>';
     		if (!empty($object->lines))
     		{
@@ -573,7 +574,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     	if (empty($reshook))
     	{
     	    // Send
-            //print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
+    		//if (empty($user->socid)) {
+    		//	print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
+    		//}
 
     		// Back to draft
     		if ($object->status == $object::STATUS_VALIDATED)
@@ -620,7 +623,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     			print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&socid='.$object->fk_soc.'&action=clone&object=mo">'.$langs->trans("ToClone").'</a>';
     		}
 
-    		// Cancel
+    		// Cancel - Reopen
     		if ($permissiontoadd)
     		{
     			if ($object->status == $object::STATUS_VALIDATED || $object->status == $object::STATUS_INPROGRESS)

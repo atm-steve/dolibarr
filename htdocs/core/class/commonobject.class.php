@@ -1080,7 +1080,7 @@ abstract class CommonObject
 	 *    Get array of all contacts for an object
 	 *
 	 *    @param	int			$status		Status of links to get (-1=all)
-	 *    @param	string		$source		Source of contact: external or thirdparty (llx_socpeople) or internal (llx_user)
+	 *    @param	string		$source		Source of contact: 'external' or 'thirdparty' (llx_socpeople) or 'internal' (llx_user)
 	 *    @param	int         $list       0:Return array contains all properties, 1:Return array contains just id
 	 *    @param    string      $code       Filter on this code of contact type ('SHIPPING', 'BILLING', ...)
 	 *    @return	array|int		        Array of contacts, -1 if error
@@ -1242,14 +1242,15 @@ abstract class CommonObject
 	/**
 	 *      Return array with list of possible values for type of contacts
 	 *
-	 *      @param	string	$source     'internal', 'external' or 'all'
-	 *      @param  int		$option     0=Return array id->label, 1=Return array code->label
-	 *      @param  int		$activeonly 0=all status of contact, 1=only the active
-	 *		@param	string	$code		Type of contact (Example: 'CUSTOMER', 'SERVICE')
-	 *		@param	string	$element	Filter Element Type
-	 *      @return array       		Array list of type of contacts (id->label if option=0, code->label if option=1)
+	 *      @param	string	$source     		'internal', 'external' or 'all'
+	 *      @param  int		$option     		0=Return array id->label, 1=Return array code->label
+	 *      @param  int		$activeonly 		0=all status of contact, 1=only the active
+	 *		@param	string	$code				Type of contact (Example: 'CUSTOMER', 'SERVICE')
+	 *		@param	string	$element			Filter on 1 element type
+	 *      @param	string	$excludeelement		Exclude 1 element type. Example: 'agenda'
+	 *      @return array       				Array list of type of contacts (id->label if option=0, code->label if option=1)
 	 */
-	public function listeTypeContacts($source = 'internal', $option = 0, $activeonly = 0, $code = '', $element = '')
+	public function listeTypeContacts($source = 'internal', $option = 0, $activeonly = 0, $code = '', $element = '', $excludeelement = '')
 	{
 		// phpcs:enable
 		global $langs, $conf;
@@ -1260,8 +1261,12 @@ abstract class CommonObject
 		$sql .= " FROM ".MAIN_DB_PREFIX."c_type_contact as tc";
 
 		$sqlWhere = array();
-		if (!empty($element))
+		if (!empty($element)) {
 			$sqlWhere[] = " tc.element='".$this->db->escape($element)."'";
+		}
+		if (!empty($excludeelement)) {
+			$sqlWhere[] = " tc.element <> '".$this->db->escape($excludeelement)."'";
+		}
 
 		if ($activeonly == 1)
 			$sqlWhere[] = " tc.active=1"; // only the active types
@@ -1278,24 +1283,25 @@ abstract class CommonObject
 
 		$sql .= $this->db->order('tc.element, tc.position', 'ASC');
 
-		dol_syslog(get_class($this)."::".__METHOD__, LOG_DEBUG);
+		dol_syslog(__METHOD__, LOG_DEBUG);
 		$resql = $this->db->query($sql);
 		if ($resql) {
 			$num = $this->db->num_rows($resql);
 			if ($num > 0) {
 				while ($obj = $this->db->fetch_object($resql)) {
+					$modulename = $obj->element;
 					if (strpos($obj->element, 'project') !== false) {
-						$element = 'projet';
+						$modulename = 'projet';
 					} elseif ($obj->element == 'contrat') {
 						$element = 'contract';
+					} elseif ($obj->element == 'action') {
+						$modulename = 'agenda';
 					} elseif (strpos($obj->element, 'supplier') !== false && $obj->element != 'supplier_proposal') {
-						$element = 'fournisseur';
+						$modulename = 'fournisseur';
 					} elseif (strpos($obj->element, 'supplier') !== false && $obj->element != 'supplier_proposal') {
-						$element = 'fournisseur';
-					} else {
-						$element = $obj->element;
+						$modulename = 'fournisseur';
 					}
-					if ($conf->{$element}->enabled) {
+					if ($conf->{$modulename}->enabled) {
 						$libelle_element = $langs->trans('ContactDefault_'.$obj->element);
 						$transkey = "TypeContact_".$this->element."_".$source."_".$obj->code;
 						$libelle_type = ($langs->trans($transkey) != $transkey ? $langs->trans($transkey) : $obj->libelle);
@@ -1701,7 +1707,7 @@ abstract class CommonObject
 
 		$sql .= " WHERE ".$id_field." = ".$id;
 
-		dol_syslog(get_class($this)."::".__FUNCTION__."", LOG_DEBUG);
+		dol_syslog(__METHOD__."", LOG_DEBUG);
 		$resql = $this->db->query($sql);
 		if ($resql)
 		{
@@ -2910,7 +2916,7 @@ abstract class CommonObject
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_ORDER";
 		elseif ($this->element == 'facture' || $this->element == 'invoice')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_INVOICE";
-		elseif ($this->element == 'facture_fourn' || $this->element == 'supplier_invoice')
+		elseif ($this->element == 'facture_fourn' || $this->element == 'supplier_invoice' || $this->element == 'invoice_supplier')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_SUPPLIER_INVOICE";
 		elseif ($this->element == 'order_supplier' || $this->element == 'supplier_order')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_SUPPLIER_ORDER";
@@ -4080,7 +4086,7 @@ abstract class CommonObject
 	 */
 	public function printObjectLines($action, $seller, $buyer, $selected = 0, $dateSelector = 0, $defaulttpldir = '/core/tpl')
 	{
-		global $conf, $hookmanager, $langs, $user, $object, $form, $extrafields;
+		global $conf, $hookmanager, $langs, $user, $form, $extrafields, $object;
 		// TODO We should not use global var for this
 		global $inputalsopricewithtax, $usemargins, $disableedit, $disablemove, $disableremove, $outputalsopricetotalwithtax;
 
@@ -4104,6 +4110,7 @@ abstract class CommonObject
 		{
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
+			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook.
 			$dirtpls = array_merge($conf->modules_parts['tpl'], array($defaulttpldir));
 			foreach ($dirtpls as $module => $reldir)
 			{
@@ -5374,7 +5381,7 @@ abstract class CommonObject
 				// Add field of attribute
 				if ($extrafields->attributes[$this->table_element]['type'][$attributeKey] != 'separate') // Only for other type than separator)
 				{
-					if ($new_array_options[$key] != '')
+					if ($new_array_options[$key] != '' || $new_array_options[$key] == '0')
 					{
 						$sql .= ",'".$this->db->escape($new_array_options[$key])."'";
 					}
@@ -5476,7 +5483,7 @@ abstract class CommonObject
 						$this->errors[] = $langs->trans("ExtraFieldHasWrongValue", $attributeLabel);
 						return -1;
 					}
-					elseif ($value == '')
+					elseif ($value === '')
 					{
 						$this->array_options["options_".$key] = null;
 					}
@@ -5489,7 +5496,7 @@ abstract class CommonObject
 						$this->errors[] = $langs->trans("ExtraFieldHasWrongValue", $attributeLabel);
 						return -1;
 					}
-					elseif ($value == '')
+					elseif ($value === '')
 					{
 						$this->array_options["options_".$key] = null;
 					}
@@ -5547,7 +5554,7 @@ abstract class CommonObject
 
 			if ($error)
 			{
-				dol_syslog(get_class($this)."::".__METHOD__.$this->error, LOG_ERR);
+				dol_syslog(__METHOD__.$this->error, LOG_ERR);
 				$this->db->rollback();
 				return -1;
 			}
@@ -6585,7 +6592,7 @@ abstract class CommonObject
 	 * This function is responsible to output the <tr> and <td> according to correct number of columns received into $params['colspan']
 	 *
 	 * @param 	Extrafields $extrafields    Extrafield Object
-	 * @param 	string      $mode           Show output (view) or input (edit) for extrafield
+	 * @param 	string      $mode           Show output ('view') or input ('create' or 'edit') for extrafield
 	 * @param 	array       $params         Optional parameters. Example: array('style'=>'class="oddeven"', 'colspan'=>$colspan)
 	 * @param 	string      $keysuffix      Suffix string to add after name and id of field (can be used to avoid duplicate names)
 	 * @param 	string      $keyprefix      Prefix string to add before name and id of field (can be used to avoid duplicate names)
@@ -6628,12 +6635,14 @@ abstract class CommonObject
 					$perms = dol_eval($extrafields->attributes[$this->table_element]['perms'][$key], 1);
 				}
 
-				if (($mode == 'create' || $mode == 'edit') && abs($visibility) != 1 && abs($visibility) != 3) continue; // <> -1 and <> 1 and <> 3 = not visible on forms, only on list
+				if (($mode == 'create') && abs($visibility) != 1 && abs($visibility) != 3) continue; // <> -1 and <> 1 and <> 3 = not visible on forms, only on list
+				elseif (($mode == 'edit') && abs($visibility) != 1 && abs($visibility) != 3 && abs($visibility) != 4) continue; // <> -1 and <> 1 and <> 3 = not visible on forms, only on list and <> 4 = not visible at the creation
 				elseif ($mode == 'view' && empty($visibility)) continue;
 				if (empty($perms)) continue;
-
 				// Load language if required
-				if (!empty($extrafields->attributes[$this->table_element]['langfile'][$key])) $langs->load($extrafields->attributes[$this->table_element]['langfile'][$key]);
+				if (!empty($extrafields->attributes[$this->table_element]['langfile'][$key])) {
+					$langs->load($extrafields->attributes[$this->table_element]['langfile'][$key]);
+				}
 
 				$colspan = '';
 				if (is_array($params) && count($params) > 0) {
@@ -6655,9 +6664,10 @@ abstract class CommonObject
 					case "view":
 						$value = $this->array_options["options_".$key.$keysuffix];
 						break;
-					case "edit":
-						$getposttemp = GETPOST($keyprefix.'options_'.$key.$keysuffix, 'none'); // GETPOST can get value from GET, POST or setup of default values.
-						// GETPOST("options_" . $key) can be 'abc' or array(0=>'abc')
+					case "create":
+                    case "edit":
+                        $getposttemp = GETPOST($keyprefix.'options_'.$key.$keysuffix, 'none'); // GETPOST can get value from GET, POST or setup of default values.
+                        // GETPOST("options_" . $key) can be 'abc' or array(0=>'abc')
 						if (is_array($getposttemp) || $getposttemp != '' || GETPOSTISSET($keyprefix.'options_'.$key.$keysuffix))
 						{
 							if (is_array($getposttemp)) {
@@ -6732,8 +6742,8 @@ abstract class CommonObject
 					{
 						$value = GETPOSTISSET($keyprefix.'options_'.$key.$keysuffix) ?price2num(GETPOST($keyprefix.'options_'.$key.$keysuffix, 'alpha', 3)) : $this->array_options['options_'.$key];
 					}
-
 					$labeltoshow = $langs->trans($label);
+					$helptoshow = $langs->trans($extrafields->attributes[$this->table_element]['help'][$key]);
 
 					$out .= '<td class="';
 					//$out .= "titlefield";
@@ -6742,13 +6752,13 @@ abstract class CommonObject
 					$tpl_context = isset($params["tpl_context"]) ? $params["tpl_context"] : "none";
 					if ($tpl_context == "public") {	// Public page : red dot instead of fieldrequired characters
 						$out .= '">';
-						if (!empty($extrafields->attributes[$this->table_element]['help'][$key])) $out .= $form->textwithpicto($labeltoshow, $extrafields->attributes[$this->table_element]['help'][$key]);
+						if (!empty($extrafields->attributes[$this->table_element]['help'][$key])) $out .= $form->textwithpicto($labeltoshow, $helptoshow);
 						else $out .= $labeltoshow;
 						if ($mode != 'view' && !empty($extrafields->attributes[$this->table_element]['required'][$key])) $out .= '&nbsp;<font color="red">*</font>';
 					} else {
 						if ($mode != 'view' && !empty($extrafields->attributes[$this->table_element]['required'][$key])) $out .= ' fieldrequired';
 						$out .= '">';
-						if (!empty($extrafields->attributes[$this->table_element]['help'][$key])) $out .= $form->textwithpicto($labeltoshow, $extrafields->attributes[$this->table_element]['help'][$key]);
+						if (!empty($extrafields->attributes[$this->table_element]['help'][$key])) $out .= $form->textwithpicto($labeltoshow, $helptoshow);
 						else $out .= $labeltoshow;
 					}
 					$out .= '</td>';
@@ -6761,7 +6771,8 @@ abstract class CommonObject
 						case "view":
 							$out .= $extrafields->showOutputField($key, $value);
 							break;
-						case "edit":
+                        case "create":
+                        case "edit":
 							$out .= $extrafields->showInputField($key, $value, '', $keysuffix, '', 0, $this->id, $this->table_element);
 							break;
 					}

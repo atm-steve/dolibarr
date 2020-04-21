@@ -16,11 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-/**
+
+ /**
  *  \file       htdocs/compta/accounting-files.php
  *  \ingroup    compta
  *  \brief      Page to show portoflio and files of a thirdparty and download it
  */
+
+if ($_GET['action'] == 'dl' || $_POST['action'] == 'dl') {	// To not replace token when downloading file
+	if (! defined('NOTOKENRENEWAL'))           define('NOTOKENRENEWAL', '1');
+}
+
 require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
@@ -77,7 +83,22 @@ if ($user->socid > 0) {
     accessforbidden();
 }
 
-$entity = GETPOST('entity', 'int') ?GETPOST('entity', 'int') : $conf->entity;
+// Define $arrayofentities if multientity is set.
+$arrayofentities = array();
+if (!empty($conf->multicompany->enabled) && is_object($mc)) {
+	$arrayofentities = $mc->getEntitiesList();
+}
+
+$entity = (GETPOSTISSET('entity') ? GETPOST('entity', 'int') : (GETPOSTISSET('search_entity') ? GETPOST('search_entity', 'int') : $conf->entity));
+if (!empty($conf->multicompany->enabled) && is_object($mc)) {
+	if (empty($entity) && ! empty($conf->global->MULTICOMPANY_ALLOW_EXPORT_ACCOUNTING_DOC_FOR_ALL_ENTITIES)) {
+		$entity = '0,'.join(',', array_keys($arrayofentities));
+	}
+}
+if (empty($entity)) $entity = $conf->entity;
+
+$error = 0;
+
 
 
 /*
@@ -91,7 +112,7 @@ $entity = GETPOST('entity', 'int') ?GETPOST('entity', 'int') : $conf->entity;
 
 $filesarray = array();
 $result = false;
-if (($action == "searchfiles" || $action == "dl")) {
+if (($action == 'searchfiles' || $action == 'dl')) {
 	if (empty($date_start))
 	{
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("DateStart")), null, 'errors');
@@ -108,42 +129,42 @@ if (($action == "searchfiles" || $action == "dl")) {
 		$wheretail = " '".$db->idate($date_start)."' AND '".$db->idate($date_stop)."'";
 
 		// Customer invoices
-		$sql = "SELECT t.rowid as id, t.ref, t.paye as paid, total as total_ht, total_ttc, tva as total_vat, fk_soc, t.datef as date, 'Invoice' as item, s.nom as thirdparty_name, s.code_client as thirdparty_code, c.code as country_code, s.tva_intra as vatnum";
+		$sql = "SELECT t.rowid as id, t.entity, t.ref, t.paye as paid, total as total_ht, total_ttc, tva as total_vat, fk_soc, t.datef as date, 'Invoice' as item, s.nom as thirdparty_name, s.code_client as thirdparty_code, c.code as country_code, s.tva_intra as vatnum";
 	    $sql .= " FROM ".MAIN_DB_PREFIX."facture as t LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON s.rowid = t.fk_soc LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON c.rowid = s.fk_pays";
 	    $sql .= " WHERE datef between ".$wheretail;
 	    $sql .= " AND t.entity IN (".($entity == 1 ? '0,1' : $entity).')';
 	    $sql .= " AND t.fk_statut <> ".Facture::STATUS_DRAFT;
 	    $sql .= " UNION ALL";
 	    // Vendor invoices
-	    $sql .= " SELECT t.rowid as id, t.ref, paye as paid, total_ht, total_ttc, total_tva as total_vat, fk_soc, datef as date, 'SupplierInvoice' as item, s.nom as thirdparty_name, s.code_fournisseur as thirdparty_code, c.code as country_code, s.tva_intra as vatnum";
+	    $sql .= " SELECT t.rowid as id, t.entity, t.ref, paye as paid, total_ht, total_ttc, total_tva as total_vat, fk_soc, datef as date, 'SupplierInvoice' as item, s.nom as thirdparty_name, s.code_fournisseur as thirdparty_code, c.code as country_code, s.tva_intra as vatnum";
 	    $sql .= " FROM ".MAIN_DB_PREFIX."facture_fourn as t LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON s.rowid = t.fk_soc LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON c.rowid = s.fk_pays";
 	    $sql .= " WHERE datef between ".$wheretail;
 	    $sql .= " AND t.entity IN (".($entity == 1 ? '0,1' : $entity).')';
 	    $sql .= " AND t.fk_statut <> ".FactureFournisseur::STATUS_DRAFT;
 	    $sql .= " UNION ALL";
 	    // Expense reports
-	    $sql .= " SELECT t.rowid as id, t.ref, paid, total_ht, total_ttc, total_tva as total_vat, fk_user_author as fk_soc, date_fin as date, 'ExpenseReport' as item, CONCAT(CONCAT(u.lastname, ' '), u.firstname) as thirdparty_name, '' as thirdparty_code, c.code as country_code, '' as vatnum";
+	    $sql .= " SELECT t.rowid as id, t.entity, t.ref, paid, total_ht, total_ttc, total_tva as total_vat, fk_user_author as fk_soc, date_fin as date, 'ExpenseReport' as item, CONCAT(CONCAT(u.lastname, ' '), u.firstname) as thirdparty_name, '' as thirdparty_code, c.code as country_code, '' as vatnum";
 	    $sql .= " FROM ".MAIN_DB_PREFIX."expensereport as t LEFT JOIN ".MAIN_DB_PREFIX."user as u ON u.rowid = t.fk_user_author LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON c.rowid = u.fk_country";
 	    $sql .= " WHERE date_fin between  ".$wheretail;
 	    $sql .= " AND t.entity IN (".($entity == 1 ? '0,1' : $entity).')';
 	    $sql .= " AND t.fk_statut <> ".ExpenseReport::STATUS_DRAFT;
 	    $sql .= " UNION ALL";
 	    // Donations
-	    $sql .= " SELECT t.rowid as id, t.ref, paid, amount as total_ht, amount as total_ttc, 0 as total_vat, 0 as fk_soc, datedon as date, 'Donation' as item, t.societe as thirdparty_name, '' as thirdparty_code, c.code as country_code, '' as vatnum";
+	    $sql .= " SELECT t.rowid as id, t.entity, t.ref, paid, amount as total_ht, amount as total_ttc, 0 as total_vat, 0 as fk_soc, datedon as date, 'Donation' as item, t.societe as thirdparty_name, '' as thirdparty_code, c.code as country_code, '' as vatnum";
 	    $sql .= " FROM ".MAIN_DB_PREFIX."don as t LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON c.rowid = t.fk_country";
 	    $sql .= " WHERE datedon between ".$wheretail;
 	    $sql .= " AND t.entity IN (".($entity == 1 ? '0,1' : $entity).')';
 	    $sql .= " AND t.fk_statut <> ".Don::STATUS_DRAFT;
 	    $sql .= " UNION ALL";
 	    // Paiements of salaries
-	    $sql .= " SELECT t.rowid as id, t.ref as ref, 1 as paid, amount as total_ht, amount as total_ttc, 0 as total_vat, t.fk_user as fk_soc, datep as date, 'SalaryPayment' as item, CONCAT(CONCAT(u.lastname, ' '), u.firstname)  as thirdparty_name, '' as thirdparty_code, c.code as country_code, '' as vatnum";
+	    $sql .= " SELECT t.rowid as id, t.entity, t.ref as ref, 1 as paid, amount as total_ht, amount as total_ttc, 0 as total_vat, t.fk_user as fk_soc, datep as date, 'SalaryPayment' as item, CONCAT(CONCAT(u.lastname, ' '), u.firstname)  as thirdparty_name, '' as thirdparty_code, c.code as country_code, '' as vatnum";
 	    $sql .= " FROM ".MAIN_DB_PREFIX."payment_salary as t LEFT JOIN ".MAIN_DB_PREFIX."user as u ON u.rowid = t.fk_user LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON c.rowid = u.fk_country";
 	    $sql .= " WHERE datep between ".$wheretail;
 	    $sql .= " AND t.entity IN (".($entity == 1 ? '0,1' : $entity).')';
 	    //$sql.=" AND fk_statut <> ".PaymentSalary::STATUS_DRAFT;
 	    $sql .= " UNION ALL";
 	    // Social contributions
-	    $sql .= " SELECT t.rowid as id, t.libelle as ref, paye as paid, amount as total_ht, amount as total_ttc, 0 as total_tva, 0 as fk_soc, date_creation as date, 'SocialContributions' as item, '' as thirdparty_name, '' as thirdparty_code, '' as country_code, '' as vatnum";
+	    $sql .= " SELECT t.rowid as id, t.entity, t.libelle as ref, paye as paid, amount as total_ht, amount as total_ttc, 0 as total_tva, 0 as fk_soc, date_creation as date, 'SocialContributions' as item, '' as thirdparty_name, '' as thirdparty_code, '' as country_code, '' as vatnum";
 	    $sql .= " FROM ".MAIN_DB_PREFIX."chargesociales as t";
 	    $sql .= " WHERE date_creation between ".$wheretail;
 	    $sql .= " AND t.entity IN (".($entity == 1 ? '0,1' : $entity).')';
@@ -220,7 +241,7 @@ if (($action == "searchfiles" || $action == "dl")) {
 	            {
 	                $result = true;
 
-	                $files = dol_dir_list($upload_dir, "files", 0, '', '(\.meta|_preview\.png)$', '', SORT_ASC, 1);
+	                $files = dol_dir_list($upload_dir, "files", 0, '', '(\.meta|_preview.*\.png)$', '', SORT_ASC, 1);
 	                //var_dump($upload_dir);
 	                //var_dump($files);
 
@@ -228,6 +249,7 @@ if (($action == "searchfiles" || $action == "dl")) {
 	                {
 	                	$nofile = array();
 	                	$nofile['id'] = $objd->id;
+	                	$nofile['entity'] = $objd->entity;
 	                	$nofile['date'] = $db->idate($objd->date);
 	                    $nofile['paid'] = $objd->paid;
 	                    $nofile['amount_ht'] = $objd->total_ht;
@@ -248,6 +270,7 @@ if (($action == "searchfiles" || $action == "dl")) {
 	                    foreach ($files as $key => $file)
 	                    {
 	                    	$file['id'] = $objd->id;
+	                    	$file['entity'] = $objd->entity;
 	                    	$file['date'] = $db->idate($objd->date);
 	                        $file['paid'] = $objd->paid;
 	                        $file['amount_ht'] = $objd->total_ht;
@@ -314,6 +337,10 @@ if ($result && $action == "dl" && !$error)
     dol_mkdir($dirfortmpfile);
 
     $log = $langs->transnoentitiesnoconv("Type");
+    if (!empty($conf->multicompany->enabled) && is_object($mc))
+    {
+    	$log .= ','.$langs->transnoentitiesnoconv("Entity");
+    }
     $log .= ','.$langs->transnoentitiesnoconv("Date");
     $log .= ','.$langs->transnoentitiesnoconv("Ref");
     $log .= ','.$langs->transnoentitiesnoconv("TotalHT");
@@ -342,6 +369,10 @@ if ($result && $action == "dl" && !$error)
         	}
 
             $log .= $file['item'];
+            if (!empty($conf->multicompany->enabled) && is_object($mc))
+            {
+            	$log .= ','.(empty($arrayofentities[$file['entity']]) ? $file['entity'] : $arrayofentities[$file['entity']]);
+            }
             $log .= ','.dol_print_date($file['date'], 'dayrfc');
             $log .= ','.$file['ref'];
             $log .= ','.$file['amount_ht'];
@@ -383,11 +414,13 @@ $form = new Form($db);
 $userstatic = new User($db);
 
 $title = $langs->trans("ComptaFiles").' - '.$langs->trans("List");
+$help_url = '';
 
 llxHeader('', $title, $help_url);
 
 $h = 0;
-$head[$h][0] = $_SERVER["PHP_SELF"].$varlink;
+$head = array();
+$head[$h][0] = $_SERVER["PHP_SELF"];
 $head[$h][1] = $langs->trans("AccountantFiles");
 $head[$h][2] = 'AccountancyFiles';
 
@@ -400,13 +433,18 @@ print '<input type="hidden" name="token" value="'.newToken().'">';
 print $langs->trans("ReportPeriod").': '.$form->selectDate($date_start, 'date_start', 0, 0, 0, "", 1, 1, 0);
 print ' - '.$form->selectDate($date_stop, 'date_stop', 0, 0, 0, "", 1, 1, 0)."\n</a>";
 
-// Export is for current company only !
+// Export is for current company only
 if (!empty($conf->multicompany->enabled) && is_object($mc))
 {
+	$mc->getInfo($conf->entity);
 	print '<span class="marginleftonly marginrightonly">('.$langs->trans("Entity").' : ';
-	$mc->dao->getEntities();
-	$mc->dao->fetch($conf->entity);
-	print $mc->dao->label;
+	print "<td>";
+	if (! empty($conf->global->MULTICOMPANY_ALLOW_EXPORT_ACCOUNTING_DOC_FOR_ALL_ENTITIES)) {
+		print $mc->select_entities(GETPOSTISSET('search_entity') ? GETPOST('search_entity', 'int') : $mc->id, 'search_entity', '', false, false, false, false, true);
+	} else {
+		print $mc->label;
+	}
+	print "</td>";
 	print ")</span>\n";
 }
 
@@ -427,7 +465,7 @@ if (!empty($date_start) && !empty($date_stop))
     $param .= '&date_stopyear='.GETPOST('date_stopyear', 'int');
 
     print '<form name="dl" action="?action=dl" method="POST" >'."\n";
-    print '<input type="hidden" name="token" value="'.newToken().'">';
+    print '<input type="hidden" name="token" value="'.currentToken().'">';
 
     echo dol_print_date($date_start, 'day')." - ".dol_print_date($date_stop, 'day');
 

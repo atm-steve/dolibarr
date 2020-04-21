@@ -3,6 +3,7 @@
 # For syntax, see http://about.travis-ci.org/docs/user/languages/php/
 
 # We use dist: trusty to have php 5.4+ available
+os: linux
 dist: trusty
 sudo: required
 
@@ -42,7 +43,7 @@ env:
   global:
   # Set to true for very verbose output
   - DEBUG=false
-  matrix:
+  jobs:
   # MariaDB overrides MySQL installation so it's not possible to test both yet
   #- DB=mysql
   - DB=mariadb
@@ -54,7 +55,7 @@ env:
   # See https://github.com/DracoBlue/travis-ci-nginx-php-fpm-test
   #- WS=nginx
 
-matrix:
+jobs:
   fast_finish: true
   allow_failures:
   - php: nightly
@@ -290,7 +291,7 @@ script:
   # Ensure we catch errors
   set -e
   #parallel-lint --exclude htdocs/includes --blame .
-  parallel-lint --exclude dev/namespacemig --exclude htdocs/includes/sabre --exclude htdocs/includes/phpoffice/phpexcel/Classes/PHPExcel/Shared --exclude htdocs/includes/phpoffice/PhpSpreadsheet --exclude htdocs/includes/sebastian --exclude htdocs/includes/squizlabs/php_codesniffer/tests --exclude htdocs/includes/jakub-onderka/php-parallel-lint/tests --exclude htdocs/includes/mike42/escpos-php/example --exclude htdocs/includes/phpunit/php-token-stream/tests --exclude htdocs/includes/composer/autoload_static.php --blame .
+  parallel-lint --exclude dev/namespacemig --exclude htdocs/includes/myclabs --exclude htdocs/includes/webmozart --exclude htdocs/includes/phpspec --exclude htdocs/includes/sabre --exclude htdocs/includes/phpoffice/phpexcel/Classes/PHPExcel/Shared --exclude htdocs/includes/phpoffice/PhpSpreadsheet --exclude htdocs/includes/sebastian --exclude htdocs/includes/squizlabs/php_codesniffer/tests --exclude htdocs/includes/jakub-onderka/php-parallel-lint/tests --exclude htdocs/includes/mike42/escpos-php/example --exclude htdocs/includes/phpunit/php-token-stream/tests --exclude htdocs/includes/composer/autoload_static.php --blame .
   set +e
   echo
 

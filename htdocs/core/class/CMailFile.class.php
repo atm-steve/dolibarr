@@ -144,6 +144,9 @@ class CMailFile
 			}
 		}
 
+		// Add autocopy to (Note: Adding bcc for specific modules are also done from pages)
+		if (!empty($conf->global->MAIN_MAIL_AUTOCOPY_TO)) $addr_bcc .= ($addr_bcc ? ', ' : '').$conf->global->MAIN_MAIL_AUTOCOPY_TO;
+
         $this->subject = $subject;
 		$this->addr_to = $to;
 		$this->addr_from = $from;
@@ -267,9 +270,6 @@ class CMailFile
 				}
 			}
 		}
-
-		// Add autocopy to (Note: Adding bcc for specific modules are also done from pages)
-		if (!empty($conf->global->MAIN_MAIL_AUTOCOPY_TO)) $addr_bcc .= ($addr_bcc ? ', ' : '').$conf->global->MAIN_MAIL_AUTOCOPY_TO;
 
 		// We set all data according to choosed sending method.
 		// We also set a value for ->msgid
@@ -813,6 +813,10 @@ class CMailFile
 				if (!empty($conf->global->$keyforsmtpid)) $this->transport->setUsername($conf->global->$keyforsmtpid);
 				if (!empty($conf->global->$keyforsmtppw)) $this->transport->setPassword($conf->global->$keyforsmtppw);
 				//$smtps->_msgReplyTo  = 'reply@web.com';
+
+				// Switch content encoding to base64 - avoid the doubledot issue with quoted-printable
+                $contentEncoderBase64 = new Swift_Mime_ContentEncoder_Base64ContentEncoder();
+                $this->message->setEncoder($contentEncoderBase64);
 
 				// Create the Mailer using your created Transport
 				$this->mailer = new Swift_Mailer($this->transport);

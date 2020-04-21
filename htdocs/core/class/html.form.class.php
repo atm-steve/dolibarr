@@ -202,7 +202,7 @@ class Form
 				$ret .= '<input type="hidden" name="'.$paramid.'" value="'.$object->id.'">';
 				if (empty($notabletag)) $ret .= '<table class="nobordernopadding centpercent" cellpadding="0" cellspacing="0">';
 				if (empty($notabletag)) $ret .= '<tr><td>';
-				if (preg_match('/^(string|email)/', $typeofdata))
+				if (preg_match('/^(string|safehtmlstring|email)/', $typeofdata))
 				{
 					$tmp = explode(':', $typeofdata);
 					$ret .= '<input type="text" id="'.$htmlname.'" name="'.$htmlname.'" value="'.($editvalue ? $editvalue : $value).'"'.($tmp[1] ? ' size="'.$tmp[1].'"' : '').'>';
@@ -276,6 +276,7 @@ class Form
 				if (preg_match('/^(email)/', $typeofdata))              $ret .= dol_print_email($value, 0, 0, 0, 0, 1);
 				elseif (preg_match('/^(amount|numeric)/', $typeofdata)) $ret .= ($value != '' ? price($value, '', $langs, 0, -1, -1, $conf->currency) : '');
 				elseif (preg_match('/^text/', $typeofdata) || preg_match('/^note/', $typeofdata))  $ret .= dol_htmlentitiesbr($value);
+				elseif (preg_match('/^safehtmlstring/', $typeofdata)) $ret .= dol_string_onlythesehtmltags($value);
 				elseif ($typeofdata == 'day' || $typeofdata == 'datepicker') $ret .= dol_print_date($value, 'day');
 				elseif ($typeofdata == 'dayhour' || $typeofdata == 'datehourpicker') $ret .= dol_print_date($value, 'dayhour');
 				elseif (preg_match('/^select;/', $typeofdata))
@@ -645,12 +646,14 @@ class Form
     	  				/* console.log( index + ": " + $( this ).text() ); */
     	  				if ($(this).is(\':checked\')) atleastoneselected++;
     	  			});
+
 					console.log("initCheckForSelect mode="+mode+" atleastoneselected="+atleastoneselected);
+
     	  			if (atleastoneselected || '.$alwaysvisible.')
     	  			{
     	  				jQuery(".massaction").show();
-        			    '.($selected ? 'if (atleastoneselected) { jQuery(".massactionselect").val("'.$selected.'"); jQuery(".massactionconfirmed").prop(\'disabled\', false); }' : '').'
-        			    '.($selected ? 'if (! atleastoneselected) { jQuery(".massactionselect").val("0"); jQuery(".massactionconfirmed").prop(\'disabled\', true); } ' : '').'
+        			    '.($selected ? 'if (atleastoneselected) { jQuery(".massactionselect").val("'.$selected.'").trigger(\'change\'); jQuery(".massactionconfirmed").prop(\'disabled\', false); }' : '').'
+        			    '.($selected ? 'if (! atleastoneselected) { jQuery(".massactionselect").val("0").trigger(\'change\'); jQuery(".massactionconfirmed").prop(\'disabled\', true); } ' : '').'
     	  			}
     	  			else
     	  			{
@@ -2110,7 +2113,7 @@ class Form
 			}
 		}
 
-		$selectFields = " p.rowid, p.label, p.ref, p.description, p.barcode, p.fk_product_type, p.price, p.price_ttc, p.price_base_type, p.tva_tx, p.duration, p.fk_price_expression";
+		$selectFields = " p.rowid, p.ref, p.label, p.description, p.barcode, p.fk_product_type, p.price, p.price_ttc, p.price_base_type, p.tva_tx, p.duration, p.fk_price_expression";
 		if (count($warehouseStatusArray))
 		{
 		    $selectFieldsGrouped = ", sum(".$db->ifsql("e.statut IS NULL", "0", "ps.reel").") as stock"; // e.statut is null if there is no record in stock
@@ -2432,6 +2435,7 @@ class Form
 		$outlabel = $objp->label;
 		$outdesc = $objp->description;
 		$outbarcode = $objp->barcode;
+		$outpbq = empty($objp->price_by_qty_rowid) ? '' : $objp->price_by_qty_rowid;
 
 		$outtype = $objp->fk_product_type;
 		$outdurationvalue = $outtype == Product::TYPE_SERVICE ?substr($objp->duration, 0, dol_strlen($objp->duration) - 1) : '';
@@ -2479,7 +2483,7 @@ class Form
 		$opt .= ($objp->rowid == $selected) ? ' selected' : '';
 		if (!empty($objp->price_by_qty_rowid) && $objp->price_by_qty_rowid > 0)
 		{
-			$opt .= ' pbq="'.$objp->price_by_qty_rowid.'" data-pbq="'.$objp->price_by_qty_rowid.'" data-pbqqty="'.$objp->price_by_qty_quantity.'" data-pbqpercent="'.$objp->price_by_qty_remise_percent.'"';
+			$opt .= ' pbq="'.$objp->price_by_qty_rowid.'" data-pbq="'.$objp->price_by_qty_rowid.'" data-pbqup="'.$objp->price_by_qty_unitprice.'" data-pbqbase="'.$objp->price_by_qty_price_base_type.'" data-pbqqty="'.$objp->price_by_qty_quantity.'" data-pbqpercent="'.$objp->price_by_qty_remise_percent.'"';
 		}
 		if (!empty($conf->stock->enabled) && isset($objp->stock) && ($objp->fk_product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES)))
 		{
@@ -2665,7 +2669,7 @@ class Form
 		}
 
 		$opt .= "</option>\n";
-		$optJson = array('key'=>$outkey, 'value'=>$outref, 'label'=>$outval, 'label2'=>$outlabel, 'desc'=>$outdesc, 'type'=>$outtype, 'price_ht'=>price2num($outprice_ht), 'price_ttc'=>price2num($outprice_ttc), 'pricebasetype'=>$outpricebasetype, 'tva_tx'=>$outtva_tx, 'qty'=>$outqty, 'discount'=>$outdiscount, 'duration_value'=>$outdurationvalue, 'duration_unit'=>$outdurationunit);
+		$optJson = array('key'=>$outkey, 'value'=>$outref, 'label'=>$outval, 'label2'=>$outlabel, 'desc'=>$outdesc, 'type'=>$outtype, 'price_ht'=>price2num($outprice_ht), 'price_ttc'=>price2num($outprice_ttc), 'pricebasetype'=>$outpricebasetype, 'tva_tx'=>$outtva_tx, 'qty'=>$outqty, 'discount'=>$outdiscount, 'duration_value'=>$outdurationvalue, 'duration_unit'=>$outdurationunit, 'pbq'=>$outpbq);
 	}
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
@@ -2737,13 +2741,15 @@ class Form
 		$out = '';
 		$outarray = array();
 
+		$maxlengtharticle = (empty($conf->global->PRODUCT_MAX_LENGTH_COMBO) ? 48 : $conf->global->PRODUCT_MAX_LENGTH_COMBO);
+
 		$langs->load('stocks');
         // Units
         if ($conf->global->PRODUCT_USE_UNITS) {
             $langs->load('other');
         }
 
-		$sql = "SELECT p.rowid, p.label, p.ref, p.price, p.duration, p.fk_product_type,";
+		$sql = "SELECT p.rowid, p.ref, p.label, p.price, p.duration, p.fk_product_type,";
 		$sql .= " pfp.ref_fourn, pfp.rowid as idprodfournprice, pfp.price as fprice, pfp.quantity, pfp.remise_percent, pfp.remise, pfp.unitprice,";
 		$sql .= " pfp.fk_supplier_price_expression, pfp.fk_product, pfp.tva_tx, pfp.fk_soc, s.nom as name,";
 		$sql .= " pfp.supplier_reputation";
@@ -2751,7 +2757,7 @@ class Form
         if ($conf->global->PRODUCT_USE_UNITS) {
             $sql .= ", u.label as unit_long, u.short_label as unit_short, p.weight, p.weight_units, p.length, p.length_units, p.width, p.width_units, p.height, p.height_units, p.surface, p.surface_units, p.volume, p.volume_units";
         }
-        if (!empty($conf->barcode->enabled)) $sql .= " ,pfp.barcode";
+        if (!empty($conf->barcode->enabled)) $sql .= ", pfp.barcode";
 		$sql .= " FROM ".MAIN_DB_PREFIX."product as p";
 		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."product_fournisseur_price as pfp ON p.rowid = pfp.fk_product";
 		if ($socid) $sql .= " AND pfp.fk_soc = ".$socid;
@@ -2814,6 +2820,7 @@ class Form
 
 				$outref = $objp->ref;
 				$outval = '';
+				$outbarcode = $objp->barcode;
 				$outqty = 1;
 				$outdiscount = 0;
 				$outtype = $objp->fk_product_type;
@@ -2864,12 +2871,22 @@ class Form
 				if ($filterkey && $filterkey != '') $label = preg_replace('/('.preg_quote($filterkey).')/i', '<strong>$1</strong>', $label, 1);
 
 				$optlabel = $objp->ref;
-				if (!empty($objp->idprodfournprice) && ($objp->ref != $objp->ref_fourn))
+				if (!empty($objp->idprodfournprice) && ($objp->ref != $objp->ref_fourn)) {
 					$optlabel .= ' <span class=\'opacitymedium\'>('.$objp->ref_fourn.')</span>';
+				}
+				if (!empty($conf->barcode->enabled) && !empty($objp->barcode)) {
+					$optlabel .= ' ('.$outbarcode.')';
+				}
+				$optlabel .= ' - '.dol_trunc($label, $maxlengtharticle);
 
 				$outvallabel = $objRef;
-				if (!empty($objp->idprodfournprice) && ($objp->ref != $objp->ref_fourn))
+				if (!empty($objp->idprodfournprice) && ($objp->ref != $objp->ref_fourn)) {
 					$outvallabel .= ' ('.$objRefFourn.')';
+				}
+				if (!empty($conf->barcode->enabled) && !empty($objp->barcode)) {
+					$outvallabel .= ' ('.$outbarcode.')';
+				}
+				$outvallabel .= ' - '.dol_trunc($label, $maxlengtharticle);
 
                 // Units
 				$optlabel .= $outvalUnits;
@@ -2892,7 +2909,7 @@ class Form
 							$objp->fprice = $price_result;
 							if ($objp->quantity >= 1)
 							{
-								$objp->unitprice = $objp->fprice / $objp->quantity;
+								$objp->unitprice = $objp->fprice / $objp->quantity;	// Replace dynamically unitprice
 							}
 						}
 					}
@@ -2931,12 +2948,6 @@ class Form
 						$optlabel .= " - ".dol_trunc($objp->name, 8);
 						$outvallabel .= " - ".dol_trunc($objp->name, 8);
 					}
-                    if (!empty($conf->barcode->enabled) && !empty($objp->barcode))
-                    {
-                    	//$optlabel .= " - <span class='fa fa-barcode'></span>".$objp->barcode;
-                    	$optlabel .= " - ".$objp->barcode;
-                    	$outvallabel .= " - ".$objp->barcode;
-                    }
 					if ($objp->supplier_reputation)
 					{
 						//TODO dictionary
@@ -2965,7 +2976,7 @@ class Form
 				if (empty($objp->idprodfournprice) && empty($alsoproductwithnosupplierprice)) $opt .= ' disabled';
 				if (!empty($objp->idprodfournprice) && $objp->idprodfournprice > 0)
 				{
-					$opt .= ' pbq="'.$objp->idprodfournprice.'" data-pbq="'.$objp->idprodfournprice.'" data-pbqqty="'.$objp->quantity.'" data-pbqpercent="'.$objp->remise_percent.'"';
+					$opt .= ' pbq="'.$objp->idprodfournprice.'" data-pbq="'.$objp->idprodfournprice.'" data-pbqqty="'.$objp->quantity.'" data-pbqup="'.$objp->unitprice.'" data-pbqpercent="'.$objp->remise_percent.'"';
 				}
 				$opt .= ' data-html="'.dol_escape_htmltag($optlabel).'"';
 				$opt .= '>';
@@ -2980,7 +2991,7 @@ class Form
 				// "key" value of json key array is used by jQuery automatically as selected value
 				// "label" value of json key array is used by jQuery automatically as text for combo box
 				$out .= $opt;
-				array_push($outarray, array('key'=>$outkey, 'value'=>$outref, 'label'=>$outval, 'qty'=>$outqty, 'discount'=>$outdiscount, 'type'=>$outtype, 'duration_value'=>$outdurationvalue, 'duration_unit'=>$outdurationunit, 'disabled'=>(empty($objp->idprodfournprice) ?true:false)));
+				array_push($outarray, array('key'=>$outkey, 'value'=>$outref, 'label'=>$outval, 'qty'=>$outqty, 'up'=>$objp->unitprice, 'discount'=>$outdiscount, 'type'=>$outtype, 'duration_value'=>$outdurationvalue, 'duration_unit'=>$outdurationunit, 'disabled'=>(empty($objp->idprodfournprice) ?true:false)));
 				// Exemple of var_dump $outarray
 				// array(1) {[0]=>array(6) {[key"]=>string(1) "2" ["value"]=>string(3) "ppp"
 				//           ["label"]=>string(76) "ppp (<strong>f</strong>ff2) - ppp - 20,00 Euros/1unité (20,00 Euros/unité)"
@@ -3024,7 +3035,7 @@ class Form
 
 		$langs->load('stocks');
 
-		$sql = "SELECT p.rowid, p.label, p.ref, p.price, p.duration, pfp.fk_soc,";
+		$sql = "SELECT p.rowid, p.ref, p.label, p.price, p.duration, pfp.fk_soc,";
 		$sql .= " pfp.ref_fourn, pfp.rowid as idprodfournprice, pfp.price as fprice, pfp.remise_percent, pfp.quantity, pfp.unitprice,";
 		$sql .= " pfp.fk_supplier_price_expression, pfp.fk_product, pfp.tva_tx, s.nom as name";
 		$sql .= " FROM ".MAIN_DB_PREFIX."product as p";
@@ -3500,11 +3511,11 @@ class Form
 	/**
 	 *      Return list of payment methods
 	 *
-	 *      @param	string	$selected       Id du mode de paiement pre-selectionne
-	 *      @param  string	$htmlname       Nom de la zone select
+	 *      @param	string	$selected       Id or code or preselected payment mode
+	 *      @param  string	$htmlname       Name of select field
 	 *      @param  string	$filtertype     To filter on field type in llx_c_paiement ('CRDT' or 'DBIT' or array('code'=>xx,'label'=>zz))
-	 *      @param  int		$format         0=id+libelle, 1=code+code, 2=code+libelle, 3=id+code
-	 *      @param  int		$empty			1=peut etre vide, 0 sinon
+	 *      @param  int		$format         0=id+label, 1=code+code, 2=code+label, 3=id+code
+	 *      @param  int		$empty			1=can be empty, 0 otherwise
 	 * 		@param	int		$noadmininfo	0=Add admin info, 1=Disable admin info
 	 *      @param  int		$maxlength      Max length of label
 	 *      @param  int     $active         Active or not, -1 = all
@@ -3542,9 +3553,12 @@ class Form
 			elseif ($format == 1) print '<option value="'.$arraytypes['code'].'"';
 			elseif ($format == 2) print '<option value="'.$arraytypes['code'].'"';
 			elseif ($format == 3) print '<option value="'.$id.'"';
-			// Si selected est text, on compare avec code, sinon avec id
-			if (preg_match('/[a-z]/i', $selected) && $selected == $arraytypes['code']) print ' selected';
-			elseif ($selected == $id) print ' selected';
+			// Print attribute selected or not
+			if ($format==1 || $format==2) {
+				if ($selected == $arraytypes['code']) print ' selected';
+			} else {
+				if ($selected == $id) print ' selected';
+			}
 			print '>';
 			if ($format == 0) $value = ($maxlength ?dol_trunc($arraytypes['label'], $maxlength) : $arraytypes['label']);
 			elseif ($format == 1) $value = $arraytypes['code'];
@@ -6018,6 +6032,12 @@ class Form
 			}
 			if ($tmpfieldstoshow) $fieldstoshow = $tmpfieldstoshow;
 		}
+        else
+        {
+			// For backward compatibility
+			$objecttmp->fields['ref'] = array('type'=>'varchar(30)', 'label'=>'Ref', 'showoncombobox'=>1);
+        }
+
 		if (empty($fieldstoshow))
 		{
 			if (isset($objecttmp->fields['ref'])) {

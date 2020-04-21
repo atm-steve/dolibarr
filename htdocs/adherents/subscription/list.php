@@ -33,6 +33,7 @@ $langs->loadLangs(array("members", "companies"));
 
 $action = GETPOST('action', 'aZ09');
 $massaction = GETPOST('massaction', 'alpha');
+$contextpage = GETPOST('contextpage', 'aZ09');
 $confirm = GETPOST('confirm', 'alpha');
 $toselect = GETPOST('toselect', 'array');
 
@@ -116,7 +117,6 @@ if (empty($reshook))
     // Purge search criteria
     if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha')) // All tests are required to be compatible with all browsers
     {
-	    $search = "";
 	    $search_type = "";
 	    $search_ref = "";
 	    $search_lastname = "";
@@ -338,7 +338,7 @@ if (!empty($arrayfields['t.libelle']['checked']))
 if (!empty($arrayfields['d.bank']['checked']))
 {
 	print '<td class="liste_titre">';
-	$form->select_comptes($search_account, 'search_account', 0, '', 1);
+	$form->select_comptes($search_account, 'search_account', 0, '', 1, '', 0, 'maxwidth150');
 	print '</td>';
 }
 
@@ -388,46 +388,17 @@ print "</tr>\n";
 
 
 print '<tr class="liste_titre">';
-if (!empty($arrayfields['d.ref']['checked']))
-{
-	print_liste_field_titre("Ref", $_SERVER["PHP_SELF"], "c.rowid", $param, "", "", $sortfield, $sortorder);
-}
-if (!empty($arrayfields['d.fk_type']['checked']))
-{
-	print_liste_field_titre("Type", $_SERVER["PHP_SELF"], "c.fk_type", $param, "", "", $sortfield, $sortorder);
-}
-if (!empty($arrayfields['d.lastname']['checked']))
-{
-	print_liste_field_titre("LastName", $_SERVER["PHP_SELF"], "d.lastname", $param, "", "", $sortfield, $sortorder);
-}
-if (!empty($arrayfields['d.firstname']['checked']))
-{
-	print_liste_field_titre("FirstName", $_SERVER["PHP_SELF"], "d.firstname", $param, "", "", $sortfield, $sortorder);
-}
-if (!empty($arrayfields['d.login']['checked']))
-{
-	print_liste_field_titre("Login", $_SERVER["PHP_SELF"], "d.login", $param, "", "", $sortfield, $sortorder);
-}
-if (!empty($arrayfields['t.libelle']['checked']))
-{
-	print_liste_field_titre("Label", $_SERVER["PHP_SELF"], "c.note", $param, "", '', $sortfield, $sortorder);
-}
-if (!empty($arrayfields['d.bank']['checked']))
-{
-	print_liste_field_titre("Account", $_SERVER["PHP_SELF"], "b.fk_account", $param, "", "", $sortfield, $sortorder);
-}
-if (!empty($arrayfields['c.dateadh']['checked']))
-{
-	print_liste_field_titre("DateStart", $_SERVER["PHP_SELF"], "c.dateadh", $param, "", '', $sortfield, $sortorder, 'center nowraponall ');
-}
-if (!empty($arrayfields['c.datef']['checked']))
-{
-	print_liste_field_titre("DateEnd", $_SERVER["PHP_SELF"], "c.datef", $param, "", '', $sortfield, $sortorder, 'center nowraponall ');
-}
-if (!empty($arrayfields['d.amount']['checked']))
-{
-	print_liste_field_titre("Amount", $_SERVER["PHP_SELF"], "c.subscription", $param, "", '', $sortfield, $sortorder, 'right ');
-}
+if (! empty($arrayfields['d.ref']['checked']))          print_liste_field_titre($arrayfields['d.ref']['label'], $_SERVER["PHP_SELF"], "c.rowid", $param, "", "", $sortfield, $sortorder);
+if (! empty($arrayfields['d.fk_type']['checked']))      print_liste_field_titre($arrayfields['d.fk_type']['label'], $_SERVER["PHP_SELF"], "c.fk_type", $param, "", "", $sortfield, $sortorder);
+if (! empty($arrayfields['d.lastname']['checked']))     print_liste_field_titre($arrayfields['d.lastname']['label'], $_SERVER["PHP_SELF"], "d.lastname", $param, "", "", $sortfield, $sortorder);
+if (! empty($arrayfields['d.firstname']['checked']))    print_liste_field_titre($arrayfields['d.firstname']['label'], $_SERVER["PHP_SELF"], "d.firstname", $param, "", "", $sortfield, $sortorder);
+if (! empty($arrayfields['d.login']['checked']))        print_liste_field_titre($arrayfields['d.login']['label'], $_SERVER["PHP_SELF"], "d.login", $param, "", "", $sortfield, $sortorder);
+if (! empty($arrayfields['t.libelle']['checked']))      print_liste_field_titre($arrayfields['t.libelle']['label'], $_SERVER["PHP_SELF"], "c.note", $param, "", '', $sortfield, $sortorder);
+if (! empty($arrayfields['d.bank']['checked']))         print_liste_field_titre($arrayfields['d.bank']['label'], $_SERVER["PHP_SELF"], "b.fk_account", $param, "", "", $sortfield, $sortorder);
+if (! empty($arrayfields['c.dateadh']['checked']))      print_liste_field_titre($arrayfields['c.dateadh']['label'], $_SERVER["PHP_SELF"], "c.dateadh", $param, "", '', $sortfield, $sortorder, 'center nowraponall ');
+if (! empty($arrayfields['c.datef']['checked']))        print_liste_field_titre($arrayfields['c.datef']['label'], $_SERVER["PHP_SELF"], "c.datef", $param, "", '', $sortfield, $sortorder, 'center nowraponall ');
+if (! empty($arrayfields['d.amount']['checked']))       print_liste_field_titre($arrayfields['d.amount']['label'], $_SERVER["PHP_SELF"], "c.subscription", $param, "", '', $sortfield, $sortorder, 'right ');
+
 // Extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
 
@@ -475,7 +446,7 @@ while ($i < min($num, $limit))
     // Type
     if (!empty($arrayfields['d.fk_type']['checked']))
 	{
-        print '<td>';
+        print '<td class="nowraponall">';
         if ($typeid > 0)
         {
         	print $adht->getNomUrl(1);
@@ -495,14 +466,14 @@ while ($i < min($num, $limit))
 	// Firstname
 	if (!empty($arrayfields['d.firstname']['checked']))
 	{
-		print '<td>'.$adherent->firstname.'</td>';
+		print '<td class="tdoverflowmax150" title="'.dol_escape_htmltag($adherent->firstname).'">'.$adherent->firstname.'</td>';
 		if (!$i) $totalarray['nbfield']++;
 	}
 
 	// Login
 	if (!empty($arrayfields['d.login']['checked']))
 	{
-		print '<td>'.$adherent->login.'</td>';
+		print '<td class="tdoverflowmax150" title="'.dol_escape_htmltag($adherent->login).'">'.$adherent->login.'</td>';
 		if (!$i) $totalarray['nbfield']++;
 	}
 
@@ -518,7 +489,7 @@ while ($i < min($num, $limit))
 	// Banque
 	if (!empty($arrayfields['d.bank']['checked']))
 	{
-		print "<td>";
+		print '<td class="tdmaxoverflow150">';
 		if ($obj->fk_account > 0)
 		{
 			$accountstatic->id = $obj->fk_account;

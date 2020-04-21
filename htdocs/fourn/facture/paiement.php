@@ -297,9 +297,13 @@ if (empty($reshook))
 	        $paiement->datepaye     = $datepaye;
 	        $paiement->amounts      = $amounts; // Array of amounts
 	        $paiement->multicurrency_amounts = $multicurrency_amounts;
-	        $paiement->paiementid   = $_POST['paiementid'];
-	        $paiement->num_paiement = $_POST['num_paiement'];
-	        $paiement->note         = $_POST['comment'];
+	        $paiement->paiementid   = GETPOST('paiementid', 'int');
+
+	        $paiement->num_payment  = GETPOST('num_paiement', 'alpha');
+	        $paiement->note_private = GETPOST('comment', 'alpha');
+	        $paiement->num_paiement = $paiement->num_payment;		// For bacward compatibility
+	        $paiement->note         = $paiement->note_private;		// For bacward compatibility
+
 	        if (!$error)
 	        {
 	            $paiement_id = $paiement->create($user, (GETPOST('closepaidinvoices') == 'on' ? 1 : 0), $thirdparty);
@@ -912,7 +916,7 @@ if (empty($action) || $action == 'list')
         $selectedfields = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage); // This also change content of $arrayfields
 
         print '<div class="div-table-responsive">';
-        print '<table class="tagtable liste'.($moreforfilter ? " listwithfilterbefore" : "").'">'."\n";
+        print '<table class="tagtable nobottomiftotal liste'.($moreforfilter ? " listwithfilterbefore" : "").'">'."\n";
 
         // Lines for filters fields
         print '<tr class="liste_titre_filter">';
@@ -1014,7 +1018,7 @@ if (empty($action) || $action == 'list')
             // Amount
             print '<td class="right">'.price($objp->pamount).'</td>';
             if (!$i) $totalarray['nbfield']++;
-            $totalarray['pos'][7] = 'amount';
+            if (!$i) $totalarray['pos'][$totalarray['nbfield']] = 'amount';
             $totalarray['val']['amount'] += $objp->pamount;
 
             // Ref invoice
