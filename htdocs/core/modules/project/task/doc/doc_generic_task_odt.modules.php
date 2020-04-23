@@ -173,7 +173,7 @@ class doc_generic_task_odt extends ModelePDFTask
 	 *  @param   string		    $array_key	        Name of the key for return array
 	 *  @return	array								Return a substitution array
 	 */
-    public function get_substitutionarray_tasks($task, $outputlangs, $array_key = 'tasks')
+    public function get_substitutionarray_tasks($task, $outputlangs, $array_key = 'task')
     {
         // phpcs:enable
         global $conf, $extrafields;
@@ -203,6 +203,7 @@ class doc_generic_task_odt extends ModelePDFTask
 		    $resarray = $this->fill_substitutionarray_with_extrafields($task, $resarray, $extrafields, $array_key, $outputlangs);
 
 	    }
+
 	    return $resarray;
     }
 
