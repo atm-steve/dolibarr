@@ -45,7 +45,8 @@ class ActionsPropalehistory
 				} elseif($actionATM == 'createVersion') {
 					TPropaleHist::listeVersions($db, $object);
 				} elseif($actionATM == '' && $object->statut == 1) {
-					print '<div class="inline-block divButAction"><a id="butNewVersion" class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$_REQUEST['id'].'&actionATM=createVersion">'.$langs->trans('PropaleHistoryArchiver').'</a></div>';
+                    // TODO Pourquoi c'est ici et pas dans un addMoreActionsButtons ?
+					print '<div id="butNewVersion" class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$_REQUEST['id'].'&actionATM=createVersion">'.$langs->trans('PropaleHistoryArchiver').'</a></div>';
 					?>
 						<script type="text/javascript">
 							$(document).ready(function() {
@@ -86,6 +87,8 @@ class ActionsPropalehistory
 			if ($object_src->element == 'propal') $object_src->ref = $old_propal_ref;
 			else $object->ref = $old_propal_ref;
 		}
+
+        return 0;
 	}
 
 	function beforePDFCreation($parameters, &$object, &$action, $hookmanager) {
@@ -107,7 +110,7 @@ class ActionsPropalehistory
 
 		}
 
-
+        return 0;
 
 	}
 
@@ -132,6 +135,8 @@ class ActionsPropalehistory
 				return 1; // replace standard code
 			}
 		}
+
+        return 0;
 	}
 
 
@@ -229,8 +234,34 @@ class ActionsPropalehistory
 				</script>
 			<?php
 
+            /* TODO J'ai essayé de rajouter un exit ici, ce qui serait complètement logique, mais ça a tout cassé...
+             * Visiblement, le module est conçu pour que le script continue de s'exécuter. Dont acte, mais entre ça, les
+             * redirections en JS plutôt que via header(), et les messages de retour utilisateur passés en paramètre
+             * lors de la redirection, on est dans une méthodologie bien dégueulasse, il y a donc du refaisage à
+             * entreprendre à mon sens - MdLL, 07/04/2020
+             */
 		}
+
+		return 0;
 	}
 
-
+	/**
+	 * Enables modules that use $object->ref to build a file path to get the original ref (without the trailing /[DIGITS])
+	 *
+	 * @param array        $parameters
+	 * @param CommonObject $object  The object that holds the ref which PropaleHistory has modified
+	 * @param string       $action
+	 * @param HookManager  $hookmanager
+	 * @return int
+	 */
+	function overrideRefForFileName($parameters, &$object, &$action, $hookmanager) {
+		if (!isset($object->context['propale_history']['original_ref'])) {
+			// the specified proposal doesn't have any history entries in llx_propale_history so we don't override ref
+			return 0;
+		} else {
+			// override default
+			$this->resprints = $object->context['propale_history']['original_ref'];
+			return 1;
+		}
+	}
 }

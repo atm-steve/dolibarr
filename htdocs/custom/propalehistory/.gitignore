@@ -1,7 +1,0 @@
-config.php
-.project
-.settings/
-.buildpath
-*.log
-
-/nbproject
