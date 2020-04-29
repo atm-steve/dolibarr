@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 cd ..
 CURRENTDIR=($(pwd))
 #On supprime server_installer
@@ -68,12 +67,16 @@ for TAG in "global"; do
     done
 done
 
+printf "cd ${CURRENTDIR}\n"
 cd "${CURRENTDIR}"
-echo "${CURRENTDIR}"
+printf "rm -Rf dolibarr/htdocs/custom/*\n"
 rm -Rf dolibarr/htdocs/custom/*
+printf "mv modules_git/* dolibarr/htdocs/custom/\n"
 mv modules_git/* dolibarr/htdocs/custom/
 
+printf "cd dolibarr/htdocs/custom/\n"
 cd dolibarr/htdocs/custom/
+printf "sudo find . -name .git -type d -exec rm -rf {} \n"
 sudo find . -name ".git" -type d -exec rm -rf "{}" \;
 sudo find . -name ".gitignore" -type f -exec rm -f "{}" \;
 cd "${CURRENTDIR}"/dolibarr
