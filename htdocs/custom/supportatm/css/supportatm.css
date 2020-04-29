@@ -1,0 +1,25 @@
+#support_atm_popup { 
+	clear : both;
+	margin-top: 10px;
+	margin-left:5px;
+	border:1px solid grey;
+	border-radius : 5px;
+	background: white;
+	font-size : 13px;
+	text-align:center;
+	
+
+}
+#support_atm_popup div.content {
+	line-height: 20px;
+
+}
+
+#support_atm_popup div.header {
+	margin-top : 5px;
+	
+	color:#01354d;
+	font-family:Arial;
+	font-size : 13px;
+	font-weight: bolder;
+}

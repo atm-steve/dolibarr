@@ -3,9 +3,9 @@
 cd ..
 CURRENTDIR=($(pwd))
 #On supprime server_installer
-#sudo rm -R server_installer
+sudo rm -R server_installer
 # et on le reclone
-#git clone git@gogs.atm-consulting.fr:ATM-Consulting/server_installer.git
+git clone git@gogs.atm-consulting.fr:ATM-Consulting/server_installer.git
 
 #On prepare le répertoire pour les cloner
 sudo rm -R modules_git
@@ -82,7 +82,7 @@ sudo find . -name ".gitignore" -type f -exec rm -f "{}" \;
 cd "${CURRENTDIR}"/dolibarr
 git add *
 git commit -am"newversion"
-#git push atm 11.0_scrutinizer
+git push atm 11.0_scrutinizer
 
 
 

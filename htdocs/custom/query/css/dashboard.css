@@ -1,0 +1,34 @@
+.gridster ul{
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.gridster li {
+	box-sizing: border-box;
+	background-color: #eee;
+	border:1px dashed #333;
+	list-style: none;
+	overflow: hidden auto;
+}
+li table.searchbox {
+	
+	display:none;
+	position:absolute;
+	top:0;
+	left:0;
+	z-index: 999;
+	
+	background-color:#DDDDDD;
+}
+li:hover table.searchbox {
+	display:block;
+}
+
+*[id^="google-visualization-errors-all-"] {
+	position: absolute;
+}
+
+.gs-resize-handle-both {
+	bottom: 0;
+	right: 0;
+}
