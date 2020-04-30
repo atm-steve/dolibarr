@@ -566,7 +566,7 @@ if ($id > 0 || $ref)
                     // Currency
                     print '<tr><td class="fieldrequired">'.$langs->trans("Currency").'</td>';
                     print '<td>';
-                    $currencycodetouse = GETPOST('multicurrency_code')?GETPOST('multicurrency_code'):(isset($object->fourn_multicurrency_code)?$object->fourn_multicurrency_code:'');
+                    $currencycodetouse = GETPOST('multicurrency_code')?GETPOST('multicurrency_code'):(isset($object->fourn_multicurrency_code)?$object->fourn_multicurrency_code:$conf->currency);
                     if (empty($currencycodetouse) && $object->fourn_multicurrency_tx == 1) $currencycodetouse=$conf->currency;
                     print $form->selectMultiCurrency($currencycodetouse, "multicurrency_code", 1);
                     print '</td>';
@@ -574,7 +574,7 @@ if ($id > 0 || $ref)
 
                     // Currency tx
                     print '<tr><td class="fieldrequired">'.$langs->trans("CurrencyRate").'</td>';
-                    print '<td><input class="flat" name="multicurrency_tx" size="4" value="'.vatrate(GETPOST('multicurrency_tx')?GETPOST('multicurrency_tx'):(isset($object->fourn_multicurrency_tx)?$object->fourn_multicurrency_tx:'')).'">';
+                    print '<td><input class="flat" name="multicurrency_tx" size="4" value="'.vatrate(GETPOST('multicurrency_tx')?GETPOST('multicurrency_tx'):(isset($object->fourn_multicurrency_tx)?$object->fourn_multicurrency_tx:1)).'">';
                     print '</td>';
                     print '</tr>';
 
