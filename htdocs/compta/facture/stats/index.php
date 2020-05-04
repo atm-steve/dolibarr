@@ -28,6 +28,7 @@
 require '../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/dolgraph.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facturestats.class.php';
+if(!empty($conf->category->enabled)) require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 
 $WIDTH=DolGraph::getDefaultGraphSizeForStats('width');
 $HEIGHT=DolGraph::getDefaultGraphSizeForStats('height');
@@ -40,6 +41,7 @@ $object_status=GETPOST('object_status');
 
 $userid=GETPOST('userid', 'int');
 $socid=GETPOST('socid', 'int');
+$custcats = GETPOST('custcats', 'array');
 // Security check
 if ($user->societe_id > 0)
 {
@@ -59,6 +61,7 @@ $endyear=$year;
  */
 // Load translation files required by the page
 $langs->loadLangs(array('bills', 'companies', 'other'));
+if(!empty($conf->category->enabled)) $langs->load('categories');
 
 $form=new Form($db);
 
@@ -83,6 +86,10 @@ $stats = new FactureStats($db, $socid, $mode, ($userid>0?$userid:0));
 if ($mode == 'customer')
 {
     if ($object_status != '' && $object_status >= 0) $stats->where .= ' AND f.fk_statut IN ('.$db->escape($object_status).')';
+    if (is_array($custcats) && !empty($custcats)) {
+        $stats->from .= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_societe as cat ON (f.fk_soc = cat.fk_soc)';
+        $stats->where .= ' AND cat.fk_categorie IN ('.implode(',', $custcats).')';
+    }
 }
 if ($mode == 'supplier')
 {
@@ -250,6 +257,13 @@ print '<div class="fichecenter"><div class="fichethirdleft">';
 	if ($mode == 'supplier') $filter='s.fournisseur = 1';
 	print $form->selectarray('socid', $companies, $socid, 1, 0, 0, 'style="width: 95%"', 0, 0, 0, '', '', 1);
 	print '</td></tr>';
+	if(!empty($conf->category->enabled) && $mode == 'customer') {
+        // Customer Category
+        print '<tr><td>'.$langs->trans("CustomersProspectsCategoriesShort").'</td><td>';
+        $cate_arbo = $form->select_all_categories(Categorie::TYPE_CUSTOMER, null, 'parent', null, null, 1);
+        print $form->multiselectarray('custcats', $cate_arbo, GETPOST('custcats', 'array'), null, null, null, null, "90%");
+        print '</td></tr>';
+    }
 	// User
 	print '<tr><td>'.$langs->trans("CreatedBy").'</td><td>';
 	print $form->select_dolusers($userid, 'userid', 1, '', 0, '', '', 0, 0, 0, '', 0, '', 'maxwidth300');
