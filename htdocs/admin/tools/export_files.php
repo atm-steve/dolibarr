@@ -112,7 +112,7 @@ $utils = new Utils($db);
 
 if ($compression == 'zip')
 {
-    $ret = dol_compress_dir(DOL_DATA_ROOT, $outputdir."/".$file, $compression);
+    $ret = dol_compress_dir(DOL_DATA_ROOT, $outputdir."/".$file, $compression, '/(\.log|\/temp\/|documents\/admin\/documents\/)/');
     if ($ret < 0)
     {
         $errormsg = $langs->trans("ErrorFailedToWriteInDir",$outputfile);

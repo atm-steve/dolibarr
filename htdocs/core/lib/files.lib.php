@@ -1993,7 +1993,7 @@ function dol_uncompress($inputfile,$outputdir)
  * @param 	string	$mode			'zip'
  * @return	int						<0 if KO, >0 if OK
  */
-function dol_compress_dir($inputdir, $outputfile, $mode="zip")
+function dol_compress_dir($inputdir, $outputfile, $mode="zip", $excludefiles = '')
 {
 	$foundhandler=0;
 
@@ -2047,9 +2047,11 @@ function dol_compress_dir($inputdir, $outputfile, $mode="zip")
 						// Get real and relative path for current file
 						$filePath = $file->getRealPath();
 						$relativePath = substr($filePath, strlen($inputdir) + 1);
-
-						// Add current file to archive
-						$zip->addFile($filePath, $relativePath);
+						if (empty($excludefiles) || ! preg_match($excludefiles, $filePath))
+						{
+							// Add current file to archive
+							$zip->addFile($filePath, $relativePath);
+						}
 					}
 				}
 
