@@ -1063,7 +1063,6 @@ class DolGraph
 						previousPoint = item.dataIndex;
 
 						$("#tooltip").remove();
-						/* console.log(item); */
 						var x = item.datapoint[0].toFixed(2);
 						var y = item.datapoint[1].toFixed(2);
 						var z = item.series.xaxis.ticks[item.dataIndex].label;
@@ -1091,7 +1090,15 @@ class DolGraph
 				if ($i > $firstlot) $this->stringtoshow.=', '."\n";
 				$color=sprintf("%02x%02x%02x", $this->datacolor[$i][0], $this->datacolor[$i][1], $this->datacolor[$i][2]);
 				$this->stringtoshow.='{ ';
-				if (! isset($this->type[$i]) || $this->type[$i] == 'bars') $this->stringtoshow.='bars: { lineWidth: 1, show: true, align: "'.($i==$firstlot?'center':'left').'", barWidth: 0.5 }, ';
+				if (! isset($this->type[$i]) || $this->type[$i] == 'bars') {
+				    if($nblot == 3) {
+				        if($i == $firstlot) $align = 'right';
+				        else if($i == $firstlot+1) $align = 'center';
+				        else $align = 'left';
+				        $this->stringtoshow.='bars: { lineWidth: 1, show: true, align: "'.$align.'", barWidth: 0.45 }, ';
+                    }
+				    else $this->stringtoshow.='bars: { lineWidth: 1, show: true, align: "'.($i==$firstlot?'center':'left').'", barWidth: 0.5 }, ';
+                }
 				if (isset($this->type[$i]) && ($this->type[$i] == 'lines' || $this->type[$i] == 'linesnopoint')) $this->stringtoshow.='lines: { show: true, fill: false }, points: { show: '.($this->type[$i] == 'linesnopoint' ? 'false' : 'true').' }, ';
 				$this->stringtoshow.='color: "#'.$color.'", label: "'.(isset($this->Legend[$i]) ? dol_escape_js($this->Legend[$i]) : '').'", data: d'.$i.' }';
 				$i++;
