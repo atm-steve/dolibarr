@@ -314,6 +314,7 @@ class Notify
 		global $user,$conf,$langs,$mysoc;
 		global $hookmanager;
 		global $dolibarr_main_url_root;
+		global $action;
 
 		if (! in_array($notifcode, $this->arrayofnotifsupported)) return 0;
 
@@ -481,26 +482,31 @@ class Notify
 								$mesg.= "\n\n".$outputlangs->transnoentitiesnoconv("Sincerely").".\n\n";
 								break;
 							case 'SHIPPING_VALIDATE':
+								$link = '<a href="'.$urlwithroot.'/expedition/card.php?id='.$object->id.'">'.$newref.'</a>';
 								$dir_output = $conf->expedition->dir_output.'/sending/';
-								$object_type = 'order_supplier';
+								$object_type = 'expedition';
 								$mesg = $outputlangs->transnoentitiesnoconv("EMailTextExpeditionValidated", $newref);
 								break;
 							case 'EXPENSE_REPORT_VALIDATE':
+								$link = '<a href="'.$urlwithroot.'/expensereport/card.php?id='.$object->id.'">'.$newref.'</a>';
 								$dir_output = $conf->expensereport->dir_output;
 								$object_type = 'expensereport';
 								$mesg = $outputlangs->transnoentitiesnoconv("EMailTextExpenseReportValidated", $newref);
 								break;
 							case 'EXPENSE_REPORT_APPROVE':
+								$link = '<a href="'.$urlwithroot.'/expensereport/card.php?id='.$object->id.'">'.$newref.'</a>';
 								$dir_output = $conf->expensereport->dir_output;
 								$object_type = 'expensereport';
 								$mesg = $outputlangs->transnoentitiesnoconv("EMailTextExpenseReportApproved", $newref);
 								break;
 							case 'HOLIDAY_VALIDATE':
+								$link = '<a href="'.$urlwithroot.'/holiday/card.php?id='.$object->id.'">'.$newref.'</a>';
 								$dir_output = $conf->holiday->dir_output;
 								$object_type = 'holiday';
 								$mesg = $outputlangs->transnoentitiesnoconv("EMailTextHolidayValidated", $newref);
 								break;
 							case 'HOLIDAY_APPROVE':
+								$link = '<a href="'.$urlwithroot.'/holiday/card.php?id='.$object->id.'">'.$newref.'</a>';
 								$dir_output = $conf->holiday->dir_output;
 								$object_type = 'holiday';
 								$mesg = $outputlangs->transnoentitiesnoconv("EMailTextHolidayApproved", $newref);
@@ -522,10 +528,12 @@ class Notify
 						$message.= $outputlangs->transnoentities("YouReceiveMailBecauseOfNotification2", $application, $mysoc->name)."\n";
 						$message.= "\n";
 						$message.= $mesg;
-						if ($link) $message.= "\n" . $urlwithroot . $link;
+						if ($link) $message.= "\n" . $urlwithroot . $link;	// if link is already added around the ref into the translation text, then $link must be set to ''
 
-						$parameters=array('notifcode'=>$notifcode, 'sendto'=>$sendto, 'replyto'=>$replyto, 'file'=>$filename_list, 'mimefile'=>$mimetype_list, 'filename'=>$mimefilename_list);
-						$reshook=$hookmanager->executeHooks('formatNotificationMessage', $parameters, $object, $action);    // Note that $action and $object may have been modified by some hooks
+						$parameters = array('notifcode'=>$notifcode, 'sendto'=>$sendto, 'replyto'=>$replyto, 'file'=>$filename_list, 'mimefile'=>$mimetype_list, 'filename'=>$mimefilename_list);
+						if (!isset($action)) $action = '';
+
+						$reshook = $hookmanager->executeHooks('formatNotificationMessage', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 						if (empty($reshook))
 						{
 							if (! empty($hookmanager->resArray['subject'])) $subject.=$hookmanager->resArray['subject'];
@@ -592,6 +600,7 @@ class Notify
 		{
 			foreach($conf->global as $key => $val)
 			{
+				$reg = array();
 				if ($val == '' || ! preg_match('/^NOTIFICATION_FIXEDEMAIL_'.$notifcode.'_THRESHOLD_HIGHER_(.*)$/', $key, $reg)) continue;
 
 				$threshold = (float) $reg[1];
@@ -689,26 +698,31 @@ class Notify
 						$mesg.= "\n\n".$langs->transnoentitiesnoconv("Sincerely").".\n\n";
 						break;
 					case 'SHIPPING_VALIDATE':
+						$link = '<a href="'.$urlwithroot.'/expedition/card.php?id='.$object->id.'">'.$newref.'</a>';
 						$dir_output = $conf->expedition->dir_output.'/sending/';
 						$object_type = 'order_supplier';
 						$mesg = $langs->transnoentitiesnoconv("EMailTextExpeditionValidated", $newref);
 						break;
 					case 'EXPENSE_REPORT_VALIDATE':
+						$link = '<a href="'.$urlwithroot.'/expensereport/card.php?id='.$object->id.'">'.$newref.'</a>';
 						$dir_output = $conf->expensereport->dir_output;
 						$object_type = 'expensereport';
 						$mesg = $langs->transnoentitiesnoconv("EMailTextExpenseReportValidated", $newref);
 						break;
 					case 'EXPENSE_REPORT_APPROVE':
+						$link = '<a href="'.$urlwithroot.'/expensereport/card.php?id='.$object->id.'">'.$newref.'</a>';
 						$dir_output = $conf->expensereport->dir_output;
 						$object_type = 'expensereport';
 						$mesg = $langs->transnoentitiesnoconv("EMailTextExpenseReportApproved", $newref);
 						break;
 					case 'HOLIDAY_VALIDATE':
+						$link = '<a href="'.$urlwithroot.'/holiday/card.php?id='.$object->id.'">'.$newref.'</a>';
 						$dir_output = $conf->holiday->dir_output;
 						$object_type = 'holiday';
 						$mesg = $langs->transnoentitiesnoconv("EMailTextHolidayValidated", $newref);
 						break;
 					case 'HOLIDAY_APPROVE':
+						$link = '<a href="'.$urlwithroot.'/holiday/card.php?id='.$object->id.'">'.$newref.'</a>';
 						$dir_output = $conf->holiday->dir_output;
 						$object_type = 'holiday';
 						$mesg = $langs->transnoentitiesnoconv("EMailTextHolidayApproved", $newref);
@@ -730,7 +744,7 @@ class Notify
 				$message.= $langs->transnoentities("YouReceiveMailBecauseOfNotification2", $application, $mysoc->name)."\n";
 				$message.= "\n";
 				$message.= $mesg;
-				//if ($link) $message.= "\n" . $urlwithroot . $link;	// link already added around the ref into the text
+				if ($link) $message.= "\n" . $urlwithroot . $link;	// if link is already added around the ref into the translation text, then $link must be set to ''
 
 				$message = nl2br($message);
 

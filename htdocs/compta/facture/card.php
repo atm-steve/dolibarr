@@ -1590,6 +1590,8 @@ if (empty($reshook))
 
 				if (!empty($origin) && !empty($originid))
 				{
+					include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
+
 					$object->origin = $origin;
 					$object->origin_id = $originid;
 
@@ -1600,6 +1602,17 @@ if (empty($reshook))
 						$line->fk_prev_id = $line->id;
 						$line->fetch_optionals($line->id);
 						$line->situation_percent =  $line->get_prev_progress($object->id); // get good progress including credit note
+
+						// The $line->situation_percent has been modified, so we must recalculate all amounts
+						$tabprice = calcul_price_total($line->qty, $line->subprice, $line->remise_percent, $line->tva_tx, $line->localtax1_tx, $line->localtax2_tx, 0, 'HT', 0, $line->product_type, $mysoc, '', $line->situation_percent);
+						$line->total_ht = $tabprice[0];
+						$line->total_tva = $tabprice[1];
+						$line->total_ttc = $tabprice[2];
+						$line->total_localtax1 = $tabprice[9];
+						$line->total_localtax2 = $tabprice[10];
+						$line->multicurrency_total_ht  = $tabprice[16];
+						$line->multicurrency_total_tva = $tabprice[17];
+						$line->multicurrency_total_ttc = $tabprice[18];
 
 						// Si fk_remise_except defini on vérifie si la réduction à déjà été appliquée
 						if ($line->fk_remise_except)
@@ -1644,6 +1657,7 @@ if (empty($reshook))
 				{
 					$nextSituationInvoice = new Facture($db);
 					$nextSituationInvoice->fetch($id);
+
 					// create extrafields with data from create form
 					$extralabels = $extrafields->fetch_name_optionals_label($nextSituationInvoice->table_element);
 					$ret = $extrafields->setOptionalsFromPost($extralabels, $nextSituationInvoice);
@@ -4188,7 +4202,7 @@ elseif ($id > 0 || ! empty($ref))
 
 	        $current_situation_counter = array();
 	        foreach ($object->tab_previous_situation_invoice as $prev_invoice) {
-	            $totalpaye = $prev_invoice->getSommePaiement();
+	            $tmptotalpaidforthisinvoice = $prev_invoice->getSommePaiement();
 	            $total_prev_ht += $prev_invoice->total_ht;
 	            $total_prev_ttc += $prev_invoice->total_ttc;
 	            $current_situation_counter[] = (($prev_invoice->type == Facture::TYPE_CREDIT_NOTE)?-1:1) * $prev_invoice->situation_counter;
@@ -4199,7 +4213,7 @@ elseif ($id > 0 || ! empty($ref))
 	            if (! empty($conf->banque->enabled)) print '<td class="right"></td>';
 	            print '<td class="right">' . price($prev_invoice->total_ht) . '</td>';
 	            print '<td class="right">' . price($prev_invoice->total_ttc) . '</td>';
-	            print '<td class="right">' . $prev_invoice->getLibStatut(3, $totalpaye) . '</td>';
+	            print '<td class="right">' . $prev_invoice->getLibStatut(3, $tmptotalpaidforthisinvoice) . '</td>';
 	            print '</tr>';
 	        }
 	    }
