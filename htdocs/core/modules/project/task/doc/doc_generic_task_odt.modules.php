@@ -169,14 +169,15 @@ class doc_generic_task_odt extends ModelePDFTask
 	 *
 	 *	@param  array			$task				Task Object
 	 *	@param  Translate		$outputlangs        Lang object to use for output
+	 *  @param   string		    $array_key	        Name of the key for return array
 	 *  @return	array								Return a substitution array
 	 */
-    public function get_substitutionarray_tasks($task, $outputlangs)
+    public function get_substitutionarray_tasks($task, $outputlangs, $array_key = 'task')
     {
         // phpcs:enable
-        global $conf;
+        global $conf, $extrafields;
 
-        return array(
+	    $resarray = array(
             'task_ref'=>$task->ref,
             'task_fk_project'=>$task->fk_project,
             'task_projectref'=>$task->projectref,
@@ -184,7 +185,8 @@ class doc_generic_task_odt extends ModelePDFTask
             'task_label'=>$task->label,
             'task_description'=>$task->description,
             'task_fk_parent'=>$task->fk_parent,
-            'task_duration'=>$task->duration,
+            'task_duration'=>convertSecondToTime($task->duration_effective,'allhourmin'),
+            'task_planned_workload'=>convertSecondToTime($task->planned_workload,'allhourmin'),
             'task_progress'=>$task->progress,
             'task_public'=>$task->public,
             'task_date_start'=>dol_print_date($task->date_start, 'day'),
@@ -192,6 +194,17 @@ class doc_generic_task_odt extends ModelePDFTask
             'task_note_private'=>$task->note_private,
             'task_note_public'=>$task->note_public
         );
+
+	    // Retrieve extrafields
+	    if (is_array($task->array_options) && count($task->array_options))
+	    {
+		    $task->fetch_optionals();
+
+		    $resarray = $this->fill_substitutionarray_with_extrafields($task, $resarray, $extrafields, $array_key, $outputlangs);
+
+	    }
+
+	    return $resarray;
     }
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
@@ -474,7 +487,6 @@ class doc_generic_task_odt extends ModelePDFTask
 
 			if (! file_exists($dir))
 			{
-				print '$dir'.$dir;
 				if (dol_mkdir($dir) < 0)
 				{
 					$this->error=$langs->transnoentities("ErrorCanNotCreateDir", $dir);
