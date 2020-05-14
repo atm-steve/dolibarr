@@ -2767,6 +2767,7 @@ class Form
             $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_units u ON u.rowid = p.fk_unit";
         }
 		$sql .= " WHERE p.entity IN (".getEntity('product').")";
+		$sql .= " AND pfp.entity IN (".getEntity('product').")";
 		$sql .= " AND p.tobuy = 1";
 		if (strval($filtertype) != '') $sql .= " AND p.fk_product_type=".$this->db->escape($filtertype);
 		if (!empty($filtre)) $sql .= " ".$filtre;
