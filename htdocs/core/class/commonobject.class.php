@@ -2962,8 +2962,8 @@ abstract class CommonObject
 
 		$sql = 'SELECT rowid, qty, '.$fieldup.' as up, remise_percent, total_ht, '.$fieldtva.' as total_tva, total_ttc, '.$fieldlocaltax1.' as total_localtax1, '.$fieldlocaltax2.' as total_localtax2,';
 		$sql .= ' tva_tx as vatrate, localtax1_tx, localtax2_tx, localtax1_type, localtax2_type, info_bits, product_type';
-			if ($this->table_element_line == 'facturedet') $sql .= ', situation_percent';
-			$sql .= ', multicurrency_total_ht, multicurrency_total_tva, multicurrency_total_ttc';
+		if ($this->table_element_line == 'facturedet') $sql .= ', situation_percent';
+		$sql .= ', multicurrency_total_ht, multicurrency_total_tva, multicurrency_total_ttc';
 		$sql .= ' FROM '.MAIN_DB_PREFIX.$this->table_element_line;
 		$sql .= ' WHERE '.$this->fk_element.' = '.$this->id;
 		if ($exclspec)
@@ -3002,18 +3002,23 @@ abstract class CommonObject
 
 				if (empty($reshook) && $forcedroundingmode == '0')	// Check if data on line are consistent. This may solve lines that were not consistent because set with $forcedroundingmode='auto'
 				{
-					$localtax_array = array($obj->localtax1_type, $obj->localtax1_tx, $obj->localtax2_type, $obj->localtax2_tx);
+					// This part of code is to fix data. We should not call it too often.
+					$localtax_array = array($obj->localtax1_type,$obj->localtax1_tx,$obj->localtax2_type,$obj->localtax2_tx);
 					$tmpcal = calcul_price_total($obj->qty, $obj->up, $obj->remise_percent, $obj->vatrate, $obj->localtax1_tx, $obj->localtax2_tx, 0, 'HT', $obj->info_bits, $obj->product_type, $seller, $localtax_array, (isset($obj->situation_percent) ? $obj->situation_percent : 100), $multicurrency_tx);
-					$diff = price2num($tmpcal[1] - $obj->total_tva, 'MT', 1);
-					if ($diff)
+
+					$diff_when_using_price_ht = price2num($tmpcal[1] - $obj->total_tva, 'MT', 1);	// If price was set with tax price adn unit price HT has a low number of digits, then we may have a diff on recalculation from unit price HT.
+					$diff_on_current_total = price2num($obj->total_ttc - $obj->total_ht - $obj->total_tva - $obj->total_localtax1 - $obj->total_localtax2, 'MT', 1);
+					//var_dump($obj->total_ht.' '.$obj->total_tva.' '.$obj->total_localtax1.' '.$obj->total_localtax2.' =? '.$obj->total_ttc);
+					//var_dump($diff_when_using_price_ht.' '.$diff_on_current_total);
+
+					if ($diff_when_using_price_ht && $diff_on_current_total)
 					{
 						$sqlfix = "UPDATE ".MAIN_DB_PREFIX.$this->table_element_line." SET ".$fieldtva." = ".$tmpcal[1].", total_ttc = ".$tmpcal[2]." WHERE rowid = ".$obj->rowid;
-						dol_syslog('We found unconsistent data into detailed line (difference of '.$diff.') for line rowid = '.$obj->rowid." (total vat of line calculated=".$tmpcal[1].", database=".$obj->total_tva."). We fix the total_vat and total_ttc of line by running sqlfix = ".$sqlfix);
-								$resqlfix = $this->db->query($sqlfix);
-								if (!$resqlfix) dol_print_error($this->db, 'Failed to update line');
-								$obj->total_tva = $tmpcal[1];
-								$obj->total_ttc = $tmpcal[2];
-						//
+						dol_syslog('We found unconsistent data into detailed line (diff_when_using_price_ht = '.$diff_when_using_price_ht.' and diff_on_current_total = '.$diff_on_current_total.') for line rowid = '.$obj->rowid." (total vat of line calculated=".$tmpcal[1].", database=".$obj->total_tva."). We fix the total_vat and total_ttc of line by running sqlfix = ".$sqlfix, LOG_WARNING);
+						$resqlfix = $this->db->query($sqlfix);
+						if (! $resqlfix) dol_print_error($this->db, 'Failed to update line');
+						$obj->total_tva = $tmpcal[1];
+						$obj->total_ttc = $tmpcal[2];
 					}
 				}
 
@@ -5007,6 +5012,25 @@ abstract class CommonObject
 
 	/* Functions for extrafields */
 
+	/**
+	 * Function to make a fetch but set environment to avoid to load computed values before.
+	 *
+	 * @param	int		$id			ID of object
+	 * @return	int					>0 if OK, 0 if not found, <0 if KO
+	 */
+	public function fetchNoCompute($id)
+	{
+		global $conf;
+
+		$savDisableCompute = $conf->disable_compute;
+		$conf->disable_compute = 1;
+
+		$ret = $this->fetch($id);
+
+		$conf->disable_compute = $savDisableCompute;
+
+		return $ret;
+	}
 
 	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
 	/**
@@ -5020,7 +5044,7 @@ abstract class CommonObject
 	public function fetch_optionals($rowid = null, $optionsArray = null)
 	{
 		// phpcs:enable
-		global $extrafields;
+		global $conf, $extrafields;
 
 		if (empty($rowid)) $rowid = $this->id;
 
@@ -5104,7 +5128,10 @@ abstract class CommonObject
 					foreach ($tab as $key => $value) {
 						if (!empty($extrafields) && !empty($extrafields->attributes[$this->table_element]['computed'][$key]))
 						{
-							$this->array_options["options_".$key] = dol_eval($extrafields->attributes[$this->table_element]['computed'][$key], 1, 0);
+							//var_dump($conf->disable_compute);
+							if (empty($conf->disable_compute)) {
+								$this->array_options["options_".$key] = dol_eval($extrafields->attributes[$this->table_element]['computed'][$key], 1, 0);
+							}
 						}
 					}
 				}
@@ -6592,7 +6619,7 @@ abstract class CommonObject
 	 * This function is responsible to output the <tr> and <td> according to correct number of columns received into $params['colspan']
 	 *
 	 * @param 	Extrafields $extrafields    Extrafield Object
-	 * @param 	string      $mode           Show output (view) or input (edit) for extrafield
+	 * @param 	string      $mode           Show output ('view') or input ('create' or 'edit') for extrafield
 	 * @param 	array       $params         Optional parameters. Example: array('style'=>'class="oddeven"', 'colspan'=>$colspan)
 	 * @param 	string      $keysuffix      Suffix string to add after name and id of field (can be used to avoid duplicate names)
 	 * @param 	string      $keyprefix      Prefix string to add before name and id of field (can be used to avoid duplicate names)
@@ -6635,7 +6662,8 @@ abstract class CommonObject
 					$perms = dol_eval($extrafields->attributes[$this->table_element]['perms'][$key], 1);
 				}
 
-				if (($mode == 'create' || $mode == 'edit') && abs($visibility) != 1 && abs($visibility) != 3) continue; // <> -1 and <> 1 and <> 3 = not visible on forms, only on list
+				if (($mode == 'create') && abs($visibility) != 1 && abs($visibility) != 3) continue; // <> -1 and <> 1 and <> 3 = not visible on forms, only on list
+				elseif (($mode == 'edit') && abs($visibility) != 1 && abs($visibility) != 3 && abs($visibility) != 4) continue; // <> -1 and <> 1 and <> 3 = not visible on forms, only on list and <> 4 = not visible at the creation
 				elseif ($mode == 'view' && empty($visibility)) continue;
 				if (empty($perms)) continue;
 				// Load language if required
@@ -6663,9 +6691,10 @@ abstract class CommonObject
 					case "view":
 						$value = $this->array_options["options_".$key.$keysuffix];
 						break;
-					case "edit":
-						$getposttemp = GETPOST($keyprefix.'options_'.$key.$keysuffix, 'none'); // GETPOST can get value from GET, POST or setup of default values.
-						// GETPOST("options_" . $key) can be 'abc' or array(0=>'abc')
+					case "create":
+                    case "edit":
+                        $getposttemp = GETPOST($keyprefix.'options_'.$key.$keysuffix, 'none'); // GETPOST can get value from GET, POST or setup of default values.
+                        // GETPOST("options_" . $key) can be 'abc' or array(0=>'abc')
 						if (is_array($getposttemp) || $getposttemp != '' || GETPOSTISSET($keyprefix.'options_'.$key.$keysuffix))
 						{
 							if (is_array($getposttemp)) {
@@ -6769,7 +6798,8 @@ abstract class CommonObject
 						case "view":
 							$out .= $extrafields->showOutputField($key, $value);
 							break;
-						case "edit":
+                        case "create":
+                        case "edit":
 							$out .= $extrafields->showInputField($key, $value, '', $keysuffix, '', 0, $this->id, $this->table_element);
 							break;
 					}
