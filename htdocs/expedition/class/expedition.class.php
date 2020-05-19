@@ -533,7 +533,7 @@ class Expedition extends CommonObject
 		// Check parameters
 		if (empty($id) && empty($ref) && empty($ref_ext) && empty($ref_int)) return -1;
 
-		$sql = "SELECT e.rowid, e.ref, e.fk_soc as socid, e.date_creation, e.ref_customer, e.ref_ext, e.ref_int, e.fk_user_author, e.fk_statut, e.fk_projet as fk_project, e.billed";
+		$sql = "SELECT e.rowid, e.entity, e.ref, e.fk_soc as socid, e.date_creation, e.ref_customer, e.ref_ext, e.ref_int, e.fk_user_author, e.fk_statut, e.fk_projet as fk_project, e.billed";
         $sql.= ", e.date_valid";
 		$sql.= ", e.weight, e.weight_units, e.size, e.size_units, e.width, e.height";
 		$sql.= ", e.date_expedition as date_expedition, e.model_pdf, e.fk_address, e.date_delivery";
@@ -562,6 +562,7 @@ class Expedition extends CommonObject
 				$obj = $this->db->fetch_object($result);
 
 				$this->id                   = $obj->rowid;
+				$this->entity               = $obj->entity;
 				$this->ref                  = $obj->ref;
 				$this->socid                = $obj->socid;
 				$this->ref_customer	    = $obj->ref_customer;
@@ -1280,14 +1281,22 @@ class Expedition extends CommonObject
 
 		if (!$error)
 		{
+                    $main = MAIN_DB_PREFIX . 'expeditiondet';
+                    $ef = $main . "_extrafields";
+                    $sqlef = "DELETE FROM $ef WHERE fk_object IN (SELECT rowid FROM $main WHERE fk_expedition = " . $this->id . ")";
+
 			$sql = "DELETE FROM ".MAIN_DB_PREFIX."expeditiondet";
 			$sql .= " WHERE fk_expedition = ".$this->id;
 
-			if ($this->db->query($sql))
+			if ($this->db->query($sqlef) && $this->db->query($sql))
 			{
 				// Delete linked object
 				$res = $this->deleteObjectLinked();
 				if ($res < 0) $error++;
+
+                                // delete extrafields
+                                $res = $this->deleteExtraFields();
+                                if ($res < 0) $error++;
 
 				if (!$error)
 				{
