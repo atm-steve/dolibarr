@@ -430,7 +430,7 @@ class Paiement extends CommonObject
 					    }
 
 					    // Regenerate documents of invoices
-                        if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+                        if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE) && false)
                         {
                             $newlang='';
                             $outputlangs = $langs;
