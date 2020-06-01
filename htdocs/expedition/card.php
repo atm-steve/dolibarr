@@ -1168,8 +1168,6 @@ if ($action == 'create')
 	                    $product->load_stock('warehouseopen');	// Load all $product->stock_warehouse[idwarehouse]->detail_batch
 	                    //var_dump($product->stock_warehouse[1]);
 
-	                    getVirtualStockByWarehouse($product);
-
 	                    print '<td>';
 	                    print '<a name="'.$line->rowid.'"></a>'; // ancre pour retourner sur la ligne
 
