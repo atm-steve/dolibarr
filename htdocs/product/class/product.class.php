@@ -4803,7 +4803,14 @@ class Product extends CommonObject
 		}
 		if (!empty($conf->fournisseur->enabled) && empty($conf->reception->enabled))
 		{
-            $filterStatus = '4';
+			/*
+			 * README : montée de version Knowledge Distribution (kdis), juin 2020
+			 * Permet de filtrer sur le statut 3 (ORDERSENT) et 4 (RECEIVED_PARTIALLY)
+			 * au lieu du statut 4 uniquement.
+			*/
+			/* —————————————————————— START SPÉCIFIQUE KNOWLEDGE DISTRIBUTION (KDIS) —————————————————————— */
+            $filterStatus = '3,4';
+			/* —————————————————————— END SPÉCIFIQUE KNOWLEDGE DISTRIBUTION (KDIS) —————————————————————— */
             if (isset($includedraftpoforvirtual)) $filterStatus = '0,'.$filterStatus;
 			$result = $this->load_stats_reception(0, $filterStatus, 1);
 			if ($result < 0) dol_print_error($this->db, $this->error);
@@ -4811,7 +4818,14 @@ class Product extends CommonObject
 		}
 		if (!empty($conf->fournisseur->enabled) && !empty($conf->reception->enabled))
 		{
-            $filterStatus = '4';
+			/*
+			 * README : montée de version Knowledge Distribution (kdis), juin 2020
+			 * Permet de filtrer sur le statut 3 (ORDERSENT) et 4 (RECEIVED_PARTIALLY)
+			 * au lieu du statut 4 uniquement.
+			*/
+			/* —————————————————————— START SPÉCIFIQUE KNOWLEDGE DISTRIBUTION (KDIS) —————————————————————— */
+            $filterStatus = '3,4';
+			/* —————————————————————— END SPÉCIFIQUE KNOWLEDGE DISTRIBUTION (KDIS) —————————————————————— */
             if (isset($includedraftpoforvirtual)) $filterStatus = '0,'.$filterStatus;
 			$result = $this->load_stats_reception(0, $filterStatus, 1);			// Use same tables than when module reception is not used.
 			if ($result < 0) dol_print_error($this->db, $this->error);
