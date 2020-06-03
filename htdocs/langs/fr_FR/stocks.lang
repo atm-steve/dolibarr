@@ -212,3 +212,5 @@ StockIncreaseAfterCorrectTransfer=Augmentation par correction/transfert
 StockDecreaseAfterCorrectTransfer=Diminution par correction/transfert
 StockIncrease=Augmentation du stock
 StockDecrease=Diminution du stock
+MakingProduct=Fabrication du produit pour %s
+ErrorDuringStockMovement=Erreur pendant le mouvement de stock
