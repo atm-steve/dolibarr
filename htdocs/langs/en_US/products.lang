@@ -372,3 +372,5 @@ ActionAvailableOnVariantProductOnly=Action only available on the variant of prod
 ProductsPricePerCustomer=Product prices per customers
 MakeProduct=Make product
 QtyToMake=Quantity to make
+FeatureDoesntHandleLotBatch=Feature doesn't handle lot/batch/serial number
+MakingProductFromAssociatedProducts=Allow production from associated products
