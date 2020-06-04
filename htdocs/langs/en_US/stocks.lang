@@ -213,3 +213,5 @@ StockDecrease=Stock decrease
 StockIsRequiredToChooseWhichLotToUse=Stock is required to choose which lot to use
 MakingProductFromVirtualProduct=Making product %s from virtual product
 ErrorDuringStockMovement=Error during stock movement
+ComponentWarehouses=Component Warehouses
+ManufacturedProductWarehouse=Manufactured product warehouse

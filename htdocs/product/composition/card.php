@@ -323,35 +323,40 @@ if ($id > 0 || ! empty($ref))
 		$prodschild = $object->getChildsArbo($id, 1);
 		$nbofsubproducts=count($prodschild);		// This include only first level of childs
 
-        if($action === 'makeproduct' && !empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT)) {
-            $TConfirmParams = array();
-            $TConfirmParams['id']['name'] = "id";
-            $TConfirmParams['id']['type'] = "hidden";
-            $TConfirmParams['id']['value'] = $id;
+        $TConfirmParams = array();
+        $TConfirmParams['id']['name'] = "id";
+        $TConfirmParams['id']['type'] = "hidden";
+        $TConfirmParams['id']['value'] = $id;
 
-            $TConfirmParams['tomake']['label'] = $langs->trans('QtyToMake').' :';
-            $TConfirmParams['tomake']['type'] = "text";
-            $TConfirmParams['tomake']['name'] = "qty_to_make";
+        $TConfirmParams['tomake']['label'] = $langs->trans('QtyToMake').' :';
+        $TConfirmParams['tomake']['type'] = "text";
+        $TConfirmParams['tomake']['name'] = "qty_to_make";
 
-            $TConfirmParams['target']['label'] = $langs->trans('WarehouseTarget').' :';
-            $TConfirmParams['target']['type'] = "other";
-            $TConfirmParams['target']['name'] = "entrywarehouse";
-            $TConfirmParams['target']['value'] = $formProduct->selectWarehouses('', 'entrywarehouse');
+        $TConfirmParams['finishedtitle']['type'] = 'onecolumn';
+        $TConfirmParams['finishedtitle']['value'] = '<div align="center" width="100%"><b>'.$langs->trans('ManufacturedProductWarehouse').'</b></div>';
 
-            foreach($prods_arbo as $child) {
-                $fk_child = $child['id'];
-                $TConfirmParams['source'.$fk_child]['label'] = $langs->trans('WarehouseSource').' '.$child['ref'].' :';
-                $TConfirmParams['source'.$fk_child]['name'] = 'outletwarehouse_'.$fk_child; //Select2 doesnt handle array
-                $TConfirmParams['source'.$fk_child]['type'] = "other";
-                $TConfirmParams['source'.$fk_child]['value'] = $formProduct->selectWarehouses('', 'outletwarehouse_'.$fk_child);
+        $TConfirmParams['target']['label'] = $langs->trans('WarehouseTarget').' :';
+        $TConfirmParams['target']['type'] = "other";
+        $TConfirmParams['target']['name'] = "entrywarehouse";
+        $TConfirmParams['target']['value'] = $formProduct->selectWarehouses('', 'entrywarehouse');
 
-                $TConfirmParams['qtyneeded'.$fk_child]['name'] = 'qtyneeded_'.$fk_child;
-                $TConfirmParams['qtyneeded'.$fk_child]['type'] = "hidden";
-                $TConfirmParams['qtyneeded'.$fk_child]['value'] = $child['nb'];
-            }
-            print $form->formconfirm($_SERVER["PHP_SELF"], $langs->trans('MakeProduct'), '', 'confirm_makeproduct', $TConfirmParams, '', 1, 'auto');
-            $action = '';
+        $TConfirmParams['componenttitle']['type'] = 'onecolumn';
+        $TConfirmParams['componenttitle']['value'] = '<div align="center" width="100%"><b>'.$langs->trans('ComponentWarehouses').'</b></div>';
+
+        foreach($prods_arbo as $child) {
+            $fk_child = $child['id'];
+            $TConfirmParams['source'.$fk_child]['label'] = $langs->trans('WarehouseSource').' '.$child['ref'].' :';
+            $TConfirmParams['source'.$fk_child]['name'] = 'outletwarehouse_'.$fk_child; //Select2 doesnt handle array
+            $TConfirmParams['source'.$fk_child]['type'] = "other";
+            $TConfirmParams['source'.$fk_child]['value'] = $formProduct->selectWarehouses('', 'outletwarehouse_'.$fk_child);
+
+            $TConfirmParams['qtyneeded'.$fk_child]['name'] = 'qtyneeded_'.$fk_child;
+            $TConfirmParams['qtyneeded'.$fk_child]['type'] = "hidden";
+            $TConfirmParams['qtyneeded'.$fk_child]['value'] = $child['nb'];
         }
+        print $form->formconfirm($_SERVER["PHP_SELF"], $langs->trans('MakeProduct'), '', 'confirm_makeproduct', $TConfirmParams, '', 'action-makeproduct', 'auto');
+        $action = '';
+
 
 		print '<div class="fichecenter">';
 
@@ -603,7 +608,7 @@ if ($id > 0 || ! empty($ref))
             $parameters = array();
             $reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action);    // Note that $action and $object may have been modified by hook
             if(empty($reshook)) {
-                if(!empty($conf->stock->enabled) && !empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT) && !empty($prods_arbo)) print '<div class="inline-block divButAction" id="btMkProduct"><a href="'.$_SERVER["PHP_SELF"].'?action=makeproduct&id='.$id.'" class="butAction" >'.$langs->trans("MakeProduct").'</a></div>';
+                if(!empty($conf->stock->enabled) && !empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT) && !empty($prods_arbo)) print '<div class="inline-block divButAction" id="btMkProduct"><span id="action-makeproduct" class="butAction">'.$langs->trans("MakeProduct").'</span></div>';
             }
             print '</div>';
         }
