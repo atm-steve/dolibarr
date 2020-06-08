@@ -107,6 +107,8 @@ if ($mode == 'supplier') $fileurlnb = DOL_URL_ROOT.'/viewimage.php?modulepart=bi
 
 $px1 = new DolGraph();
 $mesg = $px1->isGraphKo();
+$graphType = array('lines','lines');
+if(!empty($conf->global->INVOICE_STATS_GRAPHS_SHOW_2_YEARS)) $graphType[] = 'lines';
 if (! $mesg)
 {
 	$px1->SetData($data);
@@ -127,7 +129,7 @@ if (! $mesg)
 	$px1->SetPrecisionY(0);
 	$px1->mode='depth';
 	$px1->SetTitle($langs->trans("NumberOfBillsByMonth"));
-
+	$px1->SetType($graphType);
 	$px1->draw($filenamenb, $fileurlnb);
 }
 
@@ -162,7 +164,7 @@ if (! $mesg)
 	$px2->SetPrecisionY(0);
 	$px2->mode='depth';
 	$px2->SetTitle($langs->trans("AmountOfBillsByMonthHT"));
-
+    $px2->SetType($graphType);
 	$px2->draw($filenameamount, $fileurlamount);
 }
 
@@ -204,7 +206,7 @@ if (! $mesg)
     $px3->SetPrecisionY(0);
     $px3->mode='depth';
     $px3->SetTitle($langs->trans("AmountAverage"));
-
+    $px3->SetType($graphType);
     $px3->draw($filename_avg, $fileurl_avg);
 }
 
