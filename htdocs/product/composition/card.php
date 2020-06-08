@@ -152,7 +152,6 @@ elseif($action === 'confirm_makeproduct' && !empty($conf->global->PRODUIT_SOUSPR
         $mvtStock = new MouvementStock($db);
         $mvtStock->origin = $object;
         $res = $mvtStock->reception($user,$id,$entryWarehouse, $qtyToMake, 0, $langs->trans('MakingProductFromVirtualProduct',$object->ref)); //TO MAKE
-        var_dump($res, $id);
         if($res > 0) {
             foreach($TOutletWarehouse as $fk_product_needed => $TInfoWarehouse) {
                 $qtyNeeded = $TInfoWarehouse['qty'] * $qtyToMake;
