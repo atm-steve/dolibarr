@@ -32,6 +32,8 @@ require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/product.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/stock/class/mouvementstock.class.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array('bills', 'products', 'stocks'));
@@ -43,12 +45,18 @@ $confirm=GETPOST('confirm', 'alpha');
 $cancel=GETPOST('cancel', 'alpha');
 $key=GETPOST('key');
 $parent=GETPOST('parent');
+$entryWarehouse=GETPOST('entrywarehouse', 'int');
+$qtyToMake=GETPOST('qty_to_make');
+$TOutletWarehouse = array();
 
 // Security check
 if (! empty($user->societe_id)) $socid=$user->societe_id;
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref : ''));
 $fieldtype = (! empty($ref) ? 'ref' : 'rowid');
 $result=restrictedArea($user, 'produit|service', $fieldvalue, 'product&product', '', '', $fieldtype);
+
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
+$hookmanager->initHooks(array('productcompositioncard'));
 
 $object = new Product($db);
 $objectid=0;
@@ -66,6 +74,8 @@ if ($id > 0 || ! empty($ref))
 
 if ($cancel) $action ='';
 
+$parameters=array('id'=>$id, 'ref'=>$ref);
+$reshook=$hookmanager->executeHooks('doActions', $parameters, $object, $action);    // Note that $action and $object may have been modified by some hooks
 // Action association d'un sousproduit
 if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->service->creer))
 {
@@ -126,7 +136,50 @@ elseif($action==='save_composed_product')
 	}
 	$action='';
 }
-
+elseif($action === 'confirm_makeproduct' && !empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT))
+{
+    $error = 0;
+    foreach($_REQUEST as $key => $val) {
+        if(strpos($key,'outletwarehouse') !== false || strpos($key,'qtyneeded') !== false) {
+            $tmpArr = explode('_',$key);
+            if(strpos($key,'outletwarehouse') !== false) $TOutletWarehouse[$tmpArr[1]]['fk_warehouse'] = $val;
+            if(strpos($key,'qtyneeded') !== false) $TOutletWarehouse[$tmpArr[1]]['qty'] = $val;
+        }
+    }
+    if(strpos($qtyToMake,',') !== false) $qtyToMake = price2num($qtyToMake);
+    if(!empty($id) && !empty($entryWarehouse) && !empty($TOutletWarehouse) && (is_numeric($qtyToMake) && $qtyToMake > 0)) {
+        $db->begin();
+        $mvtStock = new MouvementStock($db);
+        $mvtStock->origin = $object;
+        $res = $mvtStock->reception($user,$id,$entryWarehouse, $qtyToMake, 0, $langs->trans('MakingProductFromVirtualProduct',$object->ref)); //TO MAKE
+        if($res > 0) {
+            foreach($TOutletWarehouse as $fk_product_needed => $TInfoWarehouse) {
+                $qtyNeeded = $TInfoWarehouse['qty'] * $qtyToMake;
+                $res = $mvtStock->livraison($user, $fk_product_needed, $TInfoWarehouse['fk_warehouse'], $qtyNeeded,0 ,$langs->trans('MakingProductFromVirtualProduct',$object->ref)); //NEEDED
+                if($res <= 0) {
+                    setEventMessage($langs->trans('ErrorDuringStockMovement'),'errors');
+                    $error++;
+                }
+            }
+        } else {
+            setEventMessage($langs->trans('ErrorDuringStockMovement'),'errors');
+            $error++;
+        }
+    }
+    else {
+        setEventMessage($langs->trans('DolibarrHasDetectedError'), 'errors');
+        $error++;
+    }
+    if (! $error)
+    {
+        $db->commit();
+        setEventMessage($langs->trans('StockMovementRecorded'), 'mesgs');
+        header("Location: ".$_SERVER["PHP_SELF"].'?id='.$object->id);
+        exit;
+    } else {
+        $db->rollback();
+    }
+}
 
 /*
  * View
@@ -135,6 +188,7 @@ elseif($action==='save_composed_product')
 $product_fourn = new ProductFournisseur($db);
 $productstatic = new Product($db);
 $form = new Form($db);
+$formProduct = new FormProduct($db);
 
 // action recherche des produits par mot-cle et/ou par categorie
 if ($action == 'search')
@@ -263,9 +317,43 @@ if ($id > 0 || ! empty($ref))
 		$object->get_sousproduits_arbo();			// Load $object->sousprods
 		$prods_arbo=$object->get_arbo_each_prod();
 
+
 		$nbofsubsubproducts=count($prods_arbo);		// This include sub sub product into nb
 		$prodschild = $object->getChildsArbo($id, 1);
 		$nbofsubproducts=count($prodschild);		// This include only first level of childs
+        if(!empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT) && !empty($prods_arbo)) {
+            $TConfirmParams = array();
+            $TConfirmParams['id']['name'] = "id";
+            $TConfirmParams['id']['type'] = "hidden";
+            $TConfirmParams['id']['value'] = $id;
+
+            $TConfirmParams['tomake']['label'] = $langs->trans('QtyToMake').' :';
+            $TConfirmParams['tomake']['type'] = "text";
+            $TConfirmParams['tomake']['name'] = "qty_to_make";
+
+            $TConfirmParams['finishedtitle']['type'] = 'onecolumn';
+            $TConfirmParams['finishedtitle']['value'] = '<div align="center" width="100%"><b>'.$langs->trans('ManufacturedProductWarehouse').'</b></div>';
+
+            $TConfirmParams['target']['label'] = $langs->trans('WarehouseTarget').' :';
+            $TConfirmParams['target']['type'] = "other";
+            $TConfirmParams['target']['name'] = "entrywarehouse";
+            $TConfirmParams['target']['value'] = $formProduct->selectWarehouses('', 'entrywarehouse');
+
+            $TConfirmParams['componenttitle']['type'] = 'onecolumn';
+            $TConfirmParams['componenttitle']['value'] = '<div align="center" width="100%"><b>'.$langs->trans('ComponentWarehouses').'</b></div>';
+            foreach($prods_arbo as $child) {
+                $fk_child = $child['id'];
+                $TConfirmParams['source'.$fk_child]['label'] = $langs->trans('WarehouseSource').' '.$child['ref'].' :';
+                $TConfirmParams['source'.$fk_child]['name'] = 'outletwarehouse_'.$fk_child; //Select2 doesnt handle array
+                $TConfirmParams['source'.$fk_child]['type'] = "other";
+                $TConfirmParams['source'.$fk_child]['value'] = $formProduct->selectWarehouses('', 'outletwarehouse_'.$fk_child);
+
+                $TConfirmParams['qtyneeded'.$fk_child]['name'] = 'qtyneeded_'.$fk_child;
+                $TConfirmParams['qtyneeded'.$fk_child]['type'] = "hidden";
+                $TConfirmParams['qtyneeded'.$fk_child]['value'] = $child['nb'];
+            }
+            print $form->formconfirm($_SERVER["PHP_SELF"], $langs->trans('MakeProduct'), '', 'confirm_makeproduct', $TConfirmParams, '', 'action-makeproduct', 'auto');
+        }
 
 
 		print '<div class="fichecenter">';
@@ -514,7 +602,14 @@ if ($id > 0 || ! empty($ref))
 			print '<input type="submit" class="button" value="'.$langs->trans("Search").'">';
 			print '</div>';
 			print '</form>';
-		}
+            print "\n".'<div class="tabsAction">'."\n";
+            $parameters = array();
+            $reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action);    // Note that $action and $object may have been modified by hook
+            if(empty($reshook)) {
+                if(!empty($conf->stock->enabled) && !empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT) && !empty($prods_arbo)) print '<div class="inline-block divButAction" id="btMkProduct"><span id="action-makeproduct" class="butAction">'.$langs->trans("MakeProduct").'</span></div>';
+            }
+            print '</div>';
+        }
 
 
 		// List of products

@@ -212,3 +212,7 @@ StockIncreaseAfterCorrectTransfer=Augmentation par correction/transfert
 StockDecreaseAfterCorrectTransfer=Diminution par correction/transfert
 StockIncrease=Augmentation du stock
 StockDecrease=Diminution du stock
+MakingProductFromVirtualProduct=Fabrication du produit %s depuis les produits virtuels
+ErrorDuringStockMovement=Erreur pendant le mouvement de stock
+ComponentWarehouses=Entrepôt des composants
+ManufacturedProductWarehouse=Entrepôt où le produit fabriqué sera stocké
