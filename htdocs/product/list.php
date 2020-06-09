@@ -138,6 +138,10 @@ $fieldstosearchall = array(
 	'p.label'=>"ProductLabel",
 	'p.description'=>"Description",
 	"p.note"=>"Note",
+	"p.note_public"=>"NotePublic",
+	"p.url"=>"PublicUrl",
+	"p.accountancy_code_sell"=>"AccountancyCodeSell",
+	"p.accountancy_code_buy"=>"AccountancyCodeBuy",
 
 );
 // multilang
@@ -153,6 +157,23 @@ if (!empty($conf->barcode->enabled)) {
 }
 // Personalized search criterias. Example: $conf->global->PRODUCT_QUICKSEARCH_ON_FIELDS = 'p.ref=ProductRef;p.label=ProductLabel'
 if (!empty($conf->global->PRODUCT_QUICKSEARCH_ON_FIELDS)) $fieldstosearchall = dolExplodeIntoArray($conf->global->PRODUCT_QUICKSEARCH_ON_FIELDS);
+
+//global search on extrafields
+if(!empty($conf->global->PRODUIT_GLOBAL_SEARCH_ON_EXTRAFIELD) && !empty($extralabels)) {
+    foreach($extralabels as $codeExtra => $labelExtra) {
+        $TExtraTypeNotHandled=array(
+            'boolean',
+            'select',
+            'sellist',
+            'radio',
+            'checkbox',
+            'chkbxlst',
+            'link',
+            'separate',
+        );
+        if(!in_array($extrafields->attribute_type[$codeExtra], $TExtraTypeNotHandled)) $fieldstosearchall['ef.' . $codeExtra] = $labelExtra;
+    }
+}
 
 if (empty($conf->global->PRODUIT_MULTIPRICES))
 {
@@ -916,7 +937,7 @@ if ($resql)
 		// Label
 		if (!empty($arrayfields['p.label']['checked']))
 		{
-			print '<td class="tdoverflowmax200">'.dol_trunc($obj->label, 80).'</td>';
+			print '<td>'.dol_trunc($obj->label, 100).'</td>';
 			if (!$i) $totalarray['nbfield']++;
 		}
 

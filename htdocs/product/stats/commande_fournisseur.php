@@ -132,12 +132,13 @@ if ($id > 0 || !empty($ref)) {
 		{
 			$sql = "SELECT DISTINCT s.nom as name, s.rowid as socid, s.code_client,";
 			$sql .= " c.rowid, d.total_ht as total_ht, c.ref,";
-			$sql .= " c.date_commande, c.fk_statut as statut, c.rowid as commandeid, d.rowid, d.qty";
+			$sql .= " c.date_commande, c.fk_statut as statut, c.rowid as commandeid, d.rowid, d.qty, cfde.date_livraison_annoncee ";
 			if (!$user->rights->societe->client->voir && !$socid)
 				$sql .= ", sc.fk_soc, sc.fk_user ";
 			$sql .= " FROM ".MAIN_DB_PREFIX."societe as s";
 			$sql .= ", ".MAIN_DB_PREFIX."commande_fournisseur as c";
 			$sql .= ", ".MAIN_DB_PREFIX."commande_fournisseurdet as d";
+			$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "commande_fournisseurdet_extrafields as cfde ON (cfde.fk_object=d.rowid)";
 			if (!$user->rights->societe->client->voir && !$socid)
 				$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 			$sql .= " WHERE c.fk_soc = s.rowid";
@@ -212,6 +213,7 @@ if ($id > 0 || !empty($ref)) {
 				print_liste_field_titre("SupplierCode", $_SERVER["PHP_SELF"], "s.code_client", "", $option, '', $sortfield, $sortorder);
 				print_liste_field_titre("OrderDate", $_SERVER["PHP_SELF"], "c.date_commande", "", $option, 'align="center"', $sortfield, $sortorder);
 				print_liste_field_titre("Qty", $_SERVER["PHP_SELF"], "d.qty", "", $option, 'align="center"', $sortfield, $sortorder);
+				print_liste_field_titre("Date de livraison", $_SERVER["PHP_SELF"], "cfde.date_livraison_annoncee", "", $option, 'align="center"', $sortfield, $sortorder);
 				print_liste_field_titre("AmountHT", $_SERVER["PHP_SELF"], "c.total_ht", "", $option, 'align="right"', $sortfield, $sortorder);
 				print_liste_field_titre("Status", $_SERVER["PHP_SELF"], "c.fk_statut", "", $option, 'align="right"', $sortfield, $sortorder);
 				print "</tr>\n";
@@ -238,7 +240,9 @@ if ($id > 0 || !empty($ref)) {
 						print "<td>".$objp->code_client."</td>\n";
 						print '<td class="center">';
 						print dol_print_date($db->jdate($objp->date_commande), 'dayhour')."</td>";
-						print '<td class="center">'.$objp->qty."</td>\n";
+						print '<td class="center">' . $objp->qty . "</td>\n";
+						print '<td class="center">';
+						print dol_print_date($db->jdate($objp->date_livraison_annoncee), 'dayhour') . "</td>";
 						print '<td align="right">'.price($objp->total_ht)."</td>\n";
 						print '<td align="right">'.$supplierorderstatic->getLibStatut(4).'</td>';
 						print "</tr>\n";

@@ -383,3 +383,4 @@ ActionAvailableOnVariantProductOnly=Action disponible uniquement sur la variante
 ProductsPricePerCustomer=Prix produit par clients
 ProductSupplierExtraFields=Attributs supplémentaires (Prix fournisseur)
 DeleteLinkedProduct=Supprimer le produit enfant lié à la combinaison
+GlobalSearchOnExtrafield=Recherche globale : Appliquer la recherche sur les extrafields (Attention : les dates sont au format YYYY-MM-DD)

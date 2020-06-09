@@ -83,6 +83,9 @@ class box_propales extends ModeleBoxes
 
         $this->info_box_head = array('text' => $langs->trans("BoxTitleLast".($conf->global->MAIN_LASTBOX_ON_OBJECT_DATE?"":"Modified")."Propals", $max));
 
+	    // Spécifique ACOBAL : les utilisateurs peuvent voir toutes les commandes mais dans la box ils ne voient que les leurs.
+	    if ($user->rights->societe->client->voir) $user->rights->societe->client->voir=0;
+
     	if ($user->rights->propale->lire)
     	{
     		$sql = "SELECT s.nom as name, s.rowid as socid, s.code_client, s.logo, s.entity, s.email,";

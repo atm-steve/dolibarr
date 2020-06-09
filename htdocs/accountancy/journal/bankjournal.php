@@ -861,8 +861,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 				print "  " . $sep;
 				print '"' . $reflabel . '"' . $sep;
-				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+				print '"' . ($mt >= 0 ? price2num($mt) : '') . '"' . $sep;
+				print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"' . $sep;
 				print '"' . $journal . '"' . $sep;
 				print '"' . dol_string_nohtmltag($ref) . '"' . $sep;
 				print "\n";
@@ -902,8 +902,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 					}
 					print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
 					print '"' . $reflabel . '"' . $sep;
-					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+					print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"' . $sep;
+					print '"' . ($mt >= 0 ? price2num($mt) : '') . '"' . $sep;
 					print '"' . $journal . '"' . $sep;
 					print '"' . dol_string_nohtmltag($ref) . '"' . $sep;
 					print "\n";
@@ -924,8 +924,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 					print '"' . length_accountg($conf->global->ACCOUNTING_ACCOUNT_SUSPENSE) . '"' . $sep;
 					print "" . $sep;
 					print '"' . $reflabel . '"' . $sep;
-					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+					print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"' . $sep;
+					print '"' . ($mt >= 0 ? price2num($mt) : '') . '"' . $sep;
 					print '"' . $journal . '"' . $sep;
 					print '"' . dol_string_nohtmltag($ref) . '"' . $sep;
 					print "\n";
@@ -1088,8 +1088,8 @@ if (empty($action) || $action == 'view') {
 				print $reflabel;
 				print "</td>";
 				print '<td class="center">' . $val["type_payment"] . "</td>";
-				print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
-				print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt < 0 ? price2num(- $mt) : '') . "</td>";
 				print "</tr>";
 			}
 		}
@@ -1189,8 +1189,8 @@ if (empty($action) || $action == 'view') {
 					print "</td>";
 					print "<td>" . $reflabel . "</td>";
 					print '<td class="center">' . $val["type_payment"] . "</td>";
-					print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
-					print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
+					print '<td class="right nowraponall">' . ($mt < 0 ? price2num(- $mt) : '') . "</td>";
+					print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
 					print "</tr>";
 				}
 			}
@@ -1225,8 +1225,8 @@ if (empty($action) || $action == 'view') {
 					print "</td>";
 					print "<td>" . $reflabel . "</td>";
 					print '<td class="center">' . $val["type_payment"] . "</td>";
-					print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
-					print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
+					print '<td class="right nowraponall">' . ($mt < 0 ? price2num(- $mt) : '') . "</td>";
+					print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
 					print "</tr>";
 				}
 			}

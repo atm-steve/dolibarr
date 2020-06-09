@@ -370,23 +370,32 @@ class modProduct extends DolibarrModules
 		$this->import_entities_array[$r]=array();		// We define here only fields that use a different icon from the one defined in import_icon
 		$this->import_tables_array[$r]=array('p'=>MAIN_DB_PREFIX.'product','extra'=>MAIN_DB_PREFIX.'product_extrafields');
 		$this->import_tables_creator_array[$r]=array('p'=>'fk_user_author');	// Fields to store import user id
-		$this->import_fields_array[$r]=array(
+		$this->import_fields_array[$r]=array(//field order as per structure of table llx_product
 	        'p.ref' => "Ref*",
+            'p.datec' => 'DateCreation',
             'p.label' => "Label*",
-			'p.fk_product_type' => "Type*",
-			'p.tosell' => "OnSell*",
-			'p.tobuy' => "OnBuy*",
-			'p.description' => "Description",
-			'p.url' => "PublicUrl",
-			'p.customcode' => 'CustomCode',
+            'p.description' => "Description",
+            'p.note_public' => "PublicNote",//public note
+            'p.note' => "PrivateNote",//private note
+            'p.customcode' => 'CustomCode',
             'p.fk_country' => 'CountryCode',
+            'p.price' => "SellingPriceHT",//without
+            'p.price_min' => "MinPrice",
+            'p.price_ttc' => "SellingPriceTTC",//with tax
+            'p.price_min_ttc' => "SellingMinPriceTTC",
+            'p.price_base_type' => "PriceBaseType",//price base: with-tax (TTC) or without (HT) tax. Displays accordingly in Product card
+            'p.cost_price' => "CostPrice",
+            'p.tva_tx' => 'VATRate',
+            'p.tosell' => "OnSell*",
+            'p.tobuy' => "OnBuy*",
+            'p.fk_product_type' => "Type*",
+            'p.duration' => "Duration",///duration of service
+            'p.url' => "PublicUrl",
             'p.accountancy_code_sell' => "ProductAccountancySellCode",
             'p.accountancy_code_sell_intra' => "ProductAccountancySellIntraCode",
             'p.accountancy_code_sell_export' => "ProductAccountancySellExportCode",
             'p.accountancy_code_buy' => "ProductAccountancyBuyCode",
-			'p.note_public' => "NotePublic",
-			'p.note' => "NotePrivate",
-			'p.weight' => "Weight",
+            'p.weight' => "Weight",
             'p.weight_units' => "WeightUnits",
             'p.length' => "Length",
 			'p.length_units' => "LengthUnits",
@@ -398,16 +407,7 @@ class modProduct extends DolibarrModules
             'p.surface_units' => "SurfaceUnits",
             'p.volume' => "Volume",
 			'p.volume_units' => "VolumeUnits",
-			'p.duration' => "Duration", //duration of service
-			'p.finished' => 'Nature',
-			'p.price' => "SellingPriceHT", //without
-			'p.price_min' => "MinPrice",
-			'p.price_ttc' => "SellingPriceTTC", //with tax
-			'p.price_min_ttc' => "SellingMinPriceTTC",
-			'p.price_base_type' => "PriceBaseType", //price base: with-tax (TTC) or without (HT) tax. Displays accordingly in Product card
-			'p.tva_tx' => 'VATRate',
-			'p.datec' => 'DateCreation',
-			'p.cost_price' => "CostPrice",
+            'p.finished' => 'Nature',
 		);
         if (!empty($conf->stock->enabled)) {//if Stock module enabled
             $this->import_fields_array[$r] = array_merge($this->import_fields_array[$r], array(
@@ -417,9 +417,10 @@ class modProduct extends DolibarrModules
             ));
         }
 
+
         $this->import_convertvalue_array[$r] = array(
-        	    'p.weight_units' => array(
-	        	    	'rule' => 'fetchscalefromcodeunits', // Switch this to fetchidfromcodeunits when we will store id instead of scale in product table
+				'p.weight_units' => array(
+	        	    	'rule' => 'fetchscalefromcodeunits',			// Switch this to fetchidfromcodeunits when we will store id instead of scale in product table
 						'classfile' => '/core/class/cunits.class.php',
 						'class' => 'CUnits',
 						'method' => 'fetch',
@@ -472,7 +473,7 @@ class modProduct extends DolibarrModules
                     'class' => 'Ccountry',
                     'method' => 'fetch',
                     'dict' => 'DictionaryCountry'
-                )
+				)
 		);
 
 		if (!empty($conf->fournisseur->enabled) || !empty($conf->margin->enabled)) $this->import_fields_array[$r] = array_merge($this->import_fields_array[$r], array('p.cost_price'=>'CostPrice'));
@@ -684,10 +685,10 @@ class modProduct extends DolibarrModules
 			$this->import_convertvalue_array[$r] = array(
 			    'pr.fk_product'=>array('rule'=>'fetchidfromref', 'classfile'=>'/product/class/product.class.php', 'class'=>'Product', 'method'=>'fetch', 'element'=>'Product')
 			);
-			$this->import_examplevalues_array[$r] = array('pr.fk_product'=>"PRODUCT_REF or id:123456",
-				'pr.price_base_type'=>"HT (for excl tax) or TTC (for inc tax)", 'pr.price_level'=>"1",
-				'pr.price'=>"100", 'pr.price_ttc'=>"110",
-				'pr.price_min'=>"100", 'pr.price_min_ttc'=>"110",
+			$this->import_examplevalues_array[$r]=array('pr.fk_product'=>"PRODUCT_REF or id:123456",
+				'pr.price_base_type'=>"HT (for excl tax) or TTC (for inc tax)",'pr.price_level'=>"1",
+				'pr.price'=>"100",'pr.price_ttc'=>"110",
+				'pr.price_min'=>"100",'pr.price_min_ttc'=>"110",
 				'pr.tva_tx'=>'20',
 			    'pr.recuperableonly'=>'0',
 				'pr.date_price'=>'2013-04-10');

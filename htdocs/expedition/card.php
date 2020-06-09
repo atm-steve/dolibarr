@@ -1344,8 +1344,8 @@ if ($action == 'create')
 
 									$detail = '';
 									$detail .= $langs->trans("Batch").': '.$dbatch->batch;
-									$detail .= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
-									$detail .= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby, "day");
+									if(!empty($dbatch->sellby)) $detail.= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
+									if(!empty($dbatch->eatby)) $detail.= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby, "day");
 									$detail .= ' - '.$langs->trans("Qty").': '.$dbatch->qty;
 									$detail .= '<br>';
 									print $detail;

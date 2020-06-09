@@ -77,6 +77,8 @@ $search_user = trim(GETPOST("search_user"));
 $search_batch = trim(GETPOST("search_batch"));
 $search_qty = trim(GETPOST("search_qty"));
 $search_type_mouvement = GETPOST('search_type_mouvement', 'int');
+$search_price = trim(GETPOST('search_price', 'int'));
+$search_thirdparty = trim(GETPOST('search_thirdparty', 'int'));
 
 $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
 $page = GETPOST("page", 'int');
@@ -116,7 +118,8 @@ $arrayfields = array(
     'origin'=>array('label'=>$langs->trans("Origin"), 'checked'=>1),
 	'm.value'=>array('label'=>$langs->trans("Qty"), 'checked'=>1),
 	'm.price'=>array('label'=>$langs->trans("UnitPurchaseValue"), 'checked'=>0),
-	'm.fk_projet'=>array('label'=>$langs->trans('Project'), 'checked'=>0)
+	'm.fk_projet'=>array('label'=>$langs->trans('Project'), 'checked'=>0),
+    'thirdparty'=>array('label'=>$langs->trans('Company'), 'checked'=>1)
 		//'m.datec'=>array('label'=>$langs->trans("DateCreation"), 'checked'=>0, 'position'=>500),
     //'m.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500)
 );
@@ -165,6 +168,8 @@ if (empty($reshook))
 	    $search_user = "";
 	    $search_batch = "";
 	    $search_qty = '';
+	    $search_price='';
+	    $search_thirdparty='';
 	    $sall = "";
 		$toselect = '';
 	    $search_array_options = array();
@@ -440,7 +445,8 @@ $formother = new FormOther($db);
 $formproduct = new FormProduct($db);
 if (!empty($conf->projet->enabled)) $formproject = new FormProjets($db);
 
-$sql = "SELECT p.rowid, p.ref as product_ref, p.label as produit, p.tosell, p.tobuy, p.tobatch, p.fk_product_type as type, p.entity,";
+$sql = 'SELECT * FROM (';
+$sql .= "SELECT p.rowid, p.ref as product_ref, p.label as produit, p.tosell, p.tobuy, p.tobatch, p.fk_product_type as type, p.entity,";
 $sql .= " e.ref as warehouse_ref, e.rowid as entrepot_id, e.lieu, e.fk_parent, e.statut,";
 $sql .= " m.rowid as mid, m.value as qty, m.datem, m.fk_user_author, m.label, m.inventorycode, m.fk_origin, m.origintype,";
 $sql .= " m.batch, m.price,";
@@ -448,6 +454,17 @@ $sql .= " m.type_mouvement,";
 $sql .= " m.fk_projet as fk_project,";
 $sql .= " pl.rowid as lotid, pl.eatby, pl.sellby,";
 $sql .= " u.login, u.photo, u.lastname, u.firstname";
+$sql.= '
+,
+	CASE
+		WHEN m.fk_origin > 0 AND m.origintype = "commande" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'commande WHERE rowid = m.fk_origin)
+		WHEN m.fk_origin > 0 AND m.origintype = "shipping" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'expedition WHERE rowid = m.fk_origin)
+		WHEN m.fk_origin > 0 AND m.origintype = "facture" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'facture WHERE rowid = m.fk_origin)
+		WHEN m.fk_origin > 0 AND m.origintype = "order_supplier" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'commande_fournisseur WHERE rowid = m.fk_origin)
+		WHEN m.fk_origin > 0 AND m.origintype = "invoice_supplier" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'facture_fourn WHERE rowid = m.fk_origin)
+		WHEN m.fk_origin > 0 AND m.origintype = "project" THEN (SELECT fk_soc FROM ' . MAIN_DB_PREFIX . 'projet WHERE rowid = m.fk_origin)
+		ELSE NULL
+	END as fk_soc_origin ';
 // Add fields from extrafields
 if (!empty($extrafields->attributes[$object->table_element]['label'])) {
 	foreach ($extrafields->attributes[$object->table_element]['label'] as $key => $val) $sql .= ($extrafields->attributes[$object->table_element]['type'][$key] != 'separate' ? ", ef.".$key.' as options_'.$key : '');
@@ -480,6 +497,7 @@ if (!empty($search_user))          $sql .= natural_search('u.login', $search_use
 if (!empty($search_batch))         $sql .= natural_search('m.batch', $search_batch);
 if ($search_qty != '')				$sql .= natural_search('m.value', $search_qty, 1);
 if ($search_type_mouvement != '' && $search_type_mouvement != '-1')	$sql .= natural_search('m.type_mouvement', $search_type_mouvement, 2);
+if ($search_price !== '')			$sql.= natural_search('m.price', $search_price, 1);
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 // Add where from hooks
@@ -508,6 +526,9 @@ else
 {
 	$limit = 0;
 }
+$sql.= ' ) as result';
+$sql.= ' WHERE TRUE';
+if ($search_thirdparty > 0) $sql.= ' AND fk_soc_origin = ' . $search_thirdparty;
 
 //print $sql;
 
@@ -702,6 +723,8 @@ if ($resql)
     if ($search_warehouse > 0)   $param .= '&search_warehouse='.urlencode($search_warehouse);
     if ($search_user)            $param .= '&search_user='.urlencode($search_user);
     if ($idproduct > 0)          $param .= '&idproduct='.urlencode($idproduct);
+    if ($search_price !== '')    $param .= '&search_price='.$search_price;
+    if ($search_thirdparty > 0)  $param .= '&search_thirdparty'.$search_thirdparty;
     // Add $param from extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
@@ -885,9 +908,17 @@ if ($resql)
     	// fk_project
     	print '<td class="liste_titre" align="left">';
     	print '&nbsp; ';
+    	print '<td class="liste_titre left">';
+	    print '<input class="flat" type="text" size="4" name="search_price" value="'.dol_escape_htmltag($search_price).'">';
     	print '</td>';
     }
-
+	if (! empty($arrayfields['thirdparty']['checked']))
+	{
+		// Tiers
+		print '<td class="liste_titre right">';
+		print $form->select_company($search_thirdparty, 'search_thirdparty');
+		print '</td>';
+	}
 
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
@@ -965,6 +996,9 @@ if ($resql)
     if (!empty($arrayfields['m.fk_projet']['checked'])) {
         print_liste_field_titre($arrayfields['m.fk_projet']['label'], $_SERVER["PHP_SELF"], "m.fk_projet", "", $param, 'align="right"', $sortfield, $sortorder);
     }
+	if (! empty($arrayfields['thirdparty']['checked'])) {
+		print_liste_field_titre($arrayfields['thirdparty']['label'], $_SERVER["PHP_SELF"], 'fk_soc_origin', "", $param,'',$sortfield, $sortorder, 'right ');
+	}
 
     // Extra fields
     include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
@@ -1140,6 +1174,20 @@ if ($resql)
         	if ($objp->price != 0) print price($objp->price);
         	print '</td>';
         }
+	    if (! empty($arrayfields['thirdparty']['checked']))
+	    {
+		    // Thirdparty
+		    print '<td align="right">';
+		    if (! empty($objp->fk_soc_origin))
+		    {
+			    $company = new Societe($db);
+			    $company->fetch($objp->fk_soc_origin);
+
+			    print $company->getNomUrl(1);
+		    }
+
+		    print '</td>';
+	    }
         if (!empty($arrayfields['m.fk_projet']['checked']))
         {
         	// fk_project

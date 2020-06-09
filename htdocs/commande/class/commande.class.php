@@ -474,10 +474,18 @@ class Commande extends CommonOrder
 		}
 		$this->newref = $num;
 
+		// Spécifique ACOBAL
+		$statut_specifique = self::STATUS_VALIDATED;
+		$this->fetchObjectLinked();
+		foreach($this->linkedObjectsIds as $key=>$linkedObject){
+			if($key == "shipping") $statut_specifique = self::STATUS_ACCEPTED;
+		}
+		// Fin spécifique ACOBAL
+
 		// Validate
 		$sql = "UPDATE ".MAIN_DB_PREFIX."commande";
 		$sql.= " SET ref = '".$this->db->escape($num)."',";
-		$sql.= " fk_statut = ".self::STATUS_VALIDATED.",";
+		$sql.= " fk_statut = ".$statut_specifique.",";
 		$sql.= " date_valid='".$this->db->idate($now)."',";
 		$sql.= " fk_user_valid = ".$user->id;
 		$sql.= " WHERE rowid = ".$this->id;
@@ -573,6 +581,12 @@ class Commande extends CommonOrder
 		{
 			$this->ref = $num;
 			$this->statut = self::STATUS_VALIDATED;
+			// Spécifique ACOBAL
+			$this->fetchObjectLinked();
+			foreach($this->linkedObjectsIds as $key=>$linkedObject){
+				if($key == "shipping") $this->statut = self::STATUS_ACCEPTED;
+			}
+			// Fin spécifique ACOBAL
             $this->brouillon = 0;
 		}
 

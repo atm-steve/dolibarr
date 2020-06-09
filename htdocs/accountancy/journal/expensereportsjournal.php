@@ -452,8 +452,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 	            print '"' . $val["ref"] . '"' . $sep;
 	            print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 	            print '"' . dol_trunc($accountingaccount->label, 32) . '"' . $sep;
-	            print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-	            print '"' . ($mt < 0 ? price(- $mt) : '') . '"';
+	      print '"' . ($mt >= 0 ? price2num($mt) : '') . '"' . $sep;
+	      print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"';
 	            print "\n";
 	        }
 	    }
@@ -464,8 +464,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 	            print '"' . $val["ref"] . '"' . $sep;
 	            print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 	            print '"' . dol_trunc($langs->trans("VAT")) . '"' . $sep;
-	            print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-	            print '"' . ($mt < 0 ? price(- $mt) : '') . '"';
+	      print '"' . ($mt >= 0 ? price2num($mt) : '') . '"' . $sep;
+	      print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"';
 	            print "\n";
 	        }
 	    }
@@ -476,8 +476,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 	        print '"' . $val["ref"] . '"' . $sep;
 	        print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
 	        print '"' . dol_trunc($userstatic->name) . '"' . $sep;
-	        print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-	        print '"' . ($mt >= 0 ? price($mt) : '') . '"';
+	    print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"' . $sep;
+	    print '"' . ($mt >= 0 ? price2num($mt) : '') . '"';
 	    }
 	    print "\n";
 	}
@@ -591,8 +591,8 @@ if (empty($action) || $action == 'view') {
 				$userstatic->id = $tabuser[$key]['id'];
 				$userstatic->name = $tabuser[$key]['name'];
 				print "<td>".$userstatic->getNomUrl(0, 'user', 16).' - '.$accountingaccount->label."</td>";
-				print '<td class="right nowraponall">'.($mt >= 0 ? price($mt) : '')."</td>";
-				print '<td class="right nowraponall">'.($mt < 0 ? price(-$mt) : '')."</td>";
+				print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt < 0 ? price2num(- $mt) : '') . "</td>";
 				print "</tr>";
 			}
 		}
@@ -625,8 +625,8 @@ if (empty($action) || $action == 'view') {
 			else print $accountoshow;
 			print '</td>';
 			print "<td>".$userstatic->getNomUrl(0, 'user', 16).' - '.$langs->trans("SubledgerAccount")."</td>";
-			print '<td class="right nowraponall">'.($mt < 0 ? -price(-$mt) : '')."</td>";
-			print '<td class="right nowraponall">'.($mt >= 0 ? price($mt) : '')."</td>";
+			print '<td class="right nowraponall">' . ($mt < 0 ? - price2num(- $mt) : '') . "</td>";
+			print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
 			print "</tr>";
 		}
 
@@ -657,8 +657,8 @@ if (empty($action) || $action == 'view') {
 					print '</td>';
 					print "<td>" . $userstatic->getNomUrl(0, 'user', 16) . ' - ' . $langs->trans("VAT"). ' '.join(', ', $def_tva[$key][$k]).' %'.($numtax?' - Localtax '.$numtax:'');
 					print "</td>";
-					print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
-					print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt < 0 ? price2num(- $mt) : '') . "</td>";
 					print "</tr>";
 				}
 			}

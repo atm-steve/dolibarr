@@ -1111,7 +1111,10 @@ class pdf_crabe extends ModelePDFFactures
 					$curx = $this->marge_gauche;
 					$cury = $posy;
 
-					$posy = pdf_bank($pdf, $outputlangs, $curx, $cury, $account, 0, $default_font_size);
+					// Spécifique ACOBAL : taille de police pour le RIB
+					// $posy=pdf_bank($pdf, $outputlangs, $curx, $cury, $account, 0, $default_font_size);
+					$posy=pdf_bank($pdf, $outputlangs, $curx, $cury, $account, 0, 9);
+					// Fin spécifique ACOBAL
 
 					$posy += 2;
 				}

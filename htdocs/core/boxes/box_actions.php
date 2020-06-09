@@ -92,13 +92,15 @@ class box_actions extends ModeleBoxes
 			$sql.= " FROM ".MAIN_DB_PREFIX."c_actioncomm AS ta, ".MAIN_DB_PREFIX."actioncomm AS a";
 			if (! $user->rights->societe->client->voir && ! $user->socid) $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_commerciaux as sc ON a.fk_soc = sc.fk_soc";
 			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON a.fk_soc = s.rowid";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."actioncomm_resources as ar ON (ar.fk_actioncomm = a.id AND ar.element_type = 'user')";
 			$sql.= " WHERE a.fk_action = ta.id";
 			$sql.= " AND a.entity = ".$conf->entity;
 			$sql.= " AND a.percent >= 0 AND a.percent < 100";
 			if (! $user->rights->societe->client->voir && ! $user->socid) $sql.= " AND (a.fk_soc IS NULL OR sc.fk_user = " .$user->id . ")";
 			if($user->socid)   $sql.= " AND s.rowid = ".$user->socid;
-			if (! $user->rights->agenda->allactions->read) $sql.= " AND (a.fk_user_author = ".$user->id . " OR a.fk_user_action = ".$user->id . " OR a.fk_user_done = ".$user->id . ")";
-			$sql.= " ORDER BY a.datec DESC";
+			if (! $user->rights->agenda->allactions->read) $sql.= " AND ar.fk_element = ".$user->id . " ";
+			// if (! $user->rights->agenda->allactions->read) $sql.= " AND (a.fk_user_author = ".$user->id . " OR a.fk_user_action = ".$user->id . " OR a.fk_user_done = ".$user->id . ")";
+			$sql.= " GROUP BY a.id ORDER BY a.datec DESC";
 			$sql.= $this->db->plimit($max, 0);
 
 			dol_syslog("Box_actions::loadBox", LOG_DEBUG);

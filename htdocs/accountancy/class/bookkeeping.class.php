@@ -1106,8 +1106,18 @@ class BookKeeping extends CommonObject
 				$line->numero_compte = $obj->numero_compte;
 				$line->debit = $obj->debit;
 				$line->credit = $obj->credit;
-
-				$this->lines[] = $line;
+				if(empty($conf->global->ACCOUNTING_MANAGE_ZERO) && !empty($conf->global->ACCOUNTING_LENGTH_GACCOUNT)){
+					
+					$line->numero_compte_zero = length_accountg($obj->numero_compte);
+					if(!empty($this->lines[$line->numero_compte_zero])){
+						
+						$line->debit += $this->lines[$line->numero_compte_zero]->debit;
+						$line->credit += $this->lines[$line->numero_compte_zero]->credit;
+						
+					}
+				}
+				$num_account = empty ($line->numero_compte_zero)?$line->numero_compte:$line->numero_compte_zero;
+				$this->lines[$num_account] = $line;
 
 				$i++;
 			}
