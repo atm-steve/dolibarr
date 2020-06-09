@@ -642,6 +642,7 @@ if ($id > 0 || $ref)
 			print $form->textwithpicto($langs->trans("PhysicalStock"), $text_stock_options, 1);
 			print '</td>';
 
+			/* ------------- START ACOBAL ------------ */
 			// Spécifique ACOBAL : ne pas comptabiliser l'entrepôt "Z - ECHANTILLONS" (ID 8)
 			$stock_reel=0;
 			foreach($object->stock_warehouse as $kent=>$Tent){
@@ -649,7 +650,7 @@ if ($id > 0 || $ref)
 					$stock_reel+=$object->stock_warehouse[$kent]->real;
 				}
 			}
-			// Fin spécifique ACOBAL
+			/* -------------  END ACOBAL  ------------ */
 
 			print '<td>' . price2num($stock_reel, 'MS');
 			if ($object->seuil_stock_alerte != '' && ($object->stock_reel < $object->seuil_stock_alerte)) print ' '.img_warning($langs->trans("StockLowerThanLimit", $object->seuil_stock_alerte));

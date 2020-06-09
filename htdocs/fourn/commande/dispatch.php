@@ -712,7 +712,10 @@ if ($id > 0 || !empty($ref)) {
 							print '<!-- This is a up (may include discount or not depending on STOCK_EXCLUDE_DISCOUNT_FOR_PMP. will be used for PMP calculation) -->';
 							if (!empty($conf->global->SUPPLIER_ORDER_EDIT_BUYINGPRICE_DURING_RECEIPT)) // Not tested !
 							{
-							    print $langs->trans("CostPrice").': <input class="maxwidth75" name="pu' . $suffix . '" type="text" value="' . price2num($up_ht_disc, 'MU') . '">';
+								/* ------------- START ACOBAL ------------ */
+								// SPÉ ACOBAL : traduction "Prix de revient" au lieu de "Prix d’achat"
+								print $langs->trans("CostPrice").': <input class="maxwidth75" name="pu' . $suffix . '" type="text" value="' . price2num($up_ht_disc, 'MU') . '">';
+								/* -------------  END ACOBAL  ------------ */
 							}
 							else
 							{

@@ -125,6 +125,12 @@ if ($id > 0 || ! empty($ref))
 
 		if ($user->rights->commande->lire)
 		{
+
+			/* ------------- START ACOBAL ------------ */
+			// SPÉ ACOBAL :
+			//  - supprimé : c.rowid                            (du SELECT)
+			//  - ajouté   : cde.date_de_livraison              (au SELECT)
+			//  - ajouté   : llx_commandedet_extrafields as cde (au FROM)
 			$sql = "SELECT DISTINCT s.nom as name, s.rowid as socid, s.code_client, d.total_ht as total_ht, c.ref,";
 			$sql.= " c.ref_client,";
 			$sql.= " c.date_commande, c.fk_statut as statut, c.facture, c.rowid as commandeid, d.rowid, d.qty, cde.date_de_livraison";
@@ -133,6 +139,7 @@ if ($id > 0 || ! empty($ref))
 			$sql.= ", ".MAIN_DB_PREFIX."commande as c";
 			$sql.= ", ".MAIN_DB_PREFIX."commandedet as d";
 			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."commandedet_extrafields as cde  ON (cde.fk_object = d.rowid)";
+			/* -------------  END ACOBAL  ------------ */
 			if (!$user->rights->societe->client->voir && !$socid) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 			$sql.= " WHERE c.fk_soc = s.rowid";
 			$sql.= " AND c.entity IN (".getEntity('commande').")";
@@ -205,7 +212,10 @@ if ($id > 0 || ! empty($ref))
 				print_liste_field_titre("CustomerCode", $_SERVER["PHP_SELF"], "s.code_client", "", $option, '', $sortfield, $sortorder);
 				print_liste_field_titre("OrderDate", $_SERVER["PHP_SELF"], "c.date_commande", "", $option, 'align="center"', $sortfield, $sortorder);
 				print_liste_field_titre("Qty", $_SERVER["PHP_SELF"], "d.qty", "", $option, 'align="center"', $sortfield, $sortorder);
+
+				/* ------------- START ACOBAL ------------ */
 				print_liste_field_titre("Date de livraison", $_SERVER["PHP_SELF"], "cde.date_de_livraison", "", $option, 'align="center"', $sortfield, $sortorder);
+				/* -------------  END ACOBAL  ------------ */
 				print_liste_field_titre("AmountHT", $_SERVER["PHP_SELF"], "c.total_ht", "", $option, 'align="right"', $sortfield, $sortorder);
 				print_liste_field_titre("Status", $_SERVER["PHP_SELF"], "c.fk_statut", "", $option, 'align="right"', $sortfield, $sortorder);
 				print "</tr>\n";
@@ -233,17 +243,30 @@ if ($id > 0 || ! empty($ref))
 						print '<td class="center">';
 						print dol_print_date($db->jdate($objp->date_commande), 'dayhour')."</td>";
 						print  '<td class="center">'.$objp->qty."</td>\n";
+
+
+						/* ------------- START ACOBAL ------------ */
+						// SPÉ ACOBAL : colonne "date de commande"
 						print '<td class="center">';
 						print dol_print_date($db->jdate($objp->date_de_livraison), 'dayhour')."</td>";
+						/* -------------  END ACOBAL  ------------ */
+
+
 	                    print '<td align="right">'.price($objp->total_ht)."</td>\n";
+
+
+						/* ------------- START ACOBAL ------------ */
+						// SPÉ ACOBAL : colonne "État" calculée avec la fonction
+						//              spécifique getExpLinesStatus() (sauf si commande annulée)
 	                    if($objp->statut != Commande::STATUS_CANCELED){
 							 $status = getExpLinesStatus($objp); // récupère les ligne d'expé liées
 						}else {
 							 $status = $orderstatic->LibStatut($objp->statut,$objp->facture,5);
 						}
-
-
 						print '<td align="right">'.$status.'</td>';
+						/* -------------  END ACOBAL  ------------ */
+
+
 						print "</tr>\n";
 						$i++;
 					}
@@ -253,7 +276,10 @@ if ($id > 0 || ! empty($ref))
                 else print '<td class="left">'.$langs->trans("Totalforthispage").'</td>';
                 print '<td colspan="3"></td>';
                 print '<td class="center">'.$total_qty.'</td>';
-                print '<td></td>';
+				/* ------------- START ACOBAL ------------ */
+				// SPÉ ACOBAL : cellule vide pour le total de la colonne 'date de livraison'
+				print '<td></td>';
+				/* -------------  END ACOBAL  ------------ */
                 print '<td align="right">'.price($total_ht).'</td>';
                 print '<td></td>';
                 print "</table>";
@@ -269,6 +295,11 @@ if ($id > 0 || ! empty($ref))
 	dol_print_error();
 }
 
+/* ------------- START ACOBAL ------------ */
+/**
+ * @param $objsql
+ * @return string  'À livrer', 'En cours de préparation', 'En cours de livraison' ou 'Livrée'
+ */
 function getExpLinesStatus($objsql)
 {
     global $db, $langs;
@@ -318,6 +349,7 @@ function getExpLinesStatus($objsql)
 
     return $status;
 }
+/* -------------  END ACOBAL  ------------ */
 
 // End of page
 llxFooter();

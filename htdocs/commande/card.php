@@ -2563,9 +2563,15 @@ if ($action == 'create' && $usercancreate)
 					print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=validate">'.$langs->trans('Validate').'</a>';
 				}
 				// Edit
+
+				/* ------------- START ACOBAL ------------ */
+				// SPÉ ACOBAL : pouvoir modifier la commande si elle est au statut 2 (= "en cours" chez Acobal)
+				//              (ce n’est pas le cas en standard)
 				if (($object->statut == Commande::STATUS_VALIDATED || $object->statut == Commande::STATUS_ACCEPTED) && $usercancreate) {
-					print '<div class="inline-block divButAction"><a class="butAction" href="card.php?id=' . $object->id . '&amp;action=modif">' . $langs->trans('Modify') . '</a></div>';
+					print '<a class="butAction" href="card.php?id=' . $object->id . '&amp;action=modif">' . $langs->trans('Modify') . '</a>';
 				}
+				/* -------------  END ACOBAL  ------------ */
+
 				// Create event
 				/*if ($conf->agenda->enabled && ! empty($conf->global->MAIN_ADD_EVENT_ON_ELEMENT_CARD))
 				{

@@ -370,6 +370,9 @@ class modProduct extends DolibarrModules
 		$this->import_entities_array[$r]=array();		// We define here only fields that use a different icon from the one defined in import_icon
 		$this->import_tables_array[$r]=array('p'=>MAIN_DB_PREFIX.'product','extra'=>MAIN_DB_PREFIX.'product_extrafields');
 		$this->import_tables_creator_array[$r]=array('p'=>'fk_user_author');	// Fields to store import user id
+
+		/* ------------- START ACOBAL ------------ */
+		// SPÉ ACOBAL : ordre des colonnes pour l’import
 		$this->import_fields_array[$r]=array(//field order as per structure of table llx_product
 	        'p.ref' => "Ref*",
             'p.datec' => 'DateCreation',
@@ -409,6 +412,8 @@ class modProduct extends DolibarrModules
 			'p.volume_units' => "VolumeUnits",
             'p.finished' => 'Nature',
 		);
+		/* -------------  END ACOBAL  ------------ */
+
         if (!empty($conf->stock->enabled)) {//if Stock module enabled
             $this->import_fields_array[$r] = array_merge($this->import_fields_array[$r], array(
                 'p.seuil_stock_alerte' => 'StockLimit', //lower limit for warning
