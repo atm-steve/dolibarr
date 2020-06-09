@@ -61,8 +61,10 @@ if ($action == 'confirm_split' && GETPOST("confirm") == 'yes')
 	//if ($user->rights->societe->creer)
 	//if ($user->rights->facture->creer)
 
-	$amount_ttc_1=GETPOST('amount_ttc_1');
-	$amount_ttc_2=GETPOST('amount_ttc_2');
+	$amount_ttc_1 = GETPOST('amount_ttc_1');
+	$amount_ttc_1 = price2num($amount_ttc_1);
+	$amount_ttc_2 = GETPOST('amount_ttc_2');
+	$amount_ttc_2 = price2num($amount_ttc_2);
 
 	$error=0;
 	$remid=GETPOST("remid")?GETPOST("remid"):0;
@@ -119,7 +121,7 @@ if ($action == 'confirm_split' && GETPOST("confirm") == 'yes')
 		$newdiscount2->datec=$discount->datec;
 		$newdiscount1->tva_tx=$discount->tva_tx;
 		$newdiscount2->tva_tx=$discount->tva_tx;
-		$newdiscount1->amount_ttc=$_POST["amount_ttc_1"];
+		$newdiscount1->amount_ttc=$amount_ttc_1;
 		$newdiscount2->amount_ttc=price2num($discount->amount_ttc-$newdiscount1->amount_ttc);
 		$newdiscount1->amount_ht=price2num($newdiscount1->amount_ttc/(1+$newdiscount1->tva_tx/100),'MT');
 		$newdiscount2->amount_ht=price2num($newdiscount2->amount_ttc/(1+$newdiscount2->tva_tx/100),'MT');

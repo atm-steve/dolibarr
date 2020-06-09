@@ -1311,7 +1311,7 @@ class CommandeFournisseur extends CommonOrder
                         false,
 	                    $this->lines[$i]->date_start,
                         $this->lines[$i]->date_end,
-                        0,
+                        $this->lines[$i]->array_options,
                         $this->lines[$i]->fk_unit
 	                );
 	                if ($result < 0)
@@ -1418,6 +1418,10 @@ class CommandeFournisseur extends CommonOrder
         $error=0;
 
 		$this->db->begin();
+
+        // get extrafields so they will be clone
+        foreach($this->lines as $line)
+            $line->fetch_optionals($line->rowid);
 
 		// Load source object
 		$objFrom = clone $this;
@@ -1537,7 +1541,7 @@ class CommandeFournisseur extends CommonOrder
 			$desc=trim($desc);
 
 			// Check parameters
-			if ($qty < 1 && ! $fk_product)
+			if ($qty < 0 && ! $fk_product)
 			{
 				$this->error=$langs->trans("ErrorFieldRequired",$langs->trans("Product"));
 				return -1;
@@ -3442,6 +3446,8 @@ class CommandeFournisseurLigne extends CommonOrderLine
         global $conf,$user;
 
         $error=0;
+
+        $this->db->begin();
 
         // Mise a jour ligne en base
         $sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element." SET";

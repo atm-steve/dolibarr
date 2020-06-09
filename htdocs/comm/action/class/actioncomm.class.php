@@ -572,6 +572,7 @@ class ActionComm extends CommonObject
 
         $sql = "SELECT a.id,";
         $sql.= " a.id as ref,";
+		$sql.= " a.entity,";
         $sql.= " a.ref_ext,";
         $sql.= " a.datep,";
         $sql.= " a.datep2,";
@@ -608,6 +609,7 @@ class ActionComm extends CommonObject
                 $obj = $this->db->fetch_object($resql);
 
                 $this->id         = $obj->id;
+				$this->entity     = $obj->entity;
                 $this->ref        = $obj->ref;
                 $this->ref_ext    = $obj->ref_ext;
 
@@ -774,7 +776,7 @@ class ActionComm extends CommonObject
 
         dol_syslog(get_class($this)."::delete", LOG_DEBUG);
         $res=$this->db->query($sql);
-        if ($res < 0) {
+        if (!$res) {
         	$this->error=$this->db->lasterror();
         	$error++;
         }
@@ -785,7 +787,7 @@ class ActionComm extends CommonObject
 
 	        dol_syslog(get_class($this)."::delete", LOG_DEBUG);
 	        $res=$this->db->query($sql);
-	        if ($res < 0) {
+	        if (!$res) {
 	        	$this->error=$this->db->lasterror();
 	        	$error++;
 	        }
@@ -1262,10 +1264,12 @@ class ActionComm extends CommonObject
 
 		if (! empty($conf->dol_no_mouse_hover)) $notooltip=1;   // Force disable tooltips
 
-                if ((!$user->rights->agenda->allactions->read && $this->author->id != $user->id) || (!$user->rights->agenda->myactions->read && $this->author->id == $user->id))
-                    $option = 'nolink';
+		if ((!$user->rights->agenda->allactions->read && $this->authorid != $user->id) || (!$user->rights->agenda->myactions->read && $this->authorid == $user->id))
+		{
+            $option = 'nolink';
+		}
 
-                $label = $this->label;
+        $label = $this->label;
 		if (empty($label)) $label=$this->libelle;   // For backward compatibility
 
 		$result='';

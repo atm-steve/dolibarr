@@ -56,7 +56,7 @@ if ($action == 'delete')
                 $ret=dol_delete_file($file, 1);
                 if ($ret) setEventMessages($langs->trans("FileWasRemoved", GETPOST('urlfile')), null, 'mesgs');
                 else setEventMessages($langs->trans("ErrorFailToDeleteFile", GETPOST('urlfile')), null, 'errors');
-                $action='';
+
         }
         else
         {
@@ -65,7 +65,7 @@ if ($action == 'delete')
                 if ($ret) setEventMessages($langs->trans("FileWasRemoved", GETPOST('urlfile')), null, 'mesgs');
                 else setEventMessages($langs->trans("ErrorFailToDeleteFile", GETPOST('urlfile')), null, 'errors');
         }
-
+    $action='';
 }
 
 
@@ -124,7 +124,7 @@ jQuery(document).ready(function() {
 print load_fiche_titre($langs->trans("Backup"),'','title_setup');
 //print_barre_liste($langs->trans("Backup"), '', '', '', '', '', $langs->trans("BackupDesc",DOL_DATA_ROOT), 0, 0, 'title_setup');
 
-print '<div class="center">';
+print '<div class="center opacitymedium">';
 print $langs->trans("BackupDesc",DOL_DATA_ROOT);
 print '</div>';
 print '<br>';
@@ -245,6 +245,14 @@ print '<tr '.$bc[false].'><td style="padding-left: 8px">';
 				<option value="ORACLE">ORACLE</option>
 				<option value="POSTGRESQL">POSTGRESQL</option>
 			</select> <br>
+				<input type="checkbox" name="use_mysql_quick_param" value="yes" id="checkbox_use_quick" />
+				<label for="checkbox_use_quick">
+					<?php echo $form->textwithpicto(
+						$langs->trans('ExportUseMySQLQuickParameter'),
+						$langs->trans('ExportUseMySQLQuickParameterHelp')
+					); ?>
+				</label>
+				<br/>
 			<!-- <input type="checkbox" name="drop_database" value="yes"
 				id="checkbox_drop_database" /> <label for="checkbox_drop_database"><?php echo $langs->trans("AddDropDatabase"); ?></label>
 			-->
@@ -457,8 +465,10 @@ print "\n";
 
 
 <br>
-<div align="center"><input type="submit" class="button"
-	value="<?php echo $langs->trans("GenerateBackup") ?>" id="buttonGo" /><br>
+<div class="center">
+	<input type="submit" class="button reposition" value="<?php echo $langs->trans("GenerateBackup") ?>" id="buttonGo">
+	<input type="hidden" name="page_y" value="<?php echo GETPOST('page_y', 'int'); ?>">
+	<br>
 <br>
 
 <?php
@@ -470,7 +480,7 @@ if (! empty($_SESSION["commandbackuplastdone"]))
 
     //print $paramclear;
 
-    // Now run command and show result
+    // Now show result
     print '<b>'.$langs->trans("BackupResult").':</b> ';
 	print $_SESSION["commandbackupresult"];
 
@@ -586,7 +596,7 @@ print "\n";
 
 ?>
 <br>
-<div align="center"><input type="submit" class="button"
+<div class="center"><input type="submit" class="button reposition"
 	value="<?php echo $langs->trans("GenerateBackup") ?>" id="buttonGo" /><br>
 <br>
 </div>

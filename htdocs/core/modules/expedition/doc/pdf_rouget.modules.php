@@ -29,6 +29,7 @@
 require_once DOL_DOCUMENT_ROOT.'/core/modules/expedition/modules_expedition.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/product.lib.php';
 
 
 /**
@@ -153,6 +154,8 @@ class pdf_rouget extends ModelePdfExpedition
 			$this->posxpuht=$this->page_largeur - $this->marge_droite - 40;
 			$this->posxtotalht=$this->page_largeur - $this->marge_droite - 20;
 		}
+
+		if(!empty($conf->global->SHIPPING_PDF_HIDE_WEIGHT_AND_VOLUME)) $this->posxweightvol = $this->posxqtyordered;
 
 		$this->posxpicture=$this->posxweightvol - (empty($conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH)?20:$conf->global->MAIN_DOCUMENTS_WITH_PICTURE_WIDTH);	// width of images
 

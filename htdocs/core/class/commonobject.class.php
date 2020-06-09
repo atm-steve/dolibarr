@@ -11,7 +11,7 @@
  * Copyright (C) 2016      Bahfir abbes         <dolipar@dolipar.org>
  * Copyright (C) 2017      ATM Consulting       <support@atm-consulting.fr>
  * Copyright (C) 2017-2019 Nicolas ZABOURI      <info@inovea-conseil.com>
- * Copyright (C) 2017      Rui Strecht          <rui.strecht@aliartalentos.com>
+ * Copyright (C) 2017      Rui Strecht		    <rui.strecht@aliartalentos.com>
  * Copyright (C) 2018      Frédéric France      <frederic.france@netlogic.fr>
  * Copyright (C) 2018      Josep Lluís Amador   <joseplluis@lliuretic.cat>
  *
@@ -53,7 +53,7 @@ abstract class CommonObject
 
 	/**
 	 * @var string 		Error string
-	 * @see             errors
+	 * @see             $errors
 	 */
 	public $error;
 
@@ -509,7 +509,7 @@ abstract class CommonObject
 			$this->country     =$tmparray['label'];
 		}
 
-        if ($withregion && $this->state_id && (empty($this->state_code) || empty($this->state) || empty($this->region) || empty($this->region_cpde)))
+        if ($withregion && $this->state_id && (empty($this->state_code) || empty($this->state) || empty($this->region) || empty($this->region_code)))
     	{
     		require_once DOL_DOCUMENT_ROOT .'/core/lib/company.lib.php';
     		$tmparray=getState($this->state_id,'all',0,1);
@@ -1816,7 +1816,7 @@ abstract class CommonObject
 	 */
 	function setMulticurrencyCode($code)
 	{
-		dol_syslog(get_class($this).'::setMulticurrencyCode('.$id.')');
+		dol_syslog(get_class($this).'::setMulticurrencyCode('.$code.')');
 		if ($this->statut >= 0 || $this->element == 'societe')
 		{
 			$fieldname = 'multicurrency_code';
@@ -1858,7 +1858,7 @@ abstract class CommonObject
 	 */
 	function setMulticurrencyRate($rate, $mode=1)
 	{
-		dol_syslog(get_class($this).'::setMulticurrencyRate('.$id.')');
+		dol_syslog(get_class($this).'::setMulticurrencyRate('.$rate.','.$mode.')');
 		if ($this->statut >= 0 || $this->element == 'societe')
 		{
 			$fieldname = 'multicurrency_tx';
@@ -1876,8 +1876,14 @@ abstract class CommonObject
 				{
 					foreach ($this->lines as &$line)
 					{
+						// Amounts in company currency will be recalculated
 						if($mode == 1) {
 							$line->subprice = 0;
+						}
+
+						// Amounts in foreign currency will be recalculated
+						if($mode == 2) {
+							$line->multicurrency_subprice = 0;
 						}
 
 						switch ($this->element) {
@@ -5957,6 +5963,12 @@ abstract class CommonObject
 			$type='link';
 			$param['options']=array($reg[1].':'.$reg[2]=>$reg[1].':'.$reg[2]);
 		}
+        elseif(preg_match('/^sellist:(.*):(.*):(.*):(.*)/i', $val['type'], $reg)) {
+            $param['options'] = array($reg[1] . ':' . $reg[2] . ':' . $reg[3] . ':' . $reg[4] => 'N');
+            $type = 'sellist';
+        }
+
+
 		$langfile=$val['langfile'];
 		$list=$val['list'];
 		$help=$val['help'];
@@ -6289,7 +6301,7 @@ abstract class CommonObject
 	 * @param 	array       $params         Optional parameters. Example: array('style'=>'class="oddeven"', 'colspan'=>$colspan)
 	 * @param 	string      $keysuffix      Suffix string to add after name and id of field (can be used to avoid duplicate names)
 	 * @param 	string      $keyprefix      Prefix string to add before name and id of field (can be used to avoid duplicate names)
-	 * @param	string		$onetrtd		All fields in same tr td
+	 * @param	string		$onetrtd		All fields in same tr td (TODO field not used ?)
 	 * @return 	string
 	 */
 	function showOptionals($extrafields, $mode='view', $params=null, $keysuffix='', $keyprefix='', $onetrtd=0)
@@ -6386,10 +6398,7 @@ abstract class CommonObject
 
 					$out .= '<tr id="'.$html_id.'" '.$csstyle.' class="'.$class.$this->element.'_extras_'.$key.'" '.$domData.' >';
 
-					if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0)
-					{
-						if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0) { $colspan='0'; }
-					}
+					if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && ($e % 2) == 0) { $colspan='0'; }
 
 					if ($action == 'selectlines') { $colspan++; }
 

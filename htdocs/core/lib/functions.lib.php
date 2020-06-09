@@ -1,6 +1,4 @@
 <?php
-use PhpOffice\PhpSpreadsheet\NamedRange;
-
 /* Copyright (C) 2000-2007	Rodolphe Quiedeville			<rodolphe@quiedeville.org>
  * Copyright (C) 2003		Jean-Louis Bergamo			<jlb@j1b.org>
  * Copyright (C) 2004-2018	Laurent Destailleur			<eldy@users.sourceforge.net>
@@ -968,11 +966,15 @@ function dol_escape_js($stringtoescape, $mode=0, $noescapebackslashn=0)
  *  @param      string		$stringtoescape		String to escape
  *  @param		int			$keepb				1=Preserve b tags (otherwise, remove them)
  *  @param      int         $keepn              1=Preserve \r\n strings (otherwise, replace them with escaped value). Set to 1 when escaping for a <textarea>.
+ *  @param		string		$keepmoretags		'' or 'common' or list of tags
  *  @return     string     				 		Escaped string
  *  @see		dol_string_nohtmltag, dol_string_nospecial, dol_string_unaccent
  */
-function dol_escape_htmltag($stringtoescape, $keepb=0, $keepn=0)
+function dol_escape_htmltag($stringtoescape, $keepb = 0, $keepn = 0, $keepmoretags = '')
 {
+	if ($keepmoretags == 'common') $keepmoretags = 'html,body,a,em,i,u,ul,li,br,div,img,font,p,span,strong,table,tr,td,th,tbody';
+	// TODO Implement $keepmoretags
+
 	// escape quotes and backslashes, newlines, etc.
 	$tmp=html_entity_decode($stringtoescape, ENT_COMPAT, 'UTF-8');		// TODO Use htmlspecialchars_decode instead, that make only required change for html tags
 	if (! $keepb) $tmp=strtr($tmp, array("<b>"=>'','</b>'=>''));
@@ -1432,6 +1434,7 @@ function dol_banner_tab($object, $paramid, $morehtml='', $shownav=1, $fieldid='r
 					$fileimage = $file.'_preview.png';              // If PDF has 1 page
 					$fileimagebis = $file.'_preview-0.png';         // If PDF has more than one page
 					$relativepathimage = $relativepath.'_preview.png';
+
 
 					// Si fichier PDF existe
 					if (file_exists($file))
@@ -4520,7 +4523,6 @@ function price2num($amount,$rounding='',$alreadysqlnb=0)
 	return $amount;
 }
 
-
 /**
  * Output a dimension with best unit
  *
@@ -5541,7 +5543,7 @@ function dol_nl2br($stringtoencode,$nl2brmode=0,$forxml=false)
 
 /**
  *	This function is called to encode a string into a HTML string but differs from htmlentities because
- * 	a detection is done before to see if text is already HTML or not. Also, all entities but &,<,> are converted.
+ * 	a detection is done before to see if text is already HTML or not. Also, all entities but &,<,>," are converted.
  *  This permits to encode special chars to entities with no double encoding for already encoded HTML strings.
  * 	This function also remove last EOL or BR if $removelasteolbr=1 (default).
  *  For PDF usage, you can show text by 2 ways:
@@ -7941,4 +7943,25 @@ function isAFileWithExecutableContent($filename)
         return true;
     }
     return false;
+}
+
+/**
+ * Return the value of token currently saved into session with name 'newtoken'.
+ * This token must be send by any POST as it will be used by next page for comparison with value in session.
+ *
+ * @return  string
+ */
+function newToken()
+{
+	return $_SESSION['newtoken'];
+}
+
+/**
+ * Return the value of token currently saved into session with name 'token'.
+ *
+ * @return  string
+ */
+function currentToken()
+{
+	return $_SESSION['token'];
 }
