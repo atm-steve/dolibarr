@@ -1581,7 +1581,9 @@ else
 
 				if ($action != 'editline' || GETPOST('rowid') != $objp->rowid)
 				{
-					print '<tr class="tdtop oddeven">';
+				    $moreparam = '';
+				    if (! empty($conf->global->CONTRACT_HIDE_CLOSED_SERVICES_BY_DEFAULT) && $objp->statut == ContratLigne::STATUS_CLOSED && $action != 'showclosedlines') $moreparam = 'style="display: none;"';
+					print '<tr class="tdtop oddeven" '.$moreparam.'>';
 					// Label
 					if ($objp->fk_product > 0)
 					{
@@ -1677,7 +1679,7 @@ else
 							$colspan = 7;
 						}
 
-						print '<tr class="oddeven">';
+						print '<tr class="oddeven" '.$moreparam.'>';
 						print '<td colspan="'.$colspan.'">';
 
 						// Date planned
@@ -1714,7 +1716,7 @@ else
 					if (is_array($extralabelslines) && count($extralabelslines)>0) {
 						$line = new ContratLigne($db);
 						$line->fetch_optionals($objp->rowid);
-						print $line->showOptionals($extrafieldsline, 'view', array('style'=>'class="oddeven"', 'colspan'=>$colspan), '', '', empty($conf->global->MAIN_EXTRAFIELDS_IN_ONE_TD)?0:1);
+						print $line->showOptionals($extrafieldsline, 'view', array('class'=>'oddeven','style'=>$moreparam, 'colspan'=>$colspan), '', '', empty($conf->global->MAIN_EXTRAFIELDS_IN_ONE_TD)?0:1);
 					}
 				}
 				// Ligne en mode update
@@ -1801,7 +1803,9 @@ else
 
 			if ($object->statut > 0)
 			{
-				print '<tr class="oddeven">';
+                $moreparam = '';
+                if (! empty($conf->global->CONTRACT_HIDE_CLOSED_SERVICES_BY_DEFAULT) && $object->lines[$cursorline-1]->statut == ContratLigne::STATUS_CLOSED && $action != 'showclosedlines') $moreparam = 'style="display: none;"';
+				print '<tr class="oddeven" '.$moreparam.'>';
 				print '<td class="tdhrthin" colspan="'.($conf->margin->enabled?7:6).'"><hr class="opacitymedium tdhrthin"></td>';
 				print "</tr>\n";
 			}
@@ -1879,7 +1883,7 @@ else
 			{
 				print '<table class="notopnoleftnoright tableforservicepart2'.($cursorline < $nbofservices ?' boxtablenobottom':'').'" width="100%">';
 
-				print '<tr class="oddeven">';
+				print '<tr class="oddeven" '.$moreparam.'>';
 				print '<td>'.$langs->trans("ServiceStatus").': '.$object->lines[$cursorline-1]->getLibStatut(4).'</td>';
 				print '<td width="30" class="right">';
 				if ($user->societe_id == 0)
@@ -1906,7 +1910,7 @@ else
 				print '</td>';
 				print "</tr>\n";
 
-				print '<tr class="oddeven">';
+				print '<tr class="oddeven" '.$moreparam.'>';
 
 				print '<td>';
 				// Si pas encore active
@@ -2166,7 +2170,11 @@ else
 					//	print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans("CloseRefusedBecauseOneServiceActive").'">'.$langs->trans("Close").'</a></div>';
 					//}
 				}
-
+                if (! empty($conf->global->CONTRACT_HIDE_CLOSED_SERVICES_BY_DEFAULT) && $object->nbofservicesclosed > 0)
+                {
+                    if($action == 'showclosedlines') print '<div class="inline-block divButAction"><a class="butAction" id="btnhideclosedlines" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=hideclosedlines">'.$langs->trans("HideClosedServices").'</a></div>';
+                    else print '<div class="inline-block divButAction"><a class="butAction" id="btnshowclosedlines" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=showclosedlines">'.$langs->trans("ShowClosedServices").'</a></div>';
+                }
 				// On peut supprimer entite si
 				// - Droit de creer + mode brouillon (erreur creation)
 				// - Droit de supprimer
