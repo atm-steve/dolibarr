@@ -210,7 +210,17 @@ if ($result > 0)
     */
 
 	// Amount
-	print '<tr><td colspan="2">'.$langs->trans('Amount').'</td><td colspan="3">'.price($object->montant, '', $langs, 0, 0, -1, $conf->currency).'</td></tr>';
+	print '<tr><td colspan="2">'.$langs->trans('Amount').'</td><td colspan="3">'.price($object->amount, '', $langs, 0, 0, -1, $conf->currency).'</td></tr>';
+
+	// Amount (multicurrency)
+	if (!empty($conf->multicurrency->enabled) && !empty($conf->banque->enabled)) {
+		$targetAccount = new Account($db);
+		$resfetch = $targetAccount->fetch($object->fk_account);
+		if ($resfetch > 0) {
+			$currencyCode = $targetAccount->currency_code;
+			print '<tr><td colspan="2">'.$langs->trans('Amount').' (' . $currencyCode . ')</td><td colspan="3">'.price($object->multicurrency_amount, '', $langs, 0, 0, -1, $currencyCode).'</td></tr>';
+		}
+	}
 
 	if (! empty($conf->global->BILL_ADD_PAYMENT_VALIDATION))
 	{
@@ -280,8 +290,15 @@ if ($result > 0)
 		print '<td>'.$langs->trans('Ref').'</td>';
 		print '<td>'.$langs->trans('RefSupplier').'</td>';
 		print '<td>'.$langs->trans('Company').'</td>';
-		print '<td class="right">'.$langs->trans('ExpectedToPay').'</td>';
-		print '<td class="right">'.$langs->trans('PayedByThisPayment').'</td>';
+		if (!empty($conf->multicurrency->enabled)) {
+			print '<td class="right">'.$langs->trans('ExpectedToPay').'</td>';
+			print '<td class="right">'.$langs->trans('ExpectedToPay').' ('. $currencyCode .')</td>';
+			print '<td class="right">'.$langs->trans('PayedByThisPayment').'</td>';
+			print '<td class="right">'.$langs->trans('PayedByThisPayment').' ('. $currencyCode .')</td>';
+		} else {
+			print '<td class="right">'.$langs->trans('ExpectedToPay').'</td>';
+			print '<td class="right">'.$langs->trans('PayedByThisPayment').'</td>';
+		}
 		print '<td class="right">'.$langs->trans('Status').'</td>';
 		print "</tr>\n";
 
@@ -295,6 +312,9 @@ if ($result > 0)
 
 				$facturestatic->id=$objp->facid;
 				$facturestatic->ref=($objp->ref?$objp->ref:$objp->rowid);
+				if (!empty($conf->multicurrency->enabled) && $facturestatic->fetch($facturestatic->id) <= 0) {
+					setEventMessages('ErrorRecordNotFound', array(), 'errors');
+				}
 
 				print '<tr class="oddeven">';
 				// Ref
@@ -305,10 +325,21 @@ if ($result > 0)
 				print '<td>'.$objp->ref_supplier."</td>\n";
 				// Third party
 				print '<td><a href="'.DOL_URL_ROOT.'/fourn/card.php?socid='.$objp->socid.'">'.img_object($langs->trans('ShowCompany'), 'company').' '.$objp->name.'</a></td>';
-				// Expected to pay
-				print '<td class="right">'.price($objp->total_ttc).'</td>';
-				// Payed
-				print '<td class="right">'.price($objp->amount).'</td>';
+				if (!empty($conf->multicurrency->enabled)) {
+					// Expected (main currency)
+					print '<td class="right">'.price($objp->total_ttc).'</td>';
+					// Expected (multicurrency)
+					print '<td class="right">'.price($objp->total_ttc * $facturestatic->multicurrency_tx).'</td>';
+					// Payed (main currency)
+					print '<td class="right">'.price($objp->amount).'</td>';
+					// Payed (multicurrency)
+					print '<td class="right">'.price($objp->amount * $facturestatic->multicurrency_tx).'</td>';
+				} else {
+					// Expected to pay
+					print '<td class="right">'.price($objp->total_ttc).'</td>';
+					// Payed
+					print '<td class="right">'.price($objp->amount).'</td>';
+				}
 				// Status
 				print '<td class="right">'.$facturestatic->LibStatut($objp->paye, $objp->fk_statut, 6, 1).'</td>';
 				print "</tr>\n";
