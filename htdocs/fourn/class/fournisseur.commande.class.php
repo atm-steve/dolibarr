@@ -1881,7 +1881,6 @@ class CommandeFournisseur extends CommonOrder
 					if ($result < 0)
                     {
                         $error++;
-                        return -1;
                     }
 					// End call triggers
                 }
@@ -1989,9 +1988,21 @@ class CommandeFournisseur extends CommonOrder
             {
             	$this->errors[] = 'ErrorWhenRunningTrigger';
             	dol_syslog(get_class($this)."::delete ".$this->error, LOG_ERR);
+            	$this->db->rollback();
             	return -1;
             }
             // End call triggers
+        }
+
+        $main = MAIN_DB_PREFIX . 'commande_fournisseurdet';
+        $ef = $main . "_extrafields";
+        $sql = "DELETE FROM $ef WHERE fk_object IN (SELECT rowid FROM $main WHERE fk_commande = " . $this->id . ")";
+        dol_syslog(get_class($this)."::delete extrafields lines", LOG_DEBUG);
+        if (!$this->db->query($sql))
+        {
+            $this->error = $this->db->lasterror();
+            $this->errors[] = $this->db->lasterror();
+            $error++;
         }
 
         $sql = "DELETE FROM ".MAIN_DB_PREFIX."commande_fournisseurdet WHERE fk_commande =".$this->id;
@@ -3699,6 +3710,14 @@ class CommandeFournisseurLigne extends CommonOrderLine
         $error=0;
 
         $this->db->begin();
+
+		// extrafields
+        $result = $this->deleteExtraFields();
+        if ($result < 0)
+        {
+            $this->db->rollback();
+            return -1;
+        }
 
         $sql = 'DELETE FROM '.MAIN_DB_PREFIX."commande_fournisseurdet WHERE rowid=".$this->id;
 

@@ -70,14 +70,19 @@ if ($cancel) $action ='';
 if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->service->creer))
 {
 	$error=0;
-	// var_dump(GETPOST("max_prod", 'int'));
+
 	for ($i=0; $i < GETPOST("max_prod", 'int'); $i++)
 	{
-		if ($_POST["prod_qty_".$i] > 0)
+		$qty = price2num(GETPOST("prod_qty_".$i, 'alpha'), 'MS');
+		if ($qty > 0)
 		{
-			if ($object->add_sousproduit($id, $_POST["prod_id_".$i], $_POST["prod_qty_".$i], $_POST["prod_incdec_".$i], $_POST["prod_optional_".$i]) > 0)
+			if ($object->add_sousproduit($id,
+					GETPOST("prod_id_".$i, 'int'),
+					$qty,
+					GETPOST("prod_incdec_".$i, 'int'),
+					GETPOST("prod_optional_".$i)) > 0) // ———————— SPÉCIFIQUE KREOS ————————
 			{
-				//var_dump($id.' - '.$_POST["prod_id_".$i].' - '.$_POST["prod_qty_".$i]);exit;
+				//var_dump($i.' '.GETPOST("prod_id_".$i, 'int'), $qty, GETPOST("prod_incdec_".$i, 'int'));
 				$action = 'edit';
 			}
 			else
@@ -121,8 +126,10 @@ elseif($action==='save_composed_product')
 	{
 		foreach ($TProduct as $id_product => $row)
 		{
+			/* ——————— SPÉCIFIQUE KREOS START ——————— */
 			if ($row['qty'] > 0) $object->update_sousproduit($id, $id_product, $row['qty'], isset($row['incdec']) ? 1 : 0, isset($row['optional']) ? 1 : 0  );
 			else $object->del_sousproduit($id, $id_product);
+			/* ———————  SPÉCIFIQUE KREOS END  ——————— */
 		}
 		setEventMessages('RecordSaved', null);
 	}
@@ -330,7 +337,9 @@ if ($id > 0 || ! empty($ref))
 		if (! empty($conf->stock->enabled)) print '<td class="right">'.$langs->trans('Stock').'</td>';
 		print '<td class="center">'.$langs->trans('Qty').'</td>';
 		print '<td class="center">'.$langs->trans('ComposedProductIncDecStock').'</td>';
+		/* ——————— SPÉCIFIQUE KREOS START ——————— */
 		print '<td class="center">'.$langs->trans('ComposedProductOptional').'</td>';
+		/* ———————  SPÉCIFIQUE KREOS END  ——————— */
 		print '</tr>'."\n";
 
 		$totalsell=0;
@@ -392,6 +401,8 @@ if ($id > 0 || ! empty($ref))
 					// Stock
 					if (! empty($conf->stock->enabled)) print '<td class="right">'.$value['stock'].'</td>';	// Real stock
 
+
+					/* ——————— SPÉCIFIQUE KREOS START ——————— */
 					// Qty + IncDec + Optional
 					if ($user->rights->produit->creer || $user->rights->service->creer)
 					{
@@ -404,6 +415,7 @@ if ($id > 0 || ! empty($ref))
 						print '<td>'.($value['incdec']==1?'x':''  ).'</td>';
 						print '<td>'.($value['optional']==1?'x':''  ).'</td>';
 					}
+					/* ———————  SPÉCIFIQUE KREOS END  ——————— */
 
 					print '</tr>'."\n";
 				}
@@ -538,7 +550,10 @@ if ($id > 0 || ! empty($ref))
 			//print '<th class="liste_titre center">'.$langs->trans("IsInPackage").'</td>';
 			print '<th class="liste_titre right">'.$langs->trans("Qty").'</td>';
 			print '<th class="center">'.$langs->trans('ComposedProductIncDecStock').'</th>';
+
+			/* ——————— SPÉCIFIQUE KREOS START ——————— */
 			print '<th class="center">'.$langs->trans('ComposedProductOptional').'</th>';
+			/* ———————  SPÉCIFIQUE KREOS END  ——————— */
 			print '</tr>';
 			if ($resql)
 			{
@@ -602,14 +617,18 @@ if ($id > 0 || ! empty($ref))
 							//$addchecked = ' checked';
 							$qty=$object->is_sousproduit_qty;
 							$incdec=$object->is_sousproduit_incdec;
+							/* ——————— SPÉCIFIQUE KREOS START ——————— */
 							$optional=$object->is_sousproduit_optional;
+							/* ———————  SPÉCIFIQUE KREOS END  ——————— */
 						}
 						else
 						{
 							//$addchecked = '';
 							$qty=0;
 							$incdec=0;
+							/* ——————— SPÉCIFIQUE KREOS START ——————— */
 							$optional=0;
+							/* ———————  SPÉCIFIQUE KREOS END  ——————— */
 						}
 						// Contained into package
 						/*print '<td class="center"><input type="hidden" name="prod_id_'.$i.'" value="'.$objp->rowid.'">';
@@ -627,6 +646,7 @@ if ($id > 0 || ! empty($ref))
 							//print '<input type="checkbox" disabled name="prod_incdec_'.$i.'" value="1" checked>';
 						}
 						print '</td>';
+						/* ——————— SPÉCIFIQUE KREOS START ——————— */
 
 						// Optional
 						print '<td align="center">';
@@ -638,6 +658,7 @@ if ($id > 0 || ! empty($ref))
 							//print '<input type="checkbox" disabled name="prod_optional_'.$i.'" value="1">';
 						}
 						print '</td>';
+						/* ———————  SPÉCIFIQUE KREOS END  ——————— */
 
 						print '</tr>';
 					}
