@@ -317,7 +317,8 @@ if ($id > 0 || ! empty($ref))
 		$object->get_sousproduits_arbo();			// Load $object->sousprods
 		$prods_arbo=$object->get_arbo_each_prod();
 
-
+		if(empty($object->fk_default_warehouse)) $object->fetch($id);
+		$fk_default_warehouse = $object->fk_default_warehouse;
 		$nbofsubsubproducts=count($prods_arbo);		// This include sub sub product into nb
 		$prodschild = $object->getChildsArbo($id, 1);
 		$nbofsubproducts=count($prodschild);		// This include only first level of childs
@@ -337,16 +338,19 @@ if ($id > 0 || ! empty($ref))
             $TConfirmParams['target']['label'] = $langs->trans('WarehouseTarget').' :';
             $TConfirmParams['target']['type'] = "other";
             $TConfirmParams['target']['name'] = "entrywarehouse";
-            $TConfirmParams['target']['value'] = $formProduct->selectWarehouses('', 'entrywarehouse');
+            $TConfirmParams['target']['value'] = $formProduct->selectWarehouses($fk_default_warehouse, 'entrywarehouse');
 
             $TConfirmParams['componenttitle']['type'] = 'onecolumn';
             $TConfirmParams['componenttitle']['value'] = '<div align="center" width="100%"><b>'.$langs->trans('ComponentWarehouses').'</b></div>';
             foreach($prods_arbo as $child) {
+            	$child_fk_default_warehouse = 0;
+            	$childProd = new Product($db);
+            	$childProd->fetch($child['id']);
                 $fk_child = $child['id'];
                 $TConfirmParams['source'.$fk_child]['label'] = $langs->trans('WarehouseSource').' '.$child['ref'].' :';
                 $TConfirmParams['source'.$fk_child]['name'] = 'outletwarehouse_'.$fk_child; //Select2 doesnt handle array
                 $TConfirmParams['source'.$fk_child]['type'] = "other";
-                $TConfirmParams['source'.$fk_child]['value'] = $formProduct->selectWarehouses('', 'outletwarehouse_'.$fk_child);
+                $TConfirmParams['source'.$fk_child]['value'] = $formProduct->selectWarehouses($childProd->fk_default_warehouse, 'outletwarehouse_'.$fk_child);
 
                 $TConfirmParams['qtyneeded'.$fk_child]['name'] = 'qtyneeded_'.$fk_child;
                 $TConfirmParams['qtyneeded'.$fk_child]['type'] = "hidden";
