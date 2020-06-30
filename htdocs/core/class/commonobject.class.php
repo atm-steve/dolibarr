@@ -3227,7 +3227,7 @@ abstract class CommonObject
 					}
 					else
 					{
-						unset($this->linkedObjectsIds[$objecttype]);
+						//unset($this->linkedObjectsIds[$objecttype]);
 					}
 				}
 			}
