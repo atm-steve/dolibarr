@@ -123,7 +123,7 @@ function print_eldy_menu($db, $atarget, $type_user, &$tabMenu, &$menu, $noout = 
 	);
 	$menu_arr[] = array(
 		'name' => 'Companies',
-		'link' => '/societe/index.php?mainmenu=companies&amp;leftmenu=',
+		'link' => '/societe/list.php?mainmenu=companies&amp;leftmenu=',
 		'title' => "ThirdParties",
 		'level' => 0,
 		'enabled' => $showmode = isVisibleToUserType($type_user, $tmpentry, $listofmodulesforexternal),
@@ -367,8 +367,8 @@ function print_eldy_menu($db, $atarget, $type_user, &$tabMenu, &$menu, $noout = 
 
 	// Tools
 	$tmpentry = array(
-	    'enabled'=>1,
-	    'perms'=>1,
+	    'enabled'=>$user->rights->financement->admin,
+	    'perms'=>$user->rights->financement->admin,
 	    'module'=>''
 	);
 	$menu_arr[] = array(
@@ -781,7 +781,7 @@ function print_left_eldy_menu($db, $menu_array_before, $menu_array_after, &$tabM
 			if (! empty($conf->societe->enabled))
 			{
 				$langs->load("companies");
-				$newmenu->add("/societe/index.php?leftmenu=thirdparties", $langs->trans("ThirdParty"), 0, $user->rights->societe->lire, '', $mainmenu, 'thirdparties');
+				$newmenu->add("/societe/list.php?leftmenu=thirdparties", $langs->trans("ThirdParty"), 0, $user->rights->societe->lire, '', $mainmenu, 'thirdparties');
 
 				if ($user->rights->societe->creer)
 				{
