@@ -1,0 +1,102 @@
+# Copyright (C) 2017  <dev2a> contact@dev2a.pro
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# Générique
+#
+
+
+Inventaire = Inventaire
+inventaireDescription = gestion inventaire
+
+#
+# Page d'administration
+#
+InventaireSetup = Configuration du module inventaire
+Settings = Réglages
+InventaireSetupPage = Page de réglage du module inventaire
+
+#
+# Page À propos
+#
+About = À propos
+MyModuleAbout = À propos du module inventaire
+MyModuleAboutPage = Page à propos du module inventaire
+
+users = Utilisateurs
+showQrCode = Afficher le Qr code
+addExternUser = Ajouter un utilisateur externe
+generateQrCode = Régénérer le qrCode
+askDeleteUser=Êtes-vous sur de vouloir Supprimer
+addProduct=Ajouter un produit
+deleteUser=Supprimer un utilisateur
+name=Nom
+addDolUsers=Ajouter des utilisateurs interne
+qrcodeRegenerated=QrCode générer
+zoneStart= Zone de début
+zoneEnd=Zone de fin
+warehouse=Entrepôt
+addNumberZones=Ajouter des zones numérique
+zonesComment=Commentaire des zones
+addZone=Ajouter une zone
+zoneComment=commentaire de la zone
+comment=Commentaire
+langDatatable=fr
+listeZones=Liste des zones
+user=Utilisateur
+viewZone=Voir cette zone
+new_pmp= Nouveau pmp
+lastPa= Meilleur prix d'achat
+qtyView=Qté vu
+qtyVerified=Qté verif
+qtyStock= Qté stock
+qtyRegulated= Qté régulé
+statutInventaireUnassignedLong = Non assigné
+statutInventaireAssignedLong = Assigné
+statutInventaireOnHoldLong = En cours
+statutInventaireCountedLong = Compté
+statutInventaireOnVerifLong = Vérification en cours
+statutInventaireToVerifLong = A vérifier
+statutInventaireVerifiedLong = Vérifié
+statutInventaireMergedLong = Stock régulé
+statutInventaireValideLong=Validé
+statutInventaireValide=Validé
+statutInventaireUnassigned = Non assigné
+statutInventaireAssigned = Assigné
+statutInventaireOnHold = En cours
+statutInventaireCounted = Compté
+statutInventaireOnVerif = Vérif. en cours
+statutInventaireToVerif = A vérifier
+statutInventaireVerified = Vérifié
+statutInventaireMerged = Ajouter à l'inventaire
+statutInventaireDaft = Brouillon
+statutInventaireToVerifie= A vérifier
+statutInventaireDaftShort = Brouillon
+statutInventaireToVerifieShort= A verifier
+statutInventaireVerifiedShort= vérifié
+statutInventaireTerminate=Régulé
+zoneNotCounted=Assignement impossible, Zone non compté
+productsZone=Liste des produits de la zone
+assignedUser=Compteur
+countZones=Nombres de zones
+countProducts=Nombres de produits
+verifUser=vérificateur
+errorOccured=une erreur est survenue
+statutInventaireZoneMerged=Ajouter a l'inventaire
+statutInventaireZoneMergedShort=Ajouter a l'inventaire
+reguleStockInventaire=Correction inventaire <a href="%s"> %s</a>
+inventaireListNoProduct=Pas de produit assigné 
+BarcodeAlreadySet=Ce produit a deja un code barre
+BarcodeAlreadyExist=Ce code barre est déjà assigné a un produit

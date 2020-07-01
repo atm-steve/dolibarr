@@ -1,0 +1,73 @@
+{
+	"name" : "dolibarr/formstyler",
+	"description" : "Module for Dolibarr ERP/CRM to add internet formstyler name managemenet feature",
+	"keywords" : [
+		"dolibarr",
+		"formstyler"
+	],
+	"homepage" : "https://code.librethic.io/dolibarr/modules/formstyler",
+	"license" : "GPL-3.0+",
+	"support" : {
+		"issues" : "https://code.librethic.io/dolibarr/modules/formstyler/issues"
+	},
+	"require" : {
+		"php" : ">=5.6.0",
+		"composer/installers" : "^1",
+		"erusev/parsedown" : "^1",
+		"enrise/urihelper" : "^1"
+	},
+	"require-dev" : {
+		"jakub-onderka/php-parallel-lint" : "^0",
+		"jakub-onderka/php-console-highlighter" : "^0",
+		"phpunit/phpunit" : "^4",
+		"squizlabs/php_codesniffer" : "^2",
+		"phpunit/phpunit-selenium" : "^2",
+		"wimg/php-compatibility" : "^7",
+		"phpdocumentor/phpdocumentor" : "^2"
+	},
+	"authors" : [{
+			"name" : "jfefe",
+			"email" : "hello+jf@librethic.io"
+		}
+	],
+	"scripts" : {
+		"post-update-cmd" : "@compat_workaround",
+		"post-install-cmd" : "@compat_workaround",
+		"compat_workaround" : "if [ -d \"vendor/wimg/php-compatibility\" ]; then\n rm -fr \"vendor/squizlabs/php_codesniffer/CodeSniffer/Standards/PHPCompatibility\"\n cp -a \"vendor/wimg/php-compatibility\" \"vendor/squizlabs/php_codesniffer/CodeSniffer/Standards/PHPCompatibility\"\n fi",
+		"check" : [
+			"@check_lint",
+			"@check_compat",
+			"@check_style"
+		],
+		"check_lint" : "parallel-lint --exclude build --exclude doc --exclude vendor --blame .",
+		"check_compat" : [
+			"@check_compat5_4",
+			"@check_compat5_6",
+			"@check_compat7_0"
+		],
+		"check_compat5_4" : "phpcs -n -p -d memory_limit=-1 -d max_execution_time=-1 --colors --standard=PHPCompatibility --runtime-set testVersion 5.4 --ignore=build/\\*,doc/\\*,lib/\\*,vendor/\\* .",
+		"check_compat5_6" : "phpcs -n -p -d memory_limit=-1 -d max_execution_time=-1 --colors --standard=PHPCompatibility --runtime-set testVersion 5.6 --ignore=build/\\*,doc/\\*,lib/\\*,vendor/\\* .",
+		"check_compat7_0" : "phpcs -n -p -d memory_limit=-1 -d max_execution_time=-1 --colors --standard=PHPCompatibility --runtime-set testVersion 7.0 --ignore=build/\\*,doc/\\*,lib/\\*,vendor/\\* .",
+		"check_style" : "phpcs -s -n -p -d memory_limit=-1 -d max_execution_time=-1 --colors --tab-width=4 --encoding=utf-8 --standard=dev/codesniffer/DolibarrPSR2.xml  --ignore=build/\\*,doc/\\*,lib/\\*,vendor/\\* .",
+		"test" : "@test_unit",
+		"test_unit" : "phpunit --coverage-html test/report test/unit",
+		"test_functional" : "phpunit test/functional",
+		"release" : [
+			"@check",
+			"@composer update --no-dev",
+			"@build",
+			"@composer update"
+		],
+		"build" : "cd build; ./makepack-dolibarrmodule.pl",
+		"tx_push" : "tx push -s",
+		"tx_pull" : "tx pull -a",
+		"git_hooks_install" : "git config --add core.hooksPath dev/git-hooks",
+		"git_hooks_remove" : "git config --unset core.hooksPath",
+		"git_pre_commit" : "@check",
+		"git_post_commit" : "",
+		"git_pre_push" : [
+			"@test",
+			"@tx_push"
+		]
+	}
+}

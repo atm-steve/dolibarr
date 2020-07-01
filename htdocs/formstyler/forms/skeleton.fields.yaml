@@ -1,0 +1,58 @@
+
+name: my_form_name
+structure:
+  - type: fieldset
+    id: fieldset_one
+    legend: MYFieldsetLegend_one
+    fields:
+      - name: field_one
+        label: MyLabelFieldOne
+        #selected:
+        required: true
+        #id:
+        #type:
+        #more_class:
+        #more_options:
+      - name: field_two
+        label: MyLabelFieldOne
+
+      - name: field_date
+        label: MyDateField
+        type: date
+
+  - type: fieldset
+    id: fieldset_two
+    legend: MYFieldsetLegend_two
+    fields:
+      - name: field_three
+        label: MyLabelFieldThree
+
+      - name: field_four
+        label: MyLabelFieldFour
+
+      # Call a function which return select element
+      - name: field_list_one
+        type: method
+        label: MyLabelFieldListOne
+        classname: FormCompany
+        method: select_juridicalstatus
+
+      - name : my_radio_field
+        label: MyLabelTransKey
+        type: radio
+        values: { one: ValueOne, two: ValueTwo }
+        
+      - name : my_checkbox_field
+        label: MyLabelCheckboxTransKey
+        type: checkbox
+        value: wesh
+        
+      - name : my_checkboxes_list_field
+        label: MyLabelCheckboxesListTransKey
+        type: checkboxes_list
+        values: { one: ValueOne, two: ValueTwo }
+        
+      - name : my_checkboxes_field
+        label: MyLabelCheckboxesTransKey
+        type: checkboxes
+        values: { one: ValueOne, two: ValueTwo }

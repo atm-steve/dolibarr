@@ -1,0 +1,117 @@
+.modal {
+  backface-visibility: hidden;
+  height: auto;
+  left: 50%;
+  max-width: 630px;
+  min-width: 320px;
+  position: fixed;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  visibility: hidden;
+  width: 50%;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: transparent;
+  border-radius: 3px;
+  margin: 0 auto;
+  position: relative;
+}
+.modal-content h4 {
+  background: transparent;
+  border-radius: 3px 3px 0 0;
+  color: #FFF;
+  font-size: 1.7em;
+  font-weight: 300;
+  margin: 0;
+  opacity: .8;
+  padding: .4em;
+  text-align: center;
+}
+.modal-content > div {
+  background-color: transparent;
+  font-size: 1.15em;
+  font-weight: 300;
+  margin: 0;
+  padding: 15px 40px 30px;
+  text-align: right;
+}
+.modal-content p {
+  background-color: #141313;
+  color: #FFF;
+  font-size: 1.1em;
+  margin: 0;
+  padding: 10px;
+}
+.modal-content p b {
+  color: #FFF;
+}
+.modal-content ul {
+  margin: 0;
+  padding: 0 0 30px 20px;
+}
+.modal-content button {
+  background-color: #FFF;
+  border: 0;
+  border-radius: 2px;
+  color: #ccc;
+  cursor: pointer;
+  display: inline-block;
+  font-family: 'Lato', Calibri, Arial, sans-serif;
+  font-size: .9em;
+  letter-spacing: 1px;
+  margin: 3px 2px;
+  padding: .6em 1.2em;
+}
+.modal-content button:hover {
+  background: #ffc400;
+}
+
+.modal-delete:hover {
+  background-color: #ffc400 !important;
+}
+
+.modal-show {
+  display: block;
+  visibility: visible;
+}
+.modal-show .modal-effect-blur .modal-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+.modal-show .modal-effect-blur ~ .container {
+  filter: blur(3px);
+}
+.modal-show .modal-effect-blur ~ .modal-overlay {
+  background: #000;
+  opacity: .5;
+}
+.modal-show ~ .modal-overlay {
+  opacity: .62;
+  visibility: visible;
+}
+
+.modal-overlay {
+  background: #000;
+  height: 100%;
+  left: 0;
+  opacity: .7;
+  position: fixed;
+  top: 0;
+  transition: opacity .8s;
+  visibility: hidden;
+  width: 100%;
+  z-index: 1000;
+}
+
+.modal-show.modal-effect-blur ~ .container,
+.modal-effect-blur .modal-content {
+  transition: opacity .8s;
+}
+
+.margin-top {
+  margin-top: 10px;
+}
+
+/*# sourceMappingURL=modal.css.map */

@@ -1,0 +1,102 @@
+# Copyright (C) 2017  <dev2a> contact@dev2a.pro
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# Générique
+#
+
+
+Inventaire=Inventory
+inventaireDescription = manage inventory
+
+#
+# Page d'administration
+#
+InventaireSetup = Configuration of inventory module
+Settings=Settings
+InventaireSetupPage = Setup page of inventory module
+
+#
+# Page À propos
+#
+About = About
+MyModuleAbout = About inventory module
+MyModuleAboutPage = about page of inventory module
+
+users = Users
+showQrCode = Show Qr code
+addExternUser = Add a extern user
+generateQrCode = generate qrCode
+askDeleteUser=Are you sure to delete
+addProduct=Add a product
+deleteUser=Delete a user
+name=Name
+addDolUsers=Add intern users
+qrcodeRegenerated=QrCode generate
+zoneStart= start zone
+zoneEnd=end zone
+warehouse=Warehouse
+addNumberZones=Add numeric zones
+zonesComment=zones comment
+addZone=Add a zone
+zoneComment=Zone comment
+comment=Comment
+langDatatable=en
+listeZones=Zones list
+user=User
+viewZone=View zone
+new_pmp= New pmp
+lastPa= best buy price
+qtyView=Qty view
+qtyVerified=Qty checked
+qtyStock= Qty stock
+qtyRegulated= regulated qty
+statutInventaireUnassignedLong = Not assigned
+statutInventaireAssignedLong = Assigned
+statutInventaireOnHoldLong = On hold
+statutInventaireCountedLong = Counted
+statutInventaireOnVerifLong = check on hold
+statutInventaireToVerifLong = To check
+statutInventaireVerifiedLong = checked
+statutInventaireMergedLong = regulated stock
+statutInventaireValideLong=Validate
+statutInventaireValide=Validate
+statutInventaireUnassigned = Not assigned
+statutInventaireAssigned = assigned
+statutInventaireOnHold = On hold
+statutInventaireCounted = Counted
+statutInventaireOnVerif = Check on hold
+statutInventaireToVerif = To check
+statutInventaireVerified = Checked
+statutInventaireMerged = Added to inventory
+statutInventaireDaft = Draft
+statutInventaireToVerifie= To check
+statutInventaireDaftShort = Draft
+statutInventaireToVerifieShort= To check
+statutInventaireVerifiedShort= Checked
+statutInventaireTerminate=Regulated
+zoneNotCounted=Assignement impossible, Zone non compté
+productsZone=Zone's products list
+assignedUser=Counter
+countZones=Number of zones
+countProducts=Number of products
+verifUser=Checker
+errorOccured=error Occured
+statutInventaireZoneMerged=Added to inventory
+statutInventaireZoneMergedShort=Added to inventory
+reguleStockInventaire=inventory Correction <a href="%s"> %s</a>
+inventaireListNoProduct=No product assigned
+BarcodeAlreadySet=Product already has barcode
+BarcodeAlreadyExist=this barcode already assigned to a product

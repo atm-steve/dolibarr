@@ -1,0 +1,147 @@
+<table class="noborder" width="100%">
+  <tbody>
+  <tr class="liste_titre">
+    <td width="60%">{{ trans('name') }}</td>
+    <td width="20%" align="center">Qrcode</td>
+    <td width="20%" ></td>
+  </tr>
+  {% for user in inventaire.users %}
+    <tr {{ bc[loop.index is odd ] }} >
+      <td class="edit" id="{{ user.rowid }}"> {{ user.name }}</td>
+      <td align="center">
+      <button
+        class="qrcode butAction"
+        data-name="{{ user.name }}"
+        data-url="/viewimage.php?modulepart=inventaire&file={{ user.rowid }}/qrcode.png"
+        value="{{ trans('showQrCode') }}"
+      >
+        {{ trans('showQrCode') }}
+      </button>
+      </td>
+      <td>
+        <button class="generateQrCode button" data-id="{{ user.rowid }}">
+          {{ trans('generateQrCode') }}
+        </button>
+        <button class="deleteUser button" data-user="{{ user.name }}" data-id="{{ user.rowid }}">
+          {{ img_picto('delete', 'delete') | raw }}
+        </button>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{{ dol_fiche_end() }}
+<div class="modal modal-effect-blur" id="modal">
+    <div class="modal-content">
+
+    </div>
+</div>
+<div class="modal-overlay"></div>
+
+<div id="image"></div>
+<button class="butAction " id="showDolUsers">{{ trans('addDolUsers') }}</button>
+
+<div class="dolusers margin-top" style="display: none">
+<form action="{{ getConstant('INVENTAIRE_URL_ROOT') }}/users.php?inventaire={{ inventaire.rowid }}" method="post">
+<input type="hidden" name="action" value="add_intern_users">
+{% for user in dolUsers %}
+<input type="checkbox" name="dolusers[{{ user.id }}]" id="{{ user.htmlId }}" value="{{ user.name }}" >
+  {{ fieldLabel(user.name, user.htmlId) | raw }}<br>
+{% endfor %}
+<div>
+<button class="butAction margin-top" type="submit">{{ trans('Add') }}</button>
+</div>
+</form>
+</div>
+<p></p>
+<h4>{{ trans('addExternUser') }}</h4>
+<form action="{{ getConstant('INVENTAIRE_URL_ROOT') }}/users.php?inventaire={{ inventaire.rowid }}" method="post">
+<input type="hidden" name="action" value="add_user">
+<input type="text" name="name" value="{{ name }}">
+<button class="butAction" type="submit">{{ trans('Add') }}</button>
+{{ displayErrors(errors, 'name') }}
+</form>
+
+<div id="dialog-confirm">
+  <div class="content"></div>
+</div>
+<script>
+$(document).ready(function () {
+  $(".edit").editable("{{ getConstant('INVENTAIRE_URL_ROOT') }}/api/editable.php", {
+    submitdata : {type: "user"},
+    callback : function(value, settings) {
+      $(this).closest('tr').find('button').data('name', value);
+    }
+});
+$('.modal-overlay').click(function () {
+$('#modal').removeClass('modal-show');
+$('#divadded').remove();
+});
+
+$('.generateQrCode').click(function () {
+  let id = $(this).data('id');
+  $.post('{{ getConstant('INVENTAIRE_URL_ROOT') }}/api/user.php',{
+    id: id,
+    action: 'qrcode'
+  }).then(function() {
+    $.jnotify('{{ trans('qrcodeRegenerated') }}');
+  })
+});
+
+$('.deleteUser').click(function () {
+  let id = $(this).data('id');
+  let user = $(this).data('user');
+  let dialog = $("#dialog-confirm");
+  let row = $(this).closest('tr');
+  dialog.html('{{ trans('askDeleteUser') }} ' + user);
+  dialog.dialog({
+    title: '{{ trans('deleteUser') }}',
+      autoOpen : true,
+      resizable : false,
+      height : "170",
+      width : "500",
+      modal : true,
+      buttons : {
+          "{{ trans('yes') }}" : function() {
+            let dialog = $(this);
+            $.post('./api/user.php', {
+              action: 'delete_user',
+              user: id
+            }).then(function (data) {
+              if (data.res) {
+                row.remove();
+                return;
+              }
+              $.jnotify('{{ trans('errorOccured') }}', 'error');
+            })
+            dialog.dialog("close");
+          },
+          "{{ trans('no')}}" : function() {
+
+              $(this).dialog("close");
+          }
+      }
+  });
+
+})
+
+
+$('#showDolUsers').click(function () {
+  $('.dolusers').toggle();
+})
+  $('.qrcode').click(function() {
+     let url = $(this).data('url');
+     let name = $(this).data('name');
+     let divToAdd = $('<div id="divadded"></div>');
+     let divImage = $('.modal-content');
+
+     divToAdd.append(`<h3 style="color:#fff">${name}</h3>`);
+     let image = new Image();
+     image.src = url;
+     divToAdd.append(image);
+     divImage.append(divToAdd);
+     $('#modal').addClass('modal-show');
+  })
+});
+</script>

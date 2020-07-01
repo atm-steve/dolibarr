@@ -1,0 +1,9 @@
+[main]
+host = https://www.transifex.com
+lang_map = uz: uz_UZ
+
+[dolibarr-returnable.returnable]
+file_filter = langs/<lang>/returnable.lang
+source_file = langs/en_US/returnable.lang
+source_lang = en_US
+type = MOZILLAPROPERTIES

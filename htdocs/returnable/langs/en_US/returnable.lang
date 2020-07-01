@@ -1,0 +1,50 @@
+# Copyright (C) 2019 Librethic
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# Generic
+#
+
+# Module label 'ModuleReturnableName'
+ModuleReturnableName = Returnable products
+# Module description 'ModuleReturnableDesc'
+ModuleReturnableDesc = Manage returnable product as bottles
+
+#
+# Admin page
+#
+ReturnableSetup = Returnable setup
+Settings = Settings
+ReturnableSetupPage = Returnable setup page
+
+#
+# About page
+#
+About = About
+ReturnableAbout = About Returnable
+ReturnableAboutPage = Returnable about page
+
+#
+# Returnable product page
+#
+ReturnableProductTab = Returnable product
+PageTitleReturnableProduct = Returnable product
+ReturnableProductSuccessAdd = Returnable product add successfull
+ReturnableProductNumber = Number of returnable product for this reference
+ReturnableParentProductsNumber = Number of parent products for this returnable
+EditProductReturnable = Edit returnable product
+ReturnableProductListForThisReference = List of returnable products for this reference
+ProductReturnablesParentList = List of products with this reference as returnable product
+AddDel = Add / Delete

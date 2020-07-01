@@ -1,0 +1,156 @@
+# Copyright (C) 2018 Jean-François Ferry <hello+jf@librethic.io>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# Generic
+#
+
+# Module label 'ModuleMarketplaceName'
+ModuleMarketplaceName = Marketplace
+# Module description 'ModuleMarketplaceDesc'
+ModuleMarketplaceDesc = Marketplace description
+
+#
+# Admin page
+#
+MarketplaceSetup = Marketplace setup
+Settings = Settings
+MarketplaceSetupPage = Marketplace setup page
+
+#
+# About page
+#
+About = About
+MarketplaceAbout = About Marketplace
+MarketplaceAboutPage = Marketplace about page
+
+#
+# Index page
+#
+MarketplaceArea = Marketplace home
+
+MARKETPLACE_MAIN_SUPPLIER_CATEGORY = Main supplier category for collection rate
+MARKETPLACE_MAIN_SUPPLIER_CATEGORYTooltip = Supplier category with sub-categories for collection rate.
+
+MARKETPLACE_MAIN_COLLECTION_SERVICE = Service for used for collection amount
+MARKETPLACE_MAIN_COLLECTION_SERVICETooltip = Select a service which will be used into seller invoice for collection amount
+
+MARKETPLACE_USE_DISCOUNT_AS_CARE_RATE = Use discount rate as seller care rate
+MARKETPLACE_USE_DISCOUNT_AS_CARE_RATETooltip = If yes, use discount rate as seller care rate
+#
+# Collection rates
+#
+MarketplaceCollectionRate = Collection rate
+MarketplaceCollectionRates = Collection rates
+
+ListMarketplaceCollectionRate = List of collection rates
+NewMarketplaceCollectionRate = New collection rate
+
+MarketplaceCollectionRateCodeHelp = Short code / reference to identify this collection rate
+MarketplaceCollectionRateLabelHelp = (optionnal) short text for description
+SellerCategoryLinkedHelp = Numeric ID of supplier category linked to this collection rate
+
+AmountPercentLabel = Amount (percentage)
+AmountPercentHelp = Percentage of collection rate.
+
+MarketPlacesalesWithNoCollectionAmount = Some sales haven't collection amount!
+MarketPlaceFixCollectionAmount = Fix collection amount
+MarketPlaceErrorWhenCalculCollectionAmount = Error when calculates collection amount
+MarketPlaceCollectionRecalculated = Collection amount calculated : %s
+# produits
+
+#
+# Sellers sales
+#
+MenuMarketplaceListSales = List of sales for sellers
+MenuMarketplaceExportSales = Invoice sellers
+MarketPlaceSeller = Seller
+Sales = Marketplace sales
+MarketPlaceSale = MarketPlace sale
+MarketPlaceSalePriceNet = Price net
+MarketPlaceWarningValuesWillNotBeUpdated = Warning, values will not be calculate again.
+MarketplaceFilterBySeller = Filter by seller
+
+MarketplaceDiscountRate = Discount rate
+MarketplaceDiscountAmount = Discount amount
+MarketplaceCollectionAmount = Collection amount
+
+MarketplaceCareRate = Care rate
+MarketplaceCareAmount = Amount care rate
+
+MarketplaceSaleTaxRate = Tax rate
+MarketplaceSaleTaxTotal = Tax total
+
+MarketplaceSaleRetrocessionAmount = Amount retrocession
+CustomerInvoice = Customer invoice
+MarketplaceSupplierInvoice = Supplier invoice
+MarketplaceSellerInvoice = Seller invoice
+
+MarketplaceSalesExport2Invoice = Bill sales
+Choosethirdparty = Filter by thirdparty
+ChooseDateStart = Choose start date
+ChooseDateEnd = Choose end date
+LaunchMarketplaceInvoicing = Launch marketplace invoicing
+NumberOfBillsCreated = Invoices created: %s
+AmountHTOfBillsCreated = Total amount (net of tax): %s
+AmountTTCOfBillsCreated = Total amount with taxes: %s
+NoSalesForMarketplace = So sale to invoice
+
+MarketPlaceLatestSales = Latest sales
+
+FilterOnDateFrom = Filter by date: from
+FilterOnDateTo = to
+
+ToBill = À facturer
+WaitingPayment = Waiting payment
+Paid = Paid
+Cancelled = Cancelled
+
+# Divers
+ListOfPlurial = List of %s
+
+# Facture
+MarketPlaceSellersInvoiceModel = MarketPlace invoice model: invoice for thirdparty
+MarketPlaceSellerInvoiceTitle=Seller invoice
+MarketPlaceSellerRef = Seller ref
+MarketPlaceInvoiceFor = Invoice for third party
+MarketPlaceSalesSettlement = Sales settlement
+
+# Export
+MarketPlaceSellerSalesLines = Line of marketplace sales
+
+# Stats
+MenuMarketplaceStatsSellerByMonth = Statistics by seller
+MenuMarketplaceStatsSalesByDay = Staticstics by day
+MarketPlaceBySeller = By seller
+AmountTax = Amount tax
+AmountCollection = Collection amount
+AmountRetrocession = Retrocession amount
+MarketPlaceByDay = By day
+EvolPreviousDay = Evolution prev day
+
+# Simulator
+MenuMarketplaceSimulator = Sale simulator
+MarketplaceSalesSimulator = MarketPlace sale simulator
+MarketPlaceSimulatorResults = Simulator results
+CalculateMarketPlaceSale = Calculate marketplace sale
+ProductPriceWithoutTax = Product price without tax
+PaidPriceTTC = Paid price with tax
+AmountCollectionHT = Amount collection without tax
+AmountVATCollection = Amount VAT collection
+AmountCollectionTTC = Amount collection with tax
+AmountRetrocessionHT = Amount retrocession without tax
+AmountVATRetrocession = Amount VAT retrocession
+AmountRetrocessionTTC = Amount retrocession with tax

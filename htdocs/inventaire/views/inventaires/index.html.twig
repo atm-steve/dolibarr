@@ -1,0 +1,29 @@
+<table id="list_llx_inventory" class="liste" width="100%">
+	<thead>
+		<tr class="liste_titre">
+			<th style="width:auto;text-align:auto" class="liste_titre">Nom</th>
+      <th style="width:auto;text-align:auto" class="liste_titre">Date inventaire</th>
+      <th style="width:auto;text-align:auto" class="liste_titre">Effectif</th>
+      <th style="width:auto;text-align:auto" class="liste_titre">Date création</th>
+      <th style="width:auto;text-align:auto" class="liste_titre">Date mise à jour</th>
+      <th style="width:auto;text-align:auto" class="liste_titre">Status</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for inventaire in inventaires %}
+		<tr class="impair">
+			<td field="rowid">
+        {{ inventaire.url | raw }}
+			</td>
+      <td field="date_inventory">{{ dol_print_date(inventaire.date) }}</td>
+      <td field="date_inventory">{{ inventaire.users_count }}</td>
+      <td field="date_cre">{{ dol_print_date(inventaire.date_created) }}</td>
+      <td field="date_maj">{{ dol_print_date(inventaire.tms, 'dayhour') }}</td>
+      <td field="status">{{ inventaire.statusIcon | raw }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+<div class="tabsAction">
+	<a class="butAction" href="./index.php?action=new">Nouvelle inventaire</a>
+</div>

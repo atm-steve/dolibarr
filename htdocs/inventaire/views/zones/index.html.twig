@@ -1,0 +1,255 @@
+<table class="border" width="100%">
+  <tr>
+    <td width="20%">{{ trans('name') }}</td>
+    <td>{{ object.name }}</td>
+  </tr>
+  <tr>
+    <td>Inventaire</td>
+    <td>{{ object.inventaire.url | raw }}</td>
+  </tr>
+  <tr>
+    <td>{{ trans('warehouse') }}</td>
+    <td>{{ object.warehouse.label }}</td>
+  </tr>
+  <tr>
+    <td>date</td>
+    <td>{{ dol_print_date(object.inventaire.date) }}</td>
+  </tr>
+  <tr>
+    <td>Statut</td>
+    <td id="zone-statut">{{ object.statutLabel(0) | raw }}</td>
+  </tr>
+  <tr>
+    <td>{{ trans('comment') }}</td>
+    <td>{{ object.comment }}</td>
+  </tr>
+  <tr>
+    <td>{{ trans('assignedUser') }}</td>
+    {% if user is not null %}
+    <td class="user-edit" id="{{ object.rowid }}">{{ user.name }}</td>
+    {% else %}
+    <td class="user-edit" id="{{ object.rowid }}"></td>
+     {% endif %}
+  </tr>
+  <tr>
+    <td>{{ trans('verifUser') }}</td>
+    {% if userVerif is not null %}
+    <td class="user-edit-verif" id="{{ object.rowid }}">{{ userVerif.name }}</td>
+    {% else %}
+    <td class="user-edit-verif" id="{{ object.rowid }}"></td>
+    {% endif %}
+  </tr>
+</table>
+{{ dol_fiche_end() }}
+<h4>{{ trans('productsZone') }}</h4>
+<div class="radio-toolbar tabsAction">
+    <input type="radio" id="All" name="statut" value="-1" checked>
+    <label for="All">{{ trans('All') }}</label>
+    <input type="radio" id="draft" name="statut" value="0">
+    <label for="draft"> {{ trans('statutInventaireDaft') }}</label>
+    <input type="radio" id="valide" name="statut" value="1">
+    <label for="valide"> {{ trans('statutInventaireValide') }}</label>
+    <input type="radio" id="toverifie" name="statut" value="2">
+    <label for="toverifie"> {{ trans('statutInventaireToVerifie') }}</label>
+    <input type="radio" id="verified" name="statut" value="3">
+    <label for="verified"> {{ trans('statutInventaireVerified') }}</label>
+    <input type="radio" id="terminate" name="statut" value="4">
+    <label for="terminate"> {{ trans('statutInventaireMerged') }}</label>
+</div>
+<table id="table"></table>
+<script>
+
+let users = {{ users | raw  }}
+let toVerif = function () {
+  let id = $(this).data('id');
+  $.post('./api/front.php', {
+    action: 'setVerif',
+    id: id
+  }).then(function (data) {
+    $('#zone-statut').html(data.statut);
+    table.draw(false);;
+  })
+}
+
+let mergeInStock = function mergeInStock() {
+  let id = $(this).data('id');
+  $.post('./api/front.php', {
+    action: 'addToInventaire',
+    id: id
+  }).then(function () {
+    table.draw(false);;
+  })
+}
+$(document).ready(function() {
+  var statut = -1;
+    $("input[name='statut']").change(function() {
+    statut = $(this).val();
+		table.draw(false);;
+	});
+  let edit = function (value, settings) {
+    let id = $(this).attr('id');
+    let oldValue = $(this).html();
+    let submitData = settings.submitdata;
+    submitData.id = id
+    submitData.value = value.replace('id_', '');
+    let cell = $(this);
+    $.post('./api/editable.php', submitData).then(function (data) {
+      try {
+        data = JSON.parse(data);
+      } catch (e) {
+        return
+      }
+      if (data.error) {
+        $.jnotify(data.error, 'error');
+        cell.html('');
+        return
+      }
+      $('#zone-statut').html(data.statut)
+    })
+     return users[value];
+  }
+ $('.user-edit').editable(edit, {
+    submitdata : {type: "zoneUser"},
+    data   : '{{ users | raw }}',
+    type   : 'select',
+    onblur : 'submit',
+    submit: 'ok',
+ });
+ $('.user-edit-verif').editable(edit, {
+    submitdata : {type: "zoneUserVerif"},
+    data   : '{{ users | raw }}',
+    type   : 'select',
+    onblur : 'submit',
+    submit: 'ok',
+ });
+ $('#table').on('draw.dt',function() {
+         $('.formProduct').unbind('submit');
+      $('.formProduct').submit(function formSubmit() {
+        $.ajax({
+     url: $(this).attr('action'),
+     type: $(this).attr('method'),
+     data: $(this).serialize(),
+     success: function() {
+       table.draw(false);
+     }
+  });
+        return false;
+      })
+      {% if  version_compare(getConstant('DOL_VERSION'), '7.0.0', '>=') %}
+      	jQuery(".classfortooltip").tooltip({
+						show: { collision: "flipfit", effect:'toggle', delay:50 },
+						hide: { delay: 50 },
+						tooltipClass: "mytooltip",
+						content: function () {
+              				return $(this).prop('title');
+        		}
+					});
+      {% else %}
+         jQuery(".classfortooltip").tipTip({
+     maxWidth: "{{ dol_size((conf.browser.layout == 'phone' ? 400 : 700),'width')}}px",
+     edgeOffset: 10,
+     delay: 50,
+     fadeIn: 50,
+     fadeOut: 50
+   });
+      {% endif %}
+
+    $('.assignProduct').unbind('click');
+    $('.assignProduct').click(function() {
+      $(this).closest('.assignProductContainer').find('.assignProductform').show()
+    })
+   $('.toVerif').click(toVerif);
+   $('.mergeInStock').click(mergeInStock);
+ });
+
+ window.table = $('#table').dataTable({
+     ajax: {
+      url: './api/datatable/productsZone.php',
+      data: function(data) {
+        data.inventory = '{{ object.inventaire.rowid }}'
+        data.zone = '{{ object.rowid }}'
+        data.statut = statut;
+      }
+    },
+      columns: [{
+        title: '{{ trans("product") }}',
+        data: 'label',
+        render: function (data, type, row) {
+          return row.product
+        }
+      },{
+        title: '{{ trans("warehouse") }}',
+        data: 'warehouse'
+      },{
+        title: 'Commentaires',
+        data: 'comment'
+      },{
+        title: '{{ trans("qtyStock") }}',
+        data: 'qty_stock',
+        className: 'small',
+      },{
+        title: '{{ trans("qtyView") }}',
+        data: 'qty_view',
+        className: 'small',
+      },{
+        title: '{{ trans("qtyVerified") }}',
+        data: 'qty_verified',
+        className: 'small',
+      },{
+        title: '{{ trans("Statut") }}',
+        data: 'statutHtml',
+        className: 'small'
+      },{
+        title: '',
+        className: 'actions',
+        orderable: false,
+        render: function (data, type, row) {
+          let button = '';
+           if (!row.productId) {
+            return '{{ trans('inventaireListNoProduct') }}';
+          }
+          if (row['statut'] >= 1 ) {
+            if (row.statut < 3 ) {
+              button += '<button class="toVerif" data-id="'+ row.id + '">A verifier</button>';
+            }
+            if (row.statut != 4) {
+              button += '<button data-id="'+ row.id + '" class="mergeInStock">ajouter a l\'inventaire</button>';
+
+            }
+          }
+          return button;
+        }
+      }],
+    	processing: true,
+			serverSide: true,
+			dom: 'lfrtip',
+      language: {
+        url: "./js/dataTables.{{ trans('langDatatable') }}.json"
+      }
+  }).api();
+
+  table.MakeCellsEditable({
+    confirmationButton: {
+            confirmCss: true,
+            cancelCss: true
+    },
+    columns: [4, 5],
+    inputTypes: [
+{
+                "column":2,
+                "type": "list",
+                target: 'fk_user',
+                "options": {{ users | raw }}
+}
+    ],
+    onUpdate: function(updatedCell, updatedRow, oldValue) {
+      let updatedValue = updatedRow.data();
+      if (updatedValue.statut === "4") {
+        $.jnotify('mise à jour non possible quand ajouter à l inventaire', 'error');
+        return;
+      }
+      return $.post('./api/productsZone.php', updatedValue)
+    }
+  })
+})
+</script>

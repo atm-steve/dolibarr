@@ -1,0 +1,22 @@
+<form action="{{ url }}" method="post">
+<input type="hidden" name="action" value="{{ action == 'new' ? 'create' : 'update' }}">
+<table class="border" width="100%">
+  <tr>
+    <td>{{ fieldLabel('name','name', true) | raw }}</td>
+    <td>
+      <input class="minwidth300" type="text" name="name" id="name" value="{{ name }}">
+      {{ displayErrors(errors, 'name') }}
+    </td>
+  </tr>
+  <tr>
+    <td>{{ fieldLabel('date', 'date', true) | raw }}</td>
+    <td>
+      {{ form.select_date(date, 'date') }}
+      {{ displayErrors(errors, 'date') }}
+    </td>
+  </tr>
+</table>
+<div class="center">
+  <button type="submit" > envoyer</button>
+</div>
+</form>

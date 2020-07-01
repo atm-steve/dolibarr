@@ -1,0 +1,295 @@
+<table class="border" width="100%">
+  <tr>
+    <td width="20%">{{ trans('name') }}</td>
+    <td>{{ inventaire.name }}</td>
+  </tr>
+  <tr>
+    <td>date</td>
+    <td>{{ dol_print_date(inventaire.date) }}</td>
+  </tr>
+  <tr>
+    <td>{{ trans('countProducts') }}</td>
+    <td>{{ inventaire.lines.count() }}</td>
+  </tr>
+</table>
+{{ dol_fiche_end() }}
+<h3>{{ trans('addProduct') }}</h3>
+<form id="addProduct" >
+  <input type="hidden" name="action" value="addProduct">
+  {{ fieldLabel('product', 'idprod', true) | raw }} 
+        {{ form.select_produits('', 'idprod',0, conf.product.limit_size, 0, 1, 2, '', 2, [],0, '1',0, '', 1) }} &nbsp;&nbsp;
+      {{ fieldLabel('warehouse', 'warehouse', true) | raw }}
+        {{ formproduct.selectWarehouses(0, 'warehouse', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, [], 'minwidth200imp') | raw }} &nbsp;&nbsp;
+      {{ fieldLabel('Qty', 'qty', true) | raw }}
+      <input type="text" name="qty" id="qty">
+  <button class="butAction" type="submit">{{ trans('Add') }}</button>
+</form>
+<div class="radio-toolbar tabsAction">
+    <input type="radio" id="All" name="statut" value="-1" checked>
+    <label for="All">{{ trans('All') }}</label>
+    <input type="radio" id="draft" name="statut" value="0">
+    <label for="draft"> {{ trans('Draft') }}</label>
+    <input type="radio" id="valide" name="statut" value="1">
+    <label for="valide"> {{ trans('Valide') }}</label>
+    <input type="radio" id="terminate" name="statut" value="4">
+    <label for="terminate"> {{ trans('statutInventaireTerminate') }}</label>
+</div>
+
+<table id="table"></table>
+<div class="tabsAction">
+  <a class="butAction valideLines" title="Valide les lignes visible du tableau">Valider les brouillons</a>
+  <a class="butAction pmpGlobal" title="Appliquer le pmp des produits visible du tableau">Appliquer le pmp</a>
+  <a class="butAction mergeStockGlobal" title="Corrige le stock des produits visible du tableau">Corriger le stock</a>
+</div>
+<script type="text/javascript">
+  $(document).ready(function () {
+    let statut = -1;
+    let sendValideProduct = function (id) {
+      $.post('./api/front.php',{
+        action: 'valideProduct',
+        id: id
+      }).then(function () {
+        table.draw(false);
+      })
+    };
+    let appliquePmp = function appliquePmp (id) {
+      $.post('./api/front.php',{
+        action: 'appliquePmp',
+        id: id
+      }).then(function () {
+        table.draw(false);
+      })
+    };
+    let mergeInStock = function (id) {
+      $.post('./api/front.php',{
+        action: 'mergeInStock',
+        id: id
+      }).then(function () {
+        table.draw(false);
+      })
+    };
+
+  $("input[name='statut']").change(function() {
+    statut = $(this).val();
+		table.draw(false);;
+	});
+
+
+    $('.valideLines').click(function valideLines() {
+      let ids = table.data()
+        .filter(function (row) { return parseInt(row.statut) === 0 && !!row.productId })
+        .map(function (row) { return  row.id });
+        if (ids.length === 0) {
+          table.draw(false);;
+          return;
+        }
+      sendValideProduct(ids.join(','));
+    })
+    $('.mergeStockGlobal').click(function valideLines() {
+      let ids = table.data()
+        .filter(function (row) { return parseInt(row.statut) === 1 })
+        .map(function (row) { return  row.id });
+        if (ids.length === 0) {
+          table.draw(false);;
+          return;
+        }
+      mergeInStock(ids.join(','));
+    })
+    $('.pmpGlobal').click(function valideLines() {
+      let ids = table.data()
+        .filter(function (row) { return parseInt(row.statut) === 1 })
+        .map(function (row) { return  row.id });
+        if (ids.length === 0) {
+          table.draw(false);;
+          return;
+        }
+      appliquePmp(ids.join(','));
+    })
+
+    $('#addProduct').submit(function submit() {
+      let idprod = $('#idprod');
+      let warehouse = $('#warehouse');
+      let qty = $('#qty');
+      $.post('./api/front.php',{
+       action: 'addProduct',
+       id: {{ inventaire.rowid }},
+       product: idprod.val(),
+       warehouse: warehouse.val(),
+       qty: qty.val()
+     }).then(function (data) {
+       if (data.errors) {
+         Object.keys(data.errors).forEach(function (key) {
+           $.jnotify(data.errors[key].join('<br />'), 'error')
+         })
+         return
+       }
+       idprod.val(0).trigger('change');
+       $('#search_idprod').val('')
+       warehouse.val(-1).trigger('change');
+       qty.val('');
+       table.draw(false);;
+      })
+      return false;
+    })
+    $('#table').on('draw.dt',function() {
+      {% if  version_compare(getConstant('DOL_VERSION'), '7.0.0', '>=') %}
+      	jQuery(".classfortooltip").tooltip({
+						show: { collision: "flipfit", effect:'toggle', delay:50 },
+						hide: { delay: 50 },
+						tooltipClass: "mytooltip",
+						content: function () {
+              				return $(this).prop('title');
+        		}
+					});
+      {% else %}
+         jQuery(".classfortooltip").tipTip({
+     maxWidth: "{{ dol_size((conf.browser.layout == 'phone' ? 400 : 700),'width')}}px",
+     edgeOffset: 10,
+     delay: 50,
+     fadeIn: 50,
+     fadeOut: 50
+   });
+      {% endif %}
+      $('.formProduct').unbind('submit');
+      $('.formProduct').submit(function formSubmit() {
+        $.ajax({
+     url: $(this).attr('action'),
+     type: $(this).attr('method'),
+     data: $(this).serialize(),
+     success: function() {
+       table.draw(false);
+     }
+  });
+        return false;
+      })
+      $('.assignProduct').unbind('click');
+      $('.assignProduct').click(function() {
+        $(this).closest('.assignProductContainer').find('.assignProductform').show()
+      })
+      $('.valideProduct').unbind('click');
+      $('.valideProduct').click(function() {
+        let id = $(this).data('id');
+        sendValideProduct(id);
+      });
+      $('.apliquePmp').unbind('click');
+      $('.apliquePmp').click(function() {
+        let id = $(this).data('id');
+        appliquePmp(id);
+      })
+      $('.mergeInStock').unbind('click');
+      $('.mergeInStock').click(function mergeStock() {
+        let id = $(this).data('id');
+        mergeInStock(id);
+      })
+    });
+    window.table = $('#table').dataTable({
+        ajax: {
+         url: './api/datatable/products.php',
+         data: function(data) {
+           data.inventory = '{{ inventaire.rowid }}'
+           data.statut = statut;
+         }
+       },
+         columns: [{
+           title: '{{ trans("product") }}',
+           data: 'label',
+           render: function (data, type, row) {
+             return row.product
+           }
+         },{
+           title: '{{ trans("warehouse") }}',
+           data: 'warehouse'
+         },{
+           title: '{{ trans("qtyStock") }}',
+           data: 'qty_stock',
+           className: 'small',
+         },{
+           title: '{{ trans("qtyView") }}',
+           data: 'qty_view',
+           className: 'small',
+         },{
+           title: '{{ trans("qtyRegulated") }}',
+           data: 'qty_regulated',
+           className: 'small',
+         },{
+          title: '{{ trans("pmp") }}',
+          data: 'pmp',
+          className: 'small',
+          render: function(data, type, row) {
+            return row['formatted_pmp'];
+          }
+        },{
+          title: "{{ trans("lastPa") }}",
+          data: 'pa',
+          className: 'small',
+          render: function(data, type, row) {
+            return row.formatted_pa
+          }
+        },{
+          title: '{{ trans("new_pmp") }}',
+          data: 'new_pmp',
+          className: 'small',
+          render: function(data, type, row) {
+            return row['formatted_new_pmp'];
+          }
+        },{
+           title: '{{ trans("Statut") }}',
+           data: 'statutHtml',
+           orderable: false,
+           searchable: false,
+           className: 'small'
+         },{
+           title: '',
+           className: 'actions',
+           orderable: false,
+           searchable: false,
+           render: function (data, type, row) {
+             if (row.statut === '0' ) {
+               return '<button class="valideProduct butAction btn-small" data-id="'+ row.id + '">Valider</button>';
+             }
+             if (row['statut'] === '1' ) {
+               let button = '';
+               if (row.new_pmp > 0) {
+                 button += '<button data-id="'+ row.id + '" class="apliquePmp butAction btn-small">appliquer le pmp</button>';
+               }
+               return button +
+               '<button data-id="'+ row.id + '" class="mergeInStock butAction btn-small">Corriger le stock</button>';
+             }
+             return '';
+           }
+         }],
+         processing: true,
+         serverSide: true,
+         dom: 'lfrtip',
+         language: {
+           url: "./js/dataTables.{{ trans('langDatatable') }}.json"
+         }
+     }).api();
+     table.MakeCellsEditable({
+       focus: true,
+       confirmationButton: {
+               confirmCss: true,
+               cancelCss: true
+       },
+       columns: [3, 7],
+       inputTypes: [{
+         column: 7,
+         type: 'text',
+         target: 'new_pmp'
+       }],
+       onUpdate: function(updatedCell, updatedRow, oldValue) {
+        let data = updatedRow.data();
+        if (data.statut === "4") {
+          $.jnotify('mise à jour non possible quand terminé', 'error');
+          return;
+        }
+         let dataToSend = {
+           qty_view: data.qty_view,
+           new_pmp: data.new_pmp,
+           id: data.id
+         }
+         return $.post('./api/products.php',  dataToSend)
+       }
+     })
+  })
+</script>

@@ -1,0 +1,127 @@
+$color-black-light: #141313;
+$color-black: #000;
+$color-white: #FFF;
+$btn-text-color: #ccc;
+$color-warning:#ffc400;
+.modal {
+  backface-visibility: hidden;
+  height: auto;
+  left: 50%;
+  max-width: 630px;
+  min-width: 320px;
+  position: fixed;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  visibility: hidden;
+  width: 50%;
+  z-index: 2000;
+}
+
+.modal-content {
+  // scss-lint:disable ColorVariable
+  background: transparent;
+  border-radius: 3px;
+  // color: #fff;
+  margin: 0 auto;
+  position: relative;
+  h4 {
+    background: transparent;
+    border-radius: 3px 3px 0 0;
+    color: $color-white;
+    font-size: 1.7em;
+    font-weight: 300;
+    margin: 0;
+    opacity: .8;
+    padding: .4em;
+    text-align: center;
+  }
+  >div {
+    background-color: transparent;
+    font-size: 1.15em;
+    font-weight: 300;
+    margin: 0;
+    padding: 15px 40px 30px;
+    text-align: right;
+  }
+  p {
+    background-color: $color-black-light;
+    color: $color-white;
+    font-size: 1.1em;
+    margin: 0;
+    padding: 10px;
+    b {
+      color: $color-white;
+    }
+  }
+  ul {
+    margin: 0;
+    padding: 0 0 30px 20px;
+  }
+  button {
+    // scss-lint:disable ColorVariable
+    background-color: $color-white;
+    border: 0;
+    border-radius: 2px;
+    color: $btn-text-color;
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'Lato', Calibri, Arial, sans-serif;
+    font-size: .9em;
+    letter-spacing: 1px;
+    margin: 3px 2px;
+    padding: .6em 1.2em;
+    &:hover {
+      background: $color-warning;
+    }
+  }
+}
+
+.modal-delete:hover {
+  // scss-lint:disable ImportantRule
+  background-color: $color-warning !important;
+}
+
+.modal-show {
+  display: block;
+  visibility: visible;
+  .modal-effect-blur {
+    .modal-content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  // scss-lint:disable MergeableSelector
+  .modal-effect-blur~.container {
+    filter: blur(3px);
+  }
+  .modal-effect-blur~.modal-overlay {
+    background: $color-black;
+    opacity: .7;
+  }
+  ~.modal-overlay {
+    opacity: .92;
+    visibility: visible;
+  }
+}
+
+// .modal-effect-blur .modal-content {
+//    opacity: 0;
+//    transform: translateY(-5%);
+//  }
+.modal-overlay {
+  background: $color-black;
+  height: 100%;
+  left: 0;
+  opacity: .7;
+  position: fixed;
+  top: 0;
+  transition: opacity .8s;
+  visibility: hidden;
+  width: 100%;
+  z-index: 1000;
+}
+
+.modal-show.modal-effect-blur~.container,
+.modal-effect-blur .modal-content {
+  transition: opacity .8s;
+}

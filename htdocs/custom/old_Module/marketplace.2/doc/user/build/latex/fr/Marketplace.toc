@@ -1,0 +1,18 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}Pr\IeC {\'e}-requis}{1}{section.1.1}
+\contentsline {section}{\numberline {1.2}Fonctionnalit\IeC {\'e}s}{1}{section.1.2}
+\contentsline {section}{\numberline {1.3}\IeC {\`A} propos}{1}{section.1.3}
+\contentsline {section}{\numberline {1.4}Contribuer}{1}{section.1.4}
+\contentsline {chapter}{\numberline {2}Usage}{3}{chapter.2}
+\contentsline {section}{\numberline {2.1}Configuration}{3}{section.2.1}
+\contentsline {section}{\numberline {2.2}Gestion des taux de pr\IeC {\'e}l\IeC {\`e}vement}{3}{section.2.2}
+\contentsline {section}{\numberline {2.3}Liaison produit / tiers (fournisseur)}{3}{section.2.3}
+\contentsline {section}{\numberline {2.4}Les commissions / pr\IeC {\'e}l\IeC {\`e}vements}{4}{section.2.4}
+\contentsline {chapter}{\numberline {3}Gestion des ventes}{5}{chapter.3}
+\contentsline {section}{\numberline {3.1}Enregistrement des ventes / reversement}{5}{section.3.1}
+\contentsline {section}{\numberline {3.2}Liste des ventes}{5}{section.3.2}
+\contentsline {section}{\numberline {3.3}Facturation des ventes}{6}{section.3.3}
+\contentsline {section}{\numberline {3.4}Suivi des paiements}{7}{section.3.4}
+\contentsline {section}{\numberline {3.5}Modification d'une vente}{7}{section.3.5}
+\contentsline {chapter}{\numberline {4}Permissions}{9}{chapter.4}

@@ -1,0 +1,93 @@
+# Copyright (C) 2018 Jean-François Ferry <hello+jf@librethic.io>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# Générique
+#
+
+# Module label 'ModuleMarketplaceName'
+ModuleMarketplaceName = Marketplace
+# Module description 'ModuleMarketplaceDesc'
+ModuleMarketplaceDesc = Gestion des ventes de rétrocession avec taux de prélèvement sur les ventes de produits liés à des tiers (fournisseurs).
+
+#
+# Page d'administration
+#
+MarketplaceSetup = Configuration du module Marketplace
+Settings = Réglages
+MarketplaceSetupPage = Page de configuration du module Marketplace
+
+#
+# Page À propos
+#
+About = À propos
+MarketplaceAbout = À propos de Marketplace
+MarketplaceAboutPage = Page à propos de Marketplace
+
+#
+# Index page
+#
+MarketplaceArea = Accueil marketplace
+
+MARKETPLACE_MAIN_SUPPLIER_CATEGORY=Catégorie fournisseur principale pour les taux de prélèvement.
+MARKETPLACE_MAIN_SUPPLIER_CATEGORYTooltip=Indiquez l'identifiant de la catégorie fournisseur qui contient les sous catégories à paramétrer pour les taux de prélèvement.
+
+#
+# Taux de prélèvement
+#
+MarketplaceCollectionRate = Taux de prélèvement
+MarketplaceCollectionRates = taux de prélèvement
+
+ListMarketplaceCollectionRate = List des taux de prélèvements
+NewMarketplaceCollectionRate = Nouveau taux de prélèvement
+
+MarketplaceCollectionRateCodeHelp = Code court / référence qui permet d'identifier ce taux de prélèvement 
+MarketplaceCollectionRateLabelHelp = (optionnel) court texte descriptif
+SellerCategoryLinkedHelp = Un identifiant numérique de la catégorie fournisseur liée à ce taux de prélèvement
+
+AmountPercentLabel = Montant (pourcentage)
+AmountPercentHelp = Pourcentage du taux de prélèvement.
+
+# produits
+MarketplaceSeller = Vendeur
+
+#
+# Ventes fournisseurs
+#
+MenuMarketplaceListSales = Liste des ventes fournisseurs
+MenuMarketplaceExportSales = Facturer les ventes fournisseurs
+
+Sales = ventes fournisseurs
+MarketplaceAmount = Montant rétrocession
+CustomerInvoice = Facture client
+MarketplaceSupplierInvoice = Facture fournisseur
+
+MarketplaceSalesExport2Invoice = Facturer les ventes rétrocédées
+Choosethirdparty = Filtrer par tiers
+ChooseDateStart = Choisir une date de début
+ChooseDateEnd = Choisir une date de fin
+LaunchMarketplaceInvoicing = Lancer la génération des factures de rétrocession
+NumberOfBillsCreated = Nombre de factures créées : %s
+AmountHTOfBillsCreated = Montant total HT des factures générées : %s
+AmountTTCOfBillsCreated = Montant total TTC des factures générées : %s
+NoSalesForMarketplace = Pas de ventes à facturer
+
+ToBill = À facturer
+WaitingPayment = Attente règlement
+Paid = Payé
+Cancelled = Annulée
+ 
+# Divers
+ListOfPlurial = Liste des %s

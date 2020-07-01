@@ -1,0 +1,196 @@
+<table class="border" width="100%">
+  <tr>
+    <td width="20%">{{ trans('name') }}</td>
+    <td>{{ inventaire.name }}</td>
+  </tr>
+  <tr>
+    <td>date</td>
+    <td>{{ dol_print_date(inventaire.date) }}</td>
+  </tr>
+  <tr>
+    <td>Statut</td>
+    <td>{{ inventaire.statusIcon | raw }}</td>
+  </tr>
+  <tr>
+    <td>{{ trans('countZones') }}</td>
+    <td>{{ inventaire.zones.count() }}</td>
+  </tr>
+</table>
+{{ dol_fiche_end() }}
+<div class="tabsAction">
+  {% if not inventaire.isValide %}
+  <a class="butAction" href="{{ getConstant('INVENTAIRE_URL_ROOT') }}/?id={{ inventaire.rowid }}&action=modify">Modifier</a>
+  <a class="butAction" href="{{ getConstant('INVENTAIRE_URL_ROOT') }}/inventaire.php?id={{ inventaire.rowid }}&action=valide">Valider</a>
+  {% endif %}
+</div>
+{% if inventaire.isValide %}
+<div class="radio-toolbar tabsAction">
+    <input type="radio" id="All" name="statut" value="-1" checked>
+    <label for="All">{{ trans('All') }}</label>
+    <input type="radio" id="draft" name="statut" value="0">
+    <label for="draft"> {{ trans('statutInventaireUnassigned') }}</label>
+    <input type="radio" id="valide" name="statut" value="1">
+    <label for="valide"> {{ trans('statutInventaireAssigned') }}</label>
+    <input type="radio" id="onhold" name="statut" value="2">
+    <label for="onhold"> {{ trans('statutInventaireOnHold') }}</label>
+    <input type="radio" id="counted" name="statut" value="3">
+    <label for="counted"> {{ trans('statutInventaireCountedLong') }}</label>
+    <input type="radio" id="toverif" name="statut" value="40">
+    <label for="toverif"> {{ trans('statutInventaireToVerifLong') }}</label>
+    <input type="radio" id="onverif" name="statut" value="4">
+    <label for="onverif"> {{ trans('statutInventaireOnVerif') }}</label>
+    <input type="radio" id="verified" name="statut" value="5">
+    <label for="verified"> {{ trans('statutInventaireVerifiedLong') }}</label>
+    <input type="radio" id="terminate" name="statut" value="6">
+    <label for="terminate"> {{ trans('statutInventaireMerged') }}</label>
+</div>
+<h4>{{ trans('listeZones') }}</h4>
+<table id="table"></table>
+<div class="fichecenter">
+<div class="fichehalfleft">
+  <h4>{{ trans('addNumberZones') }}</h4>
+  <form action="{{ getConstant('INVENTAIRE_URL_ROOT') }}/inventaire.php?id={{ inventaire.rowid }}" method="post">
+  <input type="hidden" name="action" value="add_number_zones">
+  <table class="">
+  <tr>
+    <td>{{ fieldLabel('zoneStart', 'zoneStart', true) | raw }}</td>
+    <td>
+    <input type="text" name="zoneStart" id="zoneStart" value={{ zoneStart }}>
+    {{ displayErrors(errors, 'zoneStart') }}
+    </td>
+  </tr>
+  <tr>
+    <td>{{ fieldLabel('zoneEnd', 'zoneEnd', true) | raw }}</td>
+    <td>
+    <input type="text" name="zoneEnd" id="zoneEnd" value={{ zoneEnd }}>
+    {{ displayErrors(errors, 'zoneEnd') }}
+    </td>
+  </tr>
+  <tr>
+    <td>{{ fieldLabel('warehouse', 'warehouse', true) | raw }}</td>
+    <td>
+    {{ formproduct.selectWarehouses(warehouse, 'warehouse', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, [], 'minwidth200imp') | raw }}
+    {{ displayErrors(errors, 'warehouse') }}
+    </td>
+  </tr>
+  <tr>
+    <td>{{ fieldLabel('zonesComment', 'comment') | raw }}</td>
+    <td>
+    <input type="text" name="comment" id="comment" value={{ comment }}>
+    </td>
+  </tr>
+  </table>
+  <button class="butAction" type="submit">{{ trans('Add') }}</button>
+  </form>
+</div>
+
+
+
+<div class="fichehalfright">
+<div class="ficheaddleft">
+<h4>{{ trans('addZone') }}</h4>
+  <form action="{{ getConstant('INVENTAIRE_URL_ROOT') }}/inventaire.php?id={{ inventaire.rowid }}" method="post">
+  <input type="hidden" name="action" value="add_zone">
+  <table class="">
+  <tr>
+    <td>{{ fieldLabel('name', 'name', true) | raw }}</td>
+    <td>
+    <input type="text" name="name" id="name" value={{ name }}>
+    {{ displayErrors(errors, 'name') }}
+    </td>
+  </tr>
+  <tr>
+    <td>{{ fieldLabel('warehouse', 'warehouseZone', true) | raw }}</td>
+    <td>
+    {{ formproduct.selectWarehouses(warehouseZone, 'warehouseZone', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, [], 'minwidth200imp') | raw }}
+    {{ displayErrors(errors, 'warehouseZone') }}
+    </td>
+  </tr>
+  <tr>
+    <td>{{ fieldLabel('zoneComment', 'comment') | raw }}</td>
+    <td>
+    <input type="text" name="comment" id="comment" value={{ comment }}>
+    </td>
+  </tr>
+  </table>
+  <button class="butAction" type="submit">{{ trans('Add') }}</button>
+  </form>
+</div>
+</div>
+</div>
+<div class="clear"></div>
+
+<script>
+
+$(document).ready(function () {
+  $("input[name='statut']").change(function() {
+    statut = $(this).val();
+		table.draw(false);;
+	});
+  var statut = -1;
+  window.table = $('#table').dataTable({
+    ajax: {
+      url: './api/datatable/zones.php',
+      data: function(data) {
+        data.inventory = {{ inventaire.rowid }}
+        data.statut = statut;
+      }
+    },
+      columns: [{
+        title: '{{ trans('name') }}',
+        data: 'name'
+      },{
+        title: '{{ trans('warehouse') }}',
+        data: 'warehouse'
+      },{
+        title: '{{ trans('user') }}',
+        data: 'user'
+      },{
+        title: '{{ trans('comment') }}',
+        data: 'comment'
+      },{
+        title: '{{ trans("Statut") }}',
+        data: 'statut'
+      },{
+        title: '',
+        orderable: false,
+        render: function (data, type, row) {
+          return '<a href="./zone.php?id='+ row.id +'" target="_blank" rel="noopener noreferrer">{{ trans('viewZone') }}</a>';
+        }
+      }],
+    	processing: true,
+			serverSide: true,
+			dom: 'lfrtip',
+      language: {
+        url: "./js/dataTables.{{ trans('langDatatable') }}.json"
+      }
+  }).api();
+  table.MakeCellsEditable({
+    confirmationButton: {
+            confirmCss: true,
+            cancelCss: true
+    },
+    columns: [0, 2, 3],
+    inputTypes: [
+{
+                column:2,
+                type: "list",
+                target: 'fk_user',
+                options: {{ users | raw }}
+}
+    ],
+    onUpdate: function(updatedCell, updatedRow, oldValue) {
+      let rowData = updatedRow.data();
+      let toSend = {
+        id: rowData.id,
+        name: rowData.name,
+        comment: rowData.comment,
+        warehouse: rowData.fk_warehouse,
+        user: rowData.fk_user
+      }
+      return $.post('./api/zones.php', toSend)
+    }
+  })
+})
+</script>
+{% endif %}

@@ -1,0 +1,25 @@
+{
+    "name": "paneedesign/php-firebase-cloud-messaging",
+    "description": "PHP API for Firebase Cloud Messaging from Google",
+    "license": "MIT",
+    "keywords": ["PHP","FCM","Google","Firebase","Cloud","Notifications","Android","iOS","Chrome"],
+    "homepage": "https://github.com/pane-e-design/php-firebase-cloud-messaging",
+    "authors": [{
+        "name": "Fabiano Roberto",
+        "email": "fabiano@paneedesign.com"
+    }],
+    "require": {
+        "guzzlehttp/guzzle": "*",
+        "php": "^5.6|^7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.6",
+        "mockery/mockery" : "*"
+    },
+    "autoload": {
+        "psr-4": { "PaneeDesign\\PhpFirebaseCloudMessaging\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "PaneeDesign\\PhpFirebaseCloudMessaging\\Tests\\": "tests/" }
+    }
+}

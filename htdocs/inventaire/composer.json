@@ -1,0 +1,30 @@
+{
+    "name": "dev2a/inventaire",
+    "description": "dolibarr inventaire",
+    "type": "project",
+    "require": {
+        "emarref/jwt": "^1.0",
+        "illuminate/database": "5.4.*",
+        "illuminate/pagination": "^5.4",
+        "illuminate/validation": "^5.4",
+        "paneedesign/php-firebase-cloud-messaging": "^1.0",
+        "twig/twig": "^1.3.0",
+        "violuke/php-barcodes": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Validation\\": "class/Validation"
+        }
+    },
+    "config": {
+        "vendor-dir": "includes",
+        "sort-packages": true
+    },
+    "license": "gplv3",
+    "authors": [
+        {
+            "name": "dev2a",
+            "email": "contact@dev2a.pro"
+        }
+    ]
+}

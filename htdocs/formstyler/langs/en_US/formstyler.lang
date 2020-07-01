@@ -1,0 +1,6 @@
+FormStylerDemo = Formstyler demo
+FormstylerDemoExplanationPhp = The form in this page is generated from PHP code below.
+FormstylerDemoExplanationPhpDemo2 = The form is generated with php code, without YAML file descriptor.
+FormstylerDemoExplanationYaml = The form is described into a YAML file
+FormstylerDemoSeeYamlFile = See YAML file
+FormstylerDemoSeePhpFile =See PHP code
