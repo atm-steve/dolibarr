@@ -603,8 +603,6 @@ class FormOther
         $numlines = count($lines);
         for ($i = 0; $i < $numlines; $i++) {
             if ($lines[$i]->fk_parent == $parent) {
-                $var = !$var;
-
                 //var_dump($selectedproject."--".$selectedtask."--".$lines[$i]->fk_project."_".$lines[$i]->id);		// $lines[$i]->id may be empty if project has no lines
 
                 // Break on a new project

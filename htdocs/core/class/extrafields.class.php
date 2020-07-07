@@ -1681,12 +1681,18 @@ class ExtraFields
 		}
 		elseif ($type == 'price')
 		{
-			$value = price($value, 0, $langs, 0, 0, -1, $conf->currency);
+			//$value = price($value, 0, $langs, 0, 0, -1, $conf->currency);
+			if ($value || $value == '0') $value = price($value, 0, $langs, 0, 0, -1);
 		}
 		elseif ($type == 'select')
 		{
-			if ($langfile && $param['options'][$value]) $value = $langs->trans($param['options'][$value]);
-			else $value = $param['options'][$value];
+			$valstr = $param['options'][$value];
+			if (($pos = strpos($valstr, "|")) !== false)
+			{
+				$valstr = substr($valstr, 0, $pos);
+			}
+			if ($langfile && $valstr) $value = $langs->trans($valstr);
+			else $value = $valstr;
 		}
 		elseif ($type == 'sellist')
 		{

@@ -1014,7 +1014,7 @@ class Commande extends CommonOrder
 					// Complete vat rate with code
 					$vatrate = $line->tva_tx;
 					if ($line->vat_src_code && !preg_match('/\(.*\)/', $vatrate)) $vatrate .= ' ('.$line->vat_src_code.')';
-
+					$origin = (!empty($line->origin) ? $line->origin : $this->element);
                     $result = $this->addline(
 						$line->desc,
 						$line->subprice,
@@ -1039,7 +1039,7 @@ class Commande extends CommonOrder
 						$line->label,
 						$line->array_options,
 						$line->fk_unit,
-						$this->element,
+	                    $origin,
 						$line->id
 					);
 					if ($result < 0)
@@ -3394,6 +3394,19 @@ class Commande extends CommonOrder
 		{
 			$this->errors[] = $langs->trans('SomeShipmentExists');
 			$error++;
+		}
+
+		if (!$error)
+		{
+			// Delete extrafields of order details
+                        $main = MAIN_DB_PREFIX . 'commandedet';
+                        $ef = $main . "_extrafields";
+                        $sql = "DELETE FROM $ef WHERE fk_object IN (SELECT rowid FROM $main WHERE fk_commande = " . $this->id . ")";
+			if (!$this->db->query($sql))
+			{
+				$error++;
+				$this->errors[] = $this->db->lasterror();
+			}
 		}
 
 		if (!$error)

@@ -330,7 +330,7 @@ class CommandeFournisseur extends CommonOrder
         $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as p ON c.fk_mode_reglement = p.id";
         $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_input_method as cm ON cm.rowid = c.fk_input_method";
         $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_incoterms as i ON c.fk_incoterms = i.rowid';
-        $sql .= " WHERE c.entity = ".$conf->entity;
+        $sql .= " WHERE c.entity IN (".getEntity('supplier_order').")";
         if ($ref) $sql .= " AND c.ref='".$this->db->escape($ref)."'";
         else $sql .= " AND c.rowid=".$id;
 
@@ -892,6 +892,7 @@ class CommandeFournisseur extends CommonOrder
 
         $sql = 'UPDATE '.MAIN_DB_PREFIX.'commande_fournisseur SET billed = 1';
         $sql .= ' WHERE rowid = '.$this->id.' AND fk_statut > '.self::STATUS_DRAFT;
+
         if ($this->db->query($sql))
         {
         	if (!$error)
@@ -1881,7 +1882,6 @@ class CommandeFournisseur extends CommonOrder
 					if ($result < 0)
                     {
                         $error++;
-                        return -1;
                     }
 					// End call triggers
                 }
@@ -1989,9 +1989,21 @@ class CommandeFournisseur extends CommonOrder
             {
             	$this->errors[] = 'ErrorWhenRunningTrigger';
             	dol_syslog(get_class($this)."::delete ".$this->error, LOG_ERR);
+            	$this->db->rollback();
             	return -1;
             }
             // End call triggers
+        }
+
+        $main = MAIN_DB_PREFIX . 'commande_fournisseurdet';
+        $ef = $main . "_extrafields";
+        $sql = "DELETE FROM $ef WHERE fk_object IN (SELECT rowid FROM $main WHERE fk_commande = " . $this->id . ")";
+        dol_syslog(get_class($this)."::delete extrafields lines", LOG_DEBUG);
+        if (!$this->db->query($sql))
+        {
+            $this->error = $this->db->lasterror();
+            $this->errors[] = $this->db->lasterror();
+            $error++;
         }
 
         $sql = "DELETE FROM ".MAIN_DB_PREFIX."commande_fournisseurdet WHERE fk_commande =".$this->id;
@@ -3699,6 +3711,14 @@ class CommandeFournisseurLigne extends CommonOrderLine
         $error=0;
 
         $this->db->begin();
+
+		// extrafields
+        $result = $this->deleteExtraFields();
+        if ($result < 0)
+        {
+            $this->db->rollback();
+            return -1;
+        }
 
         $sql = 'DELETE FROM '.MAIN_DB_PREFIX."commande_fournisseurdet WHERE rowid=".$this->id;
 
