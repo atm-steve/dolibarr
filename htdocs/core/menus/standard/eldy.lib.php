@@ -367,8 +367,8 @@ function print_eldy_menu($db, $atarget, $type_user, &$tabMenu, &$menu, $noout = 
 
 	// Tools
 	$tmpentry = array(
-	    'enabled'=>$user->rights->financement->admin,
-	    'perms'=>$user->rights->financement->admin,
+	    'enabled'=>$user->rights->export->lire,
+	    'perms'=>$user->rights->export->lire,
 	    'module'=>''
 	);
 	$menu_arr[] = array(
