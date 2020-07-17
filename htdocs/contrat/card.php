@@ -1561,7 +1561,8 @@ else
 			{
 				$total = 0;
 
-				print '<tr class="liste_titre'.($cursorline?' liste_titre_add':'').'">';
+				if (! empty($conf->global->CONTRACT_HIDE_CLOSED_SERVICES_BY_DEFAULT) && $objp->statut == ContratLigne::STATUS_CLOSED && $action != 'showclosedlines') $moreparam = 'style="display: none;"';
+				print '<tr class="liste_titre'.($cursorline?' liste_titre_add':'').'" '.$moreparam.'>';
 				print '<td>'.$langs->trans("ServiceNb", $cursorline).'</td>';
 				print '<td width="80" class="center">'.$langs->trans("VAT").'</td>';
 				print '<td width="80" class="right">'.$langs->trans("PriceUHT").'</td>';
