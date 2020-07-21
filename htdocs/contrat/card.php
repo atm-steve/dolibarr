@@ -1561,6 +1561,9 @@ else
 			{
 				$total = 0;
 
+				$objp = $db->fetch_object($result);
+
+				$moreparam = '';
 				if (! empty($conf->global->CONTRACT_HIDE_CLOSED_SERVICES_BY_DEFAULT) && $objp->statut == ContratLigne::STATUS_CLOSED && $action != 'showclosedlines') $moreparam = 'style="display: none;"';
 				print '<tr class="liste_titre'.($cursorline?' liste_titre_add':'').'" '.$moreparam.'>';
 				print '<td>'.$langs->trans("ServiceNb", $cursorline).'</td>';
@@ -1575,14 +1578,10 @@ else
 				if (! empty($conf->margin->enabled) && ! empty($conf->global->MARGIN_SHOW_ON_CONTRACT)) print '<td width="50" class="right">'.$langs->trans("BuyingPrice").'</td>';
 				print '<td width="30">&nbsp;</td>';
 				print "</tr>\n";
-
-				$objp = $db->fetch_object($result);
-
 				//
 
 				if ($action != 'editline' || GETPOST('rowid') != $objp->rowid)
 				{
-				    $moreparam = '';
 				    if (! empty($conf->global->CONTRACT_HIDE_CLOSED_SERVICES_BY_DEFAULT) && $objp->statut == ContratLigne::STATUS_CLOSED && $action != 'showclosedlines') $moreparam = 'style="display: none;"';
 					print '<tr class="tdtop oddeven" '.$moreparam.'>';
 					// Label
