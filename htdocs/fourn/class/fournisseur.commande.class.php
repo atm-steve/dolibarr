@@ -2071,8 +2071,8 @@ class CommandeFournisseur extends CommonOrder
      */
     function set_date_livraison($user, $date_livraison, $notrigger=0)
     {
-        if ($user->rights->fournisseur->commande->creer)
-        {
+//        if ($user->rights->fournisseur->commande->creer)
+//        {
         	$error=0;
 
         	$this->db->begin();
@@ -2118,11 +2118,11 @@ class CommandeFournisseur extends CommonOrder
         		$this->db->rollback();
         		return -1*$error;
         	}
-        }
-        else
-        {
-            return -2;
-        }
+//        }
+//        else
+//        {
+//            return -2;
+//        }
     }
 
 	/**

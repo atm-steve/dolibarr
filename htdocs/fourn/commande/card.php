@@ -122,7 +122,6 @@ $permissiontoedit=$user->rights->fournisseur->commande->creer;	// Used by the in
 $parameters=array('socid'=>$socid);
 $reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-
 if (empty($reshook))
 {
 	if ($cancel) $action='';
@@ -178,7 +177,7 @@ if (empty($reshook))
 	}
 
 	// date of delivery
-	if ($action == 'setdate_livraison' && $user->rights->fournisseur->commande->creer)
+	if ($action == 'setdate_livraison')
 	{
 		$result=$object->set_date_livraison($user,$datelivraison);
 		if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
