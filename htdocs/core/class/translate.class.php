@@ -205,13 +205,17 @@ class Translate
 		}
 
         // Check cache
-		if (! empty($this->_tab_loaded[$newdomain]))	// File already loaded for this domain
+		/* ------------- START ACOBAL ------------ */
+		// SPÉ ACOBAL : si le fichier langs est marqué dans le cache comme "not found" (== 2),
+		//              on essaye de le recharger (condition spé: $this->_tab_loaded[$newdomain] != 2)
+		if (! empty($this->_tab_loaded[$newdomain]) && $this->_tab_loaded[$newdomain] != 2 )	// File already loaded for this domain
 		{
 			//dol_syslog("Translate::Load already loaded for newdomain=".$newdomain);
 			return 0;
 		}
+		/* -------------  END ACOBAL  ------------ */
 
-        $fileread=0;
+		$fileread=0;
 		$langofdir=(empty($forcelangdir)?$this->defaultlang:$forcelangdir);
 
 		// Redefine alt
@@ -270,7 +274,6 @@ class Translate
 						$found=true;						// Found in dolibarr PHP cache
 					}
 				}
-
 				if (! $found)
 				{
 					if ($fp = @fopen($file_lang, "rt"))

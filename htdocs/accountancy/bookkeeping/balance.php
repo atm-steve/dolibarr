@@ -161,9 +161,9 @@ if ($action == 'export_csv')
 	{
 		print length_accountg($line->numero_compte).$sep;
 		print $object->get_compte_desc($line->numero_compte).$sep;
-		print price($line->debit).$sep;
-		print price($line->credit).$sep;
-		print price($line->debit - $line->credit).$sep;
+		print price2num($line->debit) . $sep;
+		print price2num($line->credit) . $sep;
+		print price2num($line->credit - $line->debit) . $sep;
 		print "\n";
 	}
 
@@ -307,7 +307,10 @@ if ($action != 'export_csv')
 		print '<td>'.$description.'</td>';
 		print '<td class="nowraponall right">'.price($line->debit).'</td>';
 		print '<td class="nowraponall right">'.price($line->credit).'</td>';
-		print '<td class="nowraponall right">'.price($line->debit - $line->credit).'</td>';
+		/* ------------ START ACOBAL ------------------ */
+		// Solde standard : débit - crédit  →  Solde acobal : crédit - débit
+		print '<td class="nowraponall right">'.price($line->credit - $line->debit).'</td>';
+		/* ------------  END ACOBAL  ------------------ */
 		print '<td class="center">'.$link;
 		print '</td>';
 		print "</tr>\n";
@@ -317,11 +320,18 @@ if ($action != 'export_csv')
 		$sous_total_credit += $line->credit;
 	}
 
-	print '<tr class="liste_total"><td class="right" colspan="2">'.$langs->trans("SubTotal").':</td><td class="nowrap right">'.price($sous_total_debit).'</td><td class="nowrap right">'.price($sous_total_credit).'</td><td class="nowrap right">'.price(price2num($sous_total_debit - $sous_total_credit)).'</td>';
+
+	/* ------------ START ACOBAL ------------------ */
+	// Solde standard : débit - crédit  →  Solde acobal : crédit - débit
+	print '<tr class="liste_total"><td class="right" colspan="2">' . $langs->trans("SubTotal") . ':</td><td class="nowrap right">' . price($sous_total_debit) . '</td><td class="nowrap right">' . price($sous_total_credit) . '</td><td class="nowrap right">' . price(price2num($sous_total_credit - $sous_total_debit)) . '</td>';
+	/* ------------  END ACOBAL  ------------------ */
 	print "<td>&nbsp;</td>\n";
 	print '</tr>';
 
-	print '<tr class="liste_total"><td class="right" colspan="2">'.$langs->trans("AccountBalance").':</td><td class="nowrap right">'.price($total_debit).'</td><td class="nowrap right">'.price($total_credit).'</td><td class="nowrap right">'.price(price2num($total_debit - $total_credit)).'</td>';
+	/* ------------ START ACOBAL ------------------ */
+	// Solde standard : débit - crédit  →  Solde acobal : crédit - débit
+	print '<tr class="liste_total"><td class="right" colspan="2">' . $langs->trans("AccountBalance") . ':</td><td class="nowrap right">' . price($total_debit) . '</td><td class="nowrap right">' . price($total_credit) . '</td><td class="nowrap right">' . price(price2num($total_credit - $total_debit)) . '</td>';
+	/* ------------  END ACOBAL  ------------------ */
 	print "<td>&nbsp;</td>\n";
 	print '</tr>';
 

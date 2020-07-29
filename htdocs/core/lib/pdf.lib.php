@@ -114,7 +114,7 @@ function pdf_getInstance($format = '', $metric = 'mm', $pagetype = 'P')
 		define('PDF_FONT_NAME_MAIN', 'helvetica');
 		define('PDF_FONT_SIZE_MAIN', 10);
 		define('PDF_FONT_NAME_DATA', 'helvetica');
-		define('PDF_FONT_SIZE_DATA', 8);
+		define('PDF_FONT_SIZE_DATA', 7);
 		define('PDF_FONT_MONOSPACED', 'courier');
 		define('PDF_IMAGE_SCALE_RATIO', 1.25);
 		define('HEAD_MAGNIFICATION', 1.1);
@@ -551,7 +551,7 @@ function pdf_build_address($outputlangs, $sourcecompany, $targetcompany = '', $t
     		// Intra VAT
     		if (empty($conf->global->MAIN_TVAINTRA_NOT_IN_ADDRESS))
     		{
-    			if ($targetcompany->tva_intra) $stringaddress .= ($stringaddress ? "\n" : '').$outputlangs->transnoentities("VATIntraShort").': '.$outputlangs->convToOutputCharset($targetcompany->tva_intra);
+    			if ($targetcompany->tva_intra) $stringaddress.=($stringaddress ? "\n\n\n\n" : '' ).$outputlangs->transnoentities("VATIntraShort").': '.$outputlangs->convToOutputCharset($targetcompany->tva_intra);
     		}
 
     		// Professionnal Ids
@@ -767,7 +767,7 @@ function pdf_bank(&$pdf, $outputlangs, $curx, $cury, $account, $onlynumber = 0, 
 
 				if ($val == 'BankCode') {
 					// Bank code
-					$tmplength = 18;
+					$tmplength = 15;
 					$content = $account->code_banque;
 				} elseif ($val == 'DeskCode') {
 					// Desk
@@ -781,7 +781,7 @@ function pdf_bank(&$pdf, $outputlangs, $curx, $cury, $account, $onlynumber = 0, 
 					// Key
 					$tmplength = 15;
 					$content = $account->cle_rib;
-				}elseif ($val == 'IBAN' || $val == 'BIC') {
+				} elseif ($val == 'IBAN' || $val == 'BIC') {
 					// Key
 					$tmplength = 0;
 					$content = '';
@@ -1277,6 +1277,15 @@ function pdf_getlinedesc($object, $i, $outputlangs, $hideref = 0, $hidedesc = 0,
 				$textwasmodified = ($desc == $prodser->description);
 			}
 			if (!empty($prodser->multilangs[$outputlangs->defaultlang]["description"]) && ($textwasmodified || $translatealsoifmodified))  $desc = $prodser->multilangs[$outputlangs->defaultlang]["description"];
+
+			if ($issupplierline && !empty($conf->global->PRODUIT_FOURN_TEXTS))
+			{
+			    $arr = $prodser->list_product_fournisseur_price($idprod);
+			    foreach ($arr as $pfp)
+			    {
+			        if ($pfp->fourn_id == $object->socid) $desc .= "<br /><br />" . $pfp->desc_supplier;
+			    }
+			}
 
 			// Set note
 			$textwasmodified = ($note == $prodser->note);

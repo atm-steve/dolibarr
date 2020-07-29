@@ -632,8 +632,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 				print '"'.length_accounta(html_entity_decode($k)).'"'.$sep;
 				print '"'.$langs->trans("Thirdparty").'"'.$sep;
 				print '"'.utf8_decode(dol_trunc($companystatic->name, 16)).' - '.$val["refsuppliersologest"].' - '.$langs->trans("Thirdparty").'"'.$sep;
-				print '"'.($mt < 0 ? price(-$mt) : '').'"'.$sep;
-				print '"'.($mt >= 0 ? price($mt) : '').'"'.$sep;
+				print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"' . $sep;
+				print '"' . ($mt >= 0 ? price2num($mt) : '') . '"'. $sep;
 				print '"'.$journal.'"';
 				print "\n";
 			//}
@@ -653,8 +653,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 				print '""'.$sep;
 				print '"'.utf8_decode(dol_trunc($accountingaccount->label, 32)).'"'.$sep;
 				print '"'.utf8_decode(dol_trunc($companystatic->name, 16)).' - '.$val["refsuppliersologest"].' - '.dol_trunc($accountingaccount->label, 32).'"'.$sep;
-				print '"'.($mt >= 0 ? price($mt) : '').'"'.$sep;
-				print '"'.($mt < 0 ? price(-$mt) : '').'"'.$sep;
+				print '"' . ($mt >= 0 ? price2num($mt) : '') . '"' . $sep;
+				print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"'. $sep;
 				print '"'.$journal.'"';
 				print "\n";
 			//}
@@ -678,8 +678,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 					print '""'.$sep;
 					print '"'.$langs->trans("VAT").' - '.$def_tva[$key].'"'.$sep;
 					print '"'.utf8_decode(dol_trunc($companystatic->name, 16)).' - '.$val["refsuppliersologest"].' - '.$langs->trans("VAT").join(', ', $def_tva[$key][$k]).' %'.($numtax ? ' - Localtax '.$numtax : '').'"'.$sep;
-					print '"'.($mt >= 0 ? price($mt) : '').'"'.$sep;
-					print '"'.($mt < 0 ? price(-$mt) : '').'"'.$sep;
+					print '"' . ($mt >= 0 ? price2num($mt) : '') . '"' . $sep;
+					print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"'. $sep;
 					print '"'.$journal.'"';
 					print "\n";
 				}
@@ -699,8 +699,8 @@ if ($action == 'exportcsv') {		// ISO and not UTF8 !
 						print '"'.length_accounta(html_entity_decode($k)).'"'.$sep;
 						print '"'.$langs->trans("Thirdparty").'"'.$sep;
 						print '"'.utf8_decode(dol_trunc($companystatic->name, 16)).' - '.$val["refsuppliersologest"].' - '.$langs->trans("VAT").' NPR"'.$sep;
-						print '"'.($mt < 0 ? price(-$mt) : '').'"'.$sep;
-						print '"'.($mt >= 0 ? price($mt) : '').'"'.$sep;
+						print '"' . ($mt < 0 ? price2num(- $mt) : '') . '"' . $sep;
+						print '"' . ($mt >= 0 ? price2num($mt) : '') . '"'. $sep;
 						print '"'.$journal.'"';
 						print "\n";
 					}
@@ -884,8 +884,8 @@ if (empty($action) || $action == 'view') {
 			else print $accountoshow;
 			print '</td>';
 			print "<td>" . $companystatic->getNomUrl(0, 'supplier', 16) . ' - ' . $invoicestatic->ref_supplier . ' - ' . $langs->trans("SubledgerAccount") . "</td>";
-			print '<td class="right nowraponall">'. ($mt < 0 ? price(- $mt) : '') . "</td>";
-			print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
+				print '<td class="right nowraponall">'. ($mt < 0 ? price2num(- $mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
 			print "</tr>";
 		}
 
@@ -913,8 +913,8 @@ if (empty($action) || $action == 'view') {
 			$companystatic->id = $tabcompany[$key]['id'];
 			$companystatic->name = $tabcompany[$key]['name'];
 			print "<td>" . $companystatic->getNomUrl(0, 'supplier', 16) . ' - ' . $invoicestatic->ref_supplier . ' - ' . $accountingaccount->label . "</td>";
-			print '<td class="right nowraponall">' . ($mt >= 0 ? price($mt) : '') . "</td>";
-			print '<td class="right nowraponall">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt >= 0 ? price2num($mt) : '') . "</td>";
+				print '<td class="right nowraponall">' . ($mt < 0 ? price2num(- $mt) : '') . "</td>";
 			print "</tr>";
 		}
 

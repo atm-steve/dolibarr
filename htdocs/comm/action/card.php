@@ -1808,6 +1808,7 @@ if ($id > 0)
 	 * Barre d'actions
 	 */
 
+
 	print '<div class="tabsAction">';
 
 	$parameters = array();
@@ -1816,9 +1817,13 @@ if ($id > 0)
 	{
 		if ($action != 'edit')
 		{
+			/* ------------- START ACOBAL ------------ */
+			// SPÉ ACOBAL: afficher également le bouton "modifier" si l’utilisateur est affecté à l’événement
+			// et qu’il a le droit agenda "myactions->create"
 			if ($user->rights->agenda->allactions->create ||
-			   (($object->authorid == $user->id || $object->userownerid == $user->id) && $user->rights->agenda->myactions->create))
+			   (($object->authorid == $user->id || $object->userownerid == $user->id || in_array($user->id,array_keys($object->userassigned))) && $user->rights->agenda->myactions->create))
 			{
+			/* -------------  END ACOBAL  ------------ */
 				print '<div class="inline-block divButAction"><a class="butAction" href="card.php?action=edit&id='.$object->id.'">'.$langs->trans("Modify").'</a></div>';
 			}
 			else

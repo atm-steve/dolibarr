@@ -1341,11 +1341,15 @@ if ($action == 'create')
 									print $staticwarehouse->getNomUrl(0).' / ';
 
 									print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$dbatch->id.'">';
-
 									$detail = '';
 									$detail .= $langs->trans("Batch").': '.$dbatch->batch;
-									$detail .= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
-									$detail .= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby, "day");
+
+									/* ------------- START ACOBAL ------------ */
+									// SPÉ ACOBAL : on n’affiche la DMD/DLUO et la DLC que si non vides
+									if(!empty($dbatch->sellby)) $detail.= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
+									if(!empty($dbatch->eatby)) $detail.= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby, "day");
+									/* -------------  END ACOBAL  ------------ */
+
 									$detail .= ' - '.$langs->trans("Qty").': '.$dbatch->qty;
 									$detail .= '<br>';
 									print $detail;

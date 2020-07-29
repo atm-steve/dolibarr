@@ -629,6 +629,7 @@ class Product extends CommonObject
                     $sql .= ", finished";
                     $sql .= ", tobatch";
                     $sql .= ", fk_unit";
+                    $sql.= ", import_key";
                     $sql .= ") VALUES (";
                     $sql .= "'".$this->db->idate($now)."'";
                     $sql .= ", ".$conf->entity;
@@ -652,6 +653,7 @@ class Product extends CommonObject
                     $sql .= ", ".((!isset($this->finished) || $this->finished < 0 || $this->finished == '') ? 'null' : (int) $this->finished);
                     $sql .= ", ".((empty($this->status_batch) || $this->status_batch < 0) ? '0' : $this->status_batch);
                     $sql .= ", ".(!$this->fk_unit ? 'NULL' : $this->fk_unit);
+                    $sql.= ", ".(!$this->import_key ? 'NULL' : "'".$this->import_key."'");
                     $sql .= ")";
 
                     dol_syslog(get_class($this)."::Create", LOG_DEBUG);
@@ -4683,12 +4685,13 @@ class Product extends CommonObject
      * This function need a lot of load. If you use it on list, use a cache to execute it once for each product id.
      * If ENTREPOT_EXTRA_STATUS set, filtering on warehouse status possible.
      *
-     * @param  	string 	$option 					'' = Load all stock info, also from closed and internal warehouses, 'nobatch', 'novirtual'
-     * @param	int		$includedraftpoforvirtual	Include draft status of PO for virtual stock calculation
-     * @return 	int                  				< 0 if KO, > 0 if OK
+     * @param  string $option        '' = Load all stock info, also from closed and internal warehouses, 'nobatch', 'novirtual'
+     * @param  int    $includedraftpoforvirtual Include draft status of PO for virtual stock calculation
+	 * @param  array  $TWarehouses   Warehouses filter (spécifique ACOBAL)
+     * @return int                  				< 0 if KO, > 0 if OK
      * @see    	load_virtual_stock(), loadBatchInfo()
      */
-    public function load_stock($option = '', $includedraftpoforvirtual = null)
+    public function load_stock($option = '', $includedraftpoforvirtual = null, $TWarehouses = array())
     {
         // phpcs:enable
         global $conf;
@@ -4714,6 +4717,9 @@ class Product extends CommonObject
         $sql .= ", ".MAIN_DB_PREFIX."entrepot as w";
         $sql .= " WHERE w.entity IN (".getEntity('stock').")";
         $sql .= " AND w.rowid = ps.fk_entrepot";
+        // Spécifique ACOBAL
+        if(!empty($TWarehouses)) $sql.= " AND w.rowid IN (".$this->db->escape(implode(',',$TWarehouses)).")";
+        // Fin spécifique
         $sql .= " AND ps.fk_product = ".$this->id;
         if ($conf->global->ENTREPOT_EXTRA_STATUS && count($warehouseStatus)) {
 			$sql .= " AND w.statut IN (".$this->db->escape(implode(',', $warehouseStatus)).")";

@@ -73,7 +73,11 @@ if ($socid < 0) $socid = '';
 
 $canedit = 1;
 if (!$user->rights->agenda->myactions->read) accessforbidden();
-if (!$user->rights->agenda->allactions->read) $canedit = 0;
+
+/* ------------- START ACOBAL ------------ */
+// SPÉ ACOBAL: "myactions" au lieu de "allactions"
+if (! $user->rights->agenda->myactions->read) $canedit=0;
+/* -------------  END ACOBAL  ------------ */
 if (!$user->rights->agenda->allactions->read || $filter == 'mine')  // If no permission to see all, we show only affected to me
 {
     $filtert = $user->id;

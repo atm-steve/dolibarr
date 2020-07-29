@@ -59,6 +59,10 @@ $search_state = trim(GETPOST("search_state"));
 $search_country = GETPOST("search_country", 'int');
 $search_type_thirdparty = GETPOST("search_type_thirdparty", 'int');
 $search_billed = GETPOST("search_billed", 'int');
+/* ------------- START ACOBAL ------------ */
+// SPÉ ACOBAL : filtre par "Date prévue de départ"
+$search_date_delivery=GETPOST("search_date_delivery");
+/* -------------  END ACOBAL  ------------ */
 $sall = trim((GETPOST('search_all', 'alphanohtml') != '') ?GETPOST('search_all', 'alphanohtml') : GETPOST('sall', 'alphanohtml'));
 $optioncss = GETPOST('optioncss', 'alpha');
 
@@ -158,6 +162,11 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_billed = '';
 	$search_status = '';
     $toselect = '';
+	/* ------------- START ACOBAL ------------ */
+	// SPÉ ACOBAL : filtre par "Date prévue de départ"
+	$search_date_delivery='';
+	$viewstatut='';
+	/* -------------  END ACOBAL  ------------ */
 	$search_array_options = array();
 }
 
@@ -186,7 +195,11 @@ $formcompany = new FormCompany($db);
 $helpurl = 'EN:Module_Shipments|FR:Module_Exp&eacute;ditions|ES:M&oacute;dulo_Expediciones';
 llxHeader('', $langs->trans('ListOfSendings'), $helpurl);
 
-$sql = "SELECT e.rowid, e.ref, e.ref_customer, e.date_expedition as date_expedition, e.date_delivery as date_livraison, l.date_delivery as date_reception, e.fk_statut, e.billed,";
+/* ------------- START ACOBAL ------------ */
+// SPÉ ACOBAL : SELECT DISTINCT au lieu de SELECT
+$sql = "SELECT DISTINCT e.rowid, e.ref, e.ref_customer, e.date_expedition as date_expedition, e.date_delivery as date_livraison, l.date_delivery as date_reception, e.fk_statut, e.billed,";
+/* -------------  END ACOBAL  ------------ */
+
 $sql .= ' s.rowid as socid, s.nom as name, s.town, s.zip, s.fk_pays, s.client, s.code_client, ';
 $sql .= " typent.code as typent_code,";
 $sql .= " state.code_departement as state_code, state.nom as state_name,";
@@ -234,6 +247,12 @@ if ($search_type_thirdparty) $sql .= " AND s.fk_typent IN (".$search_type_thirdp
 if ($search_ref_exp) $sql .= natural_search('e.ref', $search_ref_exp);
 if ($search_ref_liv) $sql .= natural_search('l.ref', $search_ref_liv);
 if ($search_company) $sql .= natural_search('s.nom', $search_company);
+
+/* ------------- START ACOBAL ------------ */
+// SPÉ ACOBAL : filtre par "Date prévue de départ"
+if ($search_date_delivery) $sql .= " AND e.date_delivery = '".date("Y-m-d", strtotime(str_replace('/', '-', $search_date_delivery)))."'";
+/* -------------  END ACOBAL  ------------ */
+
 if ($sall) $sql .= natural_search(array_keys($fieldstosearchall), $sall);
 
 // Add where from extra fields
@@ -391,7 +410,10 @@ if ($resql)
 	// Date delivery planned
 	if (!empty($arrayfields['e.date_delivery']['checked']))
 	{
-		print '<td class="liste_titre">&nbsp;</td>';
+		/* ------------- START ACOBAL ------------ */
+		// SPÉ ACOBAL : filtre par "Date prévue de départ"
+		print '<td class="liste_titre center">'.$form->select_date(strtotime(str_replace('/', '-', $search_date_delivery)), 'search_date_delivery', 0, 0, 0, '', 1, 0, 1, 0, 1).'</td>';
+		/* -------------  END ACOBAL  ------------ */
 	}
 	if (!empty($arrayfields['l.ref']['checked']))
 	{
