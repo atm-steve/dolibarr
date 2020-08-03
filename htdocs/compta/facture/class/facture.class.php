@@ -416,7 +416,7 @@ class Facture extends CommonInvoice
 		$this->brouillon = 1;
 
 		// Multicurrency (test on $this->multicurrency_tx because we should take the default rate only if not using origin rate)
-		if (!empty($this->multicurrency_code) && empty($this->multicurrency_tx)) list($this->fk_multicurrency, $this->multicurrency_tx) = MultiCurrency::getIdAndTxFromCode($this->db, $this->multicurrency_code);
+		if (!empty($this->multicurrency_code) && empty($this->multicurrency_tx)) list($this->fk_multicurrency, $this->multicurrency_tx) = MultiCurrency::getIdAndTxFromCode($this->db, $this->multicurrency_code, $this->date);
 		else $this->fk_multicurrency = MultiCurrency::getIdFromCode($this->db, $this->multicurrency_code);
 		if (empty($this->fk_multicurrency))
 		{
@@ -1740,7 +1740,8 @@ class Facture extends CommonInvoice
 	}
 
 	/**
-	 * Fetch previous and next situations invoices
+	 * Fetch previous and next situations invoices.
+	 * Return all previous and next invoices (both standard and credit notes).
 	 *
 	 * @return	void
 	 */
@@ -1751,7 +1752,7 @@ class Facture extends CommonInvoice
 		$this->tab_previous_situation_invoice = array();
 		$this->tab_next_situation_invoice = array();
 
-		$sql = 'SELECT rowid, situation_counter FROM '.MAIN_DB_PREFIX.'facture';
+		$sql = 'SELECT rowid, type, situation_cycle_ref, situation_counter FROM '.MAIN_DB_PREFIX.'facture';
 		$sql .= ' WHERE rowid <> '.$this->id;
 		$sql .= ' AND entity = '.$this->entity;
 		$sql .= ' AND situation_cycle_ref = '.(int) $this->situation_cycle_ref;
