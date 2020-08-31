@@ -670,6 +670,18 @@ if (! empty($id) || ! empty($ref))
 				print '<td><input type="text" id="weight_impact" name="weight_impact" value="'.price($weight_impact).'"></td>';
 				print '</tr>';
 			}
+			?>
+            <tr>
+                <td>
+                    <label for="new_ref">
+                        <?php echo $langs->trans('Reference') ?>
+                    </label>
+                </td>
+                <td>
+                    <input type="text" name="new_ref"> <?php print $form->textwithpicto('', $langs->trans('HelpCombinationNewReference')) ?>
+                </td>
+            </tr>
+            <?php
 			print '</table>';
 		}
 

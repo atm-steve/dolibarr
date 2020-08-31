@@ -773,7 +773,9 @@ WHERE c.fk_product_parent = ".(int) $productid." AND p.tosell = 1";
 				}
 			}
 
-			if ($forced_refvar === false) {
+			if (!empty($new_ref)) {
+				$newproduct->ref = $new_ref;
+			}elseif ($forced_refvar === false) {
 				if (isset($conf->global->PRODUIT_ATTRIBUTES_SEPARATOR)) {
 			        $newproduct->ref .= $conf->global->PRODUIT_ATTRIBUTES_SEPARATOR . $prodattrval->ref;
 			    } else {
