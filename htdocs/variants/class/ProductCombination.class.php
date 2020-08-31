@@ -677,10 +677,10 @@ WHERE c.fk_product_parent = ".(int) $productid." AND p.tosell = 1";
 	 * @param bool $price_var_percent Is the price variation a relative variation?
 	 * @param bool|float $forced_pricevar If the price variation is forced
 	 * @param bool|float $forced_weightvar If the weight variation is forced
-	 * @param string $new_ref Custom new reference (if empty, one will be generated)
+	 * @param string $forced_refvar Custom new reference (if empty, one will be generated)
 	 * @return int <0 KO, >0 OK
 	 */
-	public function createProductCombination(Product $product, array $combinations, array $variations, $price_var_percent = false, $forced_pricevar = false, $forced_weightvar = false, $new_ref = '')
+	public function createProductCombination(Product $product, array $combinations, array $variations, $price_var_percent = false, $forced_pricevar = false, $forced_weightvar = false, $forced_refvar = '')
 	{
 		global $db, $user, $conf;
 
@@ -773,9 +773,7 @@ WHERE c.fk_product_parent = ".(int) $productid." AND p.tosell = 1";
 				}
 			}
 
-			if (!empty($new_ref)) {
-				$newproduct->ref = $new_ref;
-			}elseif ($forced_refvar === false) {
+			if ($forced_refvar === false) {
 				if (isset($conf->global->PRODUIT_ATTRIBUTES_SEPARATOR)) {
 			        $newproduct->ref .= $conf->global->PRODUIT_ATTRIBUTES_SEPARATOR . $prodattrval->ref;
 			    } else {
