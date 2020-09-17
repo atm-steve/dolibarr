@@ -55,6 +55,8 @@ if ($user->socid > 0) $socid = $user->socid;
 if (!empty($conf->comptabilite->enabled)) $result = restrictedArea($user, 'compta', '', '', 'resultat');
 if (!empty($conf->accounting->enabled)) $result = restrictedArea($user, 'accounting', '', '', 'comptarapport');
 
+$hookmanager->initHooks(array('supplierturnoverbythirdpartylist'));
+
 // Date range
 $year = GETPOST("year", 'int');
 $month = GETPOST("month", 'int');
