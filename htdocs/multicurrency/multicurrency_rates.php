@@ -16,11 +16,11 @@
 
 /**
  *      \file       htdocs/multicurrency/multicurrency_rates.php
- *		\ingroup    multicurrency
- *		\brief      Shows an exchange rate editor
+ *        \ingroup    multicurrency
+ *        \brief      Shows an exchange rate editor
  */
 
-$res=@include("../main.inc.php");				// For root directory
+$res = @include("../main.inc.php");                // For root directory
 
 /**
  * @var User $user
@@ -34,15 +34,13 @@ require_once DOL_DOCUMENT_ROOT . '/multicurrency/class/multicurrency.class.php';
 dol_include_once('/multicompany/class/actions_multicompany.class.php', 'ActionsMulticompany');
 /** @var Translate $langs */
 $langs->loadLangs(array(
-	"errors",
-	"admin",
-	"main",
-	"multicurrency"));
+					  "errors",
+					  "admin",
+					  "main",
+					  "multicurrency"));
 
 
-
-if (!$user->admin)
-{
+if (!$user->admin) {
 	accessforbidden();
 }
 
@@ -52,7 +50,7 @@ $hookmanager->initHooks(array('multicurrency_rates'));
 
 // Load translation files required by the page
 
-$action = GETPOST('action', 'alpha') ?GETPOST('action', 'alpha') : 'view';
+$action = GETPOST('action', 'alpha') ? GETPOST('action', 'alpha') : 'view';
 
 // column definition
 $TVisibleColumn = array(
@@ -73,7 +71,8 @@ _completeColumns($db, $TVisibleColumn);
 _handleActions($db, $TVisibleColumn);
 exit;
 
-function _handleActions($db, $TVisibleColumn) {
+function _handleActions($db, $TVisibleColumn)
+{
 	global $langs;
 	$action = GETPOST('action', 'alpha');
 	if (empty($action)) $action = 'view';
@@ -93,7 +92,8 @@ function _handleActions($db, $TVisibleColumn) {
  * @param string $mode
  * @param int|null $targetId ID of the row targeted for edition, deletion, etc.
  */
-function _mainView($db, $TVisibleColumn, $mode='view', $targetId=NULL) {
+function _mainView($db, $TVisibleColumn, $mode = 'view', $targetId = NULL)
+{
 	global $langs;
 	$title = $langs->trans('CurrencyRateSetup');
 	$limit = 1000;
@@ -136,10 +136,10 @@ function _mainView($db, $TVisibleColumn, $mode='view', $targetId=NULL) {
 		 . '  padding: 0;'
 		 . '  background: inherit;'
 		 . '  cursor: pointer;'
-		 .'}'
-		 .'col.small-col {'
+		 . '}'
+		 . 'col.small-col {'
 		 . '  width: 5%'
-		 .'}'
+		 . '}'
 		 . '</style>';
 
 	echo '<table class="noborder centpercent">';
@@ -197,13 +197,13 @@ function _mainView($db, $TVisibleColumn, $mode='view', $targetId=NULL) {
 	}
 	// entire form is inside cell because HTML does not allow forms inside tables unless they are inside cells
 	echo '<td>'
-		 .'<form method="post" id="form-add-new" action="' . $_SERVER["PHP_SELF"] . '">'
+		 . '<form method="post" id="form-add-new" action="' . $_SERVER["PHP_SELF"] . '">'
 		 . _formHiddenInputs($TVisibleColumn)
-		 .'<button class="button" name="action" value="add">'
+		 . '<button class="button" name="action" value="add">'
 		 . $langs->trans('Add')
 		 . '</button>'
-		 .'</form>'
-		 .'</td>';
+		 . '</form>'
+		 . '</td>';
 	echo '</tr>';
 	echo '</tbody>';
 
@@ -221,12 +221,16 @@ function _mainView($db, $TVisibleColumn, $mode='view', $targetId=NULL) {
 		$objId = intval($obj->rowid);
 		$row_is_in_edit_mode = ($mode === 'modify' && $objId === $targetId);
 		$form_update_name = "form-update-" . $objId;
-		if (!$obj) { break; }
+		if (!$obj) {
+			break;
+		}
 		echo '<tr id="row-' . intval($obj->rowid) . '">';
 		foreach ($TVisibleColumn as $colSelect => $colParam) {
 			$rawValue = $obj->{$colParam['name']};
 			$displayMode = 'view';
-			if ($row_is_in_edit_mode) { $displayMode = 'modify'; }
+			if ($row_is_in_edit_mode) {
+				$displayMode = 'modify';
+			}
 			$cellContent = _getCellContent($rawValue, $colParam, $displayMode, $form_update_name);
 			echo '<td class="' . $colParam['name'] . '">' . $cellContent . '</td>';
 		}
@@ -242,9 +246,7 @@ function _mainView($db, $TVisibleColumn, $mode='view', $targetId=NULL) {
 				 . htmlspecialchars($langs->trans('Save'), ENT_QUOTES)
 				 . '" />'
 				 . '</form>';
-		}
-
-		// edit + delete buttons (for rows not in edit mode)
+		} // edit + delete buttons (for rows not in edit mode)
 		else {
 			echo '<form method="post" action="' . $_SERVER['PHP_SELF'] . '" id="form-edit-' . $objId . '" style="display: inline;">'
 				 . _formHiddenInputs($TVisibleColumn)
@@ -279,19 +281,20 @@ function _mainView($db, $TVisibleColumn, $mode='view', $targetId=NULL) {
  * Calls a specialized callback depending on $colParam['callback'] (or a default one
  * if not set or found) to return a representation of $rawValue depending on $mode:
  *
- * @param mixed $rawValue      A raw value (as returned by the SQL handler)
- * @param array $colParam      Information about the kind of value (date, price, etc.)
- * @param string $mode         'view',   => returns the value for end user display
+ * @param mixed $rawValue A raw value (as returned by the SQL handler)
+ * @param array $colParam Information about the kind of value (date, price, etc.)
+ * @param string $mode 'view',   => returns the value for end user display
  *                             'modify', => returns a form to modify the value
  *                             'new',    => returns a form to put the value in a new record
  *                             'raw',    => does nothing (returns the raw value)
  *                             'text'    => returns a text-only version of the value
  *                                          (for text-only exports etc.)
- * @param string|null $formId  HTML id of the form on which to attach the input in
+ * @param string|null $formId HTML id of the form on which to attach the input in
  *                             'modify' and 'new' modes
  * @return string
  */
-function _getCellContent($rawValue, $colParam, $mode='view', $formId=NULL) {
+function _getCellContent($rawValue, $colParam, $mode = 'view', $formId = NULL)
+{
 	if ($mode === 'raw') return $rawValue;
 	$callback = _cellContentCallbackName($colParam);
 	return call_user_func($callback, $rawValue, $mode, $colParam['name'], $formId);
@@ -304,16 +307,20 @@ function _getCellContent($rawValue, $colParam, $mode='view', $formId=NULL) {
  * @return string
  * @see _getCellContent()
  */
-function _getCellDefault($rawValue, $mode='view', $inputName='', $formId=NULL) {
+function _getCellDefault($rawValue, $mode = 'view', $inputName = '', $formId = NULL)
+{
 	switch ($mode) {
 		case 'view':
 			return dol_escape_htmltag($rawValue);
-		case 'modify': case 'new':
+		case 'modify':
+		case 'new':
 			$inputAttributes = array(
 				'value' => $rawValue,
 				'name' => $inputName,
 			);
-			if ($formId !== NULL) {$inputAttributes['form'] = $formId;}
+			if ($formId !== NULL) {
+				$inputAttributes['form'] = $formId;
+			}
 			return _tagWithAttributes('input', $inputAttributes);
 		case 'raw':
 			return $rawValue;
@@ -335,7 +342,8 @@ function _getCellDefault($rawValue, $mode='view', $inputName='', $formId=NULL) {
  * @return string
  * @see _getCellContent()
  */
-function _getCellDate($rawValue, $mode='view', $inputName='', $formId=NULL) {
+function _getCellDate($rawValue, $mode = 'view', $inputName = '', $formId = NULL)
+{
 	global $db;
 	switch ($mode) {
 		case 'view':
@@ -343,13 +351,16 @@ function _getCellDate($rawValue, $mode='view', $inputName='', $formId=NULL) {
 			$dateFormat = '%d/%m/%Y %H:%M';
 			$dateFormat = '';
 			return dol_print_date($tms, $dateFormat);
-		case 'modify': case 'new':
+		case 'modify':
+		case 'new':
 			$inputAttributes = array(
 				'type' => 'date',
 				'value' => preg_replace('/^(.*?) .*/', '$1', $rawValue),
 				'name' => $inputName,
 			);
-			if ($formId !== NULL) {$inputAttributes['form'] = $formId;}
+			if ($formId !== NULL) {
+				$inputAttributes['form'] = $formId;
+			}
 			return _tagWithAttributes('input', $inputAttributes);
 		case 'raw':
 			return $rawValue;
@@ -362,13 +373,15 @@ function _getCellDate($rawValue, $mode='view', $inputName='', $formId=NULL) {
 			));
 			$y = intval(dol_print_date(dol_now(), '%Y'));
 			$emptyOptParams = array('value' => '');
-			if (empty($rawValue)) { $emptyOptParams['selected'] = 'selected'; }
+			if (empty($rawValue)) {
+				$emptyOptParams['selected'] = 'selected';
+			}
 			$options = array(_tagWithAttributes('option', $emptyOptParams));
-			$options += array_map(function($i) use ($rawValue) {
+			$options += array_map(function ($i) use ($rawValue) {
 				$optParams = array('value' => $i);
 				if ($rawValue == $i) $optParams['selected'] = 'selected';
 				return _tagWithAttributes('option', $optParams) . $i . '</option>';
-			}, range($y-10, $y+1));
+			}, range($y - 10, $y + 1));
 			return $select . join("\n", $options) . '</select>';
 	}
 	return $rawValue;
@@ -381,11 +394,13 @@ function _getCellDate($rawValue, $mode='view', $inputName='', $formId=NULL) {
  * @return string
  * @see _getCellContent()
  */
-function _getCellNumber($rawValue, $mode='view', $inputName='', $formId=NULL) {
+function _getCellNumber($rawValue, $mode = 'view', $inputName = '', $formId = NULL)
+{
 	switch ($mode) {
 		case 'view':
 			return price($rawValue);
-		case 'modify': case 'new':
+		case 'modify':
+		case 'new':
 			$inputAttributes = array(
 				'value' => $rawValue,
 				'name' => $inputName,
@@ -393,7 +408,9 @@ function _getCellNumber($rawValue, $mode='view', $inputName='', $formId=NULL) {
 				'pattern' => '\d+(?:[.,]\d+)?',
 				'required' => 'required',
 			);
-			if ($formId !== NULL) {$inputAttributes['form'] = $formId;}
+			if ($formId !== NULL) {
+				$inputAttributes['form'] = $formId;
+			}
 			return _tagWithAttributes('input', $inputAttributes);
 		case 'raw':
 			return $rawValue;
@@ -414,13 +431,15 @@ function _getCellNumber($rawValue, $mode='view', $inputName='', $formId=NULL) {
  * @param string $inputName
  * @return string
  */
-function _getCellCurrencyCode($rawValue, $mode='view', $inputName='', $formId=NULL) {
+function _getCellCurrencyCode($rawValue, $mode = 'view', $inputName = '', $formId = NULL)
+{
 	global $db, $langs;
 	if ($formId) $formId = htmlspecialchars($formId, ENT_QUOTES);
 	$form = new Form($db);
 	switch ($mode) {
-		case 'view': case 'modify': // 'modify' because the currency code is read-only
-		return $langs->cache_currencies[$rawValue]['label'] . ' (' . $langs->getCurrencySymbol($rawValue) . ')';
+		case 'view':
+		case 'modify': // 'modify' because the currency code is read-only
+			return $langs->cache_currencies[$rawValue]['label'] . ' (' . $langs->getCurrencySymbol($rawValue) . ')';
 		case 'new':
 			$select = $form->selectMultiCurrency($rawValue, $inputName, 1);
 			if ($formId) {
@@ -455,7 +474,8 @@ function _getCellCurrencyCode($rawValue, $mode='view', $inputName='', $formId=NU
  * @param array $colParam
  * @return string
  */
-function _cellContentCallbackName($colParam) {
+function _cellContentCallbackName($colParam)
+{
 	global $langs;
 	$cellContentCallback = '_getCellDefault';
 	// possible override in column definition
@@ -463,8 +483,9 @@ function _cellContentCallbackName($colParam) {
 		$cbName = $colParam['callback'];
 		// mandatory function name prefix: '_getCell' (some day, the callback may come from untrusted input)
 		if (strpos($cbName, '_getCell') !== 0) $cbName = '_getCell' . $cbName;
-		if (function_exists($cbName)) { $cellContentCallback = $cbName; }
-		else {
+		if (function_exists($cbName)) {
+			$cellContentCallback = $cbName;
+		} else {
 			_setEventMessageOnce(
 				$langs->trans('ErrorCallbackNotFound', $cbName),
 				'warnings'
@@ -482,10 +503,11 @@ function _cellContentCallbackName($colParam) {
  *
  *
  * @param string $tagName
- * @param array $TAttribute  [$attrName => $attrVal]
+ * @param array $TAttribute [$attrName => $attrVal]
  * @return string
  */
-function _tagWithAttributes($tagName, $TAttribute) {
+function _tagWithAttributes($tagName, $TAttribute)
+{
 	$selfClosing = in_array($tagName, array('area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'));
 	$tag = '<' . $tagName;
 	foreach ($TAttribute as $attrName => $attrVal) {
@@ -506,7 +528,8 @@ function _tagWithAttributes($tagName, $TAttribute) {
  * @param string $colSelect
  * @return string
  */
-function _columnAlias($colSelect) {
+function _columnAlias($colSelect)
+{
 	// the regexp replacement does this:
 	//     'table.abcd AS efgh' => 'efgh'
 	// regexp explanation:
@@ -517,7 +540,9 @@ function _columnAlias($colSelect) {
 	//     '([^ `]+)'   => capture 2:     anything that doesn't have a space or a backtick
 	return preg_replace_callback(
 		'/^.*\.`?([^ `]+)`?(?:\s+as\s+`?([^ `]+)`?)?/i',
-		function ($m) { return isset($m[2]) ? $m[2] : $m[1]; },
+		function ($m) {
+			return isset($m[2]) ? $m[2] : $m[1];
+		},
 		$colSelect
 	);
 }
@@ -527,8 +552,11 @@ function _columnAlias($colSelect) {
  * @param $str
  * @return string|string[]|null
  */
-function _camel($str) {
-	return preg_replace_callback('/_(.)?/', function($m) { return ucfirst($m[1]); }, $str);
+function _camel($str)
+{
+	return preg_replace_callback('/_(.)?/', function ($m) {
+		return ucfirst($m[1]);
+	}, $str);
 }
 
 
@@ -536,15 +564,18 @@ function _camel($str) {
  * Default: view all currency rates
  * @param DoliDB $db
  */
-function _actionView($db, $TVisibleColumn) {
+function _actionView($db, $TVisibleColumn)
+{
 	_mainView($db, $TVisibleColumn, 'view', intval(GETPOST('id', 'int')));
 }
 
-function _actionFilter($db, $TVisibleColumn) {
+function _actionFilter($db, $TVisibleColumn)
+{
 	_mainView($db, $TVisibleColumn);
 }
 
-function _actionRemoveFilters($db, $TVisibleColumn) {
+function _actionRemoveFilters($db, $TVisibleColumn)
+{
 	foreach ($TVisibleColumn as $colSelect => &$colParam) {
 		if (isset($colParam['filter_value'])) {
 			unset($colParam['filter_value']);
@@ -558,7 +589,8 @@ function _actionRemoveFilters($db, $TVisibleColumn) {
  * Add a new currency rate
  * @param DoliDB $db
  */
-function _actionAdd($db, $TVisibleColumn) {
+function _actionAdd($db, $TVisibleColumn)
+{
 	global $langs, $conf;
 	$dateSync = GETPOST('date_sync', 'alpha');
 	$rate = GETPOST('rate', 'int');
@@ -585,7 +617,8 @@ function _actionAdd($db, $TVisibleColumn) {
  * Show a currency rate in edit mode
  * @param DoliDB $db
  */
-function _actionModify($db, $TVisibleColumn) {
+function _actionModify($db, $TVisibleColumn)
+{
 	$id = intval(GETPOST('id', 'int'));
 	_mainView($db, $TVisibleColumn, 'modify', $id);
 }
@@ -594,7 +627,8 @@ function _actionModify($db, $TVisibleColumn) {
  * Saves a currency rate
  * @param $db
  */
-function _actionUpdate($db, $TVisibleColumn) {
+function _actionUpdate($db, $TVisibleColumn)
+{
 	global $langs;
 	$id = intval(GETPOST('id', 'int'));
 	$dateSync = GETPOST('date_sync', 'alpha');
@@ -621,7 +655,8 @@ function _actionUpdate($db, $TVisibleColumn) {
  * Show a confirm form prior to deleting a currency rate
  * @param DoliDB $db
  */
-function _actionDelete($db, $TVisibleColumn) {
+function _actionDelete($db, $TVisibleColumn)
+{
 	global $langs;
 	global $delayedhtmlcontent;
 	$id = intval(GETPOST('id', 'int'));
@@ -638,7 +673,7 @@ function _actionDelete($db, $TVisibleColumn) {
 	if (isset($page)) $formParams['page'] = $page;
 	$formParams = http_build_query($formParams);
 	$delayedhtmlcontent .= $form->formconfirm(
-		$_SERVER["PHP_SELF"].'?'.$formParams,
+		$_SERVER["PHP_SELF"] . '?' . $formParams,
 		$langs->trans('DeleteLine'),
 		$langs->trans('ConfirmDeleteLine'),
 		'confirm_delete',
@@ -653,7 +688,8 @@ function _actionDelete($db, $TVisibleColumn) {
  * Delete a currency rate
  * @param DoliDB $db
  */
-function _actionConfirmDelete($db, $TVisibleColumn) {
+function _actionConfirmDelete($db, $TVisibleColumn)
+{
 	global $langs;
 	$id = intval(GETPOST('id', 'int'));
 	if (empty($id)) {
@@ -681,7 +717,8 @@ function _actionConfirmDelete($db, $TVisibleColumn) {
  * @param string $message
  * @param string $level 'errors', 'mesgs', 'warnings'
  */
-function _setEventMessageOnce($message, $level='errors') {
+function _setEventMessageOnce($message, $level = 'errors')
+{
 	if (!in_array($message, $_SESSION['dol_events'][$level])) {
 		setEventMessages($message, array(), $level);
 	}
@@ -692,7 +729,8 @@ function _setEventMessageOnce($message, $level='errors') {
  * @param DoliDB $db
  * @param array $TVisibleColumn
  */
-function _completeColumns($db, &$TVisibleColumn) {
+function _completeColumns($db, &$TVisibleColumn)
+{
 	foreach ($TVisibleColumn as $colSelect => &$colParam) {
 		$colParam['name'] = _columnAlias($colSelect);
 		if (GETPOSTISSET('search_' . $colParam['name'])) {
@@ -719,7 +757,8 @@ function _completeColumns($db, &$TVisibleColumn) {
  * @param array $colParam
  * @return string
  */
-function _getSQLFilterNumber($db, $colParam) {
+function _getSQLFilterNumber($db, $colParam)
+{
 	$filterVal = $colParam['filter_value'];
 	// apply price2num to every part of the string delimited by '<' or '>'
 	$filterVal = join(
@@ -738,12 +777,13 @@ function _getSQLFilterNumber($db, $colParam) {
 	return $sqlFilter;
 }
 
-function _getSQLFilterDate($db, $colParam) {
+function _getSQLFilterDate($db, $colParam)
+{
 	$year = intval($colParam['filter_value']);
-	$yearPlusOne = ($year+1) . '-01-01 00:00:00';
+	$yearPlusOne = ($year + 1) . '-01-01 00:00:00';
 	$year .= '-01-01 00:00:00';
 	$sqlFilter = ' AND (rate.date_sync > "' . $year . '"'
-				. ' AND rate.date_sync < "' . ($yearPlusOne) . '")';
+				 . ' AND rate.date_sync < "' . ($yearPlusOne) . '")';
 	return $sqlFilter;
 }
 
@@ -754,7 +794,8 @@ function _getSQLFilterDate($db, $colParam) {
  * @param $TVisibleColumn
  * @return string
  */
-function _formHiddenInputs($TVisibleColumn) {
+function _formHiddenInputs($TVisibleColumn)
+{
 	$ret = '';
 	foreach ($TVisibleColumn as $colSelect => $colParam) {
 		if (isset($colParam['filter_value'])) {
@@ -766,9 +807,9 @@ function _formHiddenInputs($TVisibleColumn) {
 		}
 	}
 	$ret .= "\n" . _tagWithAttributes('input', array(
-		'type' => 'hidden',
-		'name' => 'token',
-		'value' => newToken()
-	));
+			'type' => 'hidden',
+			'name' => 'token',
+			'value' => newToken()
+		));
 	return $ret;
 }
