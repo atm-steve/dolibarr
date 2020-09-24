@@ -1744,7 +1744,8 @@ class Product extends CommonObject
 
                 if ($newminprice !== '' || $newminprice === 0) {
                     $price_min = price2num($newminprice, 'MU');
-                    $price_min_ttc = price2num($newminprice) * (1 + ($newvat / 100));
+					$newminprice = price2num($newminprice);
+                    $price_min_ttc = (double)$newminprice * (1 + ($newvat / 100));
                     $price_min_ttc = price2num($price_min_ttc, 'MU');
                     //print 'X'.$newminprice.'-'.$price_min;
                 }
