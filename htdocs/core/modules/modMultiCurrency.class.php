@@ -162,6 +162,37 @@ class modMultiCurrency extends DolibarrModules
 		// Permissions
 		$this->rights = array(); // Permission array used by this module
 		$r = 0;
+		$this->rights[$r] = array(
+			$this->numero + $r,
+			'MulticurrencyCreate',
+			0,
+			'read',
+			''
+		);
+		$r++;
+		$this->rights[$r] = array(
+			$this->numero + $r,
+			'MulticurrencyCreate',
+			0,
+			'create',
+			''
+		);
+		$r++;
+		$this->rights[$r] = array(
+			$this->numero + $r,
+			'MulticurrencyCreate',
+			0,
+			'update',
+			''
+		);
+		$r++;
+		$this->rights[$r] = array(
+			$this->numero + $r,
+			'MulticurrencyCreate',
+			0,
+			'delete',
+			''
+		);
 
 		// Add here list of permission defined by an id, a label, a boolean and two constant strings.
 		// Example:
