@@ -1345,8 +1345,7 @@ if ($resql)
 			foreach ($toselect as $checked) {
 				if ($tmpproposal->fetch($checked)) {
 					if ($tmpproposal->statut == 1) {
-						$tmpproposal->statut = 2;
-						if ($tmpproposal->update($user)) {
+						if ($tmpproposal->cloture($user, $tmpproposal::STATUS_SIGNED) > 0) {
 							setEventMessage($tmpproposal->ref." ".$langs->trans('Signed'), 'mesgs');
 						} else {
 							dol_print_error($db);
