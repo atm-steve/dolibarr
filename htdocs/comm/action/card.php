@@ -1246,7 +1246,7 @@ if ($action == 'create')
 
         //Time Type
         print '<tr><td class="titlefieldcreate nowrap">'.$langs->trans("TimeType").'</td><td colspan="3">';
-        print $form->select_type_duration('offsetunit');
+        print $form->selectTypeDuration('offsetunit', $actionCommReminder->offsetunit);
         print '</td></tr>';
 
         //Reminder Type
@@ -1730,9 +1730,9 @@ if ($id > 0)
 			print '</td></tr>';
 
 			//Time Type
-			print '<tr><td class="titlefieldcreate nowrap">'.$langs->trans("TimeType").'</td><td colspan="3">';
-			print $form->select_type_duration('offsetunit', $actionCommReminder->offsetunit);
-			print '</td></tr>';
+            print '<tr><td class="titlefieldcreate nowrap">'.$langs->trans("TimeType").'</td><td colspan="3">';
+            print $form->selectTypeDuration('offsetunit', $actionCommReminder->offsetunit);
+            print '</td></tr>';
 
 			//Reminder Type
 			$TRemindTypes = array();
