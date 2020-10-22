@@ -50,13 +50,17 @@ class TExportComptaSage extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 
-		$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
-		if(empty($compte_general_client)) $compte_general_client = '41100000';
+
 
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
-
+			if(!empty($tiers['array_options']['options_compte_collectif_client'])) {
+				$compte_general_client = $tiers['array_options']['options_compte_collectif_client'];
+			} else {
+				$compte_general_client = $conf->global->EXPORT_COMPTA_GENERAL_CUSTOMER_ACCOUNT;
+				if(empty($compte_general_client)) $compte_general_client = '41100000';
+			}
 			if(!empty($infosFacture['entity'])) {
 				$entity = $infosFacture['entity'];
 				$tmp = explode(";", $entity['description']);
@@ -149,12 +153,15 @@ class TExportComptaSage extends TExportCompta {
 		$numEcriture = 1;
 		$numLignes = 1;
 
-		$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
-		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '40100000';
-
 		foreach ($TabFactures as $id_facture => $infosFacture) {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
+			if(!empty($tiers['array_options']['options_compte_collectif_fournisseur'])) {
+				$compte_general_fournisseur = $tiers['array_options']['options_compte_collectif_fournisseur'];
+			} else {
+				$compte_general_fournisseur = $conf->global->EXPORT_COMPTA_GENERAL_SUPPLIER_ACCOUNT;
+				if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '40100000';
+			}
 
 
 			// Lignes client
