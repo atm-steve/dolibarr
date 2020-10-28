@@ -161,6 +161,7 @@ class HookManager
 				'doMassActions',
 				'formatEvent',
 				'formCreateThirdpartyOptions',
+				'formConfirm',
 				'formObjectOptions',
 				'formattachOptions',
 				'formBuilddocLineOptions',
