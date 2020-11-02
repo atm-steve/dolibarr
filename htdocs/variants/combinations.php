@@ -239,6 +239,9 @@ if ($_POST) {
 			exit();
 		}
 
+		$weight_impact = price2num($weight_impact);
+                $price_impact = price2num($price_impact);
+
 		$prodcomb->variation_price_percentage = $price_impact_percent;
 		$prodcomb->variation_price = $price_impact;
 		$prodcomb->variation_weight = $weight_impact;
