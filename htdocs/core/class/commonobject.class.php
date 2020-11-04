@@ -2836,7 +2836,7 @@ abstract class CommonObject
 	{
         // phpcs:enable
         $positionfield = 'rang';
-		if ($this->table_element == 'bom') $positionfield = 'position';
+		if ($this->table_element == 'bom_bom') $positionfield = 'position';
 
 		// Search the last rang with fk_parent_line
 		if ($fk_parent_line)
@@ -8376,6 +8376,18 @@ abstract class CommonObject
 				$result = $this->call_trigger(strtoupper(get_class($this)).'_DELETE', $user);
 				if ($result < 0) { $error++; } // Do also here what you must do to rollback action if trigger fail
 				// End call triggers
+			}
+		}
+
+		// Delete llx_ecm_files
+		if (!$error) {
+			$sql = 'DELETE FROM '.MAIN_DB_PREFIX."ecm_files WHERE src_object_type = '".$this->db->escape($this->table_element.(empty($this->module) ? '' : '@'.$this->module))."' AND src_object_id = ".$this->id;
+			$resql = $this->db->query($sql);
+			if (!$resql)
+			{
+				$this->error = $this->db->lasterror();
+				$this->errors[] = $this->error;
+				$error++;
 			}
 		}
 
