@@ -644,7 +644,7 @@ if ($action == 'create' || $action == 'presend')
 	if (empty($defaultref)) {
 		$defaultref = '';
 	}
-    if ($action == 'create' && isset($clone_id)) {
+    if ($action == 'create' && !empty($clone_id)) {
         $object->fetch($clone_id);
 
         $formticket->severity_code = $object->severity_code;
@@ -656,8 +656,6 @@ if ($action == 'create' || $action == 'presend')
 
         $formticket->withfromcontactid = $contact[0]['id'];
         $formticket->withfromcontactrole = $contact[0]['fk_c_type_contact'];
-
-        $formticket->array_options = $object->array_options;
 
         ?>
         <script type="text/javascript" language="javascript">
