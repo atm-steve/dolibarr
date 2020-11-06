@@ -416,9 +416,11 @@ class FormTicket
 		$reshook = $hookmanager->executeHooks('formObjectOptions', $parameters, $ticketstat, $this->action); // Note that $action and $object may have been modified by hook
 		if (empty($reshook))
 		{
-            $ticketstat->array_options = array_merge($ticketstat->array_options,$this->array_options);
-
-            print $ticketstat->showOptionals($extrafields, 'create');
+			$clone_id = GETPOST('clone_id', 'int');
+			if (!empty($clone_id)) {
+				$ticketstat->fetch_optionals($clone_id);
+			}
+			print $ticketstat->showOptionals($extrafields, 'create');
 		}
 
 		print '</table>';
