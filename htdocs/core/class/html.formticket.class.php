@@ -334,7 +334,7 @@ class FormTicket
 				print img_picto('', 'contact', 'class="paddingright"');
 				$nbofcontacts = $form->select_contacts($selectedCompany, $this->withfromcontactid, 'contactid', 3, '', '', 0, 'minwidth200');
 				print ' ';
-				$formcompany->selectTypeContact($ticketstatic, '', 'type', 'external', '', 0, 'maginleftonly');
+				$formcompany->selectTypeContact($ticketstatic, $this->withfromcontactrole, 'type', 'external', '', 0, 'maginleftonly');
 				print '</td></tr>';
 			} else {
 				print '<tr><td class="titlefield"><input type="hidden" name="socid" value="'.$user->socid.'"/></td>';
@@ -416,7 +416,9 @@ class FormTicket
 		$reshook = $hookmanager->executeHooks('formObjectOptions', $parameters, $ticketstat, $this->action); // Note that $action and $object may have been modified by hook
 		if (empty($reshook))
 		{
-			print $ticketstat->showOptionals($extrafields, 'create');
+            $ticketstat->array_options = array_merge($ticketstat->array_options,$this->array_options);
+
+            print $ticketstat->showOptionals($extrafields, 'create');
 		}
 
 		print '</table>';
