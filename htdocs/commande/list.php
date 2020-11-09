@@ -892,7 +892,7 @@ if ($resql)
 						}
 					}
 					if ($notshippable==0) {
-						$text_icon = img_picto('', 'object_sending');
+						$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #1b9700;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
 						$text_info = $langs->trans('Shippable').'<br>'.$text_info;
 					} else {
 
@@ -910,13 +910,17 @@ if ($resql)
 							$ratioDelay = $delay * $percent/100;
 
 							if($curentDelay<0 || $curentDelay < $ratioDelay ){
-								$text_icon = img_picto('', 'error');
+								$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #800000;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
+								$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
+							}
+							else{
+								$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #bdbdbd;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
 								$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
 							}
 						}
 						else{
 							// si pas de date de livraison on part du principe que la demande est ASAP c'est le comportement std de Dolibarr
-							$text_icon = img_picto('', 'error');
+							$text_icon ='<span class="fas fa-dolly green paddingleft" style=" color: #a69944;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
 							$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
 						}
 					}
