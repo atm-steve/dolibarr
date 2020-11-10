@@ -892,11 +892,37 @@ if ($resql)
 						}
 					}
 					if ($notshippable==0) {
-						$text_icon = img_picto('', 'object_sending');
+						$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #1b9700;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
 						$text_info = $langs->trans('Shippable').'<br>'.$text_info;
 					} else {
-						$text_icon = img_picto('', 'error');
-						$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
+
+						// MAINTLOG - T2432 - Alerte sur les commandes expédiables
+						// Ajout d'une configuration module permettant de définir un pourcentage du délai de livraison (15% par défaut). Délai de livraison = date prévue de livraison - date de création
+						// Le panneau alerte sur la liste des commandes ne s'affiche qu'à partir de la date prévue de livraison moins le nombre de jours défini par pourcentage
+						if(empty($generic_commande->date) && !empty($generic_commande->date_commande)) $generic_commande->date = $generic_commande->date_commande; // date_commande is deprecated but still used as default...
+						if(!empty($conf->global->SHIPPABLEORDER_DELIVERY_DELAY_PERSENT)
+							&& !empty($generic_commande->date)
+							&& !empty($generic_commande->date_livraison))
+						{
+							$percent = intval($conf->global->SHIPPABLEORDER_DELIVERY_DELAY_PERSENT);
+							$delay = $generic_commande->date_livraison - $generic_commande->date; // Delay de livraison theorique
+							$curentDelay = $generic_commande->date_livraison - dol_now(); // Situation courante
+							$ratioDelay = $delay * $percent/100;
+
+							if($curentDelay<0 || $curentDelay < $ratioDelay ){
+								$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #800000;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
+								$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
+							}
+							else{
+								$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #bdbdbd;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
+								$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
+							}
+						}
+						else{
+							// si pas de date de livraison on part du principe que la demande est ASAP c'est le comportement std de Dolibarr
+							$text_icon ='<span class="fas fa-dolly green paddingleft" style=" color: #a69944;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
+							$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
+						}
 					}
 				}
 
