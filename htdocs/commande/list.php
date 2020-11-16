@@ -938,21 +938,29 @@ if ($resql)
 			}
 
 
-			//TODO: Affichage alerte
+			/*DEV SPECIFIQUE MAINTLOG*/
+			/*T2433  - TRAITEMENT DE L'ALERTE QUI VERIFIE SI ON A COMMANDE TOUS LES PRODUITS A LIVRER AUPRES DES FOURNISSEURS*/
 
-			$alert_price = false;
-			$alert_qty= false;
+			$alert_price = false;		//vérification des prix : OK si total ht de toutes les commandes fourn liées = pa * qty de chaque produit de la commande client
+			$alert_qty= false;			//vérification des quantités : qty totale de chaque produits de la commande client = qty totale dans chaque commande fournisseur liée
 
-			//alert_price
 			$res = $generic_commande->fetchObjectLinked();
 
-			$total_HT_supplierOrder = 0;
-			$TSupplierCommandQtyProducts = array();
+			$total_HT_supplierOrder = 0;			//compteur total HT commande fournisseurs
+			$TSupplierCommandQtyProducts = array();	//compteur total quantité de chaque produit dans les commandes fournisseur liées
 
+			$total_HT_pa_product = 0;		//compteur total HT pa produits commande client
+			$TCommandQtyProducts = array(); //compteur total quantité de chaque produit dans la commande client
+
+			//compteurs commandes fournisseurs
 			foreach($generic_commande->linkedObjects['order_supplier'] as $supplierorder){
+
+				//calcul du total ht de toutes les commandes fournisseur
 				$total_HT_supplierOrder += $supplierorder->total_ht;
 
+				//si produit lié à la ligne et pas exclu alors on ajoute sa quantité dans le compteur
 				foreach($supplierorder->lines as $line){
+
 					if(!empty($line->fk_product)) {
 
 						$product = new Product($db);
@@ -967,9 +975,7 @@ if ($resql)
 				}
 			}
 
-			$total_HT_pa_product = 0;
-			$TCommandQtyProducts = array();
-
+			//compteurs commande client
 			foreach($generic_commande->lines as $line){
 
 				if(!empty($line->fk_product)) {
@@ -978,27 +984,26 @@ if ($resql)
 					$res = $product->fetch($line->fk_product);
 					$product->fetch_optionals();
 
+					//si produit lié à la ligne et pas exclu alors on ajoute sa quantité et son prix dans les compteurs
 					if($res && empty($product->array_options['options_exclude_alert'])) {
 
 						if (empty($TCommandQtyProducts[$line->fk_product])) $TCommandQtyProducts[$line->fk_product] = $line->qty;
 						else $TCommandQtyProducts[$line->fk_product] += $line->qty;
 
 						if ($res) {
-							if (1) {
-								$supplierProduct = new ProductFournisseur($db);
-								$pa_ht = $supplierProduct->find_min_price_product_fournisseur($line->fk_product, $line->qty);
+							$supplierProduct = new ProductFournisseur($db);
+							$res = $supplierProduct->find_min_price_product_fournisseur($line->fk_product, $line->qty);
 
-								$total_HT_pa_product += $supplierProduct->fourn_price * $line->qty;
-							}
+							if($res) $total_HT_pa_product += $supplierProduct->fourn_price * $line->qty;
 						}
 					}
 				}
 			}
 
+			//alert_price
 			if($total_HT_pa_product != $total_HT_supplierOrder) $alert_price = true;
 
 			//alert_qty
-
 			foreach($TCommandQtyProducts as $id_product=>$total_qty){
 				if($TSupplierCommandQtyProducts[$id_product] != $total_qty) {
 					$alert_qty = true;
@@ -1017,6 +1022,8 @@ if ($resql)
 				print '<a href="'.DOL_URL_ROOT.'/commande/note.php?id='.$obj->rowid.'">'.img_picto($langs->trans("ViewPrivateNote"), 'object_generic').'</a>';
 				print '</span>';
 			}
+			/*DEV SPECIFIQUE MAINTLOG*/
+			//T2433 - Affichage picto
 			if($alert_qty || $alert_price){
 				print '<span class="fas fa-parachute-box" style=" color: #800000;"></span>';
 			}
