@@ -937,6 +937,75 @@ if ($resql)
 				print '</td>';
 			}
 
+
+			//TODO: Affichage alerte
+
+			$alert_price = false;
+			$alert_qty= false;
+
+			//alert_price
+			$res = $generic_commande->fetchObjectLinked();
+
+			$total_HT_supplierOrder = 0;
+			$TSupplierCommandQtyProducts = array();
+
+			foreach($generic_commande->linkedObjects['order_supplier'] as $supplierorder){
+				$total_HT_supplierOrder += $supplierorder->total_ht;
+
+				foreach($supplierorder->lines as $line){
+					if(!empty($line->fk_product)) {
+
+						$product = new Product($db);
+						$res = $product->fetch($line->fk_product);
+						$product->fetch_optionals();
+
+						if($res && empty($product->array_options['options_exclude_alert'])) {
+							if (empty($TSupplierCommandQtyProducts[$line->fk_product])) $TSupplierCommandQtyProducts[$line->fk_product] = $line->qty;
+							else $TSupplierCommandQtyProducts[$line->fk_product] += $line->qty;
+						}
+					}
+				}
+			}
+
+			$total_HT_pa_product = 0;
+			$TCommandQtyProducts = array();
+
+			foreach($generic_commande->lines as $line){
+
+				if(!empty($line->fk_product)) {
+
+					$product = new Product($db);
+					$res = $product->fetch($line->fk_product);
+					$product->fetch_optionals();
+
+					if($res && empty($product->array_options['options_exclude_alert'])) {
+
+						if (empty($TCommandQtyProducts[$line->fk_product])) $TCommandQtyProducts[$line->fk_product] = $line->qty;
+						else $TCommandQtyProducts[$line->fk_product] += $line->qty;
+
+						if ($res) {
+							if (1) {
+								$supplierProduct = new ProductFournisseur($db);
+								$pa_ht = $supplierProduct->find_min_price_product_fournisseur($line->fk_product, $line->qty);
+
+								$total_HT_pa_product += $supplierProduct->fourn_price * $line->qty;
+							}
+						}
+					}
+				}
+			}
+
+			if($total_HT_pa_product != $total_HT_supplierOrder) $alert_price = true;
+
+			//alert_qty
+
+			foreach($TCommandQtyProducts as $id_product=>$total_qty){
+				if($TSupplierCommandQtyProducts[$id_product] != $total_qty) {
+					$alert_qty = true;
+					break;
+				}
+			}
+
 			// Warning late icon and note
 			print '<td class="nobordernopadding nowrap">';
 			if ($generic_commande->hasDelay()) {
@@ -948,6 +1017,10 @@ if ($resql)
 				print '<a href="'.DOL_URL_ROOT.'/commande/note.php?id='.$obj->rowid.'">'.img_picto($langs->trans("ViewPrivateNote"), 'object_generic').'</a>';
 				print '</span>';
 			}
+			if($alert_qty || $alert_price){
+				print '<span class="fas fa-parachute-box" style=" color: #800000;"></span>';
+			}
+
 			print '</td>';
 
 			print '<td width="16" class="nobordernopadding hideonsmartphone right">';
