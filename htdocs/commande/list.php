@@ -1024,7 +1024,7 @@ if ($resql)
 			}
 			/*DEV SPECIFIQUE MAINTLOG*/
 			//T2433 - Affichage picto
-			if($alert_qty || $alert_price){
+			if($alert_qty && $alert_price){
 				print '<span class="fas fa-parachute-box" style=" color: #800000;"></span>';
 			}
 
