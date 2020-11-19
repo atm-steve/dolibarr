@@ -652,9 +652,9 @@ if (! empty($id) || ! empty($ref))
 
 				for ($i = 1; $i <= $conf->global->PRODUIT_MULTIPRICES_LIMIT; $i++)
 				{
-
+					$keyforlabel = 'PRODUIT_MULTIPRICES_LABEL'.$i;
 					print '<tr>';
-					print '<td><label for="level_price_impact_'.$i.'">'.$langs->trans('ImpactOnPriceLevel',$i).'</label>';
+					print '<td><label for="level_price_impact_'.$i.'">'.$langs->trans('ImpactOnPriceLevel',$i).' - '.$langs->trans($conf->global->$keyforlabel).'</label>';
 					if($i===1){
 						print ' <a id="apply-price-impact-to-all-level" class="classfortooltip" href="#" title="'.$langs->trans('ApplyToAllPriceImpactLevelHelp').'">('.$langs->trans('ApplyToAllPriceImpactLevel').')</a>';
 					}
