@@ -1918,6 +1918,8 @@ if ($action == 'create' && $usercancreate)
 		$soc = new Societe($db);
 		$soc->fetch($object->socid);
 
+		if(empty($object->fetch_thirdparty())) $object->fetch_thirdparty();
+
 		$author = new User($db);
 		$author->fetch($object->user_author_id);
 
