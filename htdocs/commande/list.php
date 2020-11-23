@@ -1011,6 +1011,8 @@ if ($resql)
 				}
 			}
 
+			/*———FIN DEV SPECIFIQUE MAINTLOG———*/
+
 			// Warning late icon and note
 			print '<td class="nobordernopadding nowrap">';
 			if ($generic_commande->hasDelay()) {
@@ -1027,6 +1029,7 @@ if ($resql)
 			if($alert_qty && $alert_price){
 				print '<span class="fas fa-parachute-box" style=" color: #800000;"></span>';
 			}
+			/*———FIN DEV SPECIFIQUE MAINTLOG———*/
 
 			print '</td>';
 
