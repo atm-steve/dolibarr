@@ -8926,3 +8926,112 @@ function currentToken()
 {
 	return $_SESSION['token'];
 }
+
+/**
+ * Return an SQL filter depending on the value of $search_categ
+ * $field and $categ_element should always be passed as string literals; do not put untrusted input in $field
+
+ * @param string    $objtype          type of object
+ * @param string    $categfield       name of the field in the sql query (ex: 'cp.fk_category')
+ * @param string    $categ_element    name of the table linking objects to categories (ex: 'categorie_project')
+ * @param int|int[] $search_categ     array of category IDs or single category ID or -2 (-2 = must have no category)
+ * @param bool      $use_operator_or  if $search_categ is an array, tells whether to keep only objects that have all
+ *                                    the specified categories or whether to keep objects that have at least one of the
+ *                                    specified categories
+ * @return string  an SQL filter criterion
+ * @see Categorie::getFilterSelectQuery → TODO merge this into thatsame goal
+ */
+function getCategorySQLWhere($objtype, $search_categ, $use_operator_or = true)
+{
+	$categLinkTable = 'categorie_' . $objtype;
+	switch ($objtype) {
+		case 'account':
+			$categoryField = '';
+			$objectRowidField = 'b.rowid';
+			$fkObjectField = 'fk_account';
+			break;
+		case 'actioncomm':
+			$categoryField = '';
+			$objectRowidField = '';
+			$fkObjectField = 'fk_actioncomm';
+			break;
+		case 'contact':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_socpeople';
+			break;
+		case 'fournisseur':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_soc';
+			break;
+		case 'member':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_member';
+			break;
+		case 'product':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_product';
+			break;
+		case 'project':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_project';
+			break;
+		case 'societe':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_soc';
+			break;
+		case 'user':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_user';
+			break;
+		case 'warehouse':
+			$categoryField = '';
+			$objectRowidField = 'p.rowid';
+			$fkObjectField = 'fk_warehouse';
+			break;
+	}
+	$operator = $use_operator_or ? ' OR ' : ' AND ';
+	$sql = array();
+	if (is_array($search_categ) && !empty($search_categ)) {
+		// remove non-numeric values and ensure the rest are int for safety
+		$search_categ = array_filter($search_categ, function ($categId) { return is_numeric($categId); });
+		$search_categ = array_map('intval', $search_categ);
+
+
+		if ($use_operator_or) {
+			// operator "OR": the object must be in at least one of the categories in $search_categ
+			foreach ($search_categ as $categoryId) {
+				if (intval($categoryId) === -2) {
+					$sql[] = $field . ' IS NULL';
+				} elseif ($categoryId > 0) {
+					$sql[] = $field . ' = ' . $categoryId;
+				}
+			}
+		} else {
+			// operator "AND": the object must be in all of the categories in $search_categ
+			foreach ($search_categ as $categoryId) {
+				if ($categoryId === -2) {
+					$sql[] = $field . ' IS NULL';
+				} elseif ($categoryId > 0) {
+					$sql[] = $objidfield . ' IN (SELECT fk_product FROM ' . MAIN_DB_PREFIX . $categ_element . ' WHERE fk_categorie = ' . $categoryId . ')';
+				}
+			}
+		}
+		return ' AND (' . implode($operator, $sql) . ')';
+	} elseif (is_numeric($search_categ)) {
+		if ($search_categ > 0) {
+			return ' AND ' . $field . ' = ' . intval($search_categ);
+		}
+		elseif ($search_categ == -2) {
+			return ' AND ' . $field . ' IS NULL';
+		}
+	} else {
+		return '';
+	}
+}

@@ -81,9 +81,15 @@ if (!empty($conf->socialnetworks->enabled)) {
 	}
 }
 $search_priv = GETPOST("search_priv", 'alpha');
-$search_categ = GETPOST("search_categ", 'int');
-$search_categ_thirdparty = GETPOST("search_categ_thirdparty", 'int');
-$search_categ_supplier = GETPOST("search_categ_supplier", 'int');
+$search_category_check = (!empty($conf->categorie->enabled)) ? 'array' : 'int';
+$search_categ = GETPOST("search_categ", $search_category_check);
+$search_categ_thirdparty = GETPOST("search_categ_thirdparty", $search_category_check);
+$search_categ_supplier = GETPOST("search_categ_supplier",   $search_category_check);
+if (!empty($conf->categorie->enabled)) {
+	$Operator = (GETPOST('search_category_operator', 'int') ? GETPOST('search_category_operator', 'int') : 0);
+	$searchCategoryThirdpartyOperator = (GETPOST('search_category_thirdparty_operator', 'int') ? GETPOST('search_category_thirdparty_operator', 'int') : 0);
+	$searchCategorySupplierOperator = (GETPOST('search_category_supplier_operator', 'int') ? GETPOST('search_category_supplier_operator', 'int') : 0);
+}
 $search_status = GETPOST("search_status", 'int');
 $search_type = GETPOST('search_type', 'alpha');
 $search_zip = GETPOST('search_zip', 'alpha');
@@ -339,12 +345,9 @@ else
 	if ($search_priv == '1') $sql .= " AND (p.priv='1' AND p.fk_user_creat=".$user->id.")";
 }
 
-if ($search_categ > 0)   $sql .= " AND cc.fk_categorie = ".$db->escape($search_categ);
-if ($search_categ == -2) $sql .= " AND cc.fk_categorie IS NULL";
-if ($search_categ_thirdparty > 0)   $sql .= " AND cs.fk_categorie = ".$db->escape($search_categ_thirdparty);
-if ($search_categ_thirdparty == -2) $sql .= " AND cs.fk_categorie IS NULL";
-if ($search_categ_supplier > 0)     $sql .= " AND cs2.fk_categorie = ".$db->escape($search_categ_supplier);
-if ($search_categ_supplier == -2)   $sql .= " AND cs2.fk_categorie IS NULL";
+$sql .= getCategorySQLWhere('cc.fk_categorie', $search_categ, $searchCategoryOperator);
+$sql .= getCategorySQLWhere('cs.fk_categorie', $search_categ_thirdparty, $searchCategoryThirdpartyOperator);
+$sql .= getCategorySQLWhere('cs2.fk_categorie', $search_categ_supplier, $searchCategorySupplierOperator);
 
 if ($sall)                          $sql .= natural_search(array_keys($fieldstosearchall), $sall);
 if (strlen($search_phone))          $sql .= natural_search(array('p.phone', 'p.phone_perso', 'p.phone_mobile'), $search_phone);
@@ -533,7 +536,11 @@ if (!empty($conf->categorie->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 	$moreforfilter .= '<div class="divsearchfield">';
 	$moreforfilter .= $langs->trans('Categories').': ';
-	$moreforfilter .= $formother->select_categories(Categorie::TYPE_CONTACT, $search_categ, 'search_categ', 1);
+	if (!empty($conf->categorie->enabled)) {
+		$moreforfilter .= $formother->multiSelectCategories(Categorie::TYPE_CONTACT, $search_categ, 'search_categ');
+	} else {
+		$moreforfilter .= $formother->select_categories(Categorie::TYPE_CONTACT, $search_categ, 'search_categ');
+	}
 	$moreforfilter .= '</div>';
 	if (empty($type) || $type == 'c' || $type == 'p')
 	{
@@ -541,14 +548,20 @@ if (!empty($conf->categorie->enabled))
 		if ($type == 'c') $moreforfilter .= $langs->trans('CustomersCategoriesShort').': ';
 		elseif ($type == 'p') $moreforfilter .= $langs->trans('ProspectsCategoriesShort').': ';
 		else $moreforfilter .= $langs->trans('CustomersProspectsCategoriesShort').': ';
-		$moreforfilter .= $formother->select_categories(Categorie::TYPE_CUSTOMER, $search_categ_thirdparty, 'search_categ_thirdparty', 1);
+		if (!empty($conf->categorie->enabled))
+			$moreforfilter .= $formother->multiSelectCategories(Categorie::TYPE_CUSTOMER, $search_categ_thirdparty, 'search_categ_thirdparty', 1);
+		else
+			$moreforfilter .= $formother->select_categories(Categorie::TYPE_CUSTOMER, $search_categ_thirdparty, 'search_categ_thirdparty', 1);
 		$moreforfilter .= '</div>';
 	}
 	if (empty($type) || $type == 'f')
 	{
 		$moreforfilter .= '<div class="divsearchfield">';
 		$moreforfilter .= $langs->trans('SuppliersCategoriesShort').': ';
-		$moreforfilter .= $formother->select_categories(Categorie::TYPE_SUPPLIER, $search_categ_supplier, 'search_categ_supplier', 1);
+		if (!empty($conf->categorie->enabled))
+			$moreforfilter .= $formother->multiSelectCategories(Categorie::TYPE_SUPPLIER, $search_categ_supplier, 'search_categ_supplier', 1);
+		else
+			$moreforfilter .= $formother->select_categories(Categorie::TYPE_SUPPLIER, $search_categ_supplier, 'search_categ_supplier', 1);
 		$moreforfilter .= '</div>';
 	}
 	$moreforfilter .= '<div class="divsearchfield">';

@@ -346,66 +346,102 @@ class FormOther
         return $return;
     }
 
-    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
-    /**
-     * Return select list for categories (to use in form search selectors)
-     *
-     * @param	int		$type			Type of category ('customer', 'supplier', 'contact', 'product', 'member'). Old mode (0, 1, 2, ...) is deprecated.
-     * @param   integer	$selected     	Preselected value
-     * @param   string	$htmlname      	Name of combo list
-     * @param	int		$nocateg		Show also an entry "Not categorized"
-     * @param   int     $showempty      Add also an empty line
-     * @param   string  $morecss        More CSS
-     * @return  string		        	Html combo list code
-     * @see	select_all_categories()
-     */
-    public function select_categories($type, $selected = 0, $htmlname = 'search_categ', $nocateg = 0, $showempty = 1, $morecss = '')
-    {
-        // phpcs:enable
-        global $conf, $langs;
-        require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+	/**
+	 * Return select list for categories (to use in form search selectors)
+	 *
+	 * @param	int		$type			Type of category ('customer', 'supplier', 'contact', 'product', 'member'). Old mode (0, 1, 2, ...) is deprecated.
+	 * @param   integer	$selected     	Preselected value
+	 * @param   string	$htmlname      	Name of combo list
+	 * @param	int		$nocateg		Show also an entry "Not categorized"
+	 * @param   int     $showempty      Add also an empty line
+	 * @param   string  $morecss        More CSS
+	 * @return  string		        	Html combo list code
+	 * @see	select_all_categories()
+	 */
+	public function select_categories($type, $selected = 0, $htmlname = 'search_categ', $nocateg = 0, $showempty = 1, $morecss = '')
+	{
+		// phpcs:enable
+		global $conf, $langs;
+		require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 
-        // For backward compatibility
-        if (is_numeric($type))
-        {
-            dol_syslog(__METHOD__.': using numeric value for parameter type is deprecated. Use string code instead.', LOG_WARNING);
-        }
+		// For backward compatibility
+		if (is_numeric($type))
+		{
+			dol_syslog(__METHOD__.': using numeric value for parameter type is deprecated. Use string code instead.', LOG_WARNING);
+		}
 
-        // Load list of "categories"
-        $static_categs = new Categorie($this->db);
-        $tab_categs = $static_categs->get_full_arbo($type);
+		// Load list of "categories"
+		$static_categs = new Categorie($this->db);
+		$tab_categs = $static_categs->get_full_arbo($type);
 
-        $moreforfilter = '';
-        // Enhance with select2
-        if ($conf->use_javascript_ajax)
-        {
-            include_once DOL_DOCUMENT_ROOT.'/core/lib/ajax.lib.php';
-            $comboenhancement = ajax_combobox('select_categ_'.$htmlname);
-            $moreforfilter .= $comboenhancement;
-        }
+		$moreforfilter = '';
+		// Enhance with select2
+		if ($conf->use_javascript_ajax)
+		{
+			include_once DOL_DOCUMENT_ROOT.'/core/lib/ajax.lib.php';
+			$comboenhancement = ajax_combobox('select_categ_'.$htmlname);
+			$moreforfilter .= $comboenhancement;
+		}
 
-        // Print a select with each of them
-        $moreforfilter .= '<select class="flat minwidth100'.($morecss ? ' '.$morecss : '').'" id="select_categ_'.$htmlname.'" name="'.$htmlname.'">';
-        if ($showempty) $moreforfilter .= '<option value="0">&nbsp;</option>'; // Should use -1 to say nothing
+		// Print a select with each of them
+		$moreforfilter .= '<select class="flat minwidth100'.($morecss ? ' '.$morecss : '').'" id="select_categ_'.$htmlname.'" name="'.$htmlname.'">';
+		if ($showempty) $moreforfilter .= '<option value="0">&nbsp;</option>'; // Should use -1 to say nothing
 
-        if (is_array($tab_categs))
-        {
-            foreach ($tab_categs as $categ)
-            {
-                $moreforfilter .= '<option value="'.$categ['id'].'"';
-                if ($categ['id'] == $selected) $moreforfilter .= ' selected';
-                $moreforfilter .= '>'.dol_trunc($categ['fulllabel'], 50, 'middle').'</option>';
-            }
-        }
-        if ($nocateg)
-        {
-        	$langs->load("categories");
-        	$moreforfilter .= '<option value="-2"'.($selected == -2 ? ' selected' : '').'>- '.$langs->trans("NotCategorized").' -</option>';
-        }
-        $moreforfilter .= '</select>';
+		if (is_array($tab_categs))
+		{
+			foreach ($tab_categs as $categ)
+			{
+				$moreforfilter .= '<option value="'.$categ['id'].'"';
+				if ($categ['id'] == $selected) $moreforfilter .= ' selected';
+				$moreforfilter .= '>'.dol_trunc($categ['fulllabel'], 50, 'middle').'</option>';
+			}
+		}
+		if ($nocateg)
+		{
+			$langs->load("categories");
+			$moreforfilter .= '<option value="-2"'.($selected == -2 ? ' selected' : '').'>- '.$langs->trans("NotCategorized").' -</option>';
+		}
+		$moreforfilter .= '</select>';
 
-        return $moreforfilter;
-    }
+		return $moreforfilter;
+	}
+
+	/**
+	 * Return select list for categories with multiple selection capability (for use as a search filters for lists)
+	 *
+	 * @param	int		$type			Type of category ('customer', 'supplier', 'contact', 'product', 'member'). Old mode (0, 1, 2, ...) is deprecated.
+	 * @param   integer	$selected     	Preselected value
+	 * @param   string	$htmlname      	Name of combo list
+	 * @param	int		$nocateg		Show also an entry "Not categorized"
+	 * @param   int     $showempty      Add also an empty line
+	 * @param   string  $morecss        More CSS
+	 * @return  string		        	Html combo list code
+	 * @see	select_categories()
+	 */
+	public function multiSelectCategories($type, $selected = 0, $htmlname = 'search_categ', $nocateg = 0, $showempty = 1, $morecss = '')
+	{
+		// phpcs:enable
+		global $conf, $langs;
+		require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+
+		// For backward compatibility
+		if (is_numeric($type))
+		{
+			dol_syslog(__METHOD__.': using numeric value for parameter type is deprecated. Use string code instead.', LOG_WARNING);
+		}
+
+		// Load list of "categories"
+		$static_categs = new Categorie($this->db);
+		$tab_categs = $static_categs->get_full_arbo($type);
+
+		$options = array();
+		foreach ($tab_categs as $categObj) {
+			$options[$categObj['id']] = $categObj['fulllabel'];
+		}
+		$multiselect = Form::multiselectarray($htmlname, $options, $selected, 0, 0, $morecss);
+		$multiselect .= '<input type="checkbox" name="' . $htmlname . '_use_operator_or"
+	}
 
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
