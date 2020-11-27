@@ -32,7 +32,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facturestats.class.php';
-if (!empty($conf->category->enabled)) require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+if (!empty($conf->categorie->enabled)) require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 
 $WIDTH = DolGraph::getDefaultGraphSizeForStats('width');
 $HEIGHT = DolGraph::getDefaultGraphSizeForStats('height');
@@ -68,7 +68,7 @@ $endyear = $year;
 /*
  * View
  */
-if (!empty($conf->category->enabled)) $langs->load('categories');
+if (!empty($conf->categorie->enabled)) $langs->load('categories');
 $form = new Form($db);
 $formcompany = new FormCompany($db);
 $formother = new FormOther($db);
@@ -269,7 +269,7 @@ if ($user->admin) print ' '.info_admin($langs->trans("YouCanChangeValuesForThisL
 print '</td></tr>';
 
 // Category
-if (! empty($conf->category->enabled)) {
+if (! empty($conf->categorie->enabled)) {
 	if ($mode == 'customer')
 	{
 	    $cat_type = Categorie::TYPE_CUSTOMER;

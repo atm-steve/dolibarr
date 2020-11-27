@@ -56,6 +56,8 @@ class Categorie extends CommonObject
 	const TYPE_WAREHOUSE = 'warehouse';
 	const TYPE_ACTIONCOMM = 'actioncomm';
 	const TYPE_WEBSITE_PAGE = 'website_page';
+	const FILTER_MODE_OR = 'OR';
+	const FILTER_MODE_AND = 'AND';
 
 	/**
 	 * @var string String with name of icon for myobject. Must be the part after the 'object_' into object_myobject.png
@@ -1977,15 +1979,65 @@ class Categorie extends CommonObject
 	}
 
 	/**
-	 * Return the addtional SQL SELECT query for filtering a list by a category
+	 * Return the additional SQL SELECT query for filtering a list by a category or a list of categories
 	 *
 	 * @param string	$type			The category type (e.g Categorie::TYPE_WAREHOUSE)
-	 * @param string	$rowIdName		The name of the row id inside the whole sql query (e.g. "e.rowid")
-	 * @param Array		$searchList		A list with the selected categories
+	 * @param string	$rowIdName		The qualified name of the id field inside the whole sql query (e.g. "e.rowid")
+	 * @param int[]		$searchList		A list with the selected category IDs
+	 * @param string    $mode           'OR' or 'AND': determines whether to keep elements matching one category
+	 *                                  at least ('OR' mode) or only elements matching all categories ('AND' mode).
+	 *                                  More modes could be added in the future (for instance to regard objects having
+	 *                                  a child category as having the parent category as well)
 	 * @return string					A additional SQL SELECT query
 	 */
-	public static function getFilterSelectQuery($type, $rowIdName, $searchList)
+	public static function getFilterSelectQuery($type, $rowIdName, $searchList, $mode=self::FILTER_MODE_AND)
 	{
+		$tableSuffix = $type;
+		$fk = $type;
+		$listAlias = substr($type, 0, 1);
+		switch ($type) {
+			case 'contact':
+				$fk = 'socpeople'; $listAlias = 'p';
+				break;
+			case 'account':
+				$listAlias = 'b';
+				break;
+			case 'event':case 'actioncomm':
+				$tableSuffix = 'actioncomm';
+				$fk = 'actioncomm';
+				$listAlias = 'a';
+				break;
+			case 'supplier':
+				$tableSuffix = 'fournisseur';
+				$fk = 'soc';
+				$listAlias = 's'; // TODO vérifier
+				break;
+			case 'customer':
+				$tableSuffix = 'societe';
+				$fk = 'soc';
+				$listAlias = 's'; // TODO vérifier
+				break;
+			case 'product':
+				$fk = '';
+				$listAlias = '';
+				break;
+			case 'project':
+				$fk = '';
+				$listAlias = '';
+				break;
+			case 'societe':
+				$fk = 'soc';
+				break;
+			case 'user':
+				$fk = '';
+				$listAlias = '';
+				break;
+			case 'warehouse':
+				$fk = '';
+				$listAlias = '';
+				break;
+
+		}
 		if ($type == 'bank_account') $type = 'account';
 
 		if (empty($searchList) && !is_array($searchList))
@@ -2001,14 +2053,16 @@ class Categorie extends CommonObject
 			} elseif (intval($searchCategory) > 0)
 			{
 				$searchCategorySqlList[] = " ".$rowIdName
-										." IN (SELECT fk_".$type." FROM ".MAIN_DB_PREFIX."categorie_".$type
+										." IN (SELECT fk_".$fk." FROM ".MAIN_DB_PREFIX."categorie_".$tableSuffix
 										." WHERE fk_categorie = ".$searchCategory.")";
 			}
 		}
 
 		if (!empty($searchCategorySqlList))
 		{
-			return " AND (".implode(' AND ', $searchCategorySqlList).")";
+			if ($mode === Categorie::FILTER_MODE_AND) $glueOperator = ' AND ';
+			elseif ($mode === Categorie::FILTER_MODE_OR) $glueOperator = ' OR ';
+			return " AND (".implode($glueOperator, $searchCategorySqlList).")";
 		} else {
 			return "";
 		}
