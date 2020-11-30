@@ -396,18 +396,18 @@ if (empty($reshook) && $action == 'add')
                 //Create reminder
                 if ($addreminder == 'on'){
                     $actionCommReminder = new ActionCommReminder($db);
-
-                    if ($offsetunit == 'minute'){
+			//TK12248
+                    if ($offsetunit == 'minute' || $offsetunit == 'i'){
                         $dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'i');
-                    } elseif ($offsetunit == 'hour'){
+                    } elseif ($offsetunit == 'hour' || $offsetunit == 'h'){
                         $dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'h');
-                    } elseif ($offsetunit == 'day') {
+                    } elseif ($offsetunit == 'day' || $offsetunit == 'd') {
                         $dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'd');
-                    } elseif ($offsetunit == 'week') {
+                    } elseif ($offsetunit == 'week' || $offsetunit == 'w') {
                         $dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'w');
-                    } elseif ($offsetunit == 'month') {
+                    } elseif ($offsetunit == 'month' || $offsetunit == 'm') {
                         $dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'm');
-                    } elseif ($offsetunit == 'year') {
+                    } elseif ($offsetunit == 'year' || $offsetunit == 'y') {
                         $dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'y');
                     }
 
@@ -662,19 +662,19 @@ if (empty($reshook) && $action == 'update')
 				if ($addreminder == 'on'){
 					$actionCommReminder = new ActionCommReminder($db);
 
-					if ($offsetunit == 'minute'){
-						$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'i');
-					} elseif ($offsetunit == 'hour'){
-						$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'h');
-					} elseif ($offsetunit == 'day') {
-						$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'd');
-					} elseif ($offsetunit == 'week') {
-						$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'w');
-					} elseif ($offsetunit == 'month') {
-						$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'm');
-					} elseif ($offsetunit == 'year') {
-						$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'y');
-					}
+					if ($offsetunit == 'minute' || $offsetunit == 'i'){
+                        			$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'i');
+                    			} elseif ($offsetunit == 'hour' || $offsetunit == 'h'){
+                        			$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'h');
+                    			} elseif ($offsetunit == 'day' || $offsetunit == 'd') {
+                        			$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'd');
+                    			} elseif ($offsetunit == 'week' || $offsetunit == 'w') {
+                        			$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'w');
+                    			} elseif ($offsetunit == 'month' || $offsetunit == 'm') {
+                        			$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'm');
+                    			} elseif ($offsetunit == 'year' || $offsetunit == 'y') {
+                        			$dateremind = dol_time_plus_duree($datep, -$offsetvalue, 'y');
+                    			}
 
 					$actionCommReminder->dateremind = $dateremind;
 					$actionCommReminder->typeremind = $remindertype;
