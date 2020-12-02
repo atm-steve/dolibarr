@@ -2542,7 +2542,7 @@ elseif ($id || $ref)
 			// Close
 			if ($object->statut == Expedition::STATUS_VALIDATED)
 			{
-				if ($user->rights->expedition->creer && $object->statut > 0 && ! $object->billed)
+				if ($user->rights->expedition->creer && $object->statut > 0)
 				{
 					$label="Close"; $paramaction='classifyclosed';       // = Transferred/Received
 					// Label here should be "Close" or "ClassifyBilled" if we decided to make bill on shipments instead of orders
