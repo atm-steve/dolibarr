@@ -235,3 +235,5 @@ AlwaysShowFullArbo=Afficher l'arborescence complète de l'entrepôt sur la popup
 StockAtDatePastDesc=Vous pouvez voir ici le stock (stock réel) à une date donnée dans le passé
 StockAtDateFutureDesc=Vous pouvez voir ici le stock (stock virtuel) à une date donnée dans le futur
 CurrentStock=Stock actuel
+NotEnoughStock=Stock non suffisant pour cet entrepôt
+EmptyStock=Stock vide pour cet entrepôt

@@ -219,3 +219,4 @@ InventoryForASpecificWarehouse=Inventory for a specific warehouse
 InventoryForASpecificProduct=Inventory for a specific product
 StockIsRequiredToChooseWhichLotToUse=Stock is required to choose which lot to use
 ForceTo=Force to
+NewCategoryCantGoToUsed=L'entrepôt est catégorisé comme neuf, il ne peut pas transférer un équipement vers un entrepôt catégorisé d'occassion

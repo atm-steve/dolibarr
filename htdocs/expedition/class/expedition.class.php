@@ -2226,7 +2226,7 @@ class Expedition extends CommonObject
 	 *
 	 *	@return     int     <0 if KO, >0 if OK
 	 */
-	public function setClosed()
+	public function setClosed($notrigger = 0)
 	{
 		global $conf, $langs, $user;
 
@@ -2351,7 +2351,7 @@ class Expedition extends CommonObject
 			}
 
 			// Call trigger
-			if (!$error)
+            if (! $error && ! $notrigger)
 			{
 				$result = $this->call_trigger('SHIPPING_CLOSED', $user);
 				if ($result < 0) {

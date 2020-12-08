@@ -45,7 +45,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/productlot.class.php';
+dol_include_once('/cliama/lib/cliama.lib.php');
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
+
 if (!empty($conf->product->enabled) || !empty($conf->service->enabled))  require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 if (!empty($conf->propal->enabled))   require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 if (!empty($conf->productbatch->enabled)) require_once DOL_DOCUMENT_ROOT.'/product/class/productbatch.class.php';
@@ -1171,6 +1173,9 @@ if ($action == 'create')
 	                    $product->load_stock('warehouseopen'); // Load all $product->stock_warehouse[idwarehouse]->detail_batch
 	                    //var_dump($product->stock_warehouse[1]);
 
+                        getVirtualStockByWarehouse($product);
+
+
 	                    print '<td>';
 	                    print '<a name="'.$line->rowid.'"></a>'; // ancre pour retourner sur la ligne
 
@@ -1278,6 +1283,12 @@ if ($action == 'create')
 									        $stockMin = 0;
 									    }
                                         print $formproduct->selectWarehouses($tmpentrepot_id, 'entl'.$indiceAsked, '', 1, 0, $line->fk_product, '', 1, 0, array(), 'minwidth200', '', 1, $stockMin, 'stock DESC, e.ref');
+
+                                        foreach ($product->stock_warehouse as $id => $infos) print "<script type='text/javascript'>
+																									var html = $('#entl".$indiceAsked." > option[value=\"".$id."\"]').html();
+																									if (html.indexOf('(') != -1) html = html.substring(0, html.indexOf('(')) + '(".$langs->trans("Stock").':'.$product->stock_warehouse[$id]->real.")';
+																									$('#entl".$indiceAsked." > option[value=\"".$id."\"]').html(html);
+																									</script>";
 
 										if ($tmpentrepot_id > 0 && $tmpentrepot_id == $warehouse_id)
 										{

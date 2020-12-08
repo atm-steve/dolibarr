@@ -210,7 +210,15 @@ class Livraison extends CommonObject
 						}
 					}
 				}
-
+                // Actions on extra fields
+                if (! $error && empty($conf->global->MAIN_EXTRAFIELDS_DISABLED))
+                {
+                    $result=$this->insertExtraFields();
+                    if ($result < 0)
+                    {
+                        $error++;
+                    }
+                }
 				if (!$error)
 				{
 					$this->db->commit();
@@ -560,6 +568,7 @@ class Livraison extends CommonObject
 		//Incoterms
 		$this->fk_incoterms = $expedition->fk_incoterms;
 		$this->location_incoterms = $expedition->location_incoterms;
+        $this->array_options = $expedition->array_options;
 
 		return $this->create($user);
 	}
