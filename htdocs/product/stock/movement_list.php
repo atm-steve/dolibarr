@@ -1174,7 +1174,7 @@ if ($resql)
         if (!empty($arrayfields['m.datem']['checked']))
         {
 	        // Date
-	        print '<td class="nowraponall">'.dol_print_date($db->jdate($objp->datem), 'dayhour', 'tzuserrel').'</td>';
+	        print '<td  id="datem_'. $objp->mid .'" class="nowraponall">'.dol_print_date($db->jdate($objp->datem), 'dayhour', 'tzuserrel').'</td>';
         }
         if (!empty($arrayfields['p.ref']['checked']))
         {
