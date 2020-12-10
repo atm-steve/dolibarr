@@ -4,7 +4,7 @@
  * Copyright (C) 2015 		Alexandre Spangaro  	<aspangaro@open-dsi.fr>
  * Copyright (C) 2018       Nicolas ZABOURI         <info@inovea-conseil.com>
  * Copyright (c) 2018       Frédéric France         <frederic.france@netlogic.fr>
- * Copyright (C) 2016-2018 	Ferran Marcet       	<fmarcet@2byte.es>
+ * Copyright (C) 2016-2020 	Ferran Marcet       	<fmarcet@2byte.es>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -600,6 +600,8 @@ class ExpenseReport extends CommonObject
                     $this->user_valid_infos = dolGetFirstLastname($user_valid->firstname, $user_valid->lastname);
                 }
 
+				$this->fetch_optionals();
+
                 $this->lines = array();
 
                 $result = $this->fetch_lines();
@@ -1104,30 +1106,47 @@ class ExpenseReport extends CommonObject
 
         if (!$rowid) $rowid = $this->id;
 
+        $error = 0;
+
+        // Delete lines
         $sql = 'DELETE FROM '.MAIN_DB_PREFIX.$this->table_element_line.' WHERE '.$this->fk_element.' = '.$rowid;
-        if ($this->db->query($sql))
+        if (!$error && !$this->db->query($sql))
         {
+        	$this->error = $this->db->error()." sql=".$sql;
+        	dol_syslog(get_class($this)."::delete ".$this->error, LOG_ERR);
+        	$error++;
+        }
+
+        // Delete llx_ecm_files
+        if (!$error) {
+        	$sql = 'DELETE FROM '.MAIN_DB_PREFIX."ecm_files WHERE src_object_type = '".$this->db->escape($this->table_element.(empty($this->module) ? '' : '@'.$this->module))."' AND src_object_id = ".$this->id;
+        	$resql = $this->db->query($sql);
+        	if (!$resql)
+        	{
+        		$this->error = $this->db->lasterror();
+        		$this->errors[] = $this->error;
+        		$error++;
+        	}
+        }
+
+        // Delete main record
+        if (!$error) {
             $sql = 'DELETE FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE rowid = '.$rowid;
             $resql = $this->db->query($sql);
-            if ($resql)
-            {
-                $this->db->commit();
-                return 1;
-            }
-            else
+            if (!$resql)
             {
                 $this->error = $this->db->error()." sql=".$sql;
                 dol_syslog(get_class($this)."::delete ".$this->error, LOG_ERR);
-                $this->db->rollback();
-                return -6;
             }
         }
-        else
-        {
-            $this->error = $this->db->error()." sql=".$sql;
-            dol_syslog(get_class($this)."::delete ".$this->error, LOG_ERR);
-            $this->db->rollback();
-            return -4;
+
+        // Commit or rollback
+        if ($error) {
+        	$this->db->rollback();
+        	return -1;
+        } else {
+        	$this->db->commit();
+        	return 1;
         }
     }
 
@@ -1782,6 +1801,7 @@ class ExpenseReport extends CommonObject
 			$localtaxes_type = getLocalTaxesFromRate($vatrate, 0, $mysoc, $this->thirdparty);
 
 			$vat_src_code = '';
+			$reg = array();
 			if (preg_match('/\s*\((.*)\)/', $vatrate, $reg))
 			{
 				$vat_src_code = $reg[1];
@@ -2027,6 +2047,7 @@ class ExpenseReport extends CommonObject
 
             // Clean vat code
             $vat_src_code = '';
+            $reg = array();
             if (preg_match('/\((.*)\)/', $vatrate, $reg))
             {
                 $vat_src_code = $reg[1];
@@ -2041,10 +2062,6 @@ class ExpenseReport extends CommonObject
 
             $tx_tva = $vatrate / 100;
             $tx_tva = $tx_tva + 1;
-            $total_ht = price2num($total_ttc / $tx_tva, 'MT');
-
-            $total_tva = price2num($total_ttc - $total_ht, 'MT');
-            // fin calculs
 
             $this->line = new ExpenseReportLine($this->db);
             $this->line->comments        = $comments;
@@ -2262,18 +2279,19 @@ class ExpenseReport extends CommonObject
         $langs->load("trips");
 
 	    if (!dol_strlen($modele)) {
-		    $modele = 'standard';
-
 		    if ($this->modelpdf) {
 			    $modele = $this->modelpdf;
 		    } elseif (!empty($conf->global->EXPENSEREPORT_ADDON_PDF)) {
 			    $modele = $conf->global->EXPENSEREPORT_ADDON_PDF;
 		    }
 	    }
+		if (!empty($modele)) {
+			$modelpath = "core/modules/expensereport/doc/";
 
-        $modelpath = "core/modules/expensereport/doc/";
-
-        return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
+			return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
+		} else {
+			return 0;
+		}
     }
 
     /**

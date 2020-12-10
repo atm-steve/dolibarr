@@ -224,26 +224,27 @@ if ($action == 'valid' && $user->rights->facture->creer)
 	//	$conf->global->FACTURE_ADDON = $sav_FACTURE_ADDON;
 	//}
 
-	$remaintopay = $invoice->getRemainToPay();
-
 	// Add the payment
-	if ($res >= 0 && $remaintopay > 0) {
-		$payment = new Paiement($db);
-		$payment->datepaye = $now;
-		$payment->fk_account = $bankaccount;
-		$payment->amounts[$invoice->id] = $amountofpayment;
+	if ($res >= 0) {
+		$remaintopay = $invoice->getRemainToPay();
+		if ($remaintopay > 0) {
+			$payment = new Paiement($db);
+			$payment->datepaye = $now;
+			$payment->fk_account = $bankaccount;
+			$payment->amounts[$invoice->id] = $amountofpayment;
 
-		// If user has not used change control, add total invoice payment
-		// Or if user has used change control and the amount of payment is higher than remain to pay, add the remain to pay
-		if ($amountofpayment == 0 || $amountofpayment > $remaintopay) $payment->amounts[$invoice->id] = $remaintopay;
+			// If user has not used change control, add total invoice payment
+			// Or if user has used change control and the amount of payment is higher than remain to pay, add the remain to pay
+			if ($amountofpayment == 0 || $amountofpayment > $remaintopay) $payment->amounts[$invoice->id] = $remaintopay;
 
-		$payment->paiementid = $paiementid;
-		$payment->num_payment = $invoice->ref;
+			$payment->paiementid = $paiementid;
+			$payment->num_payment = $invoice->ref;
 
-		$payment->create($user);
-		$payment->addPaymentToBank($user, 'payment', '(CustomerInvoicePayment)', $bankaccount, '', '');
+			$payment->create($user);
+			$payment->addPaymentToBank($user, 'payment', '(CustomerInvoicePayment)', $bankaccount, '', '');
+			$remaintopay = $invoice->getRemainToPay();    // Recalculate remain to pay after the payment is recorded
+		}
 
-		$remaintopay = $invoice->getRemainToPay(); // Recalculate remain to pay after the payment is recorded
 		if ($remaintopay == 0) {
 			dol_syslog("Invoice is paid, so we set it to status Paid");
 			$result = $invoice->set_paid($user);
@@ -411,16 +412,21 @@ if ($action == "delete") {
         {
         	$db->begin();
 
-        	// We delete the lines
-        	$sql = "DELETE FROM ".MAIN_DB_PREFIX."facturedet_extrafields where fk_object = ".$placeid;
-        	$resql1 = $db->query($sql);
-        	$sql = "DELETE FROM ".MAIN_DB_PREFIX."facturedet where fk_facture = ".$placeid;
-            $resql2 = $db->query($sql);
+			// We delete the lines
+			$resdeletelines = 1;
+			foreach($invoice->lines as $line){
+				$tmpres = $invoice->deleteline($line->id);
+				if ($tmpres < 0) {
+					$resdeletelines = 0;
+					break;
+				}
+			}
+
 			$sql = "UPDATE ".MAIN_DB_PREFIX."facture set fk_soc=".$conf->global->{'CASHDESK_ID_THIRDPARTY'.$_SESSION["takeposterminal"]};
 			$sql .= " WHERE ref='(PROV-POS".$_SESSION["takeposterminal"]."-".$place.")'";
-			$resql3 = $db->query($sql);
+			$resql1 = $db->query($sql);
 
-            if ($resql1 && $resql2 && $resql3)
+			if ($resdeletelines && $resql1)
             {
             	$db->commit();
             }
@@ -429,7 +435,7 @@ if ($action == "delete") {
             	$db->rollback();
             }
 
-            $invoice->fetch($placeid);
+			$invoice->fetch($placeid);
         }
     }
 }

@@ -302,6 +302,79 @@ if (!empty($extrafields))
 
 <script type="text/javascript">
 
+<?php
+if (! empty($usemargins) && $user->rights->margins->creer)
+{
+	?>
+	/* Some js test when we click on button "Add" */
+	jQuery(document).ready(function() {
+	<?php
+	if (! empty($conf->global->DISPLAY_MARGIN_RATES)) {
+		?>
+			$("input[name='np_marginRate']:first").blur(function(e) {
+				return checkFreeLine(e, "np_marginRate");
+			});
+		<?php
+	}
+	if (! empty($conf->global->DISPLAY_MARK_RATES)) {
+		?>
+			$("input[name='np_markRate']:first").blur(function(e) {
+				return checkFreeLine(e, "np_markRate");
+			});
+		<?php
+	}
+	?>
+	});
+
+	/* TODO This does not work for number with thousand separator that is , */
+	function checkFreeLine(e, npRate)
+	{
+		var buying_price = $("input[name='buying_price']:first");
+		var remise = $("input[name='remise_percent']:first");
+
+		var rate = $("input[name='"+npRate+"']:first");
+		if (rate.val() == '')
+			return true;
+
+		var ratejs = price2numjs(rate.val());
+		if (! $.isNumeric(ratejs))
+		{
+			alert('<?php echo dol_escape_js($langs->transnoentities("rateMustBeNumeric")); ?>');
+			e.stopPropagation();
+			setTimeout(function () { rate.focus() }, 50);
+			return false;
+		}
+		if (npRate == "np_markRate" && rate.val() >= 100)
+		{
+			alert('<?php echo dol_escape_js($langs->transnoentities("markRateShouldBeLesserThan100")); ?>');
+			e.stopPropagation();
+			setTimeout(function () { rate.focus() }, 50);
+			return false;
+		}
+
+		var price = 0;
+		remisejs=price2numjs(remise.val());
+
+		if (remisejs != 100)	// If a discount not 100 or no discount
+		{
+			if (remisejs == '') remisejs=0;
+
+			bpjs=price2numjs(buying_price.val());
+			ratejs=price2numjs(rate.val());
+
+			if (npRate == "np_marginRate")
+				price = ((bpjs * (1 + ratejs / 100)) / (1 - remisejs / 100));
+			else if (npRate == "np_markRate")
+				price = ((bpjs / (1 - ratejs / 100)) / (1 - remisejs / 100));
+		}
+		$("input[name='price_ht']:first").val(price);	// TODO Must use a function like php price to have here a formated value
+
+		return true;
+	}
+	<?php
+}
+?>
+
 jQuery(document).ready(function()
 {
 	jQuery("#price_ht").keyup(function(event) {
@@ -357,7 +430,7 @@ jQuery(document).ready(function()
 		});
 
 		/* Init field buying_price and fournprice */
-		$.post('<?php echo DOL_URL_ROOT; ?>/fourn/ajax/getSupplierPrices.php', {'idprod': <?php echo $line->fk_product ? $line->fk_product : 0; ?>}, function(data) {
+		$.post('<?php echo DOL_URL_ROOT; ?>/fourn/ajax/getSupplierPrices.php', {'idprod': <?php echo $line->fk_product ? $line->fk_product : 0; ?>, 'token': '<?php echo newToken(); ?>'}, function(data) {
           if (data && data.length > 0) {
 			var options = '';
 			var trouve=false;

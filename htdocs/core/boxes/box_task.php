@@ -1,6 +1,6 @@
 <?php
-/* Copyright (C) 2012-2018 Charlene BENKE 	<charlie@patas-monkey.com>
- * Copyright (C) 2015-2019  Frederic France      <frederic.france@netlogic.fr>
+/* Copyright (C) 2012-2018  Charlene BENKE 	<charlie@patas-monkey.com>
+ * Copyright (C) 2015-2020  Frederic France      <frederic.france@netlogic.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,7 +139,7 @@ class box_task extends ModeleBoxes
 	            $boxcontent .= '<script>date = new Date(); date.setTime(date.getTime()+(30*86400000)); document.cookie = "'.$cookie_name.'='.$filterValue.'; expires= " + date.toGMTString() + "; path=/ "; </script>';
             }
             $this->info_box_contents[0][] = array(
-                'tr'=>'class="nohover showiffilter'.$this->boxcode.' hideobject"',
+                'tr' => 'class="nohover showiffilter'.$this->boxcode.' hideobject"',
                 'td' => 'class="nohover"',
                 'textnoformat' => $boxcontent,
             );
@@ -184,7 +184,7 @@ class box_task extends ModeleBoxes
                     $taskstatic->label = $objp->label;
                     $taskstatic->progress = $objp->progress;
                     $taskstatic->fk_statut = $objp->fk_statut;
-                    $taskstatic->date_end = $objp->datee;
+                    $taskstatic->date_end = $this->db->jdate($objp->datee);
                     $taskstatic->planned_workload = $objp->planned_workload;
                     $taskstatic->duration_effective = $objp->duration_effective;
 
