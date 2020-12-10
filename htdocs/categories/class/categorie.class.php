@@ -53,6 +53,7 @@ class Categorie extends CommonObject
 	const TYPE_PROJECT   = 'project';
 	const TYPE_ACCOUNT   = 'bank_account';
     const TYPE_BANK_LINE = 'bank_line';
+    const TYPE_STOCK = 'stock';
     const TYPE_WAREHOUSE = 'warehouse';
     const TYPE_ACTIONCOMM = 'actioncomm';
     const TYPE_WEBSITE_PAGE = 'website_page';
@@ -78,7 +79,8 @@ class Categorie extends CommonObject
 		'bank_line'    => 8,
 		'warehouse'    => 9,
         'actioncomm'   => 10,
-		'website_page' => 11
+		'website_page' => 11,
+        'stock'    => 12,
 	);
 
     /**
@@ -97,7 +99,8 @@ class Categorie extends CommonObject
 		7 => 'user',
 		8 => 'bank_line',
 		9 => 'warehouse',
-        10 => 'actioncomm',
+        10=> 'actioncomm',
+        12=> 'stock'
 	);
 
 	/**
@@ -110,6 +113,8 @@ class Categorie extends CommonObject
 		'supplier' => 'soc',
 		'contact'  => 'socpeople',
         'bank_account' => 'account',
+        'project'  => 'project',
+        'stock'  => 'entrepot',
     );
 
     /**
@@ -121,6 +126,7 @@ class Categorie extends CommonObject
 		'customer' => 'societe',
 		'supplier' => 'fournisseur',
         'bank_account'=> 'account',
+        'stock'  => 'entrepot',
 	);
 
     /**
