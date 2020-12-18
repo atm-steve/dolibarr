@@ -634,11 +634,20 @@ if (empty($reshook))
                 }
                 else
 				{
-				    if ($db->lasterrno() == 'DB_ERROR_RECORD_ALREADY_EXISTS') // TODO Sometime errors on duplicate on profid and not on code, so we must manage this case
+					if ($result==-3 && in_array('ErrorCustomerCodeAlreadyUsed', $object->errors))
+					{
+						$duplicate_code_error = true;
+						$object->code_client = null;
+					}
+
+					if ($result==-3 && in_array('ErrorSupplierCodeAlreadyUsed', $object->errors))
 					{
 						$duplicate_code_error = true;
 						$object->code_fournisseur = null;
-						$object->code_client = null;
+					}
+
+					if ($db->lasterrno() == 'DB_ERROR_RECORD_ALREADY_EXISTS') {
+						$duplicate_code_error = true;
 					}
 
                     setEventMessages($object->error, $object->errors, 'errors');
@@ -1559,7 +1568,7 @@ else
 		print '<tr>';
 		print '<td>'.$form->editfieldkey('AllocateCommercial', 'commercial_id', '', $object, 0).'</td>';
 		print '<td colspan="3" class="maxwidthonsmartphone">';
-		$userlist = $form->select_dolusers('', '', 0, null, 0, '', '', 0, 0, 0, '', 0, '', '', 0, 1);
+		$userlist = $form->select_dolusers('', '', 0, null, 0, '', '', 0, 0, 0, 'AND u.statut = 1', 0, '', '', 0, 1);
 		// Note: If user has no right to "see all thirdparties", we force selection of sale representative to him, so after creation he can see the record.
 		$selected = (count(GETPOST('commercial', 'array')) > 0 ? GETPOST('commercial', 'array') : (GETPOST('commercial', 'int') > 0 ? array(GETPOST('commercial', 'int')) : (empty($user->rights->societe->client->voir) ? array($user->id) : array())));
 		print $form->multiselectarray('commercial', $userlist, $selected, null, null, null, null, "90%");
@@ -2228,7 +2237,7 @@ else
             print '<tr>';
             print '<td>'.$form->editfieldkey('AllocateCommercial', 'commercial_id', '', $object, 0).'</td>';
             print '<td colspan="3" class="maxwidthonsmartphone">';
-            $userlist = $form->select_dolusers('', '', 0, null, 0, '', '', 0, 0, 0, '', 0, '', '', 0, 1);
+            $userlist = $form->select_dolusers('', '', 0, null, 0, '', '', 0, 0, 0, 'AND u.statut = 1', 0, '', '', 0, 1);
             $arrayselected = GETPOST('commercial', 'array');
             if (empty($arrayselected)) $arrayselected = $object->getSalesRepresentatives($user, 1);
             print $form->multiselectarray('commercial', $userlist, $arrayselected, null, null, null, null, "90%");

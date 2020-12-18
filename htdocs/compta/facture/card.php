@@ -345,15 +345,6 @@ if (empty($reshook))
 		}
 	}
 
-	elseif ($action == 'set_thirdparty' && $usercancreate)
-	{
-		$object->fetch($id);
-		$object->setValueFrom('fk_soc', $socid, '', null, 'int', '', $user, 'BILL_MODIFY');
-
-		header('Location: '.$_SERVER["PHP_SELF"].'?facid='.$id);
-		exit();
-	}
-
 	elseif ($action == 'classin' && $usercancreate)
 	{
 		$object->fetch($id);
@@ -2543,7 +2534,7 @@ if (empty($reshook))
 	{
 	    $object->fetch($id, '', '', '', true);
 
-	    if ($object->statut == Facture::STATUS_VALIDATED
+	    if (in_array($object->statut, array(Facture::STATUS_CLOSED, Facture::STATUS_VALIDATED))
 	        && $object->type == Facture::TYPE_SITUATION
 	        && $usercancreate
 	        && !$objectidnext
@@ -3572,7 +3563,7 @@ if ($action == 'create')
 	$reshook = $hookmanager->executeHooks('formObjectOptions', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
 	print $hookmanager->resPrint;
 	if (empty($reshook)) {
-		if (!empty($conf->global->THIRDPARTY_PROPAGATE_EXTRAFIELDS_TO_INVOICE)) {
+		if (!empty($conf->global->THIRDPARTY_PROPAGATE_EXTRAFIELDS_TO_INVOICE) && !empty($soc->id)) {
 			// copy from thirdparty
 			$tpExtrafields = new Extrafields($db);
 			$tpExtrafieldLabels = $tpExtrafields->fetch_name_optionals_label($soc->table_element);
@@ -3881,7 +3872,7 @@ elseif ($id > 0 || !empty($ref))
 	    $label = $langs->trans("ConfirmOuting");
 	    $formquestion = array();
 	    // remove situation from cycle
-	    if ($object->statut == Facture::STATUS_VALIDATED
+	    if (in_array($object->statut, array(Facture::STATUS_CLOSED, Facture::STATUS_VALIDATED))
 	        && $usercancreate
 	        && !$objectidnext
 	        && $object->is_last_in_cycle()
@@ -5396,7 +5387,7 @@ elseif ($id > 0 || !empty($ref))
 			}
 
 			// Remove situation from cycle
-			if ($object->statut > Facture::STATUS_DRAFT
+			if (in_array($object->statut, array(Facture::STATUS_CLOSED, Facture::STATUS_VALIDATED))
 			    && $object->type == Facture::TYPE_SITUATION
 			    && $usercancreate
 			    && !$objectidnext
