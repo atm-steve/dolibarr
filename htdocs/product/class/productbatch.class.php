@@ -467,6 +467,7 @@ class Productbatch extends CommonObject
         }
 		$sql .= " WHERE fk_product_stock=".$fk_product_stock;
 		if ($with_qty) $sql .= " AND t.qty <> 0";
+		$sql .= " ORDER BY eatby ASC";
 
 		dol_syslog("productbatch::findAll", LOG_DEBUG);
 		$resql = $db->query($sql);
