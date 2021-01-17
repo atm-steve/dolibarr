@@ -551,6 +551,11 @@ class Productlot extends CommonObject
             $label .= '<br><b>'.$langs->trans('SellByDate').':</b> '.dol_print_date($this->sellby, 'day');
         }
 
+		$this->fetch_optionals();
+        $this->fetch_thirdparty($this->array_options['options_fk_fournisseur']);
+
+        $label .= '<br><b>'.$langs->trans('Producer').':</b> '.$this->thirdparty->name;
+
         $url = DOL_URL_ROOT.'/product/stock/productlot_card.php?id='.$this->id;
 
         if ($option != 'nolink')
