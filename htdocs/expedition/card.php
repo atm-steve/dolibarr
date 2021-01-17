@@ -1343,6 +1343,7 @@ if ($action == 'create')
 									//var_dump($dbatch);
 									$batchStock = + $dbatch->qty; // To get a numeric
 									$deliverableQty = min($quantityToBeDelivered, $batchStock);
+									if($dbatch->lotid != $line->array_options['options_fk_product_lot']) $deliverableQty = 0;
 									print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'>';
 									print '<td colspan="3" ></td><td class="center">';
 									print '<input name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="'.$deliverableQty.'">';
