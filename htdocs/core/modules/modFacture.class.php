@@ -387,7 +387,7 @@ class modFacture extends DolibarrModules
 		$this->export_sql_end[$r] .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields as extra3 on p.rowid = extra3.fk_object';
 		$this->export_sql_end[$r] .= ' WHERE f.fk_soc = s.rowid AND f.rowid = fd.fk_facture';
 
-		$this->export_sql_end[$r] .= ' AND f.entity IN ('.getEntity('facture').') AND cat1.label IS NOT NULL';
+		$this->export_sql_end[$r] .= ' AND f.entity IN ('.getEntity('invoice').') AND cat1.label IS NOT NULL';
 
 		if (isset($user) && empty($user->rights->societe->client->voir)) $this->export_sql_end[$r] .= ' AND sc.fk_user = '.$user->id;
 		$r++;
