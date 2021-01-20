@@ -1038,4 +1038,7 @@ ShowOtherLanguages=Afficher les autres langues
 SwitchInEditModeToAddTranslation=Passer en mode édition pour ajouter des traductions pour cette langue
 NotUsedForThisCustomer=Non utilisé pour ce client
 AmountMustBePositive=Le montant doit être positif.
-ByStatus=Par statut
+ParentCategory=Catégorie parente
+FirstLevelChildCategory=Catégorie enfant de premier niveau
+SecondLevelChildCategory=Catégorie enfant de second niveau
+
