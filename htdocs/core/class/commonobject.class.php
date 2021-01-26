@@ -6555,7 +6555,15 @@ abstract class CommonObject
 				    	{
 				    		var val = $("select[name=\""+parent_list+"\"]").val();
 				    		var parentVal = parent_list + ":" + val;
-							if(val > 0) {
+				    		console.log(typeof val)
+				    		if(typeof val == "string"){
+				    		    if(val != "") {
+					    			$("select[name=\""+child_list+"\"] option[parent]").hide();
+					    			$("select[name=\""+child_list+"\"] option[parent=\""+parentVal+"\"]").show();
+								} else {
+									$("select[name=\""+child_list+"\"] option").show();
+								}
+				    		} else if(val > 0) {
 					    		$("select[name=\""+child_list+"\"] option[parent]").hide();
 					    		$("select[name=\""+child_list+"\"] option[parent=\""+parentVal+"\"]").show();
 							} else {
