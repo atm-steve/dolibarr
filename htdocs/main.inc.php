@@ -50,7 +50,7 @@ if (! empty($_SERVER['MAIN_SHOW_TUNING_INFO']))
 // Removed magic_quotes
 if (function_exists('get_magic_quotes_gpc'))	// magic_quotes_* deprecated in PHP 5.0 and removed in PHP 5.5
 {
-	if (get_magic_quotes_gpc())
+	if (floatval(PHP_VERSION) < 7.4 && get_magic_quotes_gpc())  // get_magic_quotes_gpc function is deprecated in PHP 7.4
 	{
 		// Forcing parameter setting magic_quotes_gpc and cleaning parameters
 		// (Otherwise he would have for each position, condition
