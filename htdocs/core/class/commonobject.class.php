@@ -3256,7 +3256,7 @@ abstract class CommonObject
     			'ES',	// Spain
     			'FI',	// Finland
     			'FR',	// France
-    			'GB',	// United Kingdom
+    			//'GB',	// United Kingdom
     			'GR',	// Greece
     			'HR',   // Croatia
                 'NL',	// Holland
