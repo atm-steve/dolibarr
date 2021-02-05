@@ -2044,6 +2044,7 @@ abstract class CommonObject
 			if ($this->element == 'societe') $fieldname = 'mode_reglement';
 			if (get_class($this) == 'Fournisseur') $fieldname = 'mode_reglement_supplier';
 			if (get_class($this) == 'Tva') $fieldname = 'fk_typepayment';
+			if (get_class($this) == 'Salary') $fieldname = 'fk_typepayment';
 
 			$sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element;
 			$sql .= ' SET '.$fieldname.' = '.(($id > 0 || $id == '0') ? $id : 'NULL');
