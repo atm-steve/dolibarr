@@ -577,6 +577,7 @@ if ($id == 11)
         // 'contract' => $langs->trans('Contract'),
         'project' => $langs->trans('Project'),
         'project_task' => $langs->trans('Task'),
+        'ticket' => $langs->trans('Ticket'),
         'agenda' => $langs->trans('Agenda'),
         'dolresource' => $langs->trans('Resource'),
         // old deprecated
@@ -757,8 +758,11 @@ if (GETPOST('actionadd') || GETPOST('actionmodify'))
         	$keycode = $listfieldvalue[$i];
         	if (empty($keycode)) $keycode = $value;
 
-            if ($value == 'price' || preg_match('/^amount/i', $value) || $value == 'taux') {
-            	$_POST[$keycode] = price2num($_POST[$keycode], 'MU');
+            if ($value == 'price' || preg_match('/^amount/i', $value)) {
+            	$_POST[$keycode] = price2num(GETPOST($keycode), 'MU');
+            }
+            elseif ($value == 'taux' || $value == 'localtax1' || $value == 'localtax2') {
+            	$_POST[$keycode] = price2num(GETPOST($keycode), 8);
             }
             elseif ($value == 'entity') {
             	$_POST[$keycode] = getEntity($tabname[$id]);
@@ -790,7 +794,7 @@ if (GETPOST('actionadd') || GETPOST('actionmodify'))
         if ($result)	// Add is ok
         {
             setEventMessages($langs->transnoentities("RecordSaved"), null, 'mesgs');
-        	$_POST = array('id'=>$id); // Clean $_POST array, we keep only
+        	$_POST = array('id'=>$id); // Clean $_POST array, we keep only id
         }
         else
         {
@@ -823,8 +827,11 @@ if (GETPOST('actionadd') || GETPOST('actionmodify'))
         	$keycode = $listfieldvalue[$i];
         	if (empty($keycode)) $keycode = $field;
 
-            if ($field == 'price' || preg_match('/^amount/i', $field) || $field == 'taux') {
-            	$_POST[$keycode] = price2num($_POST[$keycode], 'MU');
+            if ($field == 'price' || preg_match('/^amount/i', $field)) {
+            	$_POST[$keycode] = price2num(GETPOST($keycode), 'MU');
+            }
+            elseif ($field == 'taux' || $field == 'localtax1' || $field == 'localtax2') {
+            	$_POST[$keycode] = price2num(GETPOST($keycode), 8);
             }
             elseif ($field == 'entity') {
             	$_POST[$keycode] = getEntity($tabname[$id]);
@@ -1454,6 +1461,7 @@ if ($id)
                         foreach ($fieldlist as $field => $value)
                         {
                         	//var_dump($fieldlist);
+
                         	$class = '';
                         	$showfield = 1;
                         	$valuetoshow = $obj->{$fieldlist[$field]};

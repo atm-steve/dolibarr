@@ -2633,7 +2633,9 @@ class CommandeFournisseur extends CommonOrder
             if (!$qty) $qty = 1;
             $pu = price2num($pu);
         	$pu_ht_devise = price2num($pu_ht_devise);
-        	$txtva = price2num($txtva);
+        	if (!preg_match('/\((.*)\)/', $txtva)) {
+        		$txtva = price2num($txtva); // $txtva can have format '5.0(XXX)' or '5'
+        	}
         	$txlocaltax1 = price2num($txlocaltax1);
         	$txlocaltax2 = price2num($txlocaltax2);
 
@@ -3232,6 +3234,7 @@ class CommandeFournisseur extends CommonOrder
     		{
     			if (is_array($supplierorderdispatch->lines) && count($supplierorderdispatch->lines) > 0)
     			{
+					require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
     				$date_liv = dol_now();
 
     				// Build array with quantity deliverd by product
@@ -3239,7 +3242,11 @@ class CommandeFournisseur extends CommonOrder
     					$qtydelivered[$line->fk_product] += $line->qty;
     				}
     				foreach ($this->lines as $line) {
-    					$qtywished[$line->fk_product] += $line->qty;
+						if ($line->product_type == Product::TYPE_PRODUCT ||
+							($line->product_type == Product::TYPE_SERVICE && !empty($conf->global->STOCK_SUPPORTS_SERVICES))
+						) {
+							$qtywished[$line->fk_product] += $line->qty;
+						}
     				}
     				//Compare array
     				$diff_array = array_diff_assoc($qtydelivered, $qtywished); // Warning: $diff_array is done only on common keys.
