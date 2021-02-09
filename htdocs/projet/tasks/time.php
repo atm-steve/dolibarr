@@ -363,13 +363,9 @@ if ($action == 'confirm_generateinvoice')
 {
 	if (!empty($projectstatic->socid)) $projectstatic->fetch_thirdparty();
 
-
-	if (!($projectstatic->thirdparty->id > 0))
-	{
+	if (!($projectstatic->thirdparty->id > 0)) {
 		setEventMessages($langs->trans("ThirdPartyRequiredToGenerateInvoice"), null, 'errors');
-	}
-	else
-	{
+	} else {
 		include_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 		include_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 		include_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
@@ -403,6 +399,7 @@ if ($action == 'confirm_generateinvoice')
             $prodDurationHours *= $tmpproduct->duration_value;
 
 			$dataforprice = $tmpproduct->getSellPrice($mysoc, $projectstatic->thirdparty, 0);
+
 			$pu_ht = empty($dataforprice['pu_ht']) ? 0 : $dataforprice['pu_ht'];
 			$txtva = $dataforprice['tva_tx'];
 			$localtax1 = $dataforprice['localtax1'];
@@ -962,69 +959,80 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0)
 		print '<input type="hidden" name="withproject" value="'.$withproject.'">';
 		print '<input type="hidden" name="tab" value="'.$tab.'">';
 
+		// Form to convert time spent into invoice
 		if ($massaction == 'generateinvoice')
 		{
-			//var_dump($_REQUEST);
 			print '<input type="hidden" name="massaction" value="confirm_createbills">';
 
-			print '<table class="noborder" width="100%" >';
-			print '<tr>';
-			print '<td class="titlefield">';
-			print $langs->trans('DateInvoice');
-			print '</td>';
-			print '<td>';
-			print $form->selectDate('', '', '', '', '', '', 1, 1);
-			print '</td>';
-			print '</tr>';
-			print '<tr>';
-			print '<td>';
-			print $langs->trans('Mode');
-			print '</td>';
-			print '<td>';
-			$tmparray = array(
-				'onelineperuser'=>'OneLinePerUser',
-				'onelinepertask'=>'OneLinePerTask',
-				'onelineperperiod'=>'OneLinePerPeriod',
-			);
-			print $form->selectarray('generateinvoicemode', $tmparray, 'onelineperuser', 0, 0, 0, '', 1);
-			print '</td>';
-			print '</tr>';
-			if ($conf->service->enabled)
-			{
+			if ($projectstatic->thirdparty->id > 0) {
+				print '<table class="noborder" width="100%" >';
 				print '<tr>';
-				print '<td>';
-				print $langs->trans('ServiceToUseOnLines');
+				print '<td class="titlefield">';
+				print $langs->trans('DateInvoice');
 				print '</td>';
 				print '<td>';
-				$form->select_produits('', 'productid', '1', 0, 0, 1, 2, '', 0, array(), 0, 'None', 0, 'maxwidth500');
+				print $form->selectDate('', '', '', '', '', '', 1, 1);
 				print '</td>';
 				print '</tr>';
-			}
-			print '<tr>';
-			print '<td class="titlefield">';
-			print $langs->trans('InvoiceToUse');
-			print '</td>';
-			print '<td>';
-            $form->selectInvoice('invoice', '', 'invoiceid', 24, 0, $langs->trans('NewInvoice'),
-			1, 0, 0, 'maxwidth500', '', 'all');
-			print '</td>';
-			print '</tr>';
-			/*print '<tr>';
-			print '<td>';
-			print $langs->trans('ValidateInvoices');
-			print '</td>';
-			print '<td>';
-			print $form->selectyesno('validate_invoices', 0, 1);
-			print '</td>';
-			print '</tr>';*/
-			print '</table>';
 
-			print '<br>';
-			print '<div class="center">';
-			print '<input type="submit" class="button" id="createbills" name="createbills" value="'.$langs->trans('GenerateBill').'">  ';
-			print '<input type="submit" class="button" id="cancel" name="cancel" value="'.$langs->trans('Cancel').'">';
-			print '</div>';
-			print '<br>';
+				print '<tr>';
+				print '<td>';
+				print $langs->trans('Mode');
+				print '</td>';
+				print '<td>';
+				$tmparray = array(
+					'onelineperuser'=>'OneLinePerUser',
+					'onelinepertask'=>'OneLinePerTask',
+					'onelineperperiod'=>'OneLinePerPeriod',
+				);
+				print $form->selectarray('generateinvoicemode', $tmparray, 'onelineperuser', 0, 0, 0, '', 1);
+				print '</td>';
+				print '</tr>';
+
+				if ($conf->service->enabled)
+				{
+					print '<tr>';
+					print '<td>';
+					print $langs->trans('ServiceToUseOnLines');
+					print '</td>';
+					print '<td>';
+					$form->select_produits('', 'productid', '1', 0, $projectstatic->thirdparty->price_level, 1, 2, '', 0, array(), $projectstatic->thirdparty->id, 'None', 0, 'maxwidth500');
+					print '</td>';
+					print '</tr>';
+				}
+
+				print '<tr>';
+				print '<td class="titlefield">';
+				print $langs->trans('InvoiceToUse');
+				print '</td>';
+				print '<td>';
+	            $form->selectInvoice('invoice', '', 'invoiceid', 24, 0, $langs->trans('NewInvoice'),
+				1, 0, 0, 'maxwidth500', '', 'all');
+				print '</td>';
+				print '</tr>';
+				/*print '<tr>';
+				print '<td>';
+				print $langs->trans('ValidateInvoices');
+				print '</td>';
+				print '<td>';
+				print $form->selectyesno('validate_invoices', 0, 1);
+				print '</td>';
+				print '</tr>';*/
+				print '</table>';
+
+				print '<br>';
+				print '<div class="center">';
+				print '<input type="submit" class="button" id="createbills" name="createbills" value="'.$langs->trans('GenerateBill').'">  ';
+				print '<input type="submit" class="button" id="cancel" name="cancel" value="'.$langs->trans('Cancel').'">';
+				print '</div>';
+				print '<br>';
+			} else {
+				print '<div class="warning">'.$langs->trans("ThirdPartyRequiredToGenerateInvoice").'</div>';
+				print '<div class="center">';
+				print '<input type="submit" class="button" id="cancel" name="cancel" value="'.$langs->trans('Cancel').'">';
+				print '</div>';
+				$massaction = '';
+			}
 		}
 
 		/*
@@ -1118,7 +1126,7 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0)
 		}
 
 		/*
-		 * Form to add time spent
+		 * Form to add a new line of time spent
 		 */
 		if ($action == 'createtime' && $user->rights->projet->lire)
 		{
@@ -1455,7 +1463,7 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0)
 			if (!empty($arrayfields['value']['checked']))
 			{
 				print '<td class="nowraponall right">';
-				$value = price2num($task_time->thm * $task_time->task_duration / 3600);
+				$value = price2num($task_time->thm * $task_time->task_duration / 3600, 'MT', 1);
 				print price($value, 1, $langs, 1, -1, -1, $conf->currency);
 				print '</td>';
 				if (!$i) $totalarray['nbfield']++;
@@ -1672,7 +1680,7 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0)
 				if (!empty($arrayfields['value']['checked']))
 				{
 					print '<td class="right">';
-					$value = price2num($task_time->thm * $task_time->task_duration / 3600);
+					$value = price2num($task_time->thm * $task_time->task_duration / 3600, 'MT', 1);
 					print price($value, 1, $langs, 1, -1, -1, $conf->currency);
 					print '</td>';
 				}
@@ -1681,7 +1689,7 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0)
 				if (!empty($arrayfields['valuebilled']['checked']))
 				{
 					print '<td class="right">';
-					$valuebilled = price2num($task_time->total_ht);
+					$valuebilled = price2num($task_time->total_ht, '', 1);
 					if (isset($task_time->total_ht)) print price($valuebilled, 1, $langs, 1, -1, -1, $conf->currency);
 					print '</td>';
 				}
@@ -1829,7 +1837,7 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0)
 				if (!empty($arrayfields['valuebilled']['checked']))
 				{
 					print '<td class="right">';
-					$valuebilled = price2num($task_time->total_ht);
+					$valuebilled = price2num($task_time->total_ht, '', 1);
 					if (isset($task_time->total_ht)) print price($valuebilled, 1, $langs, 1, -1, -1, $conf->currency);
 					print '</td>';
 				}

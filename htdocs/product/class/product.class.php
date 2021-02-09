@@ -865,7 +865,7 @@ class Product extends CommonObject
             $this->surface = $this->length * $this->width;
             $this->surface_units = measuring_units_squared($this->length_units);
         }
-        if (empty($this->volume) && !empty($this->surface_units) && !empty($this->height) && $this->length_units == $this->height_units) {
+        if (empty($this->volume) && !empty($this->surface) && !empty($this->height) && $this->length_units == $this->height_units) {
             $this->volume = $this->surface * $this->height;
             $this->volume_units = measuring_units_cubed($this->height_units);
         }
@@ -934,6 +934,7 @@ class Product extends CommonObject
             if ($this->hasbatch() && !$this->oldcopy->hasbatch()) {
                 //$valueforundefinedlot = 'Undefined';  // In previous version, 39 and lower
                 $valueforundefinedlot = '000000';
+				if (!empty($conf->global->STOCK_DEFAULT_BATCH)) $valueforundefinedlot = $conf->global->STOCK_DEFAULT_BATCH;
 
                 dol_syslog("Flag batch of product id=".$this->id." is set to ON, so we will create missing records into product_batch");
 
@@ -1240,6 +1241,16 @@ class Product extends CommonObject
                 }
             }
 
+            // Remove extrafields
+            if (!$error)
+            {
+            	$result = $this->deleteExtraFields();
+            	if ($result < 0) {
+            		$error++;
+            		dol_syslog(get_class($this)."::delete error -4 ".$this->error, LOG_ERR);
+            	}
+            }
+
             // Delete product
             if (!$error) {
                 $sqlz = "DELETE FROM ".MAIN_DB_PREFIX."product";
@@ -1264,16 +1275,6 @@ class Product extends CommonObject
                             $error++;
                         }
                     }
-                }
-            }
-
-            // Remove extrafields
-            if (!$error)
-            {
-                $result = $this->deleteExtraFields();
-                if ($result < 0) {
-                    $error++;
-                    dol_syslog(get_class($this)."::delete error -4 ".$this->error, LOG_ERR);
                 }
             }
 
@@ -1622,7 +1623,7 @@ class Product extends CommonObject
      *
      * @param	Societe		$thirdparty_seller		Seller
      * @param	Societe		$thirdparty_buyer		Buyer
-     * @param	int			$pqp					Id of product per price if a selection was done of such a price
+     * @param	int			$pqp					Id of product price per quantity if a selection was done of such a price
      * @return	array								Array of price information array('pu_ht'=> , 'pu_ttc'=> , 'tva_tx'=>'X.Y (code)', ...), 'tva_npr'=>0, ...)
      * @see get_buyprice(), find_min_price_product_fournisseur()
      */
@@ -1665,6 +1666,7 @@ class Product extends CommonObject
 			if ($result) {
 				if (count($prodcustprice->lines) > 0) {
 					$pu_ht = price($prodcustprice->lines[0]->price);
+					$price_min = price($prodcustprice->lines[0]->price_min);
 					$pu_ttc = price($prodcustprice->lines[0]->price_ttc);
 					$price_base_type = $prodcustprice->lines[0]->price_base_type;
 					$tva_tx = $prodcustprice->lines[0]->tva_tx;
@@ -3158,14 +3160,16 @@ class Product extends CommonObject
     /**
      *  Return an array formated for showing graphs
      *
-     * @param  string $sql  Request to execute
-     * @param  string $mode 'byunit'=number of unit, 'bynumber'=nb of entities
-     * @param  int    $year Year (0=current year)
-     * @return array               <0 if KO, result[month]=array(valuex,valuey) where month is 0 to 11
+     * @param  string	$sql  	Request to execute
+     * @param  string	$mode 	'byunit'=number of unit, 'bynumber'=nb of entities
+     * @param  int    	$year 	Year (0=current year, -1=all years)
+     * @return array            <0 if KO, result[month]=array(valuex,valuey) where month is 0 to 11
      */
     private function _get_stats($sql, $mode, $year = 0)
     {
         // phpcs:enable
+        $tab = array();
+
         $resql = $this->db->query($sql);
         if ($resql) {
             $num = $this->db->num_rows($resql);
@@ -3173,11 +3177,14 @@ class Product extends CommonObject
             while ($i < $num)
             {
                 $arr = $this->db->fetch_array($resql);
-                if ($mode == 'byunit') {
-                    $tab[$arr[1]] = $arr[0]; // 1st field
+                $keyfortab = (string) $arr[1];
+                if ($year == -1) {
+                	$keyfortab = substr($keyfortab, -2);
                 }
-                if ($mode == 'bynumber') {
-                    $tab[$arr[1]] = $arr[2]; // 3rd field
+                if ($mode == 'byunit') {
+                	$tab[$keyfortab] = (empty($tab[$keyfortab]) ? 0 : $tab[$keyfortab]) + $arr[0]; // 1st field
+                } elseif ($mode == 'bynumber') {
+                	$tab[$keyfortab] = (empty($tab[$keyfortab]) ? 0 : $tab[$keyfortab]) + $arr[2]; // 3rd field
                 }
                 $i++;
             }
@@ -3191,18 +3198,21 @@ class Product extends CommonObject
         if (empty($year)) {
             $year = strftime('%Y', time());
             $month = strftime('%m', time());
-        }
-        else
-        {
+        } elseif ($year == -1) {
+        	$year = '';
+        	$month = 12; // We imagine we are at end of year, so we get last 12 month before, so all correct year.
+        } else {
             $month = 12; // We imagine we are at end of year, so we get last 12 month before, so all correct year.
         }
+
         $result = array();
 
         for ($j = 0; $j < 12; $j++)
         {
-            //$idx = ucfirst(dol_trunc(dol_print_date(dol_mktime(12, 0, 0, $month, 1, $year), "%b"), 3, 'right', 'UTF-8', 1));
-        	$idx = ucfirst(dol_trunc(dol_print_date(dol_mktime(12, 0, 0, $month, 1, $year), "%b"), 1, 'right', 'UTF-8', 1));
+			// $ids is 'D', 'N', 'O', 'S', ... (First letter of month in user language)
+        	$idx = ucfirst(dol_trunc(dol_print_date(dol_mktime(12, 0, 0, $month, 1, 1970), "%b"), 1, 'right', 'UTF-8', 1));
 
+			//print $idx.'-'.$year.'-'.$month.'<br>';
             $result[$j] = array($idx, isset($tab[$year.$month]) ? $tab[$year.$month] : 0);
             //            $result[$j] = array($monthnum,isset($tab[$year.$month])?$tab[$year.$month]:0);
 
@@ -3339,8 +3349,7 @@ class Product extends CommonObject
     public function get_nb_propal($socid, $mode, $filteronproducttype = -1, $year = 0, $morefilter = '')
     {
         // phpcs:enable
-        global $conf;
-        global $user;
+        global $conf, $user;
 
         $sql = "SELECT sum(d.qty), date_format(p.datep, '%Y%m')";
         if ($mode == 'bynumber') {
@@ -4201,29 +4210,36 @@ class Product extends CommonObject
     }
 
     /**
-     *  Return all parent products for current product (first level only)
+     * Count all parent and children products for current product (first level only)
      *
-     * @return int            Nb of father + child
+     * @param	int		$mode	0=Both parent and child, -1=Parents only, 1=Children only
+     * @return 	int            	Nb of father + child
+     * @see getFather(), get_sousproduits_arbo()
      */
-    public function hasFatherOrChild()
+    public function hasFatherOrChild($mode = 0)
     {
-        $nb = 0;
+    	$nb = 0;
 
-        $sql = "SELECT COUNT(pa.rowid) as nb";
-        $sql .= " FROM ".MAIN_DB_PREFIX."product_association as pa";
-        $sql .= " WHERE pa.fk_product_fils = ".$this->id." OR pa.fk_product_pere = ".$this->id;
-        $resql = $this->db->query($sql);
-        if ($resql) {
-            $obj = $this->db->fetch_object($resql);
-            if ($obj) { $nb = $obj->nb;
-            }
-        }
-        else
-        {
-            return -1;
-        }
+    	$sql = "SELECT COUNT(pa.rowid) as nb";
+    	$sql .= " FROM ".MAIN_DB_PREFIX."product_association as pa";
+    	if ($mode == 0) {
+    		$sql .= " WHERE pa.fk_product_fils = ".$this->id." OR pa.fk_product_pere = ".$this->id;
+    	} elseif ($mode == -1) {
+    		$sql .= " WHERE pa.fk_product_fils = ".$this->id;	// We are a child, so we found lines that link to parents (can have several parents)
+    	} elseif ($mode == 1) {
+    		$sql .= " WHERE pa.fk_product_pere = ".$this->id;	// We are a parent, so we found lines that link to children (can have several children)
+    	}
 
-        return $nb;
+    	$resql = $this->db->query($sql);
+    	if ($resql) {
+    		$obj = $this->db->fetch_object($resql);
+    		if ($obj) { $nb = $obj->nb;
+    		}
+    	} else {
+    		return -1;
+    	}
+
+    	return $nb;
     }
 
     /**

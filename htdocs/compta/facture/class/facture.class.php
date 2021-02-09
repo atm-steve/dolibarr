@@ -783,6 +783,7 @@ class Facture extends CommonInvoice
 					if ($result < 0)
 					{
 						$this->error = $newinvoiceline->error;
+						$this->errors = $newinvoiceline->errors;
 						$error++;
 						break;
 					}
@@ -2523,7 +2524,7 @@ class Facture extends CommonInvoice
 		$this->db->begin();
 
 		// Check parameters
-		if ($this->type == self::TYPE_REPLACEMENT)		// si facture de remplacement
+		if ($this->type == self::TYPE_REPLACEMENT)		// if this is a replacement invoice
 		{
 			// Controle que facture source connue
 			if ($this->fk_facture_source <= 0)
@@ -2533,7 +2534,7 @@ class Facture extends CommonInvoice
 				return -10;
 			}
 
-			// Charge la facture source a remplacer
+			// Load source invoice that has been replaced
 			$facreplaced = new Facture($this->db);
 			$result = $facreplaced->fetch($this->fk_facture_source);
 			if ($result <= 0)
@@ -2543,7 +2544,7 @@ class Facture extends CommonInvoice
 				return -11;
 			}
 
-			// Controle que facture source non deja remplacee par une autre
+			// Check that source invoice not already replaced by another one.
 			$idreplacement = $facreplaced->getIdReplacingInvoice('validated');
 			if ($idreplacement && $idreplacement != $this->id)
 			{
@@ -3227,6 +3228,7 @@ class Facture extends CommonInvoice
 			else
 			{
 				$this->error = $this->line->error;
+				$this->errors = $this->line->errors;
 				$this->db->rollback();
 				return -2;
 			}
@@ -3311,7 +3313,9 @@ class Facture extends CommonInvoice
 			$pu 			= price2num($pu);
         	$pu_ht_devise = price2num($pu_ht_devise);
 			$pa_ht			= price2num($pa_ht);
-			$txtva			= price2num($txtva);
+			if (!preg_match('/\((.*)\)/', $txtva)) {
+				$txtva = price2num($txtva); // $txtva can have format '5.0(XXX)' or '5'
+			}
 			$txlocaltax1	= price2num($txlocaltax1);
 			$txlocaltax2	= price2num($txlocaltax2);
 
@@ -3326,6 +3330,7 @@ class Facture extends CommonInvoice
 
 			// Clean vat code
     		$vat_src_code = '';
+    		$reg = array();
     		if (preg_match('/\((.*)\)/', $txtva, $reg))
     		{
     		    $vat_src_code = $reg[1];
@@ -4397,15 +4402,14 @@ class Facture extends CommonInvoice
 	 *  @param  int			$hidedetails    Hide details of lines
 	 *  @param  int			$hidedesc       Hide description
 	 *  @param  int			$hideref        Hide ref
-	 *  @param   null|array  $moreparams     Array to provide more information
+	 *  @param  null|array  $moreparams     Array to provide more information
 	 *	@return int        					<0 if KO, >0 if OK
 	 */
 	public function generateDocument($modele, $outputlangs, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $moreparams = null)
 	{
 		global $conf, $langs;
 
-		$langs->load("bills");
-		$outputlangs->load("products");
+		$outputlangs->loadLangs(array("bills", "products"));
 
 		if (!dol_strlen($modele))
 		{

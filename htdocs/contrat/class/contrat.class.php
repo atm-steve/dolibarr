@@ -1255,8 +1255,8 @@ class Contrat extends CommonObject
 			}
 		}
 
-		if (!$error)
-                {
+		// Delete lines
+		if (!$error) {
 				// Delete contratdet extrafields
 				$main = MAIN_DB_PREFIX.'contratdet';
 				$ef = $main."_extrafields";
@@ -1286,9 +1286,21 @@ class Contrat extends CommonObject
 			}
 		}
 
+		// Delete llx_ecm_files
+		if (!$error) {
+			$sql = 'DELETE FROM '.MAIN_DB_PREFIX."ecm_files WHERE src_object_type = '".$this->db->escape($this->table_element.(empty($this->module) ? '' : '@'.$this->module))."' AND src_object_id = ".$this->id;
+			$resql = $this->db->query($sql);
+			if (!$resql)
+			{
+				$this->error = $this->db->lasterror();
+				$this->errors[] = $this->error;
+				$error++;
+			}
+		}
+
+		// Delete contract
 		if (!$error)
 		{
-			// Delete contrat
 			$sql = "DELETE FROM ".MAIN_DB_PREFIX."contrat";
 			$sql .= " WHERE rowid=".$this->id;
 
@@ -1490,11 +1502,10 @@ class Contrat extends CommonObject
 				$vat_src_code = $reg[1];
 				$txtva = preg_replace('/\s*\(.*\)/', '', $txtva); // Remove code into vatrate.
 			}
-
 			$txtva = price2num($txtva);
-
 			$txlocaltax1 = price2num($txlocaltax1);
 			$txlocaltax2 = price2num($txlocaltax2);
+
 			$remise_percent = price2num($remise_percent);
 			$qty = price2num($qty);
 			if (empty($qty)) $qty = 1;

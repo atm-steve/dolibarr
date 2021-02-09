@@ -249,6 +249,8 @@ class doc_generic_shipment_odt extends ModelePdfExpedition
 				}
 			}
 
+			$object->fetch_thirdparty();
+
 			$dir = $conf->expedition->dir_output."/sending";
 			$objectref = dol_sanitizeFileName($object->ref);
 			if (!preg_match('/specimen/i', $objectref)) $dir .= "/".$objectref;
@@ -466,6 +468,7 @@ class doc_generic_shipment_odt extends ModelePdfExpedition
 
 				// Replace tags of object + external modules
 				$tmparray = $this->get_substitutionarray_shipment($object, $outputlangs);
+
 				complete_substitutions_array($tmparray, $outputlangs, $object);
 				// Call the ODTSubstitution hook
 				$parameters = array('odfHandler'=>&$odfHandler, 'file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs, 'substitutionarray'=>&$tmparray);

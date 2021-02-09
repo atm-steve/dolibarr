@@ -89,7 +89,7 @@ abstract class DoliDB implements Database
 	 */
     public function idate($param)
 	{
-		// TODO GMT $param should be gmt, so we should add tzouptut to 'gmt'
+		// TODO $param should be gmt, so we should add tzouptut to 'gmt' instead of default 'tzserver'
 		return dol_print_date($param, "%Y-%m-%d %H:%M:%S");
 	}
 
@@ -229,24 +229,29 @@ abstract class DoliDB implements Database
 	{
 		if (!empty($sortfield))
 		{
-			$return = '';
-			$fields = explode(',', $sortfield);
-			$orders = explode(',', $sortorder);
-			$i = 0;
-			foreach ($fields as $val)
+			$oldsortorder = '';
+			$return='';
+			$fields=explode(',', $sortfield);
+			$orders=explode(',', $sortorder);
+			$i=0;
+			foreach($fields as $val)
 			{
 				if (!$return) $return .= ' ORDER BY ';
 				else $return .= ', ';
 
-				$return .= preg_replace('/[^0-9a-z_\.]/i', '', $val);
+				$return .= preg_replace('/[^0-9a-z_\.]/i', '', $val);	// Add field
 
 				$tmpsortorder = trim($orders[$i]);
 
 				// Only ASC and DESC values are valid SQL
 				if (strtoupper($tmpsortorder) === 'ASC') {
+					$oldsortorder = 'ASC';
 					$return .= ' ASC';
 				} elseif (strtoupper($tmpsortorder) === 'DESC') {
+					$oldsortorder = 'DESC';
 					$return .= ' DESC';
+				} else {
+					$return .= ' '.($oldsortorder ? $oldsortorder : 'ASC');
 				}
 
 				$i++;
@@ -280,7 +285,7 @@ abstract class DoliDB implements Database
 	 */
     public function jdate($string, $gm = false)
 	{
-		// TODO GMT must set param gm to true by default
+		// TODO $string should be converted into a GMT timestamp, so param gm should be set to true by default instead of false
 		if ($string == 0 || $string == "0000-00-00 00:00:00") return '';
 		$string = preg_replace('/([^0-9])/i', '', $string);
 		$tmp = $string.'000000';
