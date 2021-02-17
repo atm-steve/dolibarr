@@ -129,7 +129,7 @@ if (empty($reshook) && is_array($extrafields->attributes[$object->table_element]
 
 			$html_id = !empty($object->id) ? $object->element.'_extras_'.$key.'_'.$object->id : '';
 
-			print '<td id="'.$html_id.'" value="'.$value.'"class="'.$object->element.'_extras_'.$key.' wordbreak"'.($cols?' colspan="'.$cols.'"':'').'>';
+			print '<td id="'.$html_id.'" data-value="'.$value.'"class="'.$object->element.'_extras_'.$key.' wordbreak"'.($cols?' colspan="'.$cols.'"':'').'>';
 
 			// Convert date into timestamp format
 			if (in_array($extrafields->attributes[$object->table_element]['type'][$key], array('date','datetime')))
@@ -175,74 +175,20 @@ if (empty($reshook) && is_array($extrafields->attributes[$object->table_element]
 	// TODO Test/enhance this with a more generic solution
 	if (! empty($conf->use_javascript_ajax))
 	{
+		$jsData = array(
+			"action" => $action,
+			"table_element" => $object->table_element,
+			"object_id" => $object->id
+		);
+
 		print "\n";
 		print '
-				<script>
-				    jQuery(document).ready(function() {
-				    	function showOptions(child_list, parent_list)
-				    	{
-							let child = $("select#" + child_list);
-				    	    let infos = parent_list.split("_");
-				    		let val = $("#'.$object->table_element.'_extras_"+infos[1]+"_"'."+". $object->id.').attr("value");
-				    		let parentVal = parent_list + ":" + val;
-							let childOptionsWithAParent = child.find("option[parent]");
-							let childOptionsWithSelectedParent = child.find("option[parent=\"" + parentVal + "\"]");
-				    		if(typeof val == "string"){
-				    		    if(val != "") {
-					    			childOptionsWithAParent.hide();
-					    			childOptionsWithSelectedParent.show();
-								} else {
-									child.find("option").show();
-								}
-				    		}
-				    	}
-
-				    	function showOptionsOnMultiselect(child_list, parent_list){
-							let infos = parent_list.split("_");
-				    	    let val = $("#'.$object->table_element.'_extras_"+infos[1]+"_"'."+". $object->id.').attr("value");
-				    		let parentVal = parent_list + ":" + val;
-				    		let child = $("select#" + child_list);
-				    		if(typeof val == "string"){
-				    		    if(val != "") {
-				    		        if($("#"+child_list).hasClass("multiselect")){
-										let optionsByParent = multiSelectOptionsByParent[child_list];
-										child.empty().select2({data: optionsByParent[parentVal]});
-					    			}
-		    		    		}
-				    		}
-				    	}
-
-						function setListDependencies() {
-					    	jQuery("select option[parent]").parent().each(function() {
-					    		var child_list = $(this).attr("id");
-								let parent_list = $(this).find("option[parent]:first").attr("parent").split(":")[0];
-								var searchparams = new URLSearchParams(window.location.href);
-								if (searchparams.get("action") == "edit_extras"){
-									showOptions(child_list, parent_list);
-									showOptionsOnMultiselect(child_list, parent_list);
-								}
-					    	});
-						}
-						// create an object holding all multiselect options sorted by parent and by multiselect
-						let multiSelectOptionsByParent = {};
-						$("select.multiselect").each(function (n, select) {
-							if (!select.id) return;
-							let optionsByParent = {};
-							multiSelectOptionsByParent[select.id] = optionsByParent;
-							$(select).find("option").each(function (n, opt) {
-								let $opt = $(opt);
-								let parent = $opt.attr("parent") || "";
-								if (optionsByParent[parent] === undefined) optionsByParent[parent] = [];
-								optionsByParent[parent].push({
-									id: $opt.val(),
-									text: $opt.text(),
-								});
-						    });
-						});
-
-						setListDependencies();
-				    });
-				</script>'."\n";
+				<script type="text/javascript" src="/dolibarr/htdocs/core/js/lib_extrafields.js"></script>
+				<script type="text/javascript">
+				$(document).ready(function() {
+					manageLinkedExtrafields('.json_encode($jsData).');
+				});
+				</script>';
 	}
 }
 ?>
