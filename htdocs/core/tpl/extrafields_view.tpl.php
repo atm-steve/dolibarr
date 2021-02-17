@@ -185,7 +185,6 @@ if (empty($reshook) && is_array($extrafields->attributes[$object->table_element]
 				    	    let infos = parent_list.split("_");
 				    		let val = $("#'.$object->table_element.'_extras_"+infos[1]+"_"'."+". $object->id.').attr("value");
 				    		let parentVal = parent_list + ":" + val;
-				    		console.log(val)
 							let childOptionsWithAParent = child.find("option[parent]");
 							let childOptionsWithSelectedParent = child.find("option[parent=\"" + parentVal + "\"]");
 				    		if(typeof val == "string"){
