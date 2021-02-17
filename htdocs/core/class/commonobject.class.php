@@ -6573,6 +6573,7 @@ abstract class CommonObject
 								} else {
 									child.find("option").show();
 								}
+				    		}
 				    	}
 				    	/**
 				        * Make multiselect options visible or invisible depending on what option is selected in the parent select
