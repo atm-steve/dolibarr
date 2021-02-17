@@ -6573,12 +6573,6 @@ abstract class CommonObject
 								} else {
 									child.find("option").show();
 								}
-				    		} else if(val > 0) {
-					    		childOptionsWithAParent.hide();
-					    			childOptionsWithSelectedParent.show();
-								} else {
-									child.find("option").show();
-								}
 				    	}
 				    	/**
 				        * Make multiselect options visible or invisible depending on what option is selected in the parent select
@@ -6591,26 +6585,13 @@ abstract class CommonObject
 				    	    let val = $("select[name=\""+parent_list+"\"]").val();
 				    		let parentVal = parent_list + ":" + val;
 				    		let child = $("select#" + child_list);
-//				    		console.log(parentVal)
-//				    		console.log(child_list);
 				    		if(typeof val == "string"){
 				    		    if(val !== "") {
 				    		        if($("#"+child_list).hasClass("multiselect")){
-										let allOptionsWithParent = child.find("option");
-										console.log(multiSelectOptionsByParent)
 										let optionsByParent = multiSelectOptionsByParent[child_list];
-//										console.log(multiSelectOptionsByParent[child_list])
-//										console.log(optionsByParent[parentVal])
 										child.empty().select2({data: optionsByParent[parentVal]});
 					    			}
 		    		    		}
-				    		} else if(val > 0) {
-				    		    if($("#"+child_list).hasClass("multiselect")){
-									let allOptionsWithParent = child.find("option");
-									let optionsByParent = multiSelectOptionsByParent[child_list];
-//									console.log(optionsByParent)
-									child.empty().select2({data: optionsByParent[parentVal]});
-					    		}
 				    		}
 				    	}
 				    	/**
