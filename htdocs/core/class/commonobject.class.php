@@ -6603,8 +6603,6 @@ abstract class CommonObject
 					    		let child_list = $(this).attr("id");
 					    		let child = $(this);
 								let parent_list = $(this).find("option[parent]:first").attr("parent").split(":")[0];
-//								console.log(parent_list)
-//								console.log(child_list)
 								let parent = $("#" + parent_list);
 								let hasEmptyVal = function ($select) {
 									let val = $select.val();
@@ -6662,10 +6660,8 @@ abstract class CommonObject
 									id: $opt.val(),
 									text: $opt.text(),
 								});
-//								console.log(optionsByParent)
 						    });
 						});
-//						console.log(multiSelectOptionsByParent)
 
 						setListDependencies();
 				    });
