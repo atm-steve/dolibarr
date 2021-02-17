@@ -6551,6 +6551,13 @@ abstract class CommonObject
 				$out .= '
 				<script>
 				    jQuery(document).ready(function() {
+
+				        /**
+				        * Make select options visible or invisible depending on what option is selected in the parent select
+				        *
+						* @param {string} child_list  Code of the child extrafield (starts with "options_")
+						* @param {string} parent_list Code of the parent extrafield (starts with "options_")
+						*/
 				    	function showOptions(child_list, parent_list)
 				    	{
 				    		var val = $("select[name=\""+parent_list+"\"]").val();
@@ -6569,6 +6576,12 @@ abstract class CommonObject
 								$("select[name=\""+child_list+"\"] option").show();
 							}
 				    	}
+				    	/**
+				        * Make multiselect options visible or invisible depending on what option is selected in the parent select
+				        *
+						* @param {string} child_list  Code of the child extrafield (starts with "options_")
+						* @param {string} parent_list Code of the parent extrafield (starts with "options_")
+						*/
 				    	function showOptionsOnMultiselect(child_list, parent_list){
 
 				    	    var val = $("select[name=\""+parent_list+"\"]").val();
@@ -6613,6 +6626,10 @@ abstract class CommonObject
 					    			}
 				    		}
 				    	}
+				    	/**
+				        * Create event listeners on selects that depend on each other to hide them when they depend on
+				        * a parent that has no option selected, or to change their option list when the parents selection changes 
+						*/
 						function setListDependencies() {
 					    	jQuery("select option[parent]").parent().each(function() {
 					    		var child_list = $(this).attr("id");
