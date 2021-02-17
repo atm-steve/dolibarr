@@ -515,7 +515,7 @@ class PaymentSalary extends CommonObject
      */
     public function addPaymentToBank($user, $mode, $label, $accountid, $emetteur_nom, $emetteur_banque)
     {
-        global $conf;
+        global $conf, $langs;
 
 		// Clean data
         $this->num_payment = trim($this->num_payment ? $this->num_payment : $this->num_paiement);
@@ -580,6 +580,21 @@ class PaymentSalary extends CommonObject
                         $salary->fetch($key);
                         $result = $acc->add_url_line($bank_line_id, $salary->id, DOL_URL_ROOT.'/salaries/card.php?id=', '('.$salary->label.')', 'salary');
                         if ($result <= 0) dol_print_error($this->db);
+
+						$fuser = new User($this->db);
+						$fuser->fetch($salary->fk_user);
+
+						// Add link 'user' in bank_url between operation and bank transaction
+						$result = $acc->add_url_line(
+							$bank_line_id,
+							$fuser->id,
+							DOL_URL_ROOT.'/user/card.php?id=',
+							$fuser->getFullName($langs),
+							// $langs->trans("SalaryPayment").' '.$fuser->getFullName($langs).' '.dol_print_date($this->datesp,'dayrfc').' '.dol_print_date($this->dateep,'dayrfc'),
+							'user'
+						);
+
+						if($result <= 0) dol_print_error($this->db);
                     }
                 }
             }
