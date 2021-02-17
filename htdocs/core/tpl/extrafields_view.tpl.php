@@ -129,7 +129,7 @@ if (empty($reshook) && is_array($extrafields->attributes[$object->table_element]
 
 			$html_id = !empty($object->id) ? $object->element.'_extras_'.$key.'_'.$object->id : '';
 
-			print '<td id="'.$html_id.'" class="'.$object->element.'_extras_'.$key.' wordbreak"'.($cols?' colspan="'.$cols.'"':'').'>';
+			print '<td id="'.$html_id.'" data-value="'.$value.'"class="'.$object->element.'_extras_'.$key.' wordbreak"'.($cols?' colspan="'.$cols.'"':'').'>';
 
 			// Convert date into timestamp format
 			if (in_array($extrafields->attributes[$object->table_element]['type'][$key], array('date','datetime')))
@@ -175,38 +175,20 @@ if (empty($reshook) && is_array($extrafields->attributes[$object->table_element]
 	// TODO Test/enhance this with a more generic solution
 	if (! empty($conf->use_javascript_ajax))
 	{
+		$jsData = array(
+			"action" => $action,
+			"table_element" => $object->table_element,
+			"object_id" => $object->id
+		);
+
 		print "\n";
 		print '
+				<script type="text/javascript" src="/dolibarr/htdocs/core/js/lib_extrafields.js"></script>
 				<script type="text/javascript">
-				    jQuery(document).ready(function() {
-				    	function showOptions(child_list, parent_list)
-				    	{
-				    		var val = $("select[name="+parent_list+"]").val();
-				    		var parentVal = parent_list + ":" + val;
-							if(val > 0) {
-					    		$("select[name=\""+child_list+"\"] option[parent]").hide();
-					    		$("select[name=\""+child_list+"\"] option[parent=\""+parentVal+"\"]").show();
-							} else {
-								$("select[name=\""+child_list+"\"] option").show();
-							}
-				    	}
-						function setListDependencies() {
-					    	jQuery("select option[parent]").parent().each(function() {
-					    		var child_list = $(this).attr("name");
-								var parent = $(this).find("option[parent]:first").attr("parent");
-								var infos = parent.split(":");
-								var parent_list = infos[0];
-								showOptions(child_list, parent_list);
-
-								/* Activate the handler to call showOptions on each future change */
-								$("select[name=\""+parent_list+"\"]").change(function() {
-									showOptions(child_list, parent_list);
-								});
-					    	});
-						}
-						setListDependencies();
-				    });
-				</script>'."\n";
+				$(document).ready(function() {
+					manageLinkedExtrafields('.json_encode($jsData).');
+				});
+				</script>';
 	}
 }
 ?>

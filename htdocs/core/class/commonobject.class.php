@@ -6548,61 +6548,13 @@ abstract class CommonObject
 			$out .= "\n";
 			// Add code to manage list depending on others
 			if (! empty($conf->use_javascript_ajax)) {
+				$jsData = array("action" => $action);
 				$out .= '
-				<script>
-				    jQuery(document).ready(function() {
-				    	function showOptions(child_list, parent_list)
-				    	{
-				    		var val = $("select[name=\""+parent_list+"\"]").val();
-				    		var parentVal = parent_list + ":" + val;
-				    		console.log(typeof val)
-				    		if(typeof val == "string"){
-				    		    if(val != "") {
-					    			$("select[name=\""+child_list+"\"] option[parent]").hide();
-					    			$("select[name=\""+child_list+"\"] option[parent=\""+parentVal+"\"]").show();
-								} else {
-									$("select[name=\""+child_list+"\"] option").show();
-								}
-				    		} else if(val > 0) {
-					    		$("select[name=\""+child_list+"\"] option[parent]").hide();
-					    		$("select[name=\""+child_list+"\"] option[parent=\""+parentVal+"\"]").show();
-							} else {
-								$("select[name=\""+child_list+"\"] option").show();
-							}
-				    	}
-						function setListDependencies() {
-					    	jQuery("select option[parent]").parent().each(function() {
-					    		var child_list = $(this).attr("name");
-								var parent = $(this).find("option[parent]:first").attr("parent");
-								var infos = parent.split(":");
-								var parent_list = infos[0];
-								//Hide daughters lists
-								if ($("#"+child_list).val() == 0 && $("#"+parent_list).val() == 0){
-								    $("#"+child_list).hide();
-								//Show mother lists
-								} else if ($("#"+parent_list).val() != 0){
-								    $("#"+parent_list).show();
-								}
-								//show the child list if the parent list value is selected
-								$("select[name=\""+parent_list+"\"]").click(function() {
-								    if ($(this).val() != 0){
-								        $("#"+child_list).show()
-									}
-								});
-								$("select[name=\""+parent_list+"\"]").change(function() {
-									showOptions(child_list, parent_list);
-									//Select the value 0 on child list on change on the parent list
-									$("#"+child_list).val(0).trigger("change");
-									//Hide child lists if the parent value is set to 0
-									if ($(this).val() == 0){
-								   		$("#"+child_list).hide();
-									}
-								});
-					    	});
-						}
-
-						setListDependencies();
-				    });
+				<script type="text/javascript" src="/dolibarr/htdocs/core/js/lib_extrafields.js"></script>
+				<script type="text/javascript">
+				$(document).ready(function() {
+				   	manageLinkedExtrafields('.json_encode($jsData).');
+				})
 				</script>'."\n";
 				$out .= '<!-- /showOptionalsInput --> '."\n";
 			}

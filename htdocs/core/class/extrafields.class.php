@@ -1678,8 +1678,13 @@ class ExtraFields
 		}
 		elseif ($type == 'select')
 		{
-			if ($langfile && $param['options'][$value]) $value=$langs->trans($param['options'][$value]);
-			else $value=$param['options'][$value];
+			if ($langfile && $param['options'][$value]) {
+
+				$value=$langs->trans($param['options'][$value]);
+			}else if (sizeof(explode('|', $param['options'][$value])) > 1){
+				$value_detail = explode('|', $param['options'][$value]);
+				$value = $value_detail[0];
+			} else $value=$param['options'][$value];
 		}
 		elseif ($type == 'sellist')
 		{
@@ -1770,6 +1775,10 @@ class ExtraFields
 			if (is_array($value_arr))
 			{
 				foreach ($value_arr as $keyval=>$valueval) {
+					if (sizeof(explode('|', $param['options'][$valueval])) == 2 ){
+						$value_detail = explode('|', $param['options'][$valueval]);
+						$param['options'][$valueval] = $value_detail[0];
+					}
 					$toprint[]='<li class="select2-search-choice-dolibarr noborderoncategories" style="background: #aaa">'.$param['options'][$valueval].'</li>';
 				}
 			}
@@ -1991,7 +2000,6 @@ class ExtraFields
 
 				$key_type = $this->attributes[$object->table_element]['type'][$key];
 				if ($key_type == 'separate') continue;
-
 				$enabled = 1;
 				if (isset($this->attributes[$object->table_element]['list'][$key]))
 				{
