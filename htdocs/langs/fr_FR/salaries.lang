@@ -8,6 +8,7 @@ NewSalaryPayment=Nouvelle fiche de salaire
 AddSalaryPayment=Ajouter paiement de salaire
 SalaryPayment=Règlement salaire
 SalariesPayments=Règlements des salaires
+SalariesPaymentsOf=Règlements des salaires de %s
 ShowSalaryPayment=Afficher règlement de salaire
 THM=Tarif horaire moyen
 TJM=Tarif journalier moyen
