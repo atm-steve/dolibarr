@@ -200,7 +200,7 @@ if (!empty($conf->propal->enabled) && $user->rights->propal->lire)
 				$companystatic->entity = $obj->entity;
                 $companystatic->email = $obj->email;
                 $companystatic->code_compta = $obj->code_compta;
-				print $companystatic->getNomUrl(1, 'customer', 16);
+				print $companystatic->getNomUrl(1, 'customer');
 				print '</td>';
 				print '<td class="nowrap right">'.price($obj->total_ht).'</td></tr>';
 				$i++;
@@ -288,7 +288,7 @@ if (!empty($conf->supplier_proposal->enabled) && $user->rights->supplier_proposa
                 $companystatic->canvas = $obj->canvas;
 				$companystatic->entity = $obj->entity;
                 $companystatic->email = $obj->email;
-                print $companystatic->getNomUrl(1, 'supplier', 16);
+                print $companystatic->getNomUrl(1, 'supplier');
                 print '</td>';
                 print '<td class="nowrap right">'.price($obj->total_ht).'</td></tr>';
                 $i++;
@@ -375,7 +375,7 @@ if (!empty($conf->commande->enabled) && $user->rights->commande->lire)
                 $companystatic->canvas = $obj->canvas;
                 $companystatic->email = $obj->email;
                 $companystatic->entity = $obj->entity;
-				print $companystatic->getNomUrl(1, 'customer', 16);
+				print $companystatic->getNomUrl(1, 'customer');
 				print '</td>';
 				if (!empty($conf->global->MAIN_DASHBOARD_USE_TOTAL_HT)) {
 					print '<td class="nowrap right">'.price($obj->total_ht).'</td></tr>';
@@ -468,7 +468,7 @@ if ((!empty($conf->fournisseur->enabled) && empty($conf->global->MAIN_USE_NEW_SU
                 $companystatic->canvas = $obj->canvas;
 				$companystatic->entity = $obj->entity;
                 $companystatic->email = $obj->email;
-                print $companystatic->getNomUrl(1, 'supplier', 16);
+                print $companystatic->getNomUrl(1, 'supplier');
                 print '</td>';
 				if (!empty($conf->global->MAIN_DASHBOARD_USE_TOTAL_HT)) {
 					print '<td class="nowrap right">'.price($obj->total_ht).'</td></tr>';
