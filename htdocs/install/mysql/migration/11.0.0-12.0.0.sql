@@ -353,3 +353,67 @@ INSERT INTO llx_c_shipment_mode (rowid,code,libelle,description,tracking,active)
 INSERT INTO llx_c_shipment_mode (rowid,code,libelle,description,tracking,active) VALUES (14,'MAINFREIGHT', 'Mainfreight', NULL, 'https://www.mainfreight.com/track?{TRACKID}', 0);
 
 
+-- Migration des éléments concernant les charges sociales et les règlements de TVA et de salaires pour Nysis
+-- Si un jour ils sont migrés en version 14 de Dolibarr il ne sera pas nécessaire de rappatrier cette partie qui est déjà présente dans le script migration 13=>14
+
+-- Charges sociales
+ALTER TABLE llx_chargesociales ADD COLUMN fk_user integer DEFAULT NULL;
+
+-- TVA
+create table llx_payment_vat
+(
+  rowid           integer AUTO_INCREMENT PRIMARY KEY,
+  fk_tva          integer,
+  datec           datetime,           -- date de creation
+  tms             timestamp,
+  datep           datetime,           -- payment date
+  amount          double(24,8) DEFAULT 0,
+  fk_typepaiement integer NOT NULL,
+  num_paiement    varchar(50),
+  note            text,
+  fk_bank         integer NOT NULL,
+  fk_user_creat   integer,            -- creation user
+  fk_user_modif   integer             -- last modification user
+
+)ENGINE=innodb;
+
+ALTER TABLE llx_tva ADD COLUMN paye smallint default 1 NOT NULL;
+ALTER TABLE llx_tva ADD COLUMN fk_account integer;
+
+INSERT INTO llx_payment_vat (rowid, fk_tva, datec, datep, amount, fk_typepaiement, num_paiement, note, fk_bank, fk_user_creat, fk_user_modif) SELECT rowid, rowid, NOW(), datep, amount, COALESCE(fk_typepayment, 0), num_payment, 'Created automatically by migration v13 to v14', fk_bank, fk_user_creat, fk_user_modif FROM llx_tva WHERE fk_bank IS NOT NULL;
+ALTER TABLE llx_tva ALTER COLUMN paye SET DEFAULT 0;
+
+-- Salaires
+create table llx_salary
+(
+  rowid           integer AUTO_INCREMENT PRIMARY KEY,
+  ref             varchar(30) NULL,           -- payment reference number (currently NULL because there is no numbering manager yet)
+  label           varchar(255),
+  tms             timestamp,
+  datec           datetime,                   -- Create date
+  fk_user         integer NOT NULL,
+  datep           date,                       -- payment date
+  datev           date,                       -- value date (this field should not be here, only into bank tables)
+  salary          double(24,8),               -- salary of user when payment was done
+  amount          double(24,8) NOT NULL DEFAULT 0,
+  fk_projet       integer DEFAULT NULL,
+  datesp          date,                       -- date start period
+  dateep          date,                       -- date end period
+  entity          integer DEFAULT 1 NOT NULL, -- multi company id
+  note            text,
+  fk_bank         integer,
+  paye            smallint default 1 NOT NULL,
+  fk_typepayment  integer NOT NULL,			  -- default payment mode for payment
+  fk_account      integer,					  -- default bank account for payment
+  fk_user_author  integer,                    -- user creating
+  fk_user_modif   integer                     -- user making last change
+) ENGINE=innodb;
+
+ALTER TABLE llx_payment_salary CHANGE COLUMN fk_user fk_user integer NULL;
+ALTER TABLE llx_payment_salary ADD COLUMN fk_salary integer;
+
+INSERT INTO llx_salary (rowid, ref, fk_user, amount, fk_projet, fk_typepayment, label, datesp, dateep, entity, note, fk_bank, paye) SELECT ps.rowid, ps.rowid, ps.fk_user, ps.amount, ps.fk_projet, ps.fk_typepayment, ps.label, ps.datesp, ps.dateep, ps.entity, ps.note, ps.fk_bank, 1 FROM llx_payment_salary ps WHERE ps.fk_salary IS NULL;
+UPDATE llx_payment_salary as ps SET ps.fk_salary = ps.rowid WHERE ps.fk_salary IS NULL;
+UPDATE llx_payment_salary as ps SET ps.ref = ps.rowid WHERE ps.ref IS NULL;
+
+ALTER TABLE llx_salary CHANGE paye paye smallint default 0 NOT NULL;
