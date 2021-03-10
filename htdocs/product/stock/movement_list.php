@@ -78,6 +78,7 @@ $search_user = trim(GETPOST("search_user"));
 $search_batch = trim(GETPOST("search_batch"));
 $search_qty = trim(GETPOST("search_qty"));
 $search_type_mouvement = GETPOST('search_type_mouvement', 'int');
+$search_fk_projet=GETPOST("search_fk_projet", 'int');
 
 $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
 $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
@@ -128,6 +129,24 @@ if (!empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
 	unset($arrayfields['pl.sellby']);
 }
 
+/*
+ * Spé
+ */
+$TServFrais = array();
+if(!empty($conf->global->CLIAMA_FREIGHT_CHARGES_SERVICES)) {
+    $TServFraisIds = unserialize($conf->global->CLIAMA_FREIGHT_CHARGES_SERVICES);
+    foreach($TServFraisIds as $servFraisId) {
+        $prod = new Product($db);
+        $prod->fetch($servFraisId);
+        $TServFrais[] = $prod;
+        $arrayfields[$prod->ref] = array('label'=>$prod->label, 'checked'=>1);
+    }
+}
+/*
+ * Fin spé
+ */
+
+
 // Security check
 if (!$user->rights->stock->mouvement->lire) {
 	accessforbidden();
@@ -162,19 +181,20 @@ if (empty($reshook))
 	// Do we click on purge search criteria ?
 	if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha')) // Both test are required to be compatible with all browsers
 	{
-		$year = '';
-		$month = '';
-		$search_ref = '';
-		$search_movement = "";
-		$search_type_mouvement = "";
-		$search_inventorycode = "";
-		$search_product_ref = "";
-		$search_product = "";
-		$search_warehouse = "";
-		$search_user = "";
-		$search_batch = "";
-		$search_qty = '';
-		$sall = "";
+	    $year = '';
+	    $month = '';
+	    $search_ref = '';
+	    $search_movement = "";
+	    $search_type_mouvement = "";
+	    $search_inventorycode = "";
+	    $search_product_ref = "";
+	    $search_product = "";
+	    $search_warehouse = "";
+	    $search_user = "";
+	    $search_batch = "";
+	    $search_qty = '';
+        $search_fk_projet=0;
+	    $sall = "";
 		$toselect = '';
 		$search_array_options = array();
 	}
@@ -694,10 +714,10 @@ if ($resql)
 	{
 		print "<div class=\"tabsAction\">\n";
 
-		if ($user->rights->stock->mouvement->creer)
-		{
-			print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$id.'&action=correction">'.$langs->trans("CorrectStock").'</a>';
-		}
+        if ($user->rights->stock->mouvement->creer)
+        {
+            print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$id.'&action=correction">'.$langs->trans("CorrectStock").'</a>';
+        }
 
 		if ($user->rights->stock->mouvement->creer)
 		{
@@ -874,37 +894,71 @@ if ($resql)
 		print ajax_combobox('search_type_mouvement');
 		// TODO: add new function $formentrepot->selectTypeOfMovement(...) like
 		// print $formproduct->selectWarehouses($search_warehouse, 'search_warehouse', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, null, 'maxwidth200');
-		print '</td>';
-	}
-	if (!empty($arrayfields['origin']['checked']))
-	{
-		// Origin of movement
-		print '<td class="liste_titre left">';
-		print '&nbsp; ';
-		print '</td>';
-	}
-	if (!empty($arrayfields['m.value']['checked']))
-	{
-		// Qty
-		print '<td class="liste_titre right">';
-		print '<input class="flat" type="text" size="4" name="search_qty" value="'.dol_escape_htmltag($search_qty).'">';
-		print '</td>';
-	}
-	if (!empty($arrayfields['m.price']['checked']))
-	{
-		// Price
-		print '<td class="liste_titre" align="left">';
-		print '&nbsp; ';
-		print '</td>';
-	}
-	if (!empty($arrayfields['m.fk_projet']['checked']))
-	{
-		// fk_project
-		print '<td class="liste_titre" align="left">';
-		print '&nbsp; ';
-		print '</td>';
-	}
+	    print '</td>';
+    }
+    if (!empty($arrayfields['origin']['checked']))
+    {
+	    // Origin of movement
+	    print '<td class="liste_titre left">';
+	    print '&nbsp; ';
+	    print '</td>';
+    }
+    if (!empty($arrayfields['m.value']['checked']))
+    {
+	    // Qty
+	    print '<td class="liste_titre right">';
+	    print '<input class="flat" type="text" size="4" name="search_qty" value="'.dol_escape_htmltag($search_qty).'">';
+	    print '</td>';
+    }
+    if (!empty($arrayfields['m.price']['checked']))
+    {
+    	// Price
+    	print '<td class="liste_titre" align="left">';
+    	print '&nbsp; ';
+    	print '</td>';
+    }
+    /*
+    * Spé
+    */
+    if(!empty($TServFrais)) {
+        foreach($TServFrais as $servFrais) {
+            if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+                print '<td class="liste_titre" align="left"></td>';
+            }
+        }
+    }
+    /*
+     * Fin spé
+     */
 
+    if (!empty($arrayfields['m.fk_projet']['checked']))
+    {
+    	// fk_project
+    	print '<td class="liste_titre" align="left">';
+        $f = new FormProjets($db);
+        $f->select_projects(-1, $search_fk_projet, "search_fk_projet",16, 0, 1, 0, 0, 0, 0, "", 0, 0, 'width100p');
+        ?>
+        <script type="text/javascript">
+            $('[name="search_fk_projet"] > option:disabled').each(function(){$(this).attr('disabled', false);});
+            $('[name="search_fk_projet"]').select2();
+        </script>
+        <?php
+    	print '</td>';
+    }
+
+    /*
+     * Spé
+    */
+    if(!empty($TServFrais)) {
+        foreach($TServFrais as $servFrais) {
+            if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+                print '<td class="liste_titre" align="left"></td>';
+            }
+        }
+    }
+    /*
+     * Fin spé
+     */
 
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
@@ -952,36 +1006,54 @@ if ($resql)
 		print_liste_field_titre($arrayfields['pl.eatby']['label'], $_SERVER["PHP_SELF"], 'pl.eatby', '', $param, '', $sortfield, $sortorder, 'center ');
 	}
 	if (!empty($arrayfields['pl.sellby']['checked'])) {
-		print_liste_field_titre($arrayfields['pl.sellby']['label'], $_SERVER["PHP_SELF"], 'pl.sellby', '', $param, '', $sortfield, $sortorder, 'center ');
-	}
-	if (!empty($arrayfields['e.ref']['checked'])) {
-		// We are on a specific warehouse card, no filter on other should be possible
-		print_liste_field_titre($arrayfields['e.ref']['label'], $_SERVER["PHP_SELF"], "e.ref", "", $param, "", $sortfield, $sortorder);
-	}
-	if (!empty($arrayfields['m.fk_user_author']['checked'])) {
-		print_liste_field_titre($arrayfields['m.fk_user_author']['label'], $_SERVER["PHP_SELF"], "m.fk_user_author", "", $param, "", $sortfield, $sortorder);
-	}
-	if (!empty($arrayfields['m.inventorycode']['checked'])) {
-		print_liste_field_titre($arrayfields['m.inventorycode']['label'], $_SERVER["PHP_SELF"], "m.inventorycode", "", $param, "", $sortfield, $sortorder);
-	}
-	if (!empty($arrayfields['m.label']['checked'])) {
-		print_liste_field_titre($arrayfields['m.label']['label'], $_SERVER["PHP_SELF"], "m.label", "", $param, "", $sortfield, $sortorder);
-	}
-	if (!empty($arrayfields['m.type_mouvement']['checked'])) {
-		print_liste_field_titre($arrayfields['m.type_mouvement']['label'], $_SERVER["PHP_SELF"], "m.type_mouvement", "", $param, '', $sortfield, $sortorder, 'center ');
-	}
-	if (!empty($arrayfields['origin']['checked'])) {
-		print_liste_field_titre($arrayfields['origin']['label'], $_SERVER["PHP_SELF"], "", "", $param, "", $sortfield, $sortorder);
-	}
-	if (!empty($arrayfields['m.value']['checked'])) {
-		print_liste_field_titre($arrayfields['m.value']['label'], $_SERVER["PHP_SELF"], "m.value", "", $param, '', $sortfield, $sortorder, 'right ');
-	}
-	if (!empty($arrayfields['m.price']['checked'])) {
-		print_liste_field_titre($arrayfields['m.price']['label'], $_SERVER["PHP_SELF"], "m.price", "", $param, '', $sortfield, $sortorder, 'right ');
-	}
-	if (!empty($arrayfields['m.fk_projet']['checked'])) {
-		print_liste_field_titre($arrayfields['m.fk_projet']['label'], $_SERVER["PHP_SELF"], "m.fk_projet", "", $param, 'align="right"', $sortfield, $sortorder);
-	}
+        print_liste_field_titre($arrayfields['pl.sellby']['label'], $_SERVER["PHP_SELF"], 'pl.sellby', '', $param, '', $sortfield, $sortorder, 'center ');
+    }
+    if (!empty($arrayfields['e.ref']['checked'])) {
+        // We are on a specific warehouse card, no filter on other should be possible
+        print_liste_field_titre($arrayfields['e.ref']['label'], $_SERVER["PHP_SELF"], "e.ref", "", $param, "", $sortfield, $sortorder);
+    }
+    if (!empty($arrayfields['m.fk_user_author']['checked'])) {
+        print_liste_field_titre($arrayfields['m.fk_user_author']['label'], $_SERVER["PHP_SELF"], "m.fk_user_author", "", $param, "", $sortfield, $sortorder);
+    }
+    if (!empty($arrayfields['m.inventorycode']['checked'])) {
+        print_liste_field_titre($arrayfields['m.inventorycode']['label'], $_SERVER["PHP_SELF"], "m.inventorycode", "", $param, "", $sortfield, $sortorder);
+    }
+    if (!empty($arrayfields['m.label']['checked'])) {
+        print_liste_field_titre($arrayfields['m.label']['label'], $_SERVER["PHP_SELF"], "m.label", "", $param, "", $sortfield, $sortorder);
+    }
+    if (!empty($arrayfields['m.type_mouvement']['checked'])) {
+        print_liste_field_titre($arrayfields['m.type_mouvement']['label'], $_SERVER["PHP_SELF"], "m.type_mouvement", "", $param, '', $sortfield, $sortorder, 'center ');
+    }
+    if (!empty($arrayfields['origin']['checked'])) {
+        print_liste_field_titre($arrayfields['origin']['label'], $_SERVER["PHP_SELF"], "", "", $param, "", $sortfield, $sortorder);
+    }
+    if (!empty($arrayfields['m.value']['checked'])) {
+        print_liste_field_titre($arrayfields['m.value']['label'], $_SERVER["PHP_SELF"], "m.value", "", $param, '', $sortfield, $sortorder, 'right ');
+    }
+    if (!empty($arrayfields['m.price']['checked'])) {
+        print_liste_field_titre($arrayfields['m.price']['label'], $_SERVER["PHP_SELF"], "m.price", "", $param, '', $sortfield, $sortorder, 'right ');
+    }
+    if (!empty($arrayfields['m.fk_projet']['checked'])) {
+        print_liste_field_titre($arrayfields['m.fk_projet']['label'], $_SERVER["PHP_SELF"], "m.fk_projet", "", $param, 'align="right"', $sortfield, $sortorder);
+
+    }
+
+    /*
+	 * Spé
+	 */
+    if(!empty($TServFrais)) {
+        foreach($TServFrais as $servFrais) {
+            if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+                print_liste_field_titre($arrayfields[$servFrais->ref]['label'],$_SERVER["PHP_SELF"], "","",$param,"",$sortfield,$sortorder);
+            }
+        }
+    }
+    /*
+     * Fin spé
+     */
+
+    if (! empty($arrayfields['m.fk_projet']['checked']))
+        print_liste_field_titre($arrayfields['m.fk_projet']['label'],$_SERVER["PHP_SELF"], "fk_projet","",$param,'align="right"',$sortfield,$sortorder);
 
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
@@ -999,6 +1071,12 @@ if ($resql)
 	print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 	print "</tr>\n";
 
+    $TTrad = array(
+        $langs->trans('StockIncreaseAfterCorrectTransfer'),
+        $langs->trans('StockDecreaseAfterCorrectTransfer'),
+        $langs->trans('StockDecrease'),
+        $langs->trans('StockIncrease')
+    );
 
 	$arrayofuniqueproduct = array();
 
@@ -1028,16 +1106,67 @@ if ($resql)
 		$productlot->eatby = $objp->eatby;
 		$productlot->sellby = $objp->sellby;
 
-		$warehousestatic->id = $objp->entrepot_id;
-		$warehousestatic->ref = $objp->warehouse_ref;
-		$warehousestatic->label = $objp->warehouse_ref;
-		$warehousestatic->lieu = $objp->lieu;
-		$warehousestatic->fk_parent = $objp->fk_parent;
-		$warehousestatic->statut = $objp->statut;
+        $warehousestatic->id = $objp->entrepot_id;
+        $warehousestatic->ref = $objp->warehouse_ref;
+        $warehousestatic->libelle = $objp->warehouse_ref; // deprecated
+        $warehousestatic->label = $objp->warehouse_ref;
+        $warehousestatic->lieu = $objp->lieu;
+        $cmdfourn = '';
+        $warehousestatic->fk_parent = $objp->fk_parent;
+        $warehousestatic->statut = $objp->statut;
 
-		$arrayofuniqueproduct[$objp->rowid] = $objp->produit;
+        $arrayofuniqueproduct[$objp->rowid] = $objp->produit;
+
+        /*
+         * Spé
+        */
+        if(!defined('INC_FROM_DOLIBARR')) define('INC_FROM_DOLIBARR',1);
+        dol_include_once('assetatm/config.php');
+        $PDOdb = new TPDOdb;
+        dol_include_once('/assetatm/class/asset.class.php');
+        $asset = new TAsset;
+
+        if(strpos($objp->assets,',') !== false) {
+            if ($asset->loadReference($PDOdb, $objp->assets, $objp->rowid)){
+                $TAssetNb = explode(',', $objp->assets);
+                $assetNb = $TAssetNb[0];
+            } else{
+                $assetNb = $objp->assets;
+            }
+        }
+
+        if ($asset->loadReference($PDOdb, $objp->assets, $objp->rowid)){
+            global $db,$langs;
+
+            //Liste des commandes fournisseurs liés à l'équipement
+            $sql = "SELECT DISTINCT(cf.rowid)
+				FROM ".MAIN_DB_PREFIX."commande_fournisseur as cf
+					LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet as cfd ON (cfd.fk_commande = cf.rowid)
+					LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet_asset as cfda ON (cfda.fk_commandedet = cfd.rowid)
+					LEFT JOIN ".MAIN_DB_PREFIX."assetatm as a ON (a.serial_number = cfda.serial_number)
+					LEFT JOIN ".MAIN_DB_PREFIX."assetatmlot as al ON (al.lot_number = a.lot_number)";
+            $sql .= " WHERE a.rowid = ".$asset->rowid;
+
+            $PDOdb->Execute($sql);
+
+            $cmdfourn = new CommandeFournisseur($db);
+            $PDOdb->Get_line();
+            $cmdfourn->fetch($PDOdb->Get_field('rowid'));
+        }
+
+        if(empty($cmdfourn) && !empty($objp->fk_origin) && $objp->origintype == 'order_supplier') {
+            $cmdfourn = new CommandeFournisseur($db);
+            $cmdfourn->fetch($objp->fk_origin);
+        }
+
+        /*
+         * Fin spé
+         */
+
+
 		if (!empty($objp->fk_origin)) {
 			$origin = $movement->get_origin($objp->fk_origin, $objp->origintype);
+
 		} else {
 			$origin = '';
 		}
@@ -1115,60 +1244,119 @@ if ($resql)
 			print '<td class="tdoverflowmax100aaa">'.$objp->label.'</td>';
 		}
 		if (!empty($arrayfields['m.type_mouvement']['checked']))
-		{
-			// Type of movement
-			switch ($objp->type_mouvement) {
-				case "0":
-					print '<td class="center">'.$langs->trans('StockIncreaseAfterCorrectTransfer').'</td>';
-					break;
-				case "1":
-					print '<td class="center">'.$langs->trans('StockDecreaseAfterCorrectTransfer').'</td>';
-					break;
-				case "2":
-					print '<td class="center">'.$langs->trans('StockDecrease').'</td>';
-					break;
-				case "3":
-					print '<td class="center">'.$langs->trans('StockIncrease').'</td>';
-					break;
-			}
-		}
-		if (!empty($arrayfields['origin']['checked']))
-		{
-			// Origin of movement
-			print '<td class="nowraponall">'.$origin.'</td>';
-		}
-		if (!empty($arrayfields['m.value']['checked']))
-		{
-			// Qty
-			print '<td class="right">';
-			if ($objp->qt > 0) print '+';
-			print $objp->qty;
-			print '</td>';
-		}
-		if (!empty($arrayfields['m.price']['checked']))
-		{
-			// Price
-			print '<td class="right">';
-			if ($objp->price != 0) print price($objp->price);
-			print '</td>';
-		}
-		if (!empty($arrayfields['m.fk_projet']['checked']))
-		{
-			// fk_project
-			print '<td align="right">';
-			if ($objp->fk_project != 0) print $movement->get_origin($objp->fk_project, 'project');
-			print '</td>';
-		}
-		// Action column
-		print '<td class="nowrap center">';
-		if ($massactionbutton || $massaction)   // If we are in select mode (massactionbutton defined) or if we have already selected and sent an action ($massaction) defined
-		{
-			$selected = 0;
-			if (in_array($objp->mid, $arrayofselected)) $selected = 1;
-			print '<input id="cb'.$objp->mid.'" class="flat checkforselect" type="checkbox" name="toselect[]" value="'.$objp->mid.'"'.($selected ? ' checked="checked"' : '').'>';
-		}
-		print '</td>';
-		if (!$i) $totalarray['nbfield']++;
+        {
+            // Type of movement
+            switch ($objp->type_mouvement) {
+                case "0":
+                    print '<td class="center">'.$langs->trans('StockIncreaseAfterCorrectTransfer').'</td>';
+                    break;
+                case "1":
+                    print '<td class="center">'.$langs->trans('StockDecreaseAfterCorrectTransfer').'</td>';
+                    break;
+                case "2":
+                    print '<td class="center">'.$langs->trans('StockDecrease').'</td>';
+                    break;
+                case "3":
+                    print '<td class="center">'.$langs->trans('StockIncrease').'</td>';
+                    break;
+            }
+        }
+        if (!empty($arrayfields['origin']['checked']))
+        {
+        	// Origin of movement
+        	print '<td class="nowraponall">'.$origin.'</td>';
+        }
+        if (!empty($arrayfields['m.value']['checked']))
+        {
+	        // Qty
+	        print '<td class="right">';
+	        if ($objp->qt > 0) print '+';
+	        print $objp->qty;
+	        print '</td>';
+        }
+        if (!empty($arrayfields['m.price']['checked']))
+        {
+        	// Price
+        	print '<td class="right">';
+        	if ($objp->price != 0) print price($objp->price);
+        	print '</td>';
+        }
+        if (!empty($arrayfields['m.fk_projet']['checked']))
+        {
+        	// fk_project
+        	print '<td align="right">';
+        	if ($objp->fk_project != 0) print $movement->get_origin($objp->fk_project, 'project');
+            else if($objp->origintype == 'project') print $movement->get_origin($objp->fk_origin, 'project');
+        	print '</td>';
+        }
+
+
+        /*
+         * Spé
+         */
+        if(!empty($TServFrais)) {
+            foreach($TServFrais as $servFrais) {
+                if (! empty($arrayfields[$servFrais->ref]['checked'])) {
+                    print '<td align="right">';
+                    if(!empty($cmdfourn->id)){
+                        if (count($cmdfourn->lines))
+                        {
+                            $found = 0;
+                            foreach ($cmdfourn->lines as $line)
+                            {
+                                if ($line->fk_product == $servFrais->id && !empty($line->array_options['options_fee'])){
+
+                                    if(!empty($line->pu_ht)){
+
+                                        $nbline = 0;
+                                        foreach($cmdfourn->lines as $cmdfournline) {
+                                            if($conf->subtotal->enabled) {
+                                                dol_include_once('/subtotal/class/subtotal.class.php');
+                                                if(TSubtotal::isModSubtotalLine($cmdfournline)) continue;
+                                            }
+                                            if( in_array($cmdfournline->fk_product,$TServFraisIds) && !empty($cmdfournline->array_options['options_fee'])) continue;
+                                            else $nbline+= $cmdfournline->qty;
+                                        }
+                                        print price($line->pu_ht/$nbline*$objp->qty);
+                                    }
+                                    else print price($line->pu_ht);
+                                    $found = 1;
+                                    break;
+                                }
+                            }
+                            if(!$found) print price(0);
+                        }
+                    }
+                    print '</td>';
+                }
+            }
+        }
+        /*
+         * Fin spé
+         */
+
+        if (! empty($arrayfields['m.fk_projet']['checked']))
+        {
+            // fk_projet
+            print '<td align="right">';
+            if ($objp->fk_projet != 0) print $movement->get_origin($objp->fk_projet, 'project');
+            else if($objp->origintype == 'project') print $movement->get_origin($objp->fk_origin, 'project');
+            print '</td>';
+        }
+        // Fields from hook
+        $parameters=array('arrayfields'=>$arrayfields, 'objp'=>$objp);
+        $reshook=$hookmanager->executeHooks('printFieldListValue',$parameters);    // Note that $action and $object may have been modified by hook
+        print $hookmanager->resPrint;
+        // Action column
+        print '<td class="nowrap center">';
+        if ($massactionbutton || $massaction)   // If we are in select mode (massactionbutton defined) or if we have already selected and sent an action ($massaction) defined
+        {
+            $selected = 0;
+    		if (in_array($objp->mid, $arrayofselected)) $selected = 1;
+    		print '<input id="cb'.$objp->mid.'" class="flat checkforselect" type="checkbox" name="toselect[]" value="'.$objp->mid.'"'.($selected ? ' checked="checked"' : '').'>';
+        }
+        print '</td>';
+        if (!$i) $totalarray['nbfield']++;
 
 		print "</tr>\n";
 		$i++;

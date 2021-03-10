@@ -172,6 +172,7 @@ if ($conf->accounting->enabled)
 
 	print "<br>\n";
 	print load_fiche_titre('<span class="fa fa-calendar"></span> '.$langs->trans("AccountancyAreaDescActionFreq"), '', '');
+    dol_fiche_head();
 	print '<hr>';
 	print "<br>\n";
 	$step = 0;
@@ -245,6 +246,7 @@ if ($conf->accounting->enabled)
 	print load_fiche_titre($langs->trans("AccountancyArea"), '', 'accountancy');
 
 	print '<span class="opacitymedium">'.$langs->trans("Module10Desc")."</span><br>\n";
+    dol_fiche_end();
 }
 
 // End of page
