@@ -3,6 +3,53 @@ English Dolibarr ChangeLog
 --------------------------------------------------------------
 
 
+***** ChangeLog for 13.0.2 compared to 13.0.1 *****
+
+FIX: 11.0 - $this->socid injected in query without checking for empty value
+FIX: #16096 #16085 Any call of ajax pages must provide the token
+FIX: #16296
+FIX: #16325
+FIX: #16341 : Fetch the Product ExtraFields in Shippment lines
+FIX: #16366
+FIX: #16393 Do not sanitize <!DOCTYPE html>
+FIX: #16420 #16423 #16488 #16477
+FIX: #16431
+FIX: #16465
+FIX: #16480
+FIX: #16485
+FIX: #16487
+FIX: #16503
+FIX: #16530
+FIX: #16533
+FIX: #16629
+FIX: #16671 Can not generate zip file of documents in backup tool
+FIX: Add "Now" link on social charges creation card
+FIX: avoid undefined url and missing token
+FIX: Bad project filter in ticket list
+FIX: Buttons to disable bindings not working
+FIX: class not found when creating recuring invoice from invoice+discount
+FIX: File attachment on lots
+FIX: handling $heightforinfotot when he's superior to a page height on Supplier Invoice
+FIX: hourglass and hide button to pay
+FIX: massaction validate invoice do not regenerate pdf
+FIX: missing mp4 video mime
+FIX: picto on shipment to reset qty to 0. Some quantities were not reset.
+FIX: Protection to avoid #16504
+FIX: rounding amount on card updating
+FIX: Rounding amount on social charges card updating
+FIX: select list dependencies now work for ModuleBuilder sellist field
+FIX: Status in popup of member in widget
+FIX: status on tooltip on widgets
+FIX: Timezone management for datetime on list of events
+FIX: Timezone management for datetime with modulebuilder and extrafields
+FIX: Total_ht not show in contract link element
+FIX: use post instead get
+FIX: use var "saved_url" instead global var "$url"
+FIX: Various payment - Missing fields for check transmitter & bank name
+FIX: warning if setup of chart of account is not yet done.
+FIX: wrong extension
+
+
 ***** ChangeLog for 13.0.1 compared to 13.0.0 *****
 
 FIX: 10.0 before crediting a withdrawal receipt, check whether it has been credited already.
@@ -10,13 +57,13 @@ FIX: 11.0 when a mandatory extrafield of type sellist contains '0' it should be 
 FIX: 11.0 when a new intervention is created from an object, a new $extrafields object is instantiated but not initialized
 FIX: create MO, Column 'tms' cannot be null
 FIX: #14290 #15900
-FIX: #16076
-FIX: #16077
-FIX: #16079
-FIX: #16080
-FIX: 16084
+FIX: #16076  patch user/list.php for extrafields
+FIX: #16077  patch wrong timezone
+FIX: #16079  error of service date at duplicated invoice
+FIX: #16080  mailing list title
+FIX: #16084  DB error at projects
 FIX: #16107
-FIX: #16118 Timezone problem on some fields
+FIX: #16118  Timezone problem on some fields
 FIX: #16131
 FIX: #16135
 FIX: #16143
@@ -47,7 +94,7 @@ FIX: select default mail template
 FIX: Select transport mode function when creating a supplier invoice and add unique key to the table llx_c_transport_mode in migrate sql
 FIX: Merge of thirdparties : "unknow column fk_soc" + "Delivery" label
 FIX: SQL Error in group by with postgres or mysql strict mode
-FIX: takepos : load date function
+FIX: TakePOS : load date function
 FIX: Timeout during import
 FIX: Trigger on expense report was not fired
 FIX: User creation of expense report not visible
