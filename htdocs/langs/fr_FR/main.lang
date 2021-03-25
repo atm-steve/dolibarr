@@ -703,6 +703,7 @@ MenuECM=Documents
 MenuAWStats=AWStats
 MenuMembers=Adhérents
 MenuAgendaGoogle=Agenda Google
+MenuTaxesAndSpecialExpenses=Charges | Dépenses spéciales
 ThisLimitIsDefinedInSetup=Limite Dolibarr (Menu accueil-configuration-sécurité): %s Ko, Limite PHP: %s Ko
 NoFileFound=Pas de documents stockés dans cette rubrique
 CurrentUserLanguage=Langue utilisateur actuelle
