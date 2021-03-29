@@ -1119,7 +1119,6 @@ if ($action == 'create')
 
 
 	                    print '<td>';
-	                    print '<a name="'.$line->rowid.'"></a>'; // ancre pour retourner sur la ligne
 
 						// Show product and description
 						$product_static->type = $line->fk_product_type;
