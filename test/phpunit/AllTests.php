@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -75,7 +75,7 @@ class AllTests
     public static function suite()
     {
 
-        $suite = new PHPUnit_Framework_TestSuite('PHPUnit Framework');
+        $suite = new PHPUnit\Framework\TestSuite('PHPUnit Framework');
 
         //require_once dirname(__FILE__).'/CoreTest.php';
         //$suite->addTestSuite('CoreTest');
@@ -87,6 +87,8 @@ class AllTests
         $suite->addTestSuite('DateLibTest');
         require_once dirname(__FILE__).'/UtilsTest.php';
         $suite->addTestSuite('UtilsTest');
+        require_once dirname(__FILE__).'/LesscTest.php';
+        $suite->addTestSuite('LesscTest');
         //require_once dirname(__FILE__).'/DateLibTzFranceTest.php';
         //$suite->addTestSuite('DateLibTzFranceTest');
         require_once dirname(__FILE__).'/MarginsLibTest.php';
@@ -153,6 +155,9 @@ class AllTests
         require_once dirname(__FILE__).'/DiscountTest.php';
         $suite->addTestSuite('DiscountTest');
 
+        require_once dirname(__FILE__).'/BOMTest.php';
+        $suite->addTestSuite('BOMTest');
+
         require_once dirname(__FILE__).'/ContratTest.php';
         $suite->addTestSuite('ContratTest');
 
@@ -211,6 +216,8 @@ class AllTests
 
         require_once dirname(__FILE__).'/RestAPIUserTest.php';
         $suite->addTestSuite('RestAPIUserTest');
+        require_once dirname(__FILE__).'/RestAPIDocumentTest.php';
+        $suite->addTestSuite('RestAPIDocumentTest');
 
         // Test only with php7.2 or less
         //if ((float) phpversion() < 7.3)
@@ -237,9 +244,6 @@ class AllTests
         require_once dirname(__FILE__).'/ScriptsTest.php';
         $suite->addTestSuite('ScriptsTest');
 
-        require_once dirname(__FILE__).'/FormAdminTest.php';
-        $suite->addTestSuite('FormAdminTest');
-
         require_once dirname(__FILE__).'/ModulesTest.php';  // At end because it's the longer
         $suite->addTestSuite('ModulesTest');
 
@@ -247,7 +251,15 @@ class AllTests
         // GUI
         require_once dirname(__FILE__).'/FormAdminTest.php';
         $suite->addTestSuite('FormAdminTest');
+        require_once dirname(__FILE__).'/FormTest.php';
+        $suite->addTestSuite('FormTest');
 
+
+        // Payment services
+        require_once dirname(__FILE__).'/PaypalTest.php';
+        $suite->addTestSuite('PaypalTest');
+        require_once dirname(__FILE__).'/StripeTest.php';
+        $suite->addTestSuite('StripeTest');
 
         return $suite;
     }

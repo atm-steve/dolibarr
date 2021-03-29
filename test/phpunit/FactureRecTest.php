@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -46,7 +46,7 @@ $conf->global->MAIN_DISABLE_ALL_MAILS=1;
  * @backupStaticAttributes enabled
  * @remarks	backupGlobals must be disabled to have db,conf,user and lang not erased.
  */
-class FactureRecTest extends PHPUnit_Framework_TestCase
+class FactureRecTest extends PHPUnit\Framework\TestCase
 {
 	protected $savconf;
 	protected $savuser;
@@ -59,7 +59,7 @@ class FactureRecTest extends PHPUnit_Framework_TestCase
 	 *
 	 * @return FactureTest
 	 */
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 
@@ -75,16 +75,24 @@ class FactureRecTest extends PHPUnit_Framework_TestCase
 		print "\n";
 	}
 
-	// Static methods
-  	public static function setUpBeforeClass()
+    /**
+     * setUpBeforeClass
+     *
+     * @return void
+     */
+    public static function setUpBeforeClass()
     {
-    	global $conf,$user,$langs,$db;
+        global $conf,$user,$langs,$db;
 		$db->begin();	// This is to have all actions inside a transaction even if test launched without suite.
 
     	print __METHOD__."\n";
     }
 
-    // tear down after class
+    /**
+     * tearDownAfterClass
+     *
+     * @return	void
+     */
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -114,13 +122,13 @@ class FactureRecTest extends PHPUnit_Framework_TestCase
 	 *
 	 * @return	void
 	 */
-	protected function tearDown()
+    protected function tearDown()
     {
     	print __METHOD__."\n";
     }
 
     /**
-     * testFactureCreate
+     * testFactureRecCreate
      *
      * @return int
      */
@@ -134,19 +142,44 @@ class FactureRecTest extends PHPUnit_Framework_TestCase
 
 		$localobjectinv=new Facture($this->savdb);
 		$localobjectinv->initAsSpecimen();
-		$localobjectinv->create($user);
+		$result = $localobjectinv->create($user);
+
+		print __METHOD__." result=".$result."\n";
 
 		$localobject=new FactureRec($this->savdb);
     	$localobject->initAsSpecimen();
-    	$result=$localobject->create($user, $localobjectinv->id);
+    	$result = $localobject->create($user, $localobjectinv->id);
 
-    	$this->assertLessThan($result, 0);
     	print __METHOD__." result=".$result."\n";
+    	$this->assertGreaterThan(0, $result, 'Create recurring invoice from common invoice');
+
     	return $result;
     }
 
+    /**
+     * testFactureRecFetch
+     *
+     * @param  int 	$id  	Id of created recuriing invoice
+     * @return int
+     *
+	 * @depends testFactureRecCreate
+     * The depends says test is run only if previous is ok
+     */
+    public function testFactureRecFetch($id)
+    {
+    	global $conf,$user,$langs,$db;
+    	$conf=$this->savconf;
+    	$user=$this->savuser;
+    	$langs=$this->savlangs;
+    	$db=$this->savdb;
 
+    	$localobject=new FactureRec($this->savdb);
+    	$result = $localobject->fetch($id);
 
+    	print __METHOD__." result=".$result."\n";
+    	$this->assertGreaterThan(0, $result);
+    	return $result;
+    }
 
 
 
@@ -171,28 +204,22 @@ class FactureRecTest extends PHPUnit_Framework_TestCase
      * @param	array		$fieldstoignorearray	Array of fields to ignore in diff
 	 * @return	array								Array with differences
      */
-    public function objCompare($oA,$oB,$ignoretype=true,$fieldstoignorearray=array('id'))
+    public function objCompare($oA, $oB, $ignoretype = true, $fieldstoignorearray = array('id'))
     {
         $retAr=array();
 
-        if (get_class($oA) !== get_class($oB))
-        {
+        if (get_class($oA) !== get_class($oB)) {
             $retAr[]="Supplied objects are not of same class.";
-        }
-        else
-        {
+        } else {
             $oVarsA=get_object_vars($oA);
             $oVarsB=get_object_vars($oB);
             $aKeys=array_keys($oVarsA);
-            foreach($aKeys as $sKey)
-            {
-                if (in_array($sKey,$fieldstoignorearray)) continue;
-                if (! $ignoretype && $oVarsA[$sKey] !== $oVarsB[$sKey])
-                {
+            foreach ($aKeys as $sKey) {
+                if (in_array($sKey, $fieldstoignorearray)) continue;
+                if (! $ignoretype && ($oVarsA[$sKey] !== $oVarsB[$sKey])) {
                     $retAr[]=$sKey.' : '.(is_object($oVarsA[$sKey])?get_class($oVarsA[$sKey]):$oVarsA[$sKey]).' <> '.(is_object($oVarsB[$sKey])?get_class($oVarsB[$sKey]):$oVarsB[$sKey]);
                 }
-                if ($ignoretype && $oVarsA[$sKey] != $oVarsB[$sKey])
-                {
+                if ($ignoretype && ($oVarsA[$sKey] != $oVarsB[$sKey])) {
                     $retAr[]=$sKey.' : '.(is_object($oVarsA[$sKey])?get_class($oVarsA[$sKey]):$oVarsA[$sKey]).' <> '.(is_object($oVarsB[$sKey])?get_class($oVarsB[$sKey]):$oVarsB[$sKey]);
                 }
             }

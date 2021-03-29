@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -46,7 +46,7 @@ $conf->global->MAIN_DISABLE_ALL_MAILS=1;
  * @backupStaticAttributes enabled
  * @remarks	backupGlobals must be disabled to have db,conf,user and lang not erased.
  */
-class PaypalTest extends PHPUnit_Framework_TestCase
+class PaypalTest extends PHPUnit\Framework\TestCase
 {
 	protected $savconf;
 	protected $savuser;
@@ -59,7 +59,7 @@ class PaypalTest extends PHPUnit_Framework_TestCase
 	 *
 	 * @return ProductTest
 	 */
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 
@@ -75,8 +75,12 @@ class PaypalTest extends PHPUnit_Framework_TestCase
 		print "\n";
 	}
 
-	// Static methods
-  	public static function setUpBeforeClass()
+    /**
+     * setUpBeforeClass
+     *
+     * @return void
+     */
+    public static function setUpBeforeClass()
     {
     	global $conf,$user,$langs,$db;
 
@@ -87,7 +91,11 @@ class PaypalTest extends PHPUnit_Framework_TestCase
     	print __METHOD__."\n";
     }
 
-    // tear down after class
+    /**
+     * tearDownAfterClass
+     *
+     * @return	void
+     */
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -123,7 +131,7 @@ class PaypalTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * testProductCreate
+     * testPaypalOk
      *
      * @return	void
      */
@@ -135,13 +143,13 @@ class PaypalTest extends PHPUnit_Framework_TestCase
 		$langs=$this->savlangs;
 		$db=$this->savdb;
 
-		$urltotest=getPaypalPaymentUrl(1,'free');
+		$urltotest=getOnlinePaymentUrl(0, 'free');
 		print "urltotest=".$urltotest."\n";
 
-		$result=getURLContent($urltotest, 'GET');
+		$result=getURLContent($urltotest, 'GET', '', 1, array(), array('http', 'https'), 2);
 
-        print __METHOD__." result=".$result."\n";
-    	$this->assertLessThanOrEqual($result, 0);
+        print __METHOD__." result=".$result['http_code']."\n";
+        $this->assertEquals(200, $result['http_code']);
 
     	return $result;
     }

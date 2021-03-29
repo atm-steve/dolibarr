@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -45,7 +45,7 @@ $conf->global->MAIN_DISABLE_ALL_MAILS=1;
  * @backupStaticAttributes enabled
  * @remarks	backupGlobals must be disabled to have db,conf,user and lang not erased.
  */
-class CategorieTest extends PHPUnit_Framework_TestCase
+class CategorieTest extends PHPUnit\Framework\TestCase
 {
     protected $savconf;
     protected $savuser;
@@ -58,7 +58,7 @@ class CategorieTest extends PHPUnit_Framework_TestCase
      *
      * @return CategorieTest
      */
-    function __construct()
+    public function __construct()
     {
     	parent::__construct();
 
@@ -74,7 +74,11 @@ class CategorieTest extends PHPUnit_Framework_TestCase
         print "\n";
     }
 
-    // Static methods
+    /**
+     * setUpBeforeClass
+     *
+     * @return void
+     */
     public static function setUpBeforeClass()
     {
         global $conf,$user,$langs,$db;
@@ -83,7 +87,11 @@ class CategorieTest extends PHPUnit_Framework_TestCase
         print __METHOD__."\n";
     }
 
-    // tear down after class
+    /**
+     * tearDownAfterClass
+     *
+     * @return	void
+     */
     public static function tearDownAfterClass()
     {
         global $conf,$user,$langs,$db;
@@ -195,7 +203,8 @@ class CategorieTest extends PHPUnit_Framework_TestCase
         $result=$localobject2->create($user);
         $cat = new Categorie($this->savdb);
         $cat->id = $catid;
-        $result=$cat->add_type($localobject2,"product");
+        $cat->type = 0;
+        $result=$cat->add_type($localobject2, "product");
 
         print __METHOD__." result=".$result."\n";
         $this->assertGreaterThan(0, $result);
@@ -203,7 +212,7 @@ class CategorieTest extends PHPUnit_Framework_TestCase
         // Get list of categories for product
         $localcateg=new Categorie($this->savdb);
         $listofcateg=$localcateg->containing($localobject2->id, Categorie::TYPE_PRODUCT, 'label');
-        $this->assertTrue(in_array('Specimen Category for product',$listofcateg), 'Categ not found linked to product when it should');
+        $this->assertTrue(in_array('Specimen Category for product', $listofcateg), 'Categ not found linked to product when it should');
 
         return $id;
     }
@@ -236,7 +245,7 @@ class CategorieTest extends PHPUnit_Framework_TestCase
     /**
      * testCategorieUpdate
      *
-     * @param   Category        $localobject        Category
+     * @param   Categorie        $localobject        Category
      * @return  int
 
      * @depends testCategorieFetch
@@ -261,7 +270,7 @@ class CategorieTest extends PHPUnit_Framework_TestCase
     /**
      * testCategorieOther
      *
-     * @param   Category    $localobject    Category
+     * @param   Categorie    $localobject    Category
      * @return  int
      *
      * @depends testCategorieUpdate

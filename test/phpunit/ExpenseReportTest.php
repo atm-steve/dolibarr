@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -45,7 +45,7 @@ $conf->global->MAIN_DISABLE_ALL_MAILS=1;
  * @backupStaticAttributes enabled
  * @remarks	backupGlobals must be disabled to have db,conf,user and lang not erased.
  */
-class ExpenseReportTest extends PHPUnit_Framework_TestCase
+class ExpenseReportTest extends PHPUnit\Framework\TestCase
 {
     protected $savconf;
     protected $savuser;
@@ -58,7 +58,7 @@ class ExpenseReportTest extends PHPUnit_Framework_TestCase
      *
      * @return ExpenseReportTest
      */
-    function __construct()
+    public function __construct()
     {
     	parent::__construct();
 
@@ -74,7 +74,11 @@ class ExpenseReportTest extends PHPUnit_Framework_TestCase
         print "\n";
     }
 
-    // Static methods
+    /**
+     * setUpBeforeClass
+     *
+     * @return void
+     */
     public static function setUpBeforeClass()
     {
         global $conf,$user,$langs,$db;
@@ -83,7 +87,11 @@ class ExpenseReportTest extends PHPUnit_Framework_TestCase
         print __METHOD__."\n";
     }
 
-    // tear down after class
+    /**
+     * tearDownAfterClass
+     *
+     * @return	void
+     */
     public static function tearDownAfterClass()
     {
         global $conf,$user,$langs,$db;
@@ -131,32 +139,29 @@ class ExpenseReportTest extends PHPUnit_Framework_TestCase
         $langs=$this->savlangs;
         $db=$this->savdb;
 
-        // Set supplier and product to use
-        $socid=1;
-
         // Create supplier order with a too low quantity
         $localobject=new ExpenseReport($db);
-        $localobject->initAsSpecimen();         // Init a speciment with lines
+        $localobject->initAsSpecimen();         // Init a specimen with lines
         $localobject->status = 0;
         $localobject->fk_statut = 0;
         $localobject->date_fin = null;  // Force bad value
 
         $result=$localobject->create($user);
         print __METHOD__." result=".$result."\n";
-        $this->assertEquals(-1, $result);       // must be -1 because of missing mandatory fields
+        $this->assertEquals(-1, $result, "Error on test ExpenseReport create 1 : ".$localobject->error);       // must be -1 because of missing mandatory fields
 
         $sql="DELETE FROM ".MAIN_DB_PREFIX."expensereport where ref=''";
         $db->query($sql);
 
         // Create supplier order
         $localobject2=new ExpenseReport($db);
-        $localobject2->initAsSpecimen();        // Init a speciment with lines
+        $localobject2->initAsSpecimen();        // Init a specimen with lines
         $localobject2->status = 0;
         $localobject2->fk_statut = 0;
 
         $result=$localobject2->create($user);
         print __METHOD__." result=".$result."\n";
-        $this->assertGreaterThanOrEqual(0, $result);
+        $this->assertGreaterThanOrEqual(0, $result, "Error on test ExpenseReport create 2 : ".$localobject2->error);
 
         return $result;
     }
@@ -276,15 +281,9 @@ class ExpenseReportTest extends PHPUnit_Framework_TestCase
         $langs=$this->savlangs;
         $db=$this->savdb;
 
-        /*$result=$localobject->setstatus(0);
+        $result=$localobject->getSumPayments();
         print __METHOD__." id=".$localobject->id." result=".$result."\n";
-        $this->assertLessThan($result, 0);
-        */
-
-        /*$localobject->info($localobject->id);
-        print __METHOD__." localobject->date_creation=".$localobject->date_creation."\n";
-        $this->assertNotEquals($localobject->date_creation, '');
-        */
+        $this->assertGreaterThanOrEqual(0, $result);
 
         return $localobject->id;
     }
@@ -311,7 +310,7 @@ class ExpenseReportTest extends PHPUnit_Framework_TestCase
         $result=$localobject->delete($user);
 
         print __METHOD__." id=".$id." result=".$result."\n";
-        $this->assertLessThan($result, 0);
+        $this->assertGreaterThan(0, $result);
         return $result;
     }
 }

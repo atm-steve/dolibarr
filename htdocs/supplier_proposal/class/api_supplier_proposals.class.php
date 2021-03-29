@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 use Luracast\Restler\RestException;
@@ -45,7 +45,7 @@ class Supplierproposals extends DolibarrApi
 	/**
 	 * Constructor
 	 */
-	function __construct()
+	public function __construct()
 	{
 		global $db, $conf;
 		$this->db = $db;
@@ -62,18 +62,18 @@ class Supplierproposals extends DolibarrApi
 	 *
 	 * @throws 	RestException
 	 */
-	function get($id)
+	public function get($id)
 	{
-		if(! DolibarrApiAccess::$user->rights->supplier_proposal->lire) {
+		if (!DolibarrApiAccess::$user->rights->supplier_proposal->lire) {
 			throw new RestException(401);
 		}
 
 		$result = $this->supplier_proposal->fetch($id);
-		if( ! $result ) {
+		if (!$result) {
 			throw new RestException(404, 'Supplier Proposal not found');
 		}
 
-		if( ! DolibarrApi::_checkAccessToResource('supplier_proposal',$this->propal->id)) {
+		if (!DolibarrApi::_checkAccessToResource('supplier_proposal', $this->propal->id)) {
 			throw new RestException(401, 'Access not allowed for login '.DolibarrApiAccess::$user->login);
 		}
 
@@ -90,33 +90,33 @@ class Supplierproposals extends DolibarrApi
 	 * @param string	$sortorder	        Sort order
 	 * @param int		$limit		        Limit for list
 	 * @param int		$page		        Page number
-	 * @param string   	$thirdparty_ids	    Thirdparty ids to filter supplier proposals. {@example '1' or '1,2,3'} {@pattern /^[0-9,]*$/i}
+	 * @param string   	$thirdparty_ids	    Thirdparty ids to filter supplier proposals (example '1' or '1,2,3') {@pattern /^[0-9,]*$/i}
 	 * @param string    $sqlfilters         Other criteria to filter answers separated by a comma. Syntax example "(t.ref:like:'SO-%') and (t.datec:<:'20160101')"
 	 * @return  array                       Array of order objects
 	 */
-    function index($sortfield = "t.rowid", $sortorder = 'ASC', $limit = 100, $page = 0, $thirdparty_ids = '', $sqlfilters = '')
-    {
+	public function index($sortfield = "t.rowid", $sortorder = 'ASC', $limit = 100, $page = 0, $thirdparty_ids = '', $sqlfilters = '')
+	{
 		global $db, $conf;
 
 		$obj_ret = array();
 
 		// case of external user, $thirdparty_ids param is ignored and replaced by user's socid
-		$socids = DolibarrApiAccess::$user->societe_id ? DolibarrApiAccess::$user->societe_id : $thirdparty_ids;
+		$socids = DolibarrApiAccess::$user->socid ? DolibarrApiAccess::$user->socid : $thirdparty_ids;
 
 		// If the internal user must only see his customers, force searching by him
 		$search_sale = 0;
-		if (! DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) $search_sale = DolibarrApiAccess::$user->id;
+		if (!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) $search_sale = DolibarrApiAccess::$user->id;
 
 		$sql = "SELECT t.rowid";
 		if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= ", sc.fk_soc, sc.fk_user"; // We need these fields in order to filter by sale (including the case where the user can only see his prospects)
-		$sql.= " FROM ".MAIN_DB_PREFIX."supplier_proposal as t";
+		$sql .= " FROM ".MAIN_DB_PREFIX."supplier_proposal as t";
 
-		if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc"; // We need this table joined to the select in order to filter by sale
+		if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc"; // We need this table joined to the select in order to filter by sale
 
-		$sql.= ' WHERE t.entity IN ('.getEntity('propal').')';
-		if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql.= " AND t.fk_soc = sc.fk_soc";
-		if ($socids) $sql.= " AND t.fk_soc IN (".$socids.")";
-		if ($search_sale > 0) $sql.= " AND t.rowid = sc.fk_soc";		// Join for the needed table to filter by sale
+		$sql .= ' WHERE t.entity IN ('.getEntity('propal').')';
+		if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= " AND t.fk_soc = sc.fk_soc";
+		if ($socids) $sql .= " AND t.fk_soc IN (".$socids.")";
+		if ($search_sale > 0) $sql .= " AND t.rowid = sc.fk_soc"; // Join for the needed table to filter by sale
 		// Insert sale filter
 		if ($search_sale > 0)
 		{
@@ -125,46 +125,45 @@ class Supplierproposals extends DolibarrApi
 		// Add sql filters
 		if ($sqlfilters)
 		{
-			if (! DolibarrApi::_checkFilters($sqlfilters))
+			if (!DolibarrApi::_checkFilters($sqlfilters))
 			{
 				throw new RestException(503, 'Error when validating parameter sqlfilters '.$sqlfilters);
 			}
-			$regexstring='\(([^:\'\(\)]+:[^:\'\(\)]+:[^:\(\)]+)\)';
-			$sql.=" AND (".preg_replace_callback('/'.$regexstring.'/', 'DolibarrApi::_forge_criteria_callback', $sqlfilters).")";
+			$regexstring = '\(([^:\'\(\)]+:[^:\'\(\)]+:[^:\(\)]+)\)';
+			$sql .= " AND (".preg_replace_callback('/'.$regexstring.'/', 'DolibarrApi::_forge_criteria_callback', $sqlfilters).")";
 		}
 
-		$sql.= $db->order($sortfield, $sortorder);
-		if ($limit)	{
+		$sql .= $this->db->order($sortfield, $sortorder);
+		if ($limit) {
 			if ($page < 0)
 			{
 				$page = 0;
 			}
 			$offset = $limit * $page;
 
-			$sql.= $db->plimit($limit + 1, $offset);
+			$sql .= $this->db->plimit($limit + 1, $offset);
 		}
 
-		$result = $db->query($sql);
+		$result = $this->db->query($sql);
 
 		if ($result)
 		{
-			$num = $db->num_rows($result);
+			$num = $this->db->num_rows($result);
 			$min = min($num, ($limit <= 0 ? $num : $limit));
-			$i=0;
+			$i = 0;
 			while ($i < $min)
 			{
-				$obj = $db->fetch_object($result);
-				$propal_static = new SupplierProposal($db);
-				if($propal_static->fetch($obj->rowid)) {
+				$obj = $this->db->fetch_object($result);
+				$propal_static = new SupplierProposal($this->db);
+				if ($propal_static->fetch($obj->rowid)) {
 					$obj_ret[] = $this->_cleanObjectDatas($propal_static);
 				}
 				$i++;
 			}
+		} else {
+			throw new RestException(503, 'Error when retrieving supplier proposal list : '.$this->db->lasterror());
 		}
-		else {
-			throw new RestException(503, 'Error when retrieving supplier proposal list : '.$db->lasterror());
-		}
-		if( ! count($obj_ret)) {
+		if (!count($obj_ret)) {
 			throw new RestException(404, 'No supplier proposal found');
 		}
 		return $obj_ret;
@@ -178,7 +177,7 @@ class Supplierproposals extends DolibarrApi
 	 * @return  array
 	 * @throws  RestException
 	 */
-	function _validate($data)
+	private function _validate($data)
 	{
 		$propal = array();
 		foreach (SupplierProposals::$FIELDS as $field) {
@@ -190,25 +189,26 @@ class Supplierproposals extends DolibarrApi
 	}
 
 
-    /**
-     * Clean sensible object datas
-     *
-     * @param   object  $object    Object to clean
-     * @return    array    Array of cleaned object properties
-     */
-    function _cleanObjectDatas($object)
-    {
+	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.PublicUnderscore
+	/**
+	 * Clean sensible object datas
+	 *
+	 * @param   Object  $object     Object to clean
+	 * @return  Object              Object with cleaned properties
+	 */
+	protected function _cleanObjectDatas($object)
+	{
+		// phpcs:enable
+		$object = parent::_cleanObjectDatas($object);
 
-        $object = parent::_cleanObjectDatas($object);
+		unset($object->name);
+		unset($object->lastname);
+		unset($object->firstname);
+		unset($object->civility_id);
+		unset($object->address);
+		unset($object->datec);
+		unset($object->datev);
 
-        unset($object->name);
-        unset($object->lastname);
-        unset($object->firstname);
-        unset($object->civility_id);
-        unset($object->address);
-        unset($object->datec);
-        unset($object->datev);
-
-        return $object;
-    }
+		return $object;
+	}
 }

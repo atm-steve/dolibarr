@@ -3,13 +3,17 @@ README (English)
 This directory contains unit tests and docs for Dolibarr quality analysis.
 
 
+- PHPUnit          -  https://phpunit.de
+- PHP_CodeSniffer  -  https://pear.php.net/package/PHP_CodeSniffer/ 
+- PHP Depend       -  https://pdepend.org/ 
+
 
 PHPUNIT
 -------
 To use make phpunit analysis, you must:
 
 * Install PHPUnit
-If using Eclipse, you must also add an entry as external tool for phpunit programm with:
+If using Eclipse, you must also add an entry as external tool for phpunit program with:
 -Name:      PHPUnit
 -Location:  Linux:   /usr/bin/php
             Windows: C:\Program Files (x86)\wamp\bin\php\php5.2.8\php.exe
@@ -67,7 +71,7 @@ PHPDEPEND
 
 * Launch PDepend analysis:
 > cd test
-> pdepend --debug -d memory_limit=-1 --configuration=./phpunit/phpunittest.xml --phpunit-xml=./report/logs/pdepend.xml --summary-xml=./report/logs/summary.xml --jdepend-chart=./report/logs/jdepend.svg --overview-pyramid=./report/logs/pyramid.svg --ignore=custom,custom2,adodbtime,artichow,ckeditor,efc_xfss,fckeditor,fpdf,geoip,magpierss,nusoap,odtphp,phpexcel,php_writeexcel,smarty,smtps,tcpdf,vcard ../htdocs
+> pdepend --debug -d memory_limit=-1 --configuration=./phpunit/phpunittest.xml --phpunit-xml=./report/logs/pdepend.xml --summary-xml=./report/logs/summary.xml --jdepend-chart=./report/logs/jdepend.svg --overview-pyramid=./report/logs/pyramid.svg --ignore=custom,custom2,adodbtime,artichow,ckeditor,efc_xfss,fckeditor,fpdf,geoip,magpierss,nusoap,odtphp,php_writeexcel,smarty,smtps,tcpdf,vcard ../htdocs
 
 * To clean pdepend cache files
 > rm -fr ~/.pdepend/* 

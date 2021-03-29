@@ -15,7 +15,7 @@
 -- GNU General Public License for more details.
 --
 -- You should have received a copy of the GNU General Public License
--- along with this program. If not, see <http://www.gnu.org/licenses/>.
+-- along with this program. If not, see <https://www.gnu.org/licenses/>.
 --
 -- ===================================================================
 --
@@ -30,6 +30,7 @@ create table llx_adherent
   entity           integer DEFAULT 1 NOT NULL,	-- multi company id
   ref_ext          varchar(128),                -- reference into an external system (not used by dolibarr)
 
+  gender           varchar(10),
   civility         varchar(6),
   lastname         varchar(50),
   firstname        varchar(50),
@@ -38,7 +39,7 @@ create table llx_adherent
   pass_crypted     varchar(128),
   fk_adherent_type integer NOT NULL,
   morphy           varchar(3) NOT NULL, -- personne morale / personne physique
-  societe          varchar(128),			-- company name (should be same lenght than societe.name)
+  societe          varchar(128),			-- company name (should be same length than societe.name). No more used.
   fk_soc           integer NULL,		-- Link to third party linked to member
   address          text,
   zip              varchar(30),
@@ -47,9 +48,11 @@ create table llx_adherent
   country          integer,
   email            varchar(255),
 
+  socialnetworks   text DEFAULT NULL,       -- json with socialnetworks
   skype            varchar(255),
   twitter          varchar(255),                        		--
   facebook         varchar(255),                        		--
+  linkedin         varchar(255),                        		--
   instagram        varchar(255),                        		--
   snapchat         varchar(255),                        		--
   googleplus       varchar(255),                        		--
@@ -69,7 +72,7 @@ create table llx_adherent
   model_pdf		   varchar(255),
   datevalid        datetime,  -- date de validation
   datec            datetime,  -- date de creation
-  tms              timestamp, -- date de modification
+  tms              timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- last modification date
   fk_user_author   integer,   -- can be null because member can be create by a guest
   fk_user_mod      integer,
   fk_user_valid    integer,

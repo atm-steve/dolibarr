@@ -12,12 +12,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
- *      \file       test/phpunit/ImportTest.php
+ *      \file       test/phpunit/ExportTest.php
  *		\ingroup    test
  *      \brief      PHPUnit test
  *		\remarks	To run this script as CLI:  phpunit filename.php
@@ -30,16 +30,16 @@ require_once dirname(__FILE__).'/../../htdocs/master.inc.php';
 require_once dirname(__FILE__).'/../../htdocs/exports/class/export.class.php';
 require_once dirname(__FILE__).'/../../htdocs/core/lib/files.lib.php';
 
-if (! defined('NOREQUIREUSER'))  define('NOREQUIREUSER','1');
-if (! defined('NOREQUIREDB'))    define('NOREQUIREDB','1');
-if (! defined('NOREQUIRESOC'))   define('NOREQUIRESOC','1');
-if (! defined('NOREQUIRETRAN'))  define('NOREQUIRETRAN','1');
-if (! defined('NOCSRFCHECK'))    define('NOCSRFCHECK','1');
-if (! defined('NOTOKENRENEWAL')) define('NOTOKENRENEWAL','1');
-if (! defined('NOREQUIREMENU'))  define('NOREQUIREMENU','1'); // If there is no menu to show
-if (! defined('NOREQUIREHTML'))  define('NOREQUIREHTML','1'); // If we don't need to load the html.form.class.php
-if (! defined('NOREQUIREAJAX'))  define('NOREQUIREAJAX','1');
-if (! defined("NOLOGIN"))        define("NOLOGIN",'1');       // If this page is public (can be called outside logged session)
+if (! defined('NOREQUIREUSER'))  define('NOREQUIREUSER', '1');
+if (! defined('NOREQUIREDB'))    define('NOREQUIREDB', '1');
+if (! defined('NOREQUIRESOC'))   define('NOREQUIRESOC', '1');
+if (! defined('NOREQUIRETRAN'))  define('NOREQUIRETRAN', '1');
+if (! defined('NOCSRFCHECK'))    define('NOCSRFCHECK', '1');
+if (! defined('NOTOKENRENEWAL')) define('NOTOKENRENEWAL', '1');
+if (! defined('NOREQUIREMENU'))  define('NOREQUIREMENU', '1'); // If there is no menu to show
+if (! defined('NOREQUIREHTML'))  define('NOREQUIREHTML', '1'); // If we don't need to load the html.form.class.php
+if (! defined('NOREQUIREAJAX'))  define('NOREQUIREAJAX', '1');
+if (! defined("NOLOGIN"))        define("NOLOGIN", '1');       // If this page is public (can be called outside logged session)
 
 
 /**
@@ -49,7 +49,7 @@ if (! defined("NOLOGIN"))        define("NOLOGIN",'1');       // If this page is
  * @backupStaticAttributes enabled
  * @remarks	backupGlobals must be disabled to have db,conf,user and lang not erased.
  */
-class ExportTest extends PHPUnit_Framework_TestCase
+class ExportTest extends PHPUnit\Framework\TestCase
 {
 	protected $savconf;
 	protected $savuser;
@@ -62,7 +62,7 @@ class ExportTest extends PHPUnit_Framework_TestCase
 	 *
 	 * @return ExportTest
 	 */
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 
@@ -78,8 +78,12 @@ class ExportTest extends PHPUnit_Framework_TestCase
 		print "\n";
 	}
 
-	// Static methods
-  	public static function setUpBeforeClass()
+	/**
+     * setUpBeforeClass
+     *
+     * @return void
+     */
+    public static function setUpBeforeClass()
     {
     	global $conf,$user,$langs,$db;
 		//$db->begin();	// This is to have all actions inside a transaction even if test launched without suite.
@@ -87,7 +91,11 @@ class ExportTest extends PHPUnit_Framework_TestCase
     	print __METHOD__."\n";
     }
 
-    // tear down after class
+    /**
+     * tearDownAfterClass
+     *
+     * @return	void
+     */
     public static function tearDownAfterClass()
     {
     	global $conf,$user,$langs,$db;
@@ -133,12 +141,15 @@ class ExportTest extends PHPUnit_Framework_TestCase
 
         $model='csv';
 
+        $conf->global->EXPORT_CSV_SEPARATOR_TO_USE = ',';
+        print 'EXPORT_CSV_SEPARATOR_TO_USE = '.$conf->global->EXPORT_CSV_SEPARATOR_TO_USE;
+
         // Creation of class to export using model ExportXXX
         $dir = DOL_DOCUMENT_ROOT . "/core/modules/export/";
         $file = "export_".$model.".modules.php";
         $classname = "Export".$model;
         require_once $dir.$file;
-        $objmodel = new $classname($this->db);
+        $objmodel = new $classname($db);
 
         // First test without option USE_STRICT_CSV_RULES
         unset($conf->global->USE_STRICT_CSV_RULES);
@@ -153,7 +164,7 @@ class ExportTest extends PHPUnit_Framework_TestCase
         print __METHOD__." valtotest=".$valtotest."\n";
         $result = $objmodel->csvClean($valtotest, $langs->charset_output);
         print __METHOD__." result=".$result."\n";
-        $this->assertEquals($result, '"A string with , and ; inside"');
+        $this->assertEquals($result, '"A string with , and ; inside"', 'Error in csvClean for '.$file);
 
         $valtotest='A string with " inside';
         print __METHOD__." valtotest=".$valtotest."\n";
@@ -174,7 +185,7 @@ class ExportTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($result, '"A string with <a href=""aaa""><strong>html<br>content</strong></a> inside"');
 
         // Same tests with strict mode
-        $conf->global->USE_STRICT_CSV_RULES=1;
+        $conf->global->USE_STRICT_CSV_RULES = 1;
 
         $valtotest='A simple string';
         print __METHOD__." valtotest=".$valtotest."\n";
@@ -217,16 +228,16 @@ class ExportTest extends PHPUnit_Framework_TestCase
     {
         global $conf,$user,$langs,$db;
 
-        $sql = "SELECT f.facnumber as f_facnumber, f.total as f_total, f.tva as f_tva FROM ".MAIN_DB_PREFIX."facture f";
+        $sql = "SELECT f.ref as f_ref, f.total as f_total, f.tva as f_tva FROM ".MAIN_DB_PREFIX."facture f";
 
         $objexport=new Export($db);
         //$objexport->load_arrays($user,$datatoexport);
 
         // Define properties
         $datatoexport='test';
-        $array_selected = array("f.facnumber"=>1, "f.total"=>2, "f.tva"=>3);
-        $array_export_fields = array("f.facnumber"=>"FacNumber", "f.total"=>"FacTotal", "f.tva"=>"FacVat");
-        $array_alias = array("f_facnumber"=>"facnumber", "f_total"=>"total", "f_tva"=>"tva");
+        $array_selected = array("f.ref"=>1, "f.total"=>2, "f.tva"=>3);
+        $array_export_fields = array("f.ref"=>"FacNumber", "f.total"=>"FacTotal", "f.tva"=>"FacVat");
+        $array_alias = array("f_ref"=>"ref", "f_total"=>"total", "f_tva"=>"tva");
         $objexport->array_export_fields[0]=$array_export_fields;
         $objexport->array_export_alias[0]=$array_alias;
 
@@ -235,23 +246,28 @@ class ExportTest extends PHPUnit_Framework_TestCase
         $model='csv';
 
         // Build export file
+        print "Process build_file for model = ".$model."\n";
         $result=$objexport->build_file($user, $model, $datatoexport, $array_selected, array(), $sql);
-		$expectedresult=1;
-        $this->assertEquals($expectedresult,$result);
+		$expectedresult = 1;
+        $this->assertEquals($expectedresult, $result, 'Error in CSV export');
 
         $model='tsv';
 
         // Build export file
+        print "Process build_file for model = ".$model."\n";
         $result=$objexport->build_file($user, $model, $datatoexport, $array_selected, array(), $sql);
 		$expectedresult=1;
-        $this->assertEquals($expectedresult,$result);
+        $this->assertEquals($expectedresult, $result, 'Error in TSV export');
 
-        $model='excel';
+        $model='excel2007';
 
         // Build export file
+        /* ko on php 7.4 on travis (zip not available) */
+        print "Process build_file for model = ".$model."\n";
         $result=$objexport->build_file($user, $model, $datatoexport, $array_selected, array(), $sql);
 		$expectedresult=1;
-        $this->assertEquals($expectedresult,$result);
+        $this->assertEquals($expectedresult, $result, 'Error in Excel2007 export');
+
 
         return true;
     }
@@ -265,19 +281,19 @@ class ExportTest extends PHPUnit_Framework_TestCase
     public function testExportPersonalizedWithFilter()
     {
     	global $conf,$user,$langs,$db;
-/*
-    	$sql = "SELECT f.facnumber as f_facnumber, f.total as f_total, f.tva as f_tva FROM ".MAIN_DB_PREFIX."facture f";
+        /*
+    	$sql = "SELECT f.ref as f_ref, f.total as f_total, f.tva as f_tva FROM ".MAIN_DB_PREFIX."facture f";
 
     	$objexport=new Export($db);
     	//$objexport->load_arrays($user,$datatoexport);
 
     	// Define properties
     	$datatoexport='test_filtered';
-    	$array_selected = array("f.facnumber"=>1, "f.total"=>2, "f.tva"=>3);
-    	$array_export_fields = array("f.facnumber"=>"FacNumber", "f.total"=>"FacTotal", "f.tva"=>"FacVat");
+    	$array_selected = array("f.ref"=>1, "f.total"=>2, "f.tva"=>3);
+    	$array_export_fields = array("f.ref"=>"FacNumber", "f.total"=>"FacTotal", "f.tva"=>"FacVat");
     	$array_filtervalue = array("f.total" => ">100");
     	$array_filtered = array("f.total" => 1);
-    	$array_alias = array("f_facnumber"=>"facnumber", "f_total"=>"total", "f_tva"=>"tva");
+    	$array_alias = array("f_ref"=>"ref", "f_total"=>"total", "f_tva"=>"tva");
     	$objexport->array_export_fields[0]=$array_export_fields;
     	$objexport->array_export_alias[0]=$array_alias;
 
@@ -303,7 +319,8 @@ class ExportTest extends PHPUnit_Framework_TestCase
     	$result=$objexport->build_file($user, $model, $datatoexport, $array_selected, $array_filtervalue, $sql);
     	$expectedresult=1;
     	$this->assertEquals($expectedresult,$result);
-*/
+        */
+    	$this->assertEquals(true, true);
     	return true;
     }
 
@@ -325,10 +342,10 @@ class ExportTest extends PHPUnit_Framework_TestCase
 
         // Load properties of arrays to make export
         $objexport=new Export($db);
-        $result=$objexport->load_arrays($user,$filterdatatoexport);	// This load ->array_export_xxx properties for datatoexport
+        $result=$objexport->load_arrays($user, $filterdatatoexport);	// This load ->array_export_xxx properties for datatoexport
 
         // Loop on each dataset
-        foreach($objexport->array_export_code as $key => $datatoexport)
+        foreach ($objexport->array_export_code as $key => $datatoexport)
         {
         	$exportfile=$conf->export->dir_temp.'/'.$user->id.'/export_'.$datatoexport.'.csv';
 	        print "Process export for dataset ".$datatoexport." into ".$exportfile."\n";
@@ -337,7 +354,7 @@ class ExportTest extends PHPUnit_Framework_TestCase
 	        // Generate $array_selected
 	        $i=0;
 	        $array_selected=array();
-			foreach($objexport->array_export_fields[$key] as $key => $val)
+			foreach ($objexport->array_export_fields[$key] as $key => $val)
 			{
 				$array_selected[$key]=$i++;
 			}
@@ -346,8 +363,8 @@ class ExportTest extends PHPUnit_Framework_TestCase
 	        // Build export file
         	$sql = "";
 			$result=$objexport->build_file($user, $model, $datatoexport, $array_selected, array(), $sql);
-			$expectedresult=1;
-	        $this->assertEquals($expectedresult, $result, "Call build_file() to export ".$exportfile.' failed');
+			$expectedresult = 1;
+	        $this->assertEquals($expectedresult, $result, "Call build_file() to export ".$exportfile.' failed: '.$objexport->error);
 	        $result=dol_is_file($exportfile);
 	        $this->assertTrue($result, 'File '.$exportfile.' not found');
         }

@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -48,7 +48,7 @@ $conf->global->MAIN_UMASK='0666';
  * @backupStaticAttributes enabled
  * @remarks	backupGlobals must be disabled to have db,conf,user and lang not erased.
  */
-class WebservicesUserTest extends PHPUnit_Framework_TestCase
+class WebservicesUserTest extends PHPUnit\Framework\TestCase
 {
     protected $savconf;
     protected $savuser;
@@ -61,7 +61,7 @@ class WebservicesUserTest extends PHPUnit_Framework_TestCase
      *
      * @return DateLibTest
      */
-    function __construct()
+    public function __construct()
     {
     	parent::__construct();
 
@@ -77,7 +77,11 @@ class WebservicesUserTest extends PHPUnit_Framework_TestCase
         print "\n";
     }
 
-    // Static methods
+    /**
+     * setUpBeforeClass
+     *
+     * @return void
+     */
     public static function setUpBeforeClass()
     {
         global $conf,$user,$langs,$db;
@@ -86,7 +90,11 @@ class WebservicesUserTest extends PHPUnit_Framework_TestCase
         print __METHOD__."\n";
     }
 
-    // tear down after class
+    /**
+     * tearDownAfterClass
+     *
+     * @return	void
+     */
     public static function tearDownAfterClass()
     {
         global $conf,$user,$langs,$db;
@@ -140,12 +148,14 @@ class WebservicesUserTest extends PHPUnit_Framework_TestCase
         $ns='http://www.dolibarr.org/ns/';
 
         // Set the WebService URL
-        print __METHOD__."Create nusoap_client for URL=".$WS_DOL_URL."\n";
+        print __METHOD__." Create nusoap_client for URL=".$WS_DOL_URL."\n";
         $soapclient = new nusoap_client($WS_DOL_URL);
         if ($soapclient) {
             $soapclient->soap_defencoding='UTF-8';
             $soapclient->decodeUTF8(false);
         }
+
+        //$soapclient->setDebugLevel(5);
 
         // Call the WebService method and store its result in $result.
         $authentication=array(
@@ -159,10 +169,10 @@ class WebservicesUserTest extends PHPUnit_Framework_TestCase
         // Test URL
         $result='';
         $parameters = array('authentication'=>$authentication,'id'=>0,'ref'=>'admin');
-        print __METHOD__."Call method ".$WS_METHOD."\n";
+        print __METHOD__." Call method ".$WS_METHOD."\n";
         try {
-            $result = $soapclient->call($WS_METHOD,$parameters,$ns,'');
-        } catch(SoapFault $exception) {
+            $result = $soapclient->call($WS_METHOD, $parameters, $ns, '');
+        } catch (SoapFault $exception) {
             echo $exception;
             $result=0;
         }
@@ -180,16 +190,16 @@ class WebservicesUserTest extends PHPUnit_Framework_TestCase
             print "\n";
         }
 
-        print __METHOD__." result=".$result."\n";
-        $this->assertEquals('OK', $result['result']['result_code'], 'Test on ref admin');
+        print __METHOD__." count(result)=".count($result)."\n";
+        $this->assertEquals('OK', empty($result['result']['result_code'])?'':$result['result']['result_code'], 'Test on ref admin');
 
         // Test URL
         $result='';
         $parameters = array('authentication'=>$authentication,'id'=>0,'ref'=>'refthatdoesnotexists');
         print __METHOD__."Call method ".$WS_METHOD."\n";
         try {
-            $result = $soapclient->call($WS_METHOD,$parameters,$ns,'');
-        } catch(SoapFault $exception) {
+            $result = $soapclient->call($WS_METHOD, $parameters, $ns, '');
+        } catch (SoapFault $exception) {
             echo $exception;
             $result=0;
         }
@@ -203,7 +213,7 @@ class WebservicesUserTest extends PHPUnit_Framework_TestCase
             print "\n";
         }
 
-        print __METHOD__." result=".$result."\n";
+        print __METHOD__." count(result)=".count($result)."\n";
         $this->assertEquals('NOT_FOUND', $result['result']['result_code'], 'Test on ref that does not exists');
 
         return $result;

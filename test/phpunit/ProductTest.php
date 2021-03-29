@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -45,7 +45,7 @@ $conf->global->MAIN_DISABLE_ALL_MAILS=1;
  * @backupStaticAttributes enabled
  * @remarks backupGlobals must be disabled to have db,conf,user and lang not erased.
  */
-class ProductTest extends PHPUnit_Framework_TestCase
+class ProductTest extends PHPUnit\Framework\TestCase
 {
     protected $savconf;
     protected $savuser;
@@ -58,11 +58,11 @@ class ProductTest extends PHPUnit_Framework_TestCase
      *
      * @return ProductTest
      */
-    function __construct()
+    public function __construct()
     {
-    	parent::__construct();
+        parent::__construct();
 
-    	//$this->sharedFixture
+        //$this->sharedFixture
         global $conf,$user,$langs,$db;
         $this->savconf=$conf;
         $this->savuser=$user;
@@ -74,7 +74,11 @@ class ProductTest extends PHPUnit_Framework_TestCase
         print "\n";
     }
 
-    // Static methods
+    /**
+     * setUpBeforeClass
+     *
+     * @return void
+     */
     public static function setUpBeforeClass()
     {
         global $conf,$user,$langs,$db;
@@ -85,7 +89,12 @@ class ProductTest extends PHPUnit_Framework_TestCase
 
         print __METHOD__."\n";
     }
-    // teardownafterclass
+
+    /**
+     * tearDownAfterClass
+     *
+     * @return	void
+     */
     public static function tearDownAfterClass()
     {
         global $conf,$user,$langs,$db;
@@ -138,7 +147,7 @@ class ProductTest extends PHPUnit_Framework_TestCase
         $result=$localobject->create($user);
 
         print __METHOD__." result=".$result."\n";
-        $this->assertLessThanOrEqual($result, 0);
+        $this->assertLessThanOrEqual($result, 0, "Creation of product");
 
         return $result;
     }
@@ -185,8 +194,9 @@ class ProductTest extends PHPUnit_Framework_TestCase
         $langs=$this->savlangs;
         $db=$this->savdb;
 
-        $localobject->note='New note after update';
-        $result=$localobject->update($localobject->id,$user);
+        $localobject->note_public = 'New public note after update';
+        $localobject->note_private = 'New private note after update';
+        $result=$localobject->update($localobject->id, $user);
         print __METHOD__." id=".$localobject->id." result=".$result."\n";
         $this->assertLessThan($result, 0);
 
@@ -210,6 +220,7 @@ class ProductTest extends PHPUnit_Framework_TestCase
         $langs=$this->savlangs;
         $db=$this->savdb;
 
+        $this->assertEquals(0, 0);
 
         return $localobject->id;
     }
@@ -239,24 +250,5 @@ class ProductTest extends PHPUnit_Framework_TestCase
         $this->assertLessThan($result, 0);
 
         return $result;
-    }
-
-    /**
-     * testProductStatic
-     *
-     * @return  void
-     */
-    public function testProductStatic()
-    {
-        global $conf,$user,$langs,$db;
-        $conf=$this->savconf;
-        $user=$this->savuser;
-        $langs=$this->savlangs;
-        $db=$this->savdb;
-
-        $localobject=new Product($db);
-
-
-        return;
     }
 }
