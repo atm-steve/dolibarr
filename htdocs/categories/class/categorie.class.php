@@ -99,6 +99,7 @@ class Categorie extends CommonObject
 		7 => 'user',
 		8 => 'bank_line',
 		9 => 'warehouse',
+		11 => 'website_page',
         10=> 'actioncomm',
         12=> 'stock'
 	);

@@ -463,7 +463,6 @@ class ExtraFields
 			$sql .= " ".($help ? "'".$this->db->escape($help)."'" : "null").",";
 			$sql .= " ".($totalizable ? 'TRUE' : 'FALSE');
 			$sql .= ')';
-
 			dol_syslog(get_class($this)."::create_label", LOG_DEBUG);
 			if ($this->db->query($sql))
 			{
