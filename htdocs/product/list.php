@@ -78,6 +78,7 @@ $search_accountancy_code_buy_export = GETPOST("search_accountancy_code_buy_expor
 $search_finished = GETPOST("search_finished", 'int');
 $optioncss = GETPOST('optioncss', 'alpha');
 $type = GETPOST("type", "int");
+$search_units = GETPOST('search_units', 'int');
 
 //Show/hide child products
 if (!empty($conf->variants->enabled) && !empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD)) {
@@ -295,6 +296,7 @@ if (empty($reshook))
 		$search_accountancy_code_buy_intra = '';
 		$search_accountancy_code_buy_export = '';
 		$search_array_options = array();
+		$search_units = '';
 	}
 
 	// Mass actions
@@ -416,6 +418,7 @@ if ($search_accountancy_code_sell_export) $sql .= natural_search('p.accountancy_
 if ($search_accountancy_code_buy)         $sql .= natural_search('p.accountancy_code_buy', $search_accountancy_code_buy);
 if ($search_accountancy_code_buy_intra)   $sql .= natural_search('p.accountancy_code_buy_intra', $search_accountancy_code_buy_intra);
 if ($search_accountancy_code_buy_export)  $sql .= natural_search('p.accountancy_code_buy_export', $search_accountancy_code_buy_export);
+if(!empty($conf->global->PRODUCT_USE_UNITS) && $search_units) $sql .= natural_search('cu.rowid', $search_units);
 
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
@@ -751,11 +754,12 @@ if ($resql)
 	}
 
 	// Unit
-	if (!empty($arrayfields['cu.label']['checked']))
-	{
-		print '<td class="liste_titre">';
-		print '</td>';
-	}
+    if (!empty($arrayfields['cu.label']['checked']))
+    {
+        print '<td class="liste_titre">';
+        print $form->selectUnits($search_units, 'search_units', 1);
+        print '</td>';
+    }
 
 	// Sell price
 	if (!empty($arrayfields['p.sellprice']['checked']))

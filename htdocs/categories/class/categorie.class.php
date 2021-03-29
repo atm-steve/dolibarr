@@ -52,10 +52,11 @@ class Categorie extends CommonObject
 	const TYPE_USER      = 'user';
 	const TYPE_PROJECT   = 'project';
 	const TYPE_ACCOUNT   = 'bank_account';
-	const TYPE_BANK_LINE = 'bank_line';
-	const TYPE_WAREHOUSE = 'warehouse';
-	const TYPE_ACTIONCOMM = 'actioncomm';
-	const TYPE_WEBSITE_PAGE = 'website_page';
+    const TYPE_BANK_LINE = 'bank_line';
+    const TYPE_STOCK = 'stock';
+    const TYPE_WAREHOUSE = 'warehouse';
+    const TYPE_ACTIONCOMM = 'actioncomm';
+    const TYPE_WEBSITE_PAGE = 'website_page';
 
 	/**
 	 * @var string String with name of icon for myobject. Must be the part after the 'object_' into object_myobject.png
@@ -77,8 +78,9 @@ class Categorie extends CommonObject
 		'user'         => 7,
 		'bank_line'    => 8,
 		'warehouse'    => 9,
-		'actioncomm'   => 10,
-		'website_page' => 11
+        'actioncomm'   => 10,
+		'website_page' => 11,
+        'stock'    => 12,
 	);
 
 	/**
@@ -97,8 +99,10 @@ class Categorie extends CommonObject
 		7 => 'user',
 		8 => 'bank_line',
 		9 => 'warehouse',
-		10 => 'actioncomm',
-        11 => 'website_page'
+		11 => 'website_page',
+
+        10=> 'actioncomm',
+        12=> 'stock'
 	);
 
 	/**
@@ -110,8 +114,10 @@ class Categorie extends CommonObject
 		'customer' => 'soc',
 		'supplier' => 'soc',
 		'contact'  => 'socpeople',
-		'bank_account' => 'account',
-	);
+        'bank_account' => 'account',
+        'project'  => 'project',
+        'stock'  => 'entrepot',
+    );
 
 	/**
 	 * @var array Category tables mapping from type string (llx_categorie_...) when value does not match
@@ -121,7 +127,8 @@ class Categorie extends CommonObject
 	protected $MAP_CAT_TABLE = array(
 		'customer' => 'societe',
 		'supplier' => 'fournisseur',
-		'bank_account'=> 'account',
+        'bank_account'=> 'account',
+        'stock'  => 'entrepot',
 	);
 
 	/**

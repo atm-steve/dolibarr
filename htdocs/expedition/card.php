@@ -45,7 +45,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/productlot.class.php';
+dol_include_once('/cliama/lib/cliama.lib.php');
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
+
 if (!empty($conf->product->enabled) || !empty($conf->service->enabled))  require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 if (!empty($conf->propal->enabled))   require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 if (!empty($conf->productbatch->enabled)) require_once DOL_DOCUMENT_ROOT.'/product/class/productbatch.class.php';
@@ -975,13 +977,13 @@ if ($action == 'create')
 			print $form->textwithpicto($text, $htmltext);
 			print '</td></tr>';
 
-			// Delivery method
-			print "<tr><td>".$langs->trans("DeliveryMethod")."</td>";
-			print '<td colspan="3">';
-			$expe->fetch_delivery_methods();
-			print $form->selectarray("shipping_method_id", $expe->meths, GETPOST('shipping_method_id', 'int'), 1, 0, 0, "", 1);
-			if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"), 1);
-			print "</td></tr>\n";
+            // Delivery method
+            print "<tr><td>".$langs->trans("DeliveryMethod")."</td>";
+            print '<td colspan="3">';
+            $expe->fetch_delivery_methods();
+            print $form->selectarray("shipping_method_id", $expe->meths, GETPOST('shipping_method_id', 'int'), 1, 0, 0, "", 1);
+            if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"), 1);
+            print "</td></tr>\n";
 
 			// Tracking number
 			print "<tr><td>".$langs->trans("TrackingNumber")."</td>";
@@ -1113,8 +1115,10 @@ if ($action == 'create')
 						$product->load_stock('warehouseopen'); // Load all $product->stock_warehouse[idwarehouse]->detail_batch
 						//var_dump($product->stock_warehouse[1]);
 
-						print '<td>';
-						print '<a name="'.$line->id.'"></a>'; // ancre pour retourner sur la ligne
+                        getVirtualStockByWarehouse($product);
+
+
+	                    print '<td>';
 
 						// Show product and description
 						$product_static->type = $line->fk_product_type;
@@ -1218,6 +1222,12 @@ if ($action == 'create')
 											$stockMin = 0;
 										}
 										print $formproduct->selectWarehouses($tmpentrepot_id, 'entl'.$indiceAsked, '', 1, 0, $line->fk_product, '', 1, 0, array(), 'minwidth200', '', 1, $stockMin, 'stock DESC, e.ref');
+
+                                        foreach ($product->stock_warehouse as $id => $infos) print "<script type='text/javascript'>
+																									var html = $('#entl".$indiceAsked." > option[value=\"".$id."\"]').html();
+																									if (html.indexOf('(') != -1) html = html.substring(0, html.indexOf('(')) + '(".$langs->trans("Stock").':'.$product->stock_warehouse[$id]->real.")';
+																									$('#entl".$indiceAsked." > option[value=\"".$id."\"]').html(html);
+																									</script>";
 
 										if ($tmpentrepot_id > 0 && $tmpentrepot_id == $warehouse_id)
 										{

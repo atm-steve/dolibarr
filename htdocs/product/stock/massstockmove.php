@@ -30,10 +30,12 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.commande.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
+dol_include_once('/cliama/class/assettransfert.class.php');
+dol_include_once('/cliama/class/typeentrepot.class.php');
+dol_include_once('/categories/class/categorie.class.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array('products', 'stocks', 'orders', 'productbatch'));
-
+$langs->loadLangs(array('products', 'stocks', 'orders', 'productbatch', 'cliama@cliama'));
 //init Hook
 $hookmanager->initHooks(array('massstockmove'));
 
@@ -68,6 +70,9 @@ if (!$sortorder) {
 $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
 $offset = $limit * $page;
 
+$trans = new AssetTranfert($db);
+$typeent = new TypeEntrepot($db);
+
 $listofdata = array();
 if (!empty($_SESSION['massstockmove'])) $listofdata = json_decode($_SESSION['massstockmove'], true);
 
@@ -83,6 +88,29 @@ if ($action == 'addline')
 		$error++;
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Product")), null, 'errors');
 	}
+	else
+    {
+        $p = new Product($db);
+        $p->fetch($id_product);
+        $p->get_sousproduits_arbo();
+
+        $p->load_stock();
+        if(array_key_exists($id_sw, $p->stock_warehouse)) {
+            if($p->stock_warehouse[$id_sw]->real < $qty) {
+                setEventMessages($langs->trans('NotEnoughStock'), null, 'errors');
+                $error++;
+            }
+        } else {
+            setEventMessages($langs->trans('EmptyStock'), null, 'errors');
+            $error++;
+        }
+
+        $res = $p->get_arbo_each_prod();
+        if (!empty($res)) {
+            setEventMessages($langs->trans('StockTransfertRefusedForComposed'), null, 'errors');
+            $error++;
+        }
+    }
 	if (!($id_sw > 0))
 	{
 		$error++;
@@ -105,7 +133,30 @@ if ($action == 'addline')
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Qty")), null, 'errors');
 	}
 
-	// Check a batch number is provided if product need it
+    /*
+     * Spé AMA
+     * ajouter un contrôle en plus empêchant de transférer
+     * des produits non sérialisés d'un entrepôt "neuf" vers un entrepôt "occasion" (lié à la catégorisation des entrepôts)
+     */
+    if(!empty($conf->global->CLIAMA_NEW_WAREHOUSE_CATEGORY)
+        && !empty($conf->global->CLIAMA_USED_WAREHOUSE_CATEGORY)) {
+        $categoryNew = new Categorie($db);
+        $categoryUsed = new Categorie($db);
+        $categoryNew->fetch($conf->global->CLIAMA_NEW_WAREHOUSE_CATEGORY);
+        $categoryUsed->fetch($conf->global->CLIAMA_USED_WAREHOUSE_CATEGORY);
+
+        if($categoryNew->containsObject('stock', $id_sw) && $categoryUsed->containsObject('stock', $id_tw)) {
+            $error++;
+            setEventMessages($langs->trans("NewCategoryCantGoToUsed"), null, 'errors');
+        }
+    }
+    /*
+     * Fin Spé
+     */
+
+
+
+    // Check a batch number is provided if product need it
 	if (!$error)
 	{
 		$producttmp = new Product($db);
@@ -119,6 +170,39 @@ if ($action == 'addline')
 				setEventMessages($langs->trans("ErrorTryToMakeMoveOnProductRequiringBatchData", $producttmp->ref), null, 'errors');
 			}
 		}
+
+        if(! $error &&  !empty($producttmp->array_options['options_type_asset']))
+        {
+            $assets = array();
+
+            while ($i <= $qty)
+            {
+                $t = new AssetTranfert($db);
+                $t->fk_product = $id_product;
+                $t->source_serial = '';
+                $t->target_serial = '';
+                $t->type = 'Transfert';
+                $t->fk_entrepot_source =  $id_sw;
+                $t->fk_entrepot_dest =$id_tw;
+                $t->date_mvt = dol_now();
+                $t->num_inventaire = '';
+
+                $res = $t->create($user);
+
+                if ($res > 0) $assets[] = $res;
+
+                /*$assets[] = array(
+                    'fk_source_asset' => 0
+                    ,'fk_target_asset' => 0
+                    ,'type_trans' => 0
+                    ,'fk_user' => 0
+                    ,'date_mouv' => ''
+                    ,'num_inventaire' => ''
+                );*/
+                $i++;
+            }
+        }
+
 	}
 
 	// TODO Check qty is ok for stock move. Note qty may not be enough yet, but we make a check now to report a warning.
@@ -136,7 +220,7 @@ if ($action == 'addline')
 	{
 		if (count(array_keys($listofdata)) > 0) $id = max(array_keys($listofdata)) + 1;
 		else $id = 1;
-		$listofdata[$id] = array('id'=>$id, 'id_product'=>$id_product, 'qty'=>$qty, 'id_sw'=>$id_sw, 'id_tw'=>$id_tw, 'batch'=>$batch);
+		$listofdata[$id]=array('id'=>$id, 'id_product'=>$id_product, 'qty'=>$qty, 'id_sw'=>$id_sw, 'id_tw'=>$id_tw, 'batch'=>$batch, 'assets'=>$assets);
 		$_SESSION['massstockmove'] = json_encode($listofdata);
 
 		//unset($id_sw);
@@ -149,7 +233,18 @@ if ($action == 'addline')
 
 if ($action == 'delline' && $idline != '')
 {
-	if (!empty($listofdata[$idline])) unset($listofdata[$idline]);
+    if (! empty($listofdata[$idline])) {
+        if (!empty($listofdata[$idline]['assets']))
+        {
+            foreach ($listofdata[$idline]['assets'] as $t_id)
+            {
+                $t = new AssetTranfert($db);
+                $t->fetch($t_id);
+                $t->delete($user);
+            }
+        }
+        unset($listofdata[$idline]);
+    }
 	if (count($listofdata) > 0) $_SESSION['massstockmove'] = json_encode($listofdata);
 	else unset($_SESSION['massstockmove']);
 }
@@ -157,16 +252,15 @@ if ($action == 'delline' && $idline != '')
 if ($action == 'createmovements')
 {
 	$error = 0;
-
-	if (!GETPOST("label"))
-	{
-		$error++;
-		setEventMessages($langs->trans("ErrorFieldRequired"), $langs->transnoentitiesnoconv("MovementLabel"), null, 'errors');
-	}
+    $nb_transfer=0;
+//	if (!GETPOST("label"))
+//	{
+//		$error++;
+//		setEventMessages($langs->trans("ErrorFieldRequired"), $langs->transnoentitiesnoconv("MovementLabel"), null, 'errors');
+//	}
 
 	$db->begin();
 
-	if (!$error)
 	{
 		$product = new Product($db);
 
@@ -180,6 +274,7 @@ if ($action == 'createmovements')
 			$batch = $val['batch'];
 			$dlc = -1; // They are loaded later from serial
 			$dluo = -1; // They are loaded later from serial
+            $assets = $val['assets'];
 
 			if (!$error && $id_sw <> $id_tw && is_numeric($qty) && $id_product)
 			{
@@ -192,93 +287,75 @@ if ($action == 'createmovements')
 				if (!empty($product->pmp)) $pricesrc = $product->pmp;
 				$pricedest = $pricesrc;
 
-				//print 'price src='.$pricesrc.', price dest='.$pricedest;exit;
 
-				if (empty($conf->productbatch->enabled) || !$product->hasbatch())		// If product does not need lot/serial
-				{
-					// Remove stock
-					$result1 = $product->correct_stock(
-						$user,
-						$id_sw,
-						$qty,
-						1,
-						GETPOST("label"),
-						$pricesrc,
-						GETPOST("codemove")
-					);
-					if ($result1 < 0)
-					{
-						$error++;
-						setEventMessages($product->errors, $product->errorss, 'errors');
-					}
+                if (empty($assets)) {
 
-					// Add stock
-					$result2 = $product->correct_stock(
-						$user,
-						$id_tw,
-						$qty,
-						0,
-						GETPOST("label"),
-						$pricedest,
-						GETPOST("codemove")
-					);
-					if ($result2 < 0)
-					{
-						$error++;
-						setEventMessages($product->errors, $product->errorss, 'errors');
-					}
-				} else {
-					$arraybatchinfo = $product->loadBatchInfo($batch);
-					if (count($arraybatchinfo) > 0)
-					{
-						$firstrecord = array_shift($arraybatchinfo);
-						$dlc = $firstrecord['eatby'];
-						$dluo = $firstrecord['sellby'];
-						//var_dump($batch); var_dump($arraybatchinfo); var_dump($firstrecord); var_dump($dlc); var_dump($dluo); exit;
-					} else {
-						$dlc = '';
-						$dluo = '';
-					}
+                    if(empty($conf->productbatch->enabled) || ! $product->hasbatch())        // If product does not need lot/serial
+                    {
+                        // Remove stock
+                        $result1 = $product->correct_stock($user, $id_sw, $qty, 1, GETPOST("label"), $pricesrc, GETPOST("codemove"));
+                        if($result1 < 0) {
+                            $error++;
+                            setEventMessages($product->errors, $product->errorss, 'errors');
+                        }
 
-					// Remove stock
-					$result1 = $product->correct_stock_batch(
-						$user,
-						$id_sw,
-						$qty,
-						1,
-						GETPOST("label"),
-						$pricesrc,
-						$dlc,
-						$dluo,
-						$batch,
-						GETPOST("codemove")
-					);
-					if ($result1 < 0)
-					{
-						$error++;
-						setEventMessages($product->errors, $product->errorss, 'errors');
-					}
+                        // Add stock
+                        $result2 = $product->correct_stock($user, $id_tw, $qty, 0, GETPOST("label"), $pricedest, GETPOST("codemove"));
+                        if($result2 < 0) {
+                            $error++;
+                            setEventMessages($product->errors, $product->errorss, 'errors');
+                        }
+                    }
+                    else {
+                        $arraybatchinfo = $product->loadBatchInfo($batch);
+                        if(count($arraybatchinfo) > 0) {
+                            $firstrecord = array_shift($arraybatchinfo);
+                            $dlc = $firstrecord['eatby'];
+                            $dluo = $firstrecord['sellby'];
 
-					// Add stock
-					$result2 = $product->correct_stock_batch(
-						$user,
-						$id_tw,
-						$qty,
-						0,
-						GETPOST("label"),
-						$pricedest,
-						$dlc,
-						$dluo,
-						$batch,
-						GETPOST("codemove")
-					);
-					if ($result2 < 0)
-					{
-						$error++;
-						setEventMessages($product->errors, $product->errorss, 'errors');
-					}
-				}
-			} else {
+                        }
+                        else {
+                            $dlc = '';
+                            $dluo = '';
+                        }
+
+                        // Remove stock
+                        $result1 = $product->correct_stock_batch($user, $id_sw, $qty, 1, GETPOST("label"), $pricesrc, $dlc, $dluo, $batch, GETPOST("codemove"));
+                        if($result1 < 0) {
+                            $error++;
+                            setEventMessages($product->errors, $product->errorss, 'errors');
+                        }
+
+                        // Add stock
+                        $result2 = $product->correct_stock_batch($user, $id_tw, $qty, 0, GETPOST("label"), $pricedest, $dlc, $dluo, $batch, GETPOST("codemove"));
+                        if($result2 < 0) {
+                            $error++;
+                            setEventMessages($product->errors, $product->errorss, 'errors');
+                        }
+                    }
+
+                }else{
+                    foreach ($assets as $at_id)
+                    {
+                        $trans = new AssetTranfert($db);
+                        $trans->fetch($at_id);
+
+                        $res = $trans->makeTransfert();
+                        if ($res < 0)
+                        {
+                            $error++;
+                            setEventMessages("Erreur : ", $trans->errors, 'errors');
+                        }else {
+                            $id_arrayelement = array_search($at_id, $assets);       //element du tableau d'assets concerné
+                            unset($listofdata[$key]['assets'][$id_arrayelement]);   //on supprime l'équipement dont le transfert a été effectué
+                            $_SESSION['massstockmove'] = json_encode($listofdata);
+                            $nb_transfer++;                                        //on ajoute 1 au compteur de transferts
+                        }
+                    }
+                }
+			}
+			else
+			{
 				// dol_print_error('',"Bad value saved into sessions");
 				$error++;
 			}
@@ -291,11 +368,12 @@ if ($action == 'createmovements')
 
 		$db->commit();
 		setEventMessages($langs->trans("StockMovementRecorded"), null, 'mesgs');
-		header("Location: ".DOL_URL_ROOT.'/product/stock/index.php'); // Redirect to avoid pb when using back
+        header("Location: ".$_SERVER['PHP_SELF']);
 		exit;
 	} else {
 		$db->rollback();
-		setEventMessages($langs->trans("Error"), null, 'errors');
+		//setEventMessages($langs->trans("Error"), null, 'errors');
+        setEventMessage($nb_transfer . " tranferts ont été réalisés", 'mesgs');
 	}
 }
 
@@ -378,6 +456,14 @@ if ($conf->productbatch->enabled)
 	print '<input type="text" name="batch" class="flat maxwidth50" value="'.$batch.'">';
 	print '</td>';
 }
+// In warehouse
+print '<td>';
+print $formproduct->selectWarehouses($id_sw, 'id_sw', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, array(), 'minwidth200imp maxwidth200');
+print '</td>';
+// Out warehouse
+print '<td>';
+print $formproduct->selectWarehouses($id_tw, 'id_tw', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, array(), 'minwidth200imp maxwidth200');
+print '</td>';
 // Qty
 print '<td class="center"><input type="text" class="flat maxwidth50" name="qty" value="'.$qty.'"></td>';
 // Button to add line
@@ -412,6 +498,50 @@ foreach ($listofdata as $key => $val)
 	print '<td class="right"><a href="'.$_SERVER["PHP_SELF"].'?action=delline&idline='.$val['id'].'">'.img_delete($langs->trans("Remove")).'</a></td>';
 
 	print '</tr>';
+
+    if (!empty($val['assets']))
+    {
+        $i = 0;
+        foreach ($val['assets'] as $at_id)
+        {
+            $t = new AssetTranfert($db);
+            $t->fetch($at_id);
+
+            print '<tr class="oddeven">';
+
+            print '<td>';
+            print '<input type="hidden" name="parent_id" value="'.$val['id'].'">';
+            if (!empty($i)) $style = 'style="display:none;"';
+
+            print '<div '.$style.'>';
+            print 'Type transfert : '.$form->selectArray('type_trans', $t->TTypes, $t->type,0,0,1).'<br />';
+            print 'Date de mouvement : '.$form->select_date($t->date_mvt,'date_mouv', 0, 0, 0, '', 1, 0, 1);
+            print '</div>';
+            print '</td>';
+
+            print '<td>';
+            print '<input type="text" name="source_serial" id="source_serial" value="'.$t->source_serial.'" placeholder="Numero de série source">';
+            print '</td>';
+            print '<td>';
+            print '<input type="text" name="target_serial" id="target_serial" value="'.$t->target_serial.'" placeholder="Numero de série remplacement">';
+            print '</td>';
+            print '<td align="center" colspan="2">';
+            //print 'num inv';
+            print '<input type="text" name="num_inventaire" id="num_inventaire" value="'.$t->num_inventaire.'" placeholder="Numero inventaire">';
+            //print '<input type="text" name="user_id" id="user_id" value="'.$t->user_id.'" placeholder="Numero inventaire">';
+            print $form->select_dolusers(!empty($t->user_id) ? $t->user_id: "", 'user_id'.$t->id, 1);
+            print '</td>';
+            print '<td align="right" style="display: none;">';
+            print '<input class="button savetransfert" type="button" value="'.$langs->trans('Save').'" data-id="'.$t->id.'"/>';
+            print '</td>';
+
+
+            print '</tr>';
+            $i++;
+        }
+
+    }
+
 }
 
 print '</table>';
@@ -439,13 +569,203 @@ print $langs->trans("MovementLabel").': ';
 print '<input type="text" name="label" class="minwidth300" value="'.dol_escape_htmltag($labelmovement).'"><br>';
 print '<br>';
 
-print '<div class="center"><input class="button" type="submit" name="valid" value="'.dol_escape_htmltag($buttonrecord).'"></div>';
+if(!empty($listofdata)) print '<div class="center"><input class="button" type="submit" name="valid" value="'.dol_escape_htmltag($buttonrecord).'"></div>';
+
 
 print '<br>';
 print '</div>';
 
 print '</form>';
+?>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.savetransfert').on('click', function(e){
+                var tr = $(this).closest('tr');
+                var id = $(this).data('id');
+                var table = $(this).closest('table');
+                var type = table.find('[name="type_trans"]').val();
+                var date = table.find('[name="date_mouv"]').val();
+                var source = tr.find('[name="source_serial"]').val();
+                var target = tr.find('[name="target_serial"]').val();
+                var user_id = tr.find('[name^="user_id"]').val();
+                if (user_id == -1) user_id = 0;
+                var num_inv = tr.find('[name="num_inventaire"]').val();
 
+                $.ajax({
+                    url: "<?php echo dol_buildpath('/cliama/script/interface.php',1) ?>"
+                    ,data: {
+                        put:'save_transfert'
+                        ,id:id
+                        ,type:type
+                        ,date:date
+                        ,source_serial:source
+                        ,target_serial:target
+                        ,user_id:user_id
+                        ,num_inventaire:num_inv
+                    }
+                    ,dataType:'json'
+                }).done(function(data){
+                    if(data.success) $(this).hide();
+                })
+            })
+
+
+            $('#type_trans').on('change', function(e){
+                val = $(this).val();
+                parent_id = $(this).data('parent');
+                $('.type_trans[data-parent="'+parent_id+'"]').each(function(i, item){
+                    if ($(item).val() != val)
+                    {
+                        $(item).val(val);
+                        $(item).parent().parent().parent()
+                            .find('.savetransfert')
+                            .trigger('click');
+                    }
+                    else
+                    {
+                        $(item).parent().parent().parent()
+                            .find('.savetransfert')
+                            .trigger('click');
+                    }
+                })
+            });
+
+            $('#date_mouv').datepicker('option', 'onSelect', function() {
+                val = $(this).val();
+                parent_id = $(this).parent().parent().prev().val();
+
+                $('[name="parent_id"][value="'+parent_id+'"]').each(function(i, item){
+                    date = $(item).closest('table').find('#date_mouv');
+                    date.val(val);
+                    $(item).parent().parent()
+                        .find('.savetransfert')
+                        .trigger('click');
+                });
+            });
+
+
+            $('[name="source_serial"]').each(function(i, item){
+                $(item).autocomplete({
+                    source: function( request, response ) {
+                        $.ajax({
+                            url: "<?php echo dol_buildpath('/cliama/script/interface.php', 1) ?>",
+                            dataType: "json",
+                            data: {
+                                serial: request.term
+                                ,product_id:$(item).data('product')
+                                ,ent_id:$(item).data('ent_id')
+                                , get: 'autocompleteAsset'
+                            }
+                            ,success: function( data ) {
+                                $(item).removeClass('ui-autocomplete-loading');
+                                console.log(data);
+                                var c = [];
+                                $.each(data, function(i, sn)
+                                {
+                                    c.push({ value: i, label:'  '+i, object:i});
+                                })
+                                response(c);
+                            }
+                        })
+                    },
+                    minLength: 1,
+                    select: function( event, ui ) {
+                        $(item).parent().parent().find('#target_serial').val(ui.item.value);
+                        $(item).val(ui.item.value)
+                        $(item).parent().parent().find('.savetransfert').click();
+                    }
+                });
+
+                $( '[name="source_serial"]' ).autocomplete().data("uiAutocomplete")._renderItem = function( ul, item ) {
+
+                    $li = $( "<li />" )
+                        .attr( "data-value", item.value )
+                        .append( item.label )
+                        .appendTo( ul );
+
+                    return $li;
+                };
+            });
+
+            $('[name^="user_id"]').on('change', function(){
+                $(this).parent().parent()
+                    .find('.savetransfert')
+                    .trigger('click');
+            });
+
+            $('[name="target_serial"]').on('change', function(e){
+                source = $(this).parent().parent().find('#source_serial').val();
+                product = $(this).parent().parent().find('#source_serial').data('product');
+                span = $(this).next();
+                dest = $(this).val();
+
+
+                if (source != dest)
+                {
+                    assetexists(dest, product, span)
+                }
+                else{
+                    span.hide();
+                    $('[name="valid"]').attr('disabled', false);
+                    $(this).parent().parent()
+                        .find('.savetransfert')
+                        .trigger('click');
+
+                }
+            })
+
+
+            $('[name="num_inventaire"]').on('keyup', function(e){
+                $(this).parent().parent()
+                    .find('.savetransfert')
+                    .trigger('click');
+            })
+
+            $('[name="target_serial"]').each(function(i, item){
+                source = $(item).parent().parent().find('#source_serial').val();
+                product = $(item).parent().parent().find('#source_serial').data('product');
+                span = $(item).next();
+                dest = $(item).val();
+
+                if (source != dest)
+                {
+                    assetexists(dest, product, span)
+                }
+            });
+
+            function assetexists(target_serial, product, element)
+            {
+                $.ajax({
+                    url:"<?php echo dol_buildpath('/cliama/script/interface.php', 1) ?>",
+                    dataType: "json",
+                    data: {
+                        serial: target_serial
+                        ,product_id:product
+                        , get: 'existingAsset'
+                    }
+                }).done(function(data){
+                    if (data.success == true) {
+                        if (data.response == true){
+                            element.show();
+                            $('[name="valid"]').attr('disabled', true);
+                        }
+                        else{
+                            element.hide();
+                            $('[name="valid"]').attr('disabled', false);
+                            element.parent().parent()
+                                .find('.savetransfert')
+                                .trigger('click');
+                        }
+                    }
+                });
+            }
+
+        });
+
+
+
+    </script>
+<?php
 // End of page
 llxFooter();
 $db->close();
