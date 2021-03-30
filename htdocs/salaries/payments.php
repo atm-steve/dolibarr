@@ -31,6 +31,7 @@ require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/salaries/class/salary.class.php';
 require_once DOL_DOCUMENT_ROOT.'/salaries/class/paymentsalary.class.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
 // Load translation files required by the page
@@ -64,6 +65,9 @@ if (!$sortorder) $sortorder = "DESC";
 
 $payment_salary_static = new PaymentSalary($db);
 $sal_static = new Salary($db);
+$userstatic = new User($db);
+$accountstatic = new Account($db);
+$accountlinestatic = new AccountLine($db);
 
 llxHeader('', $langs->trans("SalariesArea"));
 
@@ -124,11 +128,16 @@ if (!empty($conf->salaries->enabled) && !empty($user->rights->salaries->read))
     {
         $sal = new Salary($db);
 
-        $sql = "SELECT ps.rowid as payment_id, ps.amount, s.rowid as salary_id, s.label, ps.datep as datep, s.datesp, s.dateep, s.amount as salary, u.salary as current_salary, pct.code as payment_code";
+        $sql = "SELECT ps.rowid as payment_id, ps.amount, s.rowid as salary_id, s.label, ps.datep as datep, s.datesp, s.dateep, s.amount as salary, u.salary as current_salary, pct.code as payment_code,";
+        $sql .= " u.rowid as uid, u.lastname, u.firstname, u.login, u.email, u.admin, u.salary as current_salary, u.fk_soc as fk_soc, u.statut as status,";
+		$sql .= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accountancy_journal, ba.label as blabel, ba.iban_prefix as iban, ba.bic, ba.currency_code, ba.clos,";
+		$sql .= " pct.code as payment_code, ps.num_payment, ps.fk_bank";
         $sql .= " FROM ".MAIN_DB_PREFIX."payment_salary as ps";
 		$sql .= " INNER JOIN ".MAIN_DB_PREFIX."salary as s ON (s.rowid = ps.fk_salary)";
 		$sql .= " INNER JOIN ".MAIN_DB_PREFIX."user as u ON (u.rowid = s.fk_user)";
 		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as pct ON ps.fk_typepayment = pct.id";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."bank as b ON ps.fk_bank = b.rowid";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account as ba ON b.fk_account = ba.rowid";
         $sql .= " WHERE s.entity IN (".getEntity('user').")";
 	if(!empty($search_user)) $sql .= " AND u.rowid = ".$search_user;
        /* if ($year > 0)
@@ -138,7 +147,8 @@ if (!empty($conf->salaries->enabled) && !empty($user->rights->salaries->read))
         }*/
         if (preg_match('/^s\./', $sortfield)
 			|| preg_match('/^pct\./', $sortfield)
-			|| preg_match('/^ps\./', $sortfield)) $sql .= $db->order($sortfield, $sortorder);
+			|| preg_match('/^ps\./', $sortfield)
+			|| preg_match('/^ba\./', $sortfield)) $sql .= $db->order($sortfield, $sortorder);
 
         $result = $db->query($sql);
         if ($result)
@@ -148,13 +158,18 @@ if (!empty($conf->salaries->enabled) && !empty($user->rights->salaries->read))
             $total = 0;
             print '<table class="noborder centpercent">';
             print '<tr class="liste_titre">';
-			print_liste_field_titre("RefPayment", $_SERVER["PHP_SELF"], "s.rowid", "", $param, '', $sortfield, $sortorder);
-			print_liste_field_titre("DatePayment", $_SERVER["PHP_SELF"], "ps.datep", "", $param, 'align="center"', $sortfield, $sortorder);
-			print_liste_field_titre("Type", $_SERVER["PHP_SELF"], "pct.code", "", $param, '', $sortfield, $sortorder);
+			print_liste_field_titre("RefPayment", $_SERVER["PHP_SELF"], "ps.rowid", "", $param, '', $sortfield, $sortorder);
 			print_liste_field_titre("Salary", $_SERVER["PHP_SELF"], "s.rowid", "", $param, '', $sortfield, $sortorder);
-			print_liste_field_titre("DateStart", $_SERVER["PHP_SELF"], "s.datesp", "", $param, 'width="140px"', $sortfield, $sortorder);
-			print_liste_field_titre("PeriodEndDate", $_SERVER["PHP_SELF"], "s.dateep", "", $param, 'width="140px"', $sortfield, $sortorder);
-            print_liste_field_titre("Label", $_SERVER["PHP_SELF"], "s.label", "", $param, '', $sortfield, $sortorder);
+			print_liste_field_titre("Label", $_SERVER["PHP_SELF"], "s.label", "", $param, '', $sortfield, $sortorder);
+			print_liste_field_titre("DateEnd", $_SERVER["PHP_SELF"], "s.dateep", "", $param, 'width="140px"', $sortfield, $sortorder);
+			print_liste_field_titre("DatePayment", $_SERVER["PHP_SELF"], "ps.datep", "", $param, 'align="center"', $sortfield, $sortorder);
+			print_liste_field_titre("Employee", $_SERVER["PHP_SELF"], "s.fk_user", "", $param, "", $sortfield, $sortorder);
+			print_liste_field_titre("PaymentMode", $_SERVER["PHP_SELF"], "pct.code", "", $param, '', $sortfield, $sortorder);
+			print_liste_field_titre("Numero", $_SERVER["PHP_SELF"], "ps.num_payment", "", $param, '', $sortfield, $sortorder, '', 'ChequeOrTransferNumber');
+			if (!empty($conf->banque->enabled)) {
+				print_liste_field_titre("BankTransactionLine", $_SERVER["PHP_SELF"], "ps.fk_bank", "", $param, '', $sortfield, $sortorder);
+				print_liste_field_titre("BankAccount", $_SERVER["PHP_SELF"], "ba.label", "", $param, "", $sortfield, $sortorder);
+			}
             print_liste_field_titre("ExpectedToPay", $_SERVER["PHP_SELF"], "s.amount", "", $param, 'class="right"', $sortfield, $sortorder);
             print_liste_field_titre("PayedByThisPayment", $_SERVER["PHP_SELF"], "ps.amount", "", $param, 'class="right"', $sortfield, $sortorder);
             print "</tr>\n";
@@ -172,13 +187,7 @@ if (!empty($conf->salaries->enabled) && !empty($user->rights->salaries->read))
 				$payment_salary_static->ref = $obj->payment_id;
 				print '<td class="left">'.$payment_salary_static->getNomUrl(1)."</td>\n";
 
-				print '<td class="center">'.dol_print_date($db->jdate($obj->datep), 'day')."</td>\n";
-
-				// Type payment
-				print '<td>';
-				if ($obj->payment_code) print $langs->trans("PaymentTypeShort".$obj->payment_code).' ';
-				print $obj->num_payment.'</td>';
-
+				// Salary
 				print '<td>';
 				$sal_static->id = $obj->salary_id;
 				$sal_static->ref = $obj->salary_id;
@@ -186,13 +195,69 @@ if (!empty($conf->salaries->enabled) && !empty($user->rights->salaries->read))
 				print $sal_static->getNomUrl(1, '20');
 				print '</td>';
 
-				// Date début salaire
-				print '<td class="left">'.dol_print_date($db->jdate($obj->datesp), 'day').'</td>'."\n";
+				// Salary label
+				print "<td>".$obj->label."</td>\n";
 
 				// Date fin salaire
 				print '<td class="left">'.dol_print_date($db->jdate($obj->dateep), 'day').'</td>'."\n";
 
-                print "<td>".$obj->label."</td>\n";
+				// Date paiement
+				print '<td class="center">'.dol_print_date($db->jdate($obj->datep), 'day')."</td>\n";
+
+				// Employee
+				$userstatic->id = $obj->uid;
+				$userstatic->lastname = $obj->lastname;
+				$userstatic->firstname = $obj->firstname;
+				$userstatic->admin = $obj->admin;
+				$userstatic->login = $obj->login;
+				$userstatic->email = $obj->email;
+				$userstatic->socid = $obj->fk_soc;
+				$userstatic->statut = $obj->status;
+				print "<td>".$userstatic->getNomUrl(1)."</td>\n";
+
+				// Type payment
+				print '<td>';
+				if ($obj->payment_code) print $langs->trans("PaymentTypeShort".$obj->payment_code).' ';
+				print '</td>';
+
+				// Chq number
+				print '<td>'.$obj->num_payment.'</td>';
+
+				// Account
+				if (!empty($conf->banque->enabled)) {
+					// Bank transaction
+					print '<td>';
+					$accountlinestatic->rowid = $obj->fk_bank;
+					print $accountlinestatic->getNomUrl(1);
+					print '</td>';
+
+					print '<td>';
+					if ($obj->fk_bank > 0) {
+						//$accountstatic->fetch($obj->fk_bank);
+						$accountstatic->id = $obj->bid;
+						$accountstatic->ref = $obj->bref;
+						$accountstatic->number = $obj->bnumber;
+						$accountstatic->iban = $obj->iban;
+						$accountstatic->bic = $obj->bic;
+						$accountstatic->currency_code = $langs->trans("Currency".$obj->currency_code);
+						$accountstatic->clos = $obj->clos;
+
+						if (!empty($conf->accounting->enabled)) {
+							$accountstatic->account_number = $obj->account_number;
+
+							$accountingjournal = new AccountingJournal($db);
+							$accountingjournal->fetch($obj->fk_accountancy_journal);
+
+							$accountstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
+						}
+						$accountstatic->label = $obj->blabel;
+						print $accountstatic->getNomUrl(1);
+					} else print '&nbsp;';
+					print '</td>';
+				}
+
+				// Date début salaire
+				//print '<td class="left">'.dol_print_date($db->jdate($obj->datesp), 'day').'</td>'."\n";
 
                 print '<td class="right">'.($obj->salary ?price($obj->salary) : '')."</td>";
                 print '<td class="right">'.price($obj->amount)."</td>";
@@ -206,6 +271,11 @@ if (!empty($conf->salaries->enabled) && !empty($user->rights->salaries->read))
 			print '<td align="center">&nbsp;</td>';
 			print '<td align="center">&nbsp;</td>';
 			print '<td align="center">&nbsp;</td>';
+			print '<td align="center">&nbsp;</td>';
+			if (!empty($conf->banque->enabled)) {
+				print '<td align="center">&nbsp;</td>';
+				print '<td align="center">&nbsp;</td>';
+			}
             print '<td align="center">&nbsp;</td>';
             print '<td class="right">'.price($total)."</td>";
             print "</tr>";
