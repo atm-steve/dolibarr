@@ -113,7 +113,7 @@ $accountstatic = new Account($db);
 
 $sql = "SELECT u.rowid as uid, u.lastname, u.firstname, u.login, u.email, u.admin, u.salary as current_salary, u.fk_soc as fk_soc, u.statut as status,";
 $sql .= " s.rowid, s.fk_account, s.paye, s.fk_user, s.amount, s.salary, s.label, s.datesp as datesp, s.dateep as dateep, s.fk_typepayment as type, s.fk_bank,";
-$sql .= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.fk_accountancy_journal, ba.label as blabel,";
+$sql .= " ba.rowid as bid, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.iban_prefix as iban, ba.bic, ba.currency_code, ba.clos, ba.fk_accountancy_journal, ba.label as blabel,";
 $sql .= " pst.code as payment_code,";
 $sql .= " SUM(ps.amount) as alreadypayed";
 $sql .= " FROM ".MAIN_DB_PREFIX."salary as s";
@@ -141,7 +141,7 @@ if ($filtre) {
 if ($typeid) {
     $sql .= " AND s.fk_typepayment=".$typeid;
 }
-$sql .= " GROUP BY u.rowid, ba.rowid, s.rowid, s.amount, s.dateep, s.datesp, s.label, s.paye, pst.code";
+$sql .= " GROUP BY u.rowid, ba.rowid, ba.iban_prefix, ba.bic, ba.currency_code, ba.clos, s.rowid, s.amount, s.dateep, s.datesp, s.label, s.paye, pst.code";
 $sql .= $db->order($sortfield, $sortorder);
 
 $totalnboflines = 0;
@@ -170,6 +170,7 @@ if ($result)
 	if ($search_label)  $param .= '&search_label='.urlencode($search_label);
 	if ($search_amount) $param .= '&search_amount='.urlencode($search_amount);
 	if ($search_user) $param .= '&search_user='.urlencode($search_user);
+	if ($search_account) $param .= '&search_account='.urlencode($search_account);
 	if ($search_status != '' && $search_status != '-1') $param .= '&search_status='.urlencode($search_status);
 	if (!empty($search_date_start_from)) $param .= '&search_date_start_fromday='.urlencode(GETPOST('search_date_start_fromday')).'&search_date_start_frommonth='.urlencode(GETPOST('search_date_start_frommonth')).'&search_date_start_fromyear='.urlencode(GETPOST('search_date_start_fromyear'));
 	if (!empty($search_date_start_to)) $param .= "&search_date_start_today=".urlencode(GETPOST('search_date_start_today'))."&search_date_start_tomonth=".urlencode(GETPOST('search_date_start_tomonth'))."&search_date_start_toyear=".urlencode(GETPOST('search_date_start_toyear'));
@@ -200,10 +201,6 @@ if ($result)
 	print '<td class="liste_titre left">';
 	print '<input class="flat" type="text" size="3" name="search_ref" value="'.$db->escape($search_ref).'">';
 	print '</td>';
-	// Employee
-	print '<td class="liste_titre">';
-	print '<input class="flat" type="text" size="6" name="search_user" value="'.$db->escape($search_user).'">';
-	print '</td>';
 	// Label
 	print '<td class="liste_titre"><input type="text" class="flat" size="10" name="search_label" value="'.$db->escape($search_label).'"></td>';
 
@@ -229,6 +226,11 @@ if ($result)
 	print $langs->trans('to').' ';
 	print $form->selectDate($search_date_end_to ? $search_date_end_to : -1, 'search_date_end_to', 0, 0, 1);
 	print '</div>';
+	print '</td>';
+
+	// Employee
+	print '<td class="liste_titre">';
+	print '<input class="flat" type="text" size="6" name="search_user" value="'.$db->escape($search_user).'">';
 	print '</td>';
 
 	// Type
@@ -257,10 +259,10 @@ if ($result)
 
     print '<tr class="liste_titre">';
     print_liste_field_titre("Ref", $_SERVER["PHP_SELF"], "s.rowid", "", $param, "", $sortfield, $sortorder);
-    print_liste_field_titre("Employee", $_SERVER["PHP_SELF"], "u.lastname", "", $param, "", $sortfield, $sortorder);
     print_liste_field_titre("Label", $_SERVER["PHP_SELF"], "s.label", "", $param, 'class="left"', $sortfield, $sortorder);
 	print_liste_field_titre("DateStart", $_SERVER["PHP_SELF"], "s.datesp,s.rowid", "", $param, 'align="center"', $sortfield, $sortorder);
 	print_liste_field_titre("DateEnd", $_SERVER["PHP_SELF"], "s.dateep,s.rowid", "", $param, 'align="center"', $sortfield, $sortorder);
+	print_liste_field_titre("Employee", $_SERVER["PHP_SELF"], "u.lastname", "", $param, "", $sortfield, $sortorder);
     print_liste_field_titre("PaymentMode", $_SERVER["PHP_SELF"], "type", "", $param, 'class="left"', $sortfield, $sortorder);
     if (!empty($conf->banque->enabled)) print_liste_field_titre("BankAccount", $_SERVER["PHP_SELF"], "ba.label", "", $param, "", $sortfield, $sortorder);
     print_liste_field_titre("Amount", $_SERVER["PHP_SELF"], "s.amount", "", $param, 'class="right"', $sortfield, $sortorder);
@@ -292,10 +294,6 @@ if ($result)
 		print "<td>".$salstatic->getNomUrl(1)."</td>\n";
 		if (!$i) $totalarray['nbfield']++;
 
-		// Employee
-		print "<td>".$userstatic->getNomUrl(1)."</td>\n";
-		if (!$i) $totalarray['nbfield']++;
-
 		// Label payment
         print "<td>".dol_trunc($obj->label, 40)."</td>\n";
 		if (!$i) $totalarray['nbfield']++;
@@ -309,6 +307,10 @@ if ($result)
 		print '<td class="center">'.dol_print_date($db->jdate($obj->dateep), 'day')."</td>\n";
 		if (!$i) $totalarray['nbfield']++;
 
+		// Employee
+		print "<td>".$userstatic->getNomUrl(1)."</td>\n";
+		if (!$i) $totalarray['nbfield']++;
+
         // Type
         print '<td>'.$langs->trans("PaymentTypeShort".$obj->payment_code).'</td>';
 		if (!$i) $totalarray['nbfield']++;
@@ -319,9 +321,14 @@ if ($result)
 	        print '<td>';
 	        if ($obj->fk_account > 0)
 	        {
-	            $accountstatic->id = $obj->bid;
-	            $accountstatic->ref = $obj->bref;
-	            $accountstatic->number = $obj->bnumber;
+				$accountstatic->id = $obj->fk_account;
+				$accountstatic->ref = $obj->bref;
+				$accountstatic->number = $obj->bnumber;
+				$accountstatic->iban = $obj->iban;
+				$accountstatic->bic = $obj->bic;
+				$accountstatic->currency_code = $langs->trans("Currency".$obj->currency_code);
+				$accountstatic->account_number = $obj->account_number;
+				$accountstatic->clos = $obj->clos;
 
 				/*if (!empty($conf->accounting->enabled))
 				{
@@ -332,7 +339,7 @@ if ($result)
 
 					$accountstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
 				}*/
-	            //$accountstatic->label = $obj->blabel;
+	            $accountstatic->label = $obj->blabel;
 	        	print $accountstatic->getNomUrl(1);
 	        }
 	        else print '&nbsp;';
