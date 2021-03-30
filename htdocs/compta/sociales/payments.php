@@ -198,7 +198,8 @@ if (!empty($conf->tax->enabled) && $user->rights->tax->charges->lire)
 			print $socialcontrib->getNomUrl(1, '20');
 			print '</td>';
 			// Type
-			print '<td><a href="../sociales/list.php?filtre=cs.fk_type:'.$obj->type.'">'.$obj->type_label.'</a></td>';
+			//print '<td><a href="../sociales/list.php?filtre=cs.fk_type:'.$obj->type.'">'.$obj->type_label.'</a></td>';
+			print '<td>'.$obj->type_label.'</td>';
 			// Date
 			$date = $obj->periode;
 			if (empty($date)) $date = $obj->date_ech;

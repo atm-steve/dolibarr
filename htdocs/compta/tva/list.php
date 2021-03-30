@@ -108,18 +108,21 @@ $formother = new FormOther($db);
 $tva_static = new Tva($db);
 $bankstatic = new Account($db);
 
-$sql = "SELECT t.rowid, t.amount, t.label, t.datev, t.datep, t.paye, t.fk_typepayment as type, t.num_payment, pst.code as payment_code, ";
+$sql = "SELECT t.rowid, t.amount, t.label, t.datev, t.datep, t.paye, t.fk_typepayment as type, t.num_payment, t.fk_account, pst.code as payment_code, ";
+$sql .= ' ba.label as blabel, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.iban_prefix as iban, ba.bic, ba.currency_code,';
 $sql .= " SUM(ptva.amount) as alreadypayed";
 $sql .= " FROM ".MAIN_DB_PREFIX."tva as t";
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_paiement as pst ON t.fk_typepayment = pst.id";
+$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank_account as ba ON (t.fk_account = ba.rowid)';
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."payment_vat as ptva ON ptva.fk_tva = t.rowid";
-//$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."bank as b ON t.fk_bank = b.rowid";
-//$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account as ba ON b.fk_account = ba.rowid";
 $sql .= " WHERE t.entity IN (".getEntity('tax').")";
 if ($search_ref)				$sql .= natural_search("t.rowid", $search_ref);
 if ($search_label)				$sql .= natural_search("t.label", $search_label);
-if ($search_account > 0)		$sql .= " AND b.fk_account=".$search_account;
+if ($search_account > 0)		$sql .= " AND t.fk_account=".$search_account;
 if ($search_amount)				$sql .= natural_search("t.amount", price2num(trim($search_amount)), 1);
+if (!empty($search_type) && $search_type > 0) {
+	$sql .= ' AND t.fk_typepayment='.$search_type;
+}
 if ($search_status != '' && $search_status >= 0) $sql .= " AND t.paye = ".$db->escape($search_status);
 if ($search_dateend_start)		$sql .= " AND t.datev >= '".$db->idate($search_dateend_start)."'";
 if ($search_dateend_end)		$sql .= " AND t.datev <= '".$db->idate($search_dateend_end)."'";
@@ -132,7 +135,7 @@ if ($filtre) {
 if ($typeid) {
     $sql .= " AND t.fk_typepayment=".$typeid;
 }
-$sql .= " GROUP BY t.rowid, t.amount, t.datev, t.label, t.paye, pst.code";
+$sql .= " GROUP BY t.rowid, t.amount, t.datev, t.label, t.paye, pst.code, t.fk_typepayment, t.fk_account, ba.label, ba.ref, ba.number, ba.account_number, ba.iban_prefix, ba.bic, ba.currency_code, t.num_payment, pst.code";
 $sql .= $db->order($sortfield, $sortorder);
 $totalnboflines = 0;
 $result = $db->query($sql);
@@ -159,6 +162,12 @@ if ($result)
 	if ($search_amount) $param .= '&search_amount='.urlencode($search_amount);
 	if ($search_typeid) $param .= '&search_typeid='.urlencode($search_typeid);
 	if ($search_status != '' && $search_status != '-1') $param .= '&search_status='.urlencode($search_status);
+	if (!empty($search_account) && $search_account > 0) {
+		$param .= '&search_account='.$search_account;
+	}
+	if (!empty($search_type) && $search_type > 0) {
+		$param .= '&search_type='.$search_type;
+	}
 
 	$newcardbutton = '';
 	if ($user->rights->tax->charges->creer)
@@ -208,12 +217,12 @@ if ($result)
 	$form->select_types_paiements($typeid, 'typeid', '', 0, 1, 1, 16);
 	print '</td>';
 	// Account
-	/*if (!empty($conf->banque->enabled))
+	if (!empty($conf->banque->enabled))
     {
 	    print '<td class="liste_titre">';
 	    $form->select_comptes($search_account, 'search_account', 0, '', 1);
 	    print '</td>';
-    }*/
+    }
 	// Amount
 	print '<td class="liste_titre right"><input name="search_amount" class="flat" type="text" size="8" value="'.$search_amount.'"></td>';
 
@@ -236,7 +245,7 @@ if ($result)
 	print_liste_field_titre("PeriodEndDate", $_SERVER["PHP_SELF"], "t.datev", "", $param, 'align="center"', $sortfield, $sortorder);
 	//print_liste_field_titre("DatePayment", $_SERVER["PHP_SELF"], "t.datep", "", $param, 'align="center"', $sortfield, $sortorder);
 	print_liste_field_titre("Type", $_SERVER["PHP_SELF"], "type", "", $param, '', $sortfield, $sortorder, 'left ');
-	//if (!empty($conf->banque->enabled)) print_liste_field_titre("Account", $_SERVER["PHP_SELF"], "ba.label", "", $param, "", $sortfield, $sortorder);
+	if (!empty($conf->banque->enabled)) print_liste_field_titre("Account", $_SERVER["PHP_SELF"], "t.fk_account", "", $param, "", $sortfield, $sortorder);
 	print_liste_field_titre("Amount", $_SERVER["PHP_SELF"], "t.amount", "", $param, '', $sortfield, $sortorder, 'right ');
 	print_liste_field_titre("Status", $_SERVER["PHP_SELF"], "t.paye", "", $param, 'class="right"', $sortfield, $sortorder);
 	print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'maxwidthsearch ');
@@ -272,15 +281,19 @@ if ($result)
         // Type
 		print $type;
 		// Account
-    	/*if (!empty($conf->banque->enabled))
+    	if (!empty($conf->banque->enabled))
 	    {
 	        print '<td>';
-	        if ($obj->fk_bank > 0)
+	        if ($obj->fk_account > 0)
 			{
-				$bankstatic->id = $obj->bid;
+				$bankstatic->id = $obj->fk_account;
 				$bankstatic->ref = $obj->bref;
 				$bankstatic->number = $obj->bnumber;
+				$bankstatic->iban = $obj->iban;
+				$bankstatic->bic = $obj->bic;
+				$bankstatic->currency_code = $langs->trans("Currency".$obj->currency_code);
 				$bankstatic->account_number = $obj->account_number;
+				$bankstatic->clos = $obj->clos;
 
 				$accountingjournal = new AccountingJournal($db);
 				$accountingjournal->fetch($obj->fk_accountancy_journal);
@@ -291,7 +304,7 @@ if ($result)
 			}
 			else print '&nbsp;';
 			print '</td>';
-		}*/
+		}
 		// Amount
         $total = $total + $obj->amount;
 		print '<td class="nowrap right">'.price($obj->amount)."</td>";
@@ -304,7 +317,7 @@ if ($result)
         $i++;
     }
 
-    $colspan = 4;
+    $colspan = 5;
     if (!empty($conf->banque->enabled)) $colspan++;
     print '<tr class="liste_total"><td colspan="'.($colspan-1).'">'.$langs->trans("Total").'</td>';
     print '<td class="right">'.price($total).'</td>';
