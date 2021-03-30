@@ -28,6 +28,7 @@
 
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/sociales/class/chargesociales.class.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formsocialcontrib.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
@@ -58,6 +59,8 @@ $search_year_lim	= GETPOST('search_year_lim', 'int');
 $search_project_ref = GETPOST('search_project_ref', 'alpha');
 $search_project = GETPOST('search_project', 'alpha');
 $search_users = GETPOST('search_users');
+$search_type = GETPOST('search_type', 'int');
+$search_account				= GETPOST('search_account', 'int');
 
 $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
 $sortfield = GETPOST("sortfield", 'alpha');
@@ -102,6 +105,8 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_project_ref = '';
 	$search_project = '';
 	$search_users = '';
+	$search_type = '';
+	$search_account = '';
 	$toselect = '';
 	$search_array_options = array();
 }
@@ -113,6 +118,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 
 $form = new Form($db);
 $formother = new FormOther($db);
+$bankstatic = new Account($db);
 $formsocialcontrib = new FormSocialContrib($db);
 $chargesociale_static = new ChargeSociales($db);
 if (!empty($conf->projet->enabled)) $projectstatic = new Project($db);
@@ -122,10 +128,13 @@ llxHeader('', $langs->trans("SocialContributions"));
 $sql = "SELECT cs.rowid as id, cs.fk_type as type, cs.fk_user, ";
 $sql .= " cs.amount, cs.date_ech, cs.libelle as label, cs.paye, cs.periode,";
 if (!empty($conf->projet->enabled)) $sql .= " p.rowid as project_id, p.ref as project_ref, p.title as project_label,";
-$sql .= " c.libelle as type_label,";
-$sql .= " SUM(pc.amount) as alreadypayed";
+$sql .= " c.libelle as type_label, cs.fk_account,";
+$sql .= " ba.label as blabel, ba.ref as bref, ba.number as bnumber, ba.account_number, ba.iban_prefix as iban, ba.bic, ba.currency_code, ba.clos,";
+$sql .= " SUM(pc.amount) as alreadypayed, pay.code as payment_code";
 $sql .= " FROM ".MAIN_DB_PREFIX."c_chargesociales as c,";
 $sql .= " ".MAIN_DB_PREFIX."chargesociales as cs";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account as ba ON (cs.fk_account = ba.rowid)";
+$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_paiement as pay ON (cs.fk_mode_reglement = pay.id)';
 if (!empty($conf->projet->enabled)) $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON p.rowid = cs.fk_projet";
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."paiementcharge as pc ON pc.fk_charge = cs.rowid";
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."user as u ON (cs.fk_user = u.rowid)";
@@ -136,6 +145,13 @@ if ($search_ref)	$sql .= " AND cs.rowid=".$db->escape($search_ref);
 if ($search_label) 	$sql .= natural_search("cs.libelle", $search_label);
 if (!empty($conf->projet->enabled)) if ($search_project_ref != '') $sql .= natural_search("p.ref", $search_project_ref);
 if (!empty($search_users)) $sql .= ' AND cs.fk_user IN('.implode(', ', $search_users).')';
+
+if (!empty($search_type) && $search_type > 0) {
+	$sql .= ' AND cs.fk_mode_reglement='.$search_type;
+}
+if (!empty($search_account) && $search_account > 0) {
+	$sql .= ' AND cs.fk_account='.$search_account;
+}
 if ($search_amount) $sql .= natural_search("cs.amount", $search_amount, 1);
 if ($search_status != '' && $search_status >= 0) $sql .= " AND cs.paye = ".$db->escape($search_status);
 $sql .= dolSqlDateFilter("cs.periode", $search_day_lim, $search_month_lim, $search_year_lim);
@@ -156,7 +172,7 @@ if ($filtre) {
 if ($search_typeid) {
     $sql .= " AND cs.fk_type=".$db->escape($search_typeid);
 }
-$sql .= " GROUP BY cs.rowid, cs.fk_type, cs.amount, cs.date_ech, cs.libelle, cs.paye, cs.periode, c.libelle";
+$sql .= " GROUP BY cs.rowid, cs.fk_type, cs.amount, cs.date_ech, cs.libelle, cs.paye, cs.periode, c.libelle, cs.fk_account, ba.label, ba.ref, ba.number, ba.account_number, ba.iban_prefix, ba.bic, ba.currency_code, ba.clos";
 if (!empty($conf->projet->enabled)) $sql .= ", p.rowid, p.ref, p.title";
 $sql .= $db->order($sortfield, $sortorder);
 
@@ -184,6 +200,12 @@ if ($resql)
 	if ($search_typeid) $param .= '&search_typeid='.urlencode($search_typeid);
 	if ($search_users) {
 		foreach ($search_users as $id_user) $param .= '&search_users[]='.urlencode($id_user);
+	}
+	if ($search_type) {
+		$param .= '&search_type='.urlencode($search_type);
+	}
+	if ($search_account) {
+		$param .= '&search_account='.$search_account;
 	}
 	if ($search_status != '' && $search_status != '-1') $param .= '&search_status='.urlencode($search_status);
 	if ($year)          $param .= '&year='.urlencode($year);
@@ -233,12 +255,6 @@ if ($resql)
 		// Type
 		print '<td class="liste_titre" align="left">';
 		$formsocialcontrib->select_type_socialcontrib($search_typeid, 'search_typeid', 1, 0, 0, 'maxwidth100onsmartphone');
-		// Employee
-		print '<td class="liste_titre" align="left">';
-		print $form->select_dolusers($search_users, 'search_users', 1, null, 0, '', '', '0', '0', 0, '', 0, '', '', 0, 0, true);
-	    print '</td>';
-		// Ref Project
-	   	if (!empty($conf->projet->enabled)) print '<td class="liste_titre"><input type="text" class="flat" size="6" name="search_project_ref" value="'.$search_project_ref.'"></td>';
 	    // Date
 	    print '<td class="liste_titre">&nbsp;</td>';
 	    // Period end date
@@ -246,6 +262,20 @@ if ($resql)
 		if (!empty($conf->global->MAIN_LIST_FILTER_ON_DAY)) print '<input class="flat valignmiddle" type="text" size="1" maxlength="2" name="search_day_lim" value="'.dol_escape_htmltag($search_day_lim).'">';
 		print '<input class="flat valignmiddle width25" type="text" size="1" maxlength="2" name="search_month_lim" value="'.dol_escape_htmltag($search_month_lim).'">';
 		$formother->select_year($search_year_lim ? $search_year_lim : -1, 'search_year_lim', 1, 20, 5, 0, 0, '', 'widthauto valignmiddle');
+		print '</td>';
+		// Ref Project
+		if (!empty($conf->projet->enabled)) print '<td class="liste_titre"><input type="text" class="flat" size="6" name="search_project_ref" value="'.$search_project_ref.'"></td>';
+		// Employee
+		print '<td class="liste_titre" align="left">';
+		print $form->select_dolusers($search_users, 'search_users', 1, null, 0, '', '', '0', '0', 0, '', 0, '', '', 0, 0, true);
+		print '</td>';
+		// Filter: Type
+		print '<td class="liste_titre left">';
+		$form->select_types_paiements($search_type, 'search_type', '', 0, 1, 1, 16);
+		print '</td>';
+		// Filter: Bank Account
+		print '<td class="liste_titre left">';
+		$form->select_comptes($search_account, 'search_account', 0, '', 1);
 		print '</td>';
 	    // Amount
 		print '<td class="liste_titre right">';
@@ -267,10 +297,12 @@ if ($resql)
 		print_liste_field_titre("Ref", $_SERVER["PHP_SELF"], "id", "", $param, "", $sortfield, $sortorder);
 		print_liste_field_titre("Label", $_SERVER["PHP_SELF"], "cs.libelle", "", $param, 'class="left"', $sortfield, $sortorder);
 		print_liste_field_titre("Type", $_SERVER["PHP_SELF"], "type", "", $param, 'class="left"', $sortfield, $sortorder);
-		print_liste_field_titre("Employee", $_SERVER["PHP_SELF"], "u.lastname", "", $param, 'class="left"', $sortfield, $sortorder);
-		if (!empty($conf->projet->enabled)) print_liste_field_titre('ProjectRef', $_SERVER["PHP_SELF"], "p.ref", "", $param, '', $sortfield, $sortorder);
 		print_liste_field_titre("Date", $_SERVER["PHP_SELF"], "cs.date_ech", "", $param, 'align="center"', $sortfield, $sortorder);
 		print_liste_field_titre("PeriodEndDate", $_SERVER["PHP_SELF"], "periode", "", $param, 'align="center"', $sortfield, $sortorder);
+		if (!empty($conf->projet->enabled)) print_liste_field_titre('ProjectRef', $_SERVER["PHP_SELF"], "p.ref", "", $param, '', $sortfield, $sortorder);
+		print_liste_field_titre("Employee", $_SERVER["PHP_SELF"], "u.lastname", "", $param, 'class="left"', $sortfield, $sortorder);
+		print_liste_field_titre('DefaultPaymentMode', $_SERVER["PHP_SELF"], "cs.fk_mode_reglement", '', $param, 'class="right"', $sortfield, $sortorder);
+		print_liste_field_titre('DefaultBankAccount', $_SERVER["PHP_SELF"], "cs.fk_account", '', $param, 'class="right"', $sortfield, $sortorder);
 		print_liste_field_titre("Amount", $_SERVER["PHP_SELF"], "cs.amount", "", $param, 'class="right"', $sortfield, $sortorder);
 		print_liste_field_titre("Status", $_SERVER["PHP_SELF"], "cs.paye", "", $param, 'class="right"', $sortfield, $sortorder);
 		print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'maxwidthsearch ');
@@ -306,31 +338,6 @@ if ($resql)
 			print "<td>".$obj->type_label."</td>\n";
 			if (!$i) $totalarray['nbfield']++;
 
-			// Employee
-			print "<td>";
-			if(!empty($obj->fk_user)) {
-				if(!empty($TLoadedUsers[$obj->fk_user])) $ustatic = $TLoadedUsers[$obj->fk_user];
-				else {
-					$ustatic = new User($db);
-					$ustatic->fetch($obj->fk_user);
-					$TLoadedUsers[$obj->fk_user] = $ustatic;
-				}
-				print $ustatic->getNomUrl(-1);
-			}
-			print "</td>\n";
-			if (!$i) $totalarray['nbfield']++;
-
-			// Project Ref
-			if (!empty($conf->projet->enabled)) {
-				print '<td class="nowrap">';
-				if ($obj->project_id > 0)
-				{
-				    print $projectstatic->getNomUrl(1);
-				}
-				print '</td>';
-				if (!$i) $totalarray['nbfield']++;
-			}
-
 			// Date
 			print '<td width="110" align="center">'.dol_print_date($db->jdate($obj->date_ech), 'day').'</td>';
 			if (!$i) $totalarray['nbfield']++;
@@ -346,6 +353,60 @@ if ($resql)
 				print '&nbsp;';
 			}
 			print "</td>\n";
+			if (!$i) $totalarray['nbfield']++;
+
+			// Project Ref
+			if (!empty($conf->projet->enabled)) {
+				print '<td class="nowrap">';
+				if ($obj->project_id > 0)
+				{
+					print $projectstatic->getNomUrl(1);
+				}
+				print '</td>';
+				if (!$i) $totalarray['nbfield']++;
+			}
+
+			// Employee
+			print "<td>";
+			if(!empty($obj->fk_user)) {
+				if(!empty($TLoadedUsers[$obj->fk_user])) $ustatic = $TLoadedUsers[$obj->fk_user];
+				else {
+					$ustatic = new User($db);
+					$ustatic->fetch($obj->fk_user);
+					$TLoadedUsers[$obj->fk_user] = $ustatic;
+				}
+				print $ustatic->getNomUrl(-1);
+			}
+			print "</td>\n";
+			if (!$i) $totalarray['nbfield']++;
+
+			// Type
+			print '<td>';
+			if(!empty($obj->payment_code)) print $langs->trans("PaymentTypeShort".$obj->payment_code);
+			print '</td>';
+			if (!$i) {
+				$totalarray['nbfield']++;
+			}
+
+			// Account
+			print '<td>';
+			if ($obj->fk_account > 0) {
+				$bankstatic->id = $obj->fk_account;
+				$bankstatic->ref = $obj->bref;
+				$bankstatic->number = $obj->bnumber;
+				$bankstatic->iban = $obj->iban;
+				$bankstatic->bic = $obj->bic;
+				$bankstatic->currency_code = $langs->trans("Currency".$obj->currency_code);
+				$bankstatic->account_number = $obj->account_number;
+				$bankstatic->clos = $obj->clos;
+
+				//$accountingjournal->fetch($obj->fk_accountancy_journal);
+				//$bankstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
+
+				$bankstatic->label = $obj->blabel;
+				print $bankstatic->getNomUrl(1);
+			}
+			print '</td>';
 			if (!$i) $totalarray['nbfield']++;
 
 			// Amount
