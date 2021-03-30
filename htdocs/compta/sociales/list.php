@@ -274,9 +274,11 @@ if ($resql)
 		$form->select_types_paiements($search_type, 'search_type', '', 0, 1, 1, 16);
 		print '</td>';
 		// Filter: Bank Account
-		print '<td class="liste_titre left">';
-		$form->select_comptes($search_account, 'search_account', 0, '', 1);
-		print '</td>';
+		if (!empty($conf->banque->enabled)) {
+			print '<td class="liste_titre left">';
+			$form->select_comptes($search_account, 'search_account', 0, '', 1);
+			print '</td>';
+		}
 	    // Amount
 		print '<td class="liste_titre right">';
 		print '<input class="flat maxwidth75" type="text" name="search_amount" value="'.dol_escape_htmltag($search_amount).'">';
@@ -302,7 +304,7 @@ if ($resql)
 		if (!empty($conf->projet->enabled)) print_liste_field_titre('ProjectRef', $_SERVER["PHP_SELF"], "p.ref", "", $param, '', $sortfield, $sortorder);
 		print_liste_field_titre("Employee", $_SERVER["PHP_SELF"], "u.lastname", "", $param, 'class="left"', $sortfield, $sortorder);
 		print_liste_field_titre('DefaultPaymentMode', $_SERVER["PHP_SELF"], "cs.fk_mode_reglement", '', $param, 'class="right"', $sortfield, $sortorder);
-		print_liste_field_titre('DefaultBankAccount', $_SERVER["PHP_SELF"], "cs.fk_account", '', $param, 'class="right"', $sortfield, $sortorder);
+		if (!empty($conf->banque->enabled)) print_liste_field_titre('DefaultBankAccount', $_SERVER["PHP_SELF"], "cs.fk_account", '', $param, 'class="right"', $sortfield, $sortorder);
 		print_liste_field_titre("Amount", $_SERVER["PHP_SELF"], "cs.amount", "", $param, 'class="right"', $sortfield, $sortorder);
 		print_liste_field_titre("Status", $_SERVER["PHP_SELF"], "cs.paye", "", $param, 'class="right"', $sortfield, $sortorder);
 		print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'maxwidthsearch ');
@@ -389,25 +391,27 @@ if ($resql)
 			}
 
 			// Account
-			print '<td>';
-			if ($obj->fk_account > 0) {
-				$bankstatic->id = $obj->fk_account;
-				$bankstatic->ref = $obj->bref;
-				$bankstatic->number = $obj->bnumber;
-				$bankstatic->iban = $obj->iban;
-				$bankstatic->bic = $obj->bic;
-				$bankstatic->currency_code = $langs->trans("Currency".$obj->currency_code);
-				$bankstatic->account_number = $obj->account_number;
-				$bankstatic->clos = $obj->clos;
+			if (!empty($conf->banque->enabled)) {
+				print '<td>';
+				if ($obj->fk_account > 0) {
+					$bankstatic->id = $obj->fk_account;
+					$bankstatic->ref = $obj->bref;
+					$bankstatic->number = $obj->bnumber;
+					$bankstatic->iban = $obj->iban;
+					$bankstatic->bic = $obj->bic;
+					$bankstatic->currency_code = $langs->trans("Currency" . $obj->currency_code);
+					$bankstatic->account_number = $obj->account_number;
+					$bankstatic->clos = $obj->clos;
 
-				//$accountingjournal->fetch($obj->fk_accountancy_journal);
-				//$bankstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
+					//$accountingjournal->fetch($obj->fk_accountancy_journal);
+					//$bankstatic->accountancy_journal = $accountingjournal->getNomUrl(0, 1, 1, '', 1);
 
-				$bankstatic->label = $obj->blabel;
-				print $bankstatic->getNomUrl(1);
+					$bankstatic->label = $obj->blabel;
+					print $bankstatic->getNomUrl(1);
+				}
+				print '</td>';
+				if (!$i) $totalarray['nbfield']++;
 			}
-			print '</td>';
-			if (!$i) $totalarray['nbfield']++;
 
 			// Amount
 			print '<td class="nowrap right">'.price($obj->amount).'</td>';
