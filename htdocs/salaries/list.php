@@ -312,7 +312,9 @@ if ($result)
 		if (!$i) $totalarray['nbfield']++;
 
         // Type
-        print '<td>'.$langs->trans("PaymentTypeShort".$obj->payment_code).'</td>';
+        print '<td>';
+	if(!empty($obj->payment_code)) print $langs->trans("PaymentTypeShort".$obj->payment_code);
+	print '</td>';
 		if (!$i) $totalarray['nbfield']++;
 
 		// Account
