@@ -136,12 +136,12 @@ if ($action == 'add' && $user->rights->categorie->creer)
     $accountancy_code_sell_intra	 = GETPOST('accountancy_code_sell_intra','alpha');
     $accountancy_code_sell_export	 = GETPOST('accountancy_code_sell_export','alpha');
     $accountancy_code_buy 			 = GETPOST('accountancy_code_buy','alpha');
-	/* ************************* SPÉ VET COMPANY } *********************** */
 
     if ($accountancy_code_sell <= 0) { $object->accountancy_code_sell = ''; } else { $object->accountancy_code_sell = $accountancy_code_sell; }
     if ($accountancy_code_sell_intra <= 0) { $object->accountancy_code_sell_intra = ''; } else { $object->accountancy_code_sell_intra = $accountancy_code_sell_intra; }
     if ($accountancy_code_sell_export <= 0) { $object->accountancy_code_sell_export = ''; } else { $object->accountancy_code_sell_export = $accountancy_code_sell_export; }
     if ($accountancy_code_buy <= 0) { $object->accountancy_code_buy = ''; } else { $object->accountancy_code_buy = $accountancy_code_buy; }
+	/* ************************* SPÉ VET COMPANY } *********************** */
 
 	if ($parent != "-1") $object->fk_parent = $parent;
 

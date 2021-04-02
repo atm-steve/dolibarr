@@ -113,6 +113,7 @@ if ($conf->use_javascript_ajax)
 }
 print '</td></tr>';
 
+/* *********************** SPÉ VET COMPANY { *********************** */
 print '<tr class="oddeven">';
 print '<td>'.$langs->trans("CategorieUseAccountingCodes").'</td>';
 print '<td align="center" width="20">'. $form->textwithpicto('',$langs->trans("CategorieUseAccountingCodesHelp"),1,'help').'</td>';
@@ -134,6 +135,7 @@ else
     }
 }
 print '</td></tr>';
+/* *********************** SPÉ VET COMPANY } *********************** */
 
 print '</table>';
 

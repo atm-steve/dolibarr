@@ -327,9 +327,9 @@ class ProductStockEntrepot extends CommonObject
 										,'desiredstock'=>$obj->desiredstock
 
 										/* *********************** SPÉ VET COMPANY { *********************** */
-                                        ,'date_start'=>$obj->date_start
-                                        ,'date_end'=>$obj->date_end
-                                        ,'recurring'=>$obj->recurrent
+										,'date_start'=>$obj->date_start
+										,'date_end'=>$obj->date_end
+										,'recurring'=>$obj->recurrent
 										/* *********************** SPÉ VET COMPANY } *********************** */
 
 									);

@@ -272,6 +272,7 @@ print $langs->trans("Color").'</td><td>';
 print $formother->showColor($object->color);
 print '</td></tr>';
 
+/* *********************** SPÉ VET COMPANY { *********************** */
 // Accountancy codes
 if (! empty($conf->accounting->enabled) && !empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES) && $type == 0)
 {
@@ -324,7 +325,7 @@ if (! empty($conf->accounting->enabled) && !empty($conf->global->CATEGORIE_USE_A
     }
     print '</td></tr>';
 }
-
+/* *********************** SPÉ VET COMPANY } *********************** */
 
 
 // Other attributes
