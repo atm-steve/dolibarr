@@ -537,7 +537,7 @@ if ($result) {
 
 		/* ************************** SPÉ VET COMPANY { ************************** */
 		if (empty($cat_code))
-		/* ************************** SPÉ VET COMPANY { ************************** */
+		/* ************************** SPÉ VET COMPANY } ************************** */
 			if (empty($objp->code_buy_l) && empty($objp->code_buy_p)) $code_buy_p_notset = 'color:red';
 
 		// $objp->code_buy_l is now default code of product/service
@@ -608,7 +608,7 @@ if ($result) {
 
 			/* ************************** SPÉ VET COMPANY { ************************** */
 			if (!empty($cat_code) && $cat_code > 0) {
-			/* ************************** SPÉ VET COMPANY { ************************** */
+			/* ************************** SPÉ VET COMPANY } ************************** */
 				print '<br>';
 				$s = '<span class="small">'.(($objp->type_l == 1) ? $langs->trans("ThisService") : $langs->trans("ThisProduct")).': </span>';
 				$shelp = '';
