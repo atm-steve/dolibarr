@@ -247,6 +247,17 @@ class Categorie extends CommonObject
 	 */
 	public $motherof = array();
 
+	/* ************************* SPÉ VET COMPANY { *********************** */
+
+	// acountancy codes
+    public $accountancy_code_sell;
+    public $accountancy_code_sell_intra;
+    public $accountancy_code_sell_export;
+    public $accountancy_code_buy;
+
+
+	/* ************************* SPÉ VET COMPANY } *********************** */
+
 	/**
 	 *	Constructor
 	 *
@@ -318,6 +329,11 @@ class Categorie extends CommonObject
 
 		$sql = "SELECT rowid, fk_parent, entity, label, description, color, fk_soc, visible, type, ref_ext";
 		$sql .= ", date_creation, tms, fk_user_creat, fk_user_modif";
+
+		/* ************************* SPÉ VET COMPANY { *********************** */
+		$sql .= ', accountancy_code_sell, accountancy_code_sell_intra, accountancy_code_sell_export, accountancy_code_buy';
+		/* ************************* SPÉ VET COMPANY } *********************** */
+
 		$sql .= " FROM ".MAIN_DB_PREFIX."categorie";
 		if ($id > 0) {
 			$sql .= " WHERE rowid = ".$id;
@@ -349,6 +365,15 @@ class Categorie extends CommonObject
 				$this->date_modification = $this->db->jdate($res['tms']);
 				$this->user_creation = (int) $res['fk_user_creat'];
 				$this->user_modification = (int) $res['fk_user_modif'];
+
+
+
+				/* ************************* SPÉ VET COMPANY { *********************** */
+                $this->accountancy_code_buy			= $res['accountancy_code_buy'];
+                $this->accountancy_code_sell		= $res['accountancy_code_sell'];
+                $this->accountancy_code_sell_intra	= $res['accountancy_code_sell_intra'];
+                $this->accountancy_code_sell_export	= $res['accountancy_code_sell_export'];
+				/* ************************* SPÉ VET COMPANY } *********************** */
 
 				// Retrieve all extrafield
 				// fetch optionals attributes and labels
@@ -400,6 +425,13 @@ class Categorie extends CommonObject
 		if (empty($this->visible)) $this->visible = 0;
 		$this->fk_parent = ($this->fk_parent != "" ? intval($this->fk_parent) : 0);
 
+		/* ************************* SPÉ VET COMPANY { *********************** */
+		$this->accountancy_code_buy = trim($this->accountancy_code_buy);
+		$this->accountancy_code_sell= trim($this->accountancy_code_sell);
+		$this->accountancy_code_sell_intra= trim($this->accountancy_code_sell_intra);
+		$this->accountancy_code_sell_export= trim($this->accountancy_code_sell_export);
+		/* ************************* SPÉ VET COMPANY } *********************** */
+
 		if ($this->already_exists()) {
 			$this->error = $langs->trans("ImpossibleAddCat", $this->label);
 			$this->error .= " : ".$langs->trans("CategoryExistsAtSameLevel");
@@ -424,6 +456,15 @@ class Categorie extends CommonObject
 		$sql .= " entity,";
 		$sql .= " date_creation,";
 		$sql .= " fk_user_creat";
+
+		/* ************************* SPÉ VET COMPANY { *********************** */
+		$sql .= ',';
+        $sql .= ' accountancy_code_buy,';
+        $sql .= ' accountancy_code_sell,';
+        $sql .= ' accountancy_code_sell_intra,';
+        $sql .= ' accountancy_code_sell_export';
+		/* ************************* SPÉ VET COMPANY } *********************** */
+
 		$sql .= ") VALUES (";
 		$sql .= (int) $this->fk_parent.",";
 		$sql .= "'".$this->db->escape($this->label)."', ";
@@ -439,6 +480,16 @@ class Categorie extends CommonObject
 		$sql .= (int) $conf->entity.", ";
 		$sql .= "'".$this->db->idate($now)."', ";
 		$sql .= (int) $user->id;
+
+
+		/* ************************* SPÉ VET COMPANY { *********************** */
+		$sql .= ',';
+		$sql.= "'" . $this->db->escape($this->accountancy_code_buy) . "',";
+		$sql.= "'" . $this->db->escape($this->accountancy_code_sell) . "',";
+		$sql.= "'" . $this->db->escape($this->accountancy_code_sell_intra) . "',";
+		$sql.= "'" . $this->db->escape($this->accountancy_code_sell_export) . "'";
+		/* ************************* SPÉ VET COMPANY } *********************** */
+
 		$sql .= ")";
 
 		$res = $this->db->query($sql);
@@ -504,6 +555,13 @@ class Categorie extends CommonObject
 		$this->fk_parent = ($this->fk_parent != "" ? intval($this->fk_parent) : 0);
 		$this->visible = ($this->visible != "" ? intval($this->visible) : 0);
 
+		/* ************************* SPÉ VET COMPANY { *********************** */
+        $this->accountancy_code_buy = trim($this->accountancy_code_buy);
+        $this->accountancy_code_sell = trim($this->accountancy_code_sell);
+        $this->accountancy_code_sell_intra = trim($this->accountancy_code_sell_intra);
+        $this->accountancy_code_sell_export = trim($this->accountancy_code_sell_export);
+		/* ************************* SPÉ VET COMPANY } *********************** */
+
 		if ($this->already_exists()) {
 			$this->error = $langs->trans("ImpossibleUpdateCat");
 			$this->error .= " : ".$langs->trans("CategoryExistsAtSameLevel");
@@ -523,6 +581,15 @@ class Categorie extends CommonObject
 		$sql .= ", visible = ".(int) $this->visible;
 		$sql .= ", fk_parent = ".(int) $this->fk_parent;
 		$sql .= ", fk_user_modif = ".(int) $user->id;
+
+
+		/* ************************* SPÉ VET COMPANY { *********************** */
+		$sql .= ", accountancy_code_buy = '" . $this->db->escape($this->accountancy_code_buy) . "'";
+		$sql .= ", accountancy_code_sell = '" . $this->db->escape($this->accountancy_code_sell) . "'";
+		$sql .= ", accountancy_code_sell_intra = '" . $this->db->escape($this->accountancy_code_sell_intra) . "'";
+		$sql .= ", accountancy_code_sell_export = '" . $this->db->escape($this->accountancy_code_sell_export) . "'";
+		/* ************************* SPÉ VET COMPANY } *********************** */
+
 		$sql .= " WHERE rowid = ".$this->id;
 
 		dol_syslog(get_class($this)."::update", LOG_DEBUG);
@@ -1422,6 +1489,11 @@ class Categorie extends CommonObject
 		if ($type === Categorie::TYPE_BANK_LINE) {   // TODO Remove this with standard category code after migration of llx_bank_categ into llx_categorie
 			// Load bank categories
 			$sql = "SELECT c.label, c.rowid";
+
+			/* ************************* SPÉ VET COMPANY { *********************** */
+			$sql .= ', c.accountancy_code_sell';
+			/* ************************* SPÉ VET COMPANY } *********************** */
+
 			$sql .= " FROM ".MAIN_DB_PREFIX."bank_class as a, ".MAIN_DB_PREFIX."bank_categ as c";
 			$sql .= " WHERE a.lineid=".$id." AND a.fk_categ = c.rowid";
 			$sql .= " AND c.entity IN (".getEntity('category').")";

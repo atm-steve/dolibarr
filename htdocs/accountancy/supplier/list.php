@@ -513,12 +513,32 @@ if ($result) {
 			}
 		}
 
+		/* ************************** SPÉ VET COMPANY { ************************** */
+        $parameters = array('objp' => &$objp);
+        $reshook=$hookmanager->executeHooks('selectlineaccountancycode',$parameters);    // Note that $action and $object may have been modified by hook
+		/* ************************** SPÉ VET COMPANY } ************************** */
+
 		if (!empty($objp->code_buy_p)) {
 			// Value was defined previously
+
+
+			/* ************************** SPÉ VET COMPANY { ************************** */
+			// [FM] je ne récupère pas ce bout-là, je pense que c’est géré en standard,
+			// mais je le laisse en commentaire car c'est difficile d'en avoir la certitude
+			// $objp->code_buy_p = $objp->code_buy;       // Code on product
+			/* ************************** SPÉ VET COMPANY } ************************** */
+
 		} else {
-			$code_buy_p_notset = 'color:orange';
+			/* ************************** SPÉ VET COMPANY { ************************** */
+			if (empty($cat_code))
+			/* ************************** SPÉ VET COMPANY } ************************** */
+				$code_buy_p_notset = 'color:orange';
 		}
-		if (empty($objp->code_buy_l) && empty($objp->code_buy_p)) $code_buy_p_notset = 'color:red';
+
+		/* ************************** SPÉ VET COMPANY { ************************** */
+		if (empty($cat_code))
+		/* ************************** SPÉ VET COMPANY } ************************** */
+			if (empty($objp->code_buy_l) && empty($objp->code_buy_p)) $code_buy_p_notset = 'color:red';
 
 		// $objp->code_buy_l is now default code of product/service
 		// $objp->code_buy_p is now code of product/service
@@ -585,13 +605,18 @@ if ($result) {
 		print $form->textwithpicto($s, $shelp, 1, 'help', '', 0, 2, '', 1);
 		if ($objp->product_id > 0)
 		{
-			print '<br>';
-			$s = '<span class="small">'.(($objp->type_l == 1) ? $langs->trans("ThisService") : $langs->trans("ThisProduct")).': </span>';
-			$shelp = '';
-			if ($suggestedaccountingaccountfor == 'eec') $shelp = $langs->trans("SaleEEC");
-			elseif ($suggestedaccountingaccountfor == 'export') $shelp = $langs->trans("SaleExport");
-			$s .= (empty($objp->code_buy_p) ? '<span style="'.$code_buy_p_notset.'">'.$langs->trans("NotDefined").'</span>' : length_accountg($objp->code_buy_p));
-			print $form->textwithpicto($s, $shelp, 1, 'help', '', 0, 2, '', 1);
+
+			/* ************************** SPÉ VET COMPANY { ************************** */
+			if (!empty($cat_code) && $cat_code > 0) {
+			/* ************************** SPÉ VET COMPANY } ************************** */
+				print '<br>';
+				$s = '<span class="small">'.(($objp->type_l == 1) ? $langs->trans("ThisService") : $langs->trans("ThisProduct")).': </span>';
+				$shelp = '';
+				if ($suggestedaccountingaccountfor == 'eec') $shelp = $langs->trans("SaleEEC");
+				elseif ($suggestedaccountingaccountfor == 'export') $shelp = $langs->trans("SaleExport");
+				$s .= (empty($objp->code_buy_p) ? '<span style="'.$code_buy_p_notset.'">'.$langs->trans("NotDefined").'</span>' : length_accountg($objp->code_buy_p));
+				print $form->textwithpicto($s, $shelp, 1, 'help', '', 0, 2, '', 1);
+			}
 		}
 		print '</td>';
 

@@ -71,6 +71,14 @@ $d_eatby = dol_mktime(0, 0, 0, GETPOST('eatbymonth', 'int'), GETPOST('eatbyday',
 $d_sellby = dol_mktime(0, 0, 0, GETPOST('sellbymonth', 'int'), GETPOST('sellbyday', 'int'), GETPOST('sellbyyear', 'int'));
 $pdluoid = GETPOST('pdluoid', 'int');
 $batchnumber = GETPOST('batch_number', 'san_alpha');
+
+/* *********************** SPÉ VET COMPANY { *********************** */
+$d_start=dol_mktime(0,0,0,$_POST['date_startmonth'], $_POST['date_startday'], $_POST['date_startyear']);
+$d_end=dol_mktime(0,0,0,$_POST['date_endmonth'], $_POST['date_endday'], $_POST['date_endyear']);
+$recurring=GETPOST('recurring');
+$fk_productstockwarehouse = GETPOST('fk_productstockwarehouse', 'int');
+/* *********************** SPÉ VET COMPANY } *********************** */
+
 if (!empty($batchnumber)) {
 	$batchnumber = trim($batchnumber);
 }
@@ -121,6 +129,12 @@ $parameters = array('id'=>$id, 'ref'=>$ref, 'objcanvas'=>$objcanvas);
 $reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
+
+/* *********************** SPÉ VET COMPANY { *********************** */
+
+/*
+// [FM] Code standard v13.0 dans ce bloc commenté (pour référence)
+
 if ($action == 'addlimitstockwarehouse' && !empty($user->rights->produit->creer))
 {
 	$seuil_stock_alerte = GETPOST('seuil_stock_alerte');
@@ -156,12 +170,105 @@ if ($action == 'addlimitstockwarehouse' && !empty($user->rights->produit->creer)
 	header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
 	exit;
 }
+*/
+if ($action == 'addlimitstockwarehouse' && !empty($user->rights->produit->creer))
+{
+
+	$seuil_stock_alerte = GETPOST('seuil_stock_alerte');
+	$desiredstock = GETPOST('desiredstock');
+
+	$maj_ok = true;
+	if($seuil_stock_alerte == '') {
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("StockLimit")), null, 'errors');
+		$maj_ok = false;
+	}
+	if($desiredstock == '') {
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("DesiredStock")), null, 'errors');
+		$maj_ok = false;
+	}
+
+	if($maj_ok) {
+
+		$pse = new ProductStockEntrepot($db);
+		// the addlimitstockwarehouse should be ONLY TO ADD new stock limit
+		/*if($pse->fetch(0, $id, GETPOST('fk_entrepot')) > 0) {
+			// Update
+			$pse->seuil_stock_alerte = $seuil_stock_alerte;
+			$pse->desiredstock  	 = $desiredstock;
+			if($pse->update($user) > 0) setEventMessage($langs->trans('ProductStockWarehouseUpdated'), null, 'mesgs');
+		} else {*/
+		// Create
+		$pse->fk_entrepot 		 = GETPOST('fk_entrepot');
+		$pse->fk_product  	 	 = $id;
+		$pse->seuil_stock_alerte = GETPOST('seuil_stock_alerte');
+		$pse->desiredstock  	 = GETPOST('desiredstock');
+		if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD)
+		{
+			$pse->date_start = $d_start;
+			$pse->date_end = $d_end;
+			$pse->recurring = $recurring;
+		}
+		$ret = $pse->create($user);
+		if($ret > 0) setEventMessage($langs->trans('ProductStockWarehouseCreated'));
+		else {var_dump(array($ret, $d_start, $d_end, $pse->error, $pse->errors, $db->lastqueryerror)); exit;}
+//		}
+	}
+
+	header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
+	exit;
+
+}
+
+if ($action == 'update' && !empty($user->rights->produit->creer))
+{
+
+	$seuil_stock_alerte = GETPOST('seuil_stock_alerte');
+	$desiredstock = GETPOST('desiredstock');
+	$date_start = GETPOST('date_start');
+
+
+	$maj_ok = true;
+	if($seuil_stock_alerte == '') {
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("StockLimit")), null, 'errors');
+		$maj_ok = false;
+	}
+	if($desiredstock == '') {
+		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("DesiredStock")), null, 'errors');
+		$maj_ok = false;
+	}
+
+	if($maj_ok) {
+
+		$pse = new ProductStockEntrepot($db);
+		if(!empty($fk_productstockwarehouse) && $pse->fetch($fk_productstockwarehouse) > 0)
+		{
+
+			$pse->seuil_stock_alerte = $seuil_stock_alerte;
+			$pse->desiredstock  	 = $desiredstock;
+			if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD)
+			{
+				$pse->date_start = $d_start;
+				$pse->date_end = $d_end;
+				$pse->recurring = $recurring;
+			}
+			$ret = $pse->update($user);
+			if($ret > 0) setEventMessage($langs->trans('ProductStockWarehouseUpdated'));
+		}
+	}
+
+	header("Location: ".$_SERVER["PHP_SELF"]."?id=".$id);
+	exit;
+}
+/* *********************** SPÉ VET COMPANY } *********************** */
 
 if ($action == 'delete_productstockwarehouse' && !empty($user->rights->produit->creer))
 {
 	$pse = new ProductStockEntrepot($db);
 
-	$pse->fetch(GETPOST('fk_productstockwarehouse', 'int'));
+	/* *********************** SPÉ VET COMPANY { *********************** */
+	// $pse->fetch(GETPOST('fk_productstockwarehouse', 'int'));
+	$pse->fetch($fk_productstockwarehouse);
+	/* *********************** SPÉ VET COMPANY } *********************** */
 	if ($pse->delete($user) > 0) setEventMessages($langs->trans('ProductStockWarehouseDeleted'), null, 'mesgs');
 
 	$action = '';
@@ -991,25 +1098,55 @@ if (!$variants) {
 		print '<br><br>';
 		print load_fiche_titre($langs->trans('AddNewProductStockWarehouse'));
 
-		if (!empty($user->rights->produit->creer)) {
+		/* *********************** SPÉ VET COMPANY { *********************** */
+		if (!empty($user->rights->produit->creer)){
 			print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 			print '<input type="hidden" name="token" value="'.newToken().'">';
-			print '<input type="hidden" name="action" value="addlimitstockwarehouse">';
+			print '<input type="hidden" name="action" value="'.($action == 'update_productstockwarehouse' ? 'update' : 'addlimitstockwarehouse').'">';
 			print '<input type="hidden" name="id" value="'.$id.'">';
 		}
-		print '<table class="noborder centpercent">';
-		if (!empty($user->rights->produit->creer)) {
-			print '<tr class="liste_titre"><td width="40%">'.$formproduct->selectWarehouses('', 'fk_entrepot').'</td>';
-			print '<td class="right"><input name="seuil_stock_alerte" type="text" placeholder="'.$langs->trans("StockLimit").'" /></td>';
-			print '<td class="right"><input name="desiredstock" type="text" placeholder="'.$langs->trans("DesiredStock").'" /></td>';
-			print '<td class="right"><input type="submit" value="'.$langs->trans("Save").'" class="button button-save" /></td>';
-			print '</tr>';
-		} else {
+		print '<table class="noborder" width="100%">';
+		if (!empty($user->rights->produit->creer)){
+			if ($action !== 'update_productstockwarehouse')
+			{
+				print '<tr class="liste_titre"><td width="40%">'.$formproduct->selectWarehouses('', 'fk_entrepot').'</td>';
+				print '<td align="right"><input name="seuil_stock_alerte" type="text" placeholder="'.$langs->trans("StockLimit").'" /></td>';
+				print '<td align="right"><input name="desiredstock" type="text" placeholder="'.$langs->trans("DesiredStock").'" /></td>';
+				if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD)
+				{
+					print '<td align="right">'.$langs->trans('From'). ' ' .$form->selectDate('', 'date_start').'</td>';
+					print '<td align="right">'.$langs->trans('to'). ' ' .$form->selectDate('', 'date_end').'</td>';
+					print '<td align="right"><label for="recurring">'.$langs->trans('Recurring'). ' <input type="checkbox" name="recurring" id="recurring"></label></td>';
+				}
+				print '<td align="right"><input type="submit" value="'.$langs->trans('Save').'" class="button" /></td>';
+				print '</tr>';
+			}
+			else
+			{
+				print '<tr class="liste_titre">';
+				print '<td width="40%">'.$langs->trans('Warehouse').'</td>';
+				print '<td align="right">'.$langs->trans('StockLimit').'</td>';
+				print '<td align="right">'.$langs->trans('DesiredStock').'</td>';
+				if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD)
+				{
+					print '<td colspan="2"></td>';
+					print '<td>'.$langs->trans('Recurring').'</td>';
+				}
+				print '<td></td>';
+				print '</tr>';
+			}
+		}else{
 			print '<tr class="liste_titre"><td width="40%">'.$langs->trans("Warehouse").'</td>';
-			print '<td class="right">'.$langs->trans("StockLimit").'</td>';
-			print '<td class="right">'.$langs->trans("DesiredStock").'</td>';
+			print '<td align="right">'.$langs->trans("StockLimit").'</td>';
+			print '<td align="right">'.$langs->trans("DesiredStock").'</td>';
+			if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD)
+			{
+				print '<td colspan="2"></td>';
+				print '<td>'.$langs->trans('Recurring').'</td>';
+			}
 			print '</tr>';
 		}
+		/* *********************** SPÉ VET COMPANY } *********************** */
 
 		$pse = new ProductStockEntrepot($db);
 		$lines = $pse->fetchAll($id);
@@ -1019,12 +1156,53 @@ if (!$variants) {
 			foreach ($lines as $line) {
 				$ent = new Entrepot($db);
 				$ent->fetch($line['fk_entrepot']);
+				/* *********************** SPÉ VET COMPANY { *********************** */
+
 				print '<tr class="oddeven"><td width="40%">'.$ent->getNomUrl(3).'</td>';
-				print '<td class="right">'.$line['seuil_stock_alerte'].'</td>';
-				print '<td class="right">'.$line['desiredstock'].'</td>';
-				if (!empty($user->rights->produit->creer)) {
-					print '<td class="right"><a href="'.$_SERVER['PHP_SELF'].'?id='.$id.'&fk_productstockwarehouse='.$line['id'].'&action=delete_productstockwarehouse&token='.newToken().'">'.img_delete().'</a></td>';
+				if ($action == 'update_productstockwarehouse' && $line['id'] == $fk_productstockwarehouse)
+				{
+					print '<td align="right">';
+					print '<input type="hidden" name="fk_productstockwarehouse" value="'.$fk_productstockwarehouse.'">';
+					print '<input name="seuil_stock_alerte" type="text" value="'.$line['seuil_stock_alerte'].'" />';
+					print '</td>';
+					print '<td align="right"><input name="desiredstock" type="text" value="'.$line['desiredstock'].'" /></td>';
+					if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD)
+					{
+						print '<td align="right">'.$langs->trans('From'). ' ' .$form->selectDate($line['date_start'], 'date_start').'</td>';
+						print '<td align="right">'.$langs->trans('to'). ' ' .$form->selectDate($line['date_end'], 'date_end').'</td>';
+						print '<td align="right"><input type="checkbox" name="recurring" id="recurring" '.(!empty($line['recurring'])?'checked': '').'> </td>';
+					}
+
+					if (!empty($user->rights->produit->creer))
+					{
+						print '<td align="right"><input type="submit" value="'.$langs->trans('Save').'" class="button" /></td>';
+					}
 				}
+				else
+				{
+					print '<td align="right">'.$line['seuil_stock_alerte'].'</td>';
+					print '<td align="right">'.$line['desiredstock'].'</td>';
+					if ($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE_BY_PERIOD)
+					{
+
+						print '<td align="right">';
+						print !empty($line['recurring']) ? substr(dol_print_date($line['date_start']), 0, -4) : dol_print_date($line['date_start']);
+						print '</td>';
+
+						print '<td align="right">';
+						print !empty($line['recurring'])? substr(dol_print_date($line['date_end']), 0, -4) : dol_print_date($line['date_end']);
+						print '</td>';
+
+						print '<td align="right"><input type="checkbox" name="recurring" id="recurring" '.(!empty($line['recurring'])?'checked': '').' disabled></td>';
+					}
+					if (!empty($user->rights->produit->creer)){
+						print '<td align="right">';
+						print '<a href="?id='.$id.'&fk_productstockwarehouse='.$line['id'].'&action=update_productstockwarehouse&token='.newToken().'">'.img_edit().'</a>';
+						print '<a href="?id='.$id.'&fk_productstockwarehouse='.$line['id'].'&action=delete_productstockwarehouse&token='.newToken().'">'.img_delete().'</a>';
+						print '</td>';
+					}
+				}
+				/* *********************** SPÉ VET COMPANY } *********************** */
 				print '</tr>';
 			}
 		}

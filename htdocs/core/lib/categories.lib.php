@@ -108,3 +108,74 @@ function categoriesadmin_prepare_head()
 
 	return $head;
 }
+
+/* ************************* SPÉ VET COMPANY { *********************** */
+function getCategoryAccountancyCode($id, $type)
+{
+    global $db;
+
+    if (empty ($id) || empty ($type)) return array(-1, '');
+
+    $motherof = array();
+    // Load array[child]=parent
+    $sql = "SELECT c.fk_parent as id_parent, c.rowid as id_son, cc.accountancy_code_sell as code_sell";
+    $sql.= " FROM ".MAIN_DB_PREFIX."categorie as c";
+    $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."categorie as cc ON c.fk_parent = cc.rowid";
+    $sql.= " WHERE c.fk_parent != 0";
+    $sql.= " AND c.entity IN (".getEntity('category').")";
+
+    $resql = $db->query($sql);
+    if ($resql)
+    {
+        while ($obj= $db->fetch_object($resql))
+        {
+            $motherof[$obj->id_son]['parent']=$obj->id_parent;
+            $motherof[$obj->id_son]['parent_accountancy_code_sell'] = $obj->code_sell;
+        }
+    }
+
+    require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+    $c = new Categorie($db);
+    $prodcat = $c->containing($id, $type);
+
+    if(empty($prodcat)) return array(-2, '');
+
+    $cat_order = array();
+    foreach ($prodcat as $cat)
+    {
+        $cat_order[$cat->id]['label'] = $cat->label;
+        $cat_order[$cat->id]['profondeur'] = 0;
+        $cat_order[$cat->id]['accountancy_code_sell'] = $cat->accountancy_code_sell;
+
+        if (!empty($cat->fk_parent) && empty($cat->accountancy_code_sell))
+        {
+            $id_search = $cat->id;
+            $accountancy_code_sell='';
+            while (array_key_exists($id_search, $motherof))
+            {
+                // var_dump($motherof[$id_search], empty($cat_order[$cat->id]['accountancy_code_sell']), !empty($motherof[$id_search]['parent_accountancy_code_sell']));
+                if (empty($cat_order[$cat->id]['accountancy_code_sell']) && !empty($motherof[$id_search]['parent_accountancy_code_sell']))
+                {
+                    $cat_order[$cat->id]['accountancy_code_sell'] = $motherof[$id_search]['parent_accountancy_code_sell'];
+                }
+                $cat_order[$cat->id]['profondeur']++;
+                $id_search = $motherof[$id_search]['parent'];
+            }
+        }
+    }
+
+    $profondeur = 0;
+    foreach ($cat_order as $cat)
+    {
+        if (!empty($cat['accountancy_code_sell']))
+        {
+            if ($cat['profondeur'] > $profondeur) $suggest = $cat;
+            elseif ($cat['profondeur'] == $profondeur) $second_suggest = $cat;
+        }
+    }
+
+    if (!empty($suggest)) return array($suggest['accountancy_code_sell'], $suggest['label']);
+    elseif (!empty($second_suggest)) return array($second_suggest['accountancy_code_sell'], $second_suggest['label']);
+    else return array('','');
+}
+/* ************************* SPÉ VET COMPANY } *********************** */

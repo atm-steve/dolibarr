@@ -35,6 +35,13 @@ create table llx_categorie
     tms     		timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,							-- last modification date
     fk_user_creat	integer,							-- user making creation
     fk_user_modif	integer,							-- user making last change
+	-- ************** SPÉ VET COMPANY { **************
+	visible         tinyint DEFAULT 1 NOT NULL,
+	accountancy_code_sell           varchar(32),
+	accountancy_code_sell_intra     varchar(32),
+	accountancy_code_sell_export    varchar(32),
+	accountancy_code_buy            varchar(32),			-- determine if the products are visible or not
+	-- ************** SPÉ VET COMPANY } **************
     import_key      varchar(14)							-- Import key
 )ENGINE=innodb;
 

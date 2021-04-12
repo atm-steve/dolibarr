@@ -32,6 +32,7 @@ require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/categories.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
+require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';
 
 // Load translation files required by the page
 $langs->load("categories");
@@ -270,6 +271,62 @@ print '<tr><td class="notopnoleft">';
 print $langs->trans("Color").'</td><td>';
 print $formother->showColor($object->color);
 print '</td></tr>';
+
+/* *********************** SPÉ VET COMPANY { *********************** */
+// Accountancy codes
+if (! empty($conf->accounting->enabled) && !empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES) && $type == 0)
+{
+    print '<tr><td class="notopnoleft">';
+    print $langs->trans("CategorieAccountancySellCode").'</td><td>';
+    if (!empty($object->accountancy_code_sell))
+    {
+        $acc = new AccountingAccount($db);
+        $acc->fetch(0, $object->accountancy_code_sell);
+        print $object->accountancy_code_sell . ' - ' . $acc->label;
+    }
+    print '</td></tr>';
+
+    if ($conf->global->MAIN_FEATURES_LEVEL)
+    {
+        // Accountancy_code_sell_intra
+        if ($mysoc->isInEEC())
+        {
+            print '<tr><td class="notopnoleft">'.$langs->trans("CategorieAccountancySellIntraCode").'</td>';
+            print '<td>';
+            if (!empty($object->accountancy_code_sell_intra))
+            {
+                $acc = new AccountingAccount($db);
+                $acc->fetch(0, $object->accountancy_code_sell_intra);
+                print $object->accountancy_code_sell_intra . ' - ' . $acc->label;
+            }
+            print '</td></tr>';
+        }
+
+        // Accountancy_code_sell_export
+        print '<tr><td class="notopnoleft">'.$langs->trans("CategorieAccountancySellExportCode").'</td>';
+        print '<td>';
+        if (!empty($object->accountancy_code_sell_export))
+        {
+            $acc = new AccountingAccount($db);
+            $acc->fetch(0, $object->accountancy_code_sell_export);
+            print $object->accountancy_code_sell_export . ' - ' . $acc->label;
+        }
+        print '</td></tr>';
+    }
+
+    // Accountancy_code_buy
+    print '<tr><td class="notopnoleft">'.$langs->trans("CategorieAccountancyBuyCode").'</td>';
+    print '<td>';
+    if (!empty($object->accountancy_code_buy))
+    {
+        $acc = new AccountingAccount($db);
+        $acc->fetch(0, $object->accountancy_code_buy);
+        print $object->accountancy_code_buy . ' - ' . $acc->label;
+    }
+    print '</td></tr>';
+}
+/* *********************** SPÉ VET COMPANY } *********************** */
+
 
 // Other attributes
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_view.tpl.php';

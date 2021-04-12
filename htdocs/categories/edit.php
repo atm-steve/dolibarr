@@ -30,6 +30,12 @@ require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 
+/* ************************* SPÉ VET COMPANY { *********************** */
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/class/html.formaccounting.class.php';
+if (! empty($conf->accounting->enabled)) require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';
+/* ************************* SPÉ VET COMPANY } *********************** */
+
 // Load translation files required by the page
 $langs->load("categories");
 
@@ -89,6 +95,33 @@ if ($action == 'update' && $user->rights->categorie->creer) {
 	$object->fk_parent = $parent != -1 ? $parent : 0;
 
 
+/* ************************* SPÉ VET COMPANY { *********************** */
+	$accountancy_code_sell 			 = GETPOST('accountancy_code_sell','alpha');
+	$accountancy_code_sell_intra	 = GETPOST('accountancy_code_sell_intra','alpha');
+	$accountancy_code_sell_export	 = GETPOST('accountancy_code_sell_export','alpha');
+	$accountancy_code_buy 			 = GETPOST('accountancy_code_buy','alpha');
+	if ($accountancy_code_sell <= 0) {
+		$object->accountancy_code_sell = '';
+	} else {
+		$object->accountancy_code_sell = $accountancy_code_sell;
+	}
+	if ($accountancy_code_sell_intra <= 0) {
+		$object->accountancy_code_sell_intra = '';
+	} else {
+		$object->accountancy_code_sell_intra = $accountancy_code_sell_intra;
+	}
+	if ($accountancy_code_sell_export <= 0) {
+		$object->accountancy_code_sell_export = '';
+	} else {
+		$object->accountancy_code_sell_export = $accountancy_code_sell_export;
+	}
+	if ($accountancy_code_buy <= 0) {
+		$object->accountancy_code_buy = '';
+	} else {
+		$object->accountancy_code_buy = $accountancy_code_buy;
+	}
+/* ************************* SPÉ VET COMPANY } *********************** */
+
 	if (empty($object->label)) {
 		$error++;
 		$action = 'edit';
@@ -117,6 +150,10 @@ if ($action == 'update' && $user->rights->categorie->creer) {
 
 $form = new Form($db);
 $formother = new FormOther($db);
+
+/* ************************* SPÉ VET COMPANY { *********************** */
+if (! empty($conf->accounting->enabled)) $formaccounting = new FormAccounting($db);
+/* ************************* SPÉ VET COMPANY } *********************** */
 
 llxHeader("", "", $langs->trans("Categories"));
 
@@ -162,6 +199,44 @@ print '</td></tr>';
 print '<tr><td>'.$langs->trans("In").'</td><td>';
 print $form->select_all_categories($type, $object->fk_parent, 'parent', 64, $object->id);
 print '</td></tr>';
+
+
+/* ************************* SPÉ VET COMPANY { *********************** */
+
+// Accountancy codes
+if (! empty($conf->accounting->enabled) && !empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES) && $type == 0)
+{
+    // Accountancy_code_sell
+    print '<tr><td class="titlefieldcreate">'.$langs->trans("CategorieAccountancySellCode").'</td>';
+    print '<td>';
+    print $formaccounting->select_account($object->accountancy_code_sell, 'accountancy_code_sell', 1, null, 1, 1, '');
+    print '</td></tr>';
+
+    if ($conf->global->MAIN_FEATURES_LEVEL)
+    {
+        // Accountancy_code_sell_intra
+        if ($mysoc->isInEEC())
+        {
+            print '<tr><td class="titlefieldcreate">'.$langs->trans("CategorieAccountancySellIntraCode").'</td>';
+            print '<td>';
+            print $formaccounting->select_account($object->accountancy_code_sell_intra, 'accountancy_code_sell_intra', 1, null, 1, 1, '');
+            print '</td></tr>';
+        }
+
+        // Accountancy_code_sell_export
+        print '<tr><td class="titlefieldcreate">'.$langs->trans("CategorieAccountancySellExportCode").'</td>';
+        print '<td>';
+        print $formaccounting->select_account($object->accountancy_code_sell_export, 'accountancy_code_sell_export', 1, null, 1, 1, '');
+        print '</td></tr>';
+    }
+
+    // Accountancy_code_buy
+    print '<tr><td>'.$langs->trans("CategorieAccountancyBuyCode").'</td>';
+    print '<td>';
+    print $formaccounting->select_account($object->accountancy_code_buy, 'accountancy_code_buy', 1, null, 1, 1, '');
+    print '</td></tr>';
+}
+/* ************************* SPÉ VET COMPANY } *********************** */
 
 $parameters = array();
 $reshook = $hookmanager->executeHooks('formObjectOptions', $parameters, $object, $action); // Note that $action and $object may have been modified by hook

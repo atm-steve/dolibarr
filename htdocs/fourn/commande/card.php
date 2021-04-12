@@ -2884,6 +2884,8 @@ if ($action == 'create')
 	}
 }
 
+
+
 // End of page
 llxFooter();
 $db->close();

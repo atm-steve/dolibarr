@@ -408,6 +408,10 @@ class modCategorie extends DolibarrModules
 		$this->import_fields_array[$r] = array(
 			'ca.label'=>"Label*", 'ca.type'=>"Type*", 'ca.description'=>"Description",
 			'ca.fk_parent' => 'ParentCategory'
+			/* *********************** SPÉ VET COMPANY { *********************** */
+			,'ca.accountancy_code_sell' => "CategorieAccountancySellCode"
+			,'ca.accountancy_code_buy' => "CategorieAccountancyBuyCode"
+			/* *********************** SPÉ VET COMPANY } *********************** */
 		);
 		$this->import_regex_array[$r] = array('ca.type'=>'^(0|1|2|3|4|5|6|7|8|9|10|11)$');
 		$this->import_convertvalue_array[$r] = array(
@@ -424,6 +428,10 @@ class modCategorie extends DolibarrModules
 		$this->import_examplevalues_array[$r] = array(
 			'ca.label'=>"My Category Label", 'ca.type'=>$typeexample, 'ca.description'=>"My Category description",		// $typeexample built above in exports
 			'ca.fk_parent' => 'rowid or label'
+			/* *********************** SPÉ VET COMPANY { *********************** */
+			,'ca.accountancy_code_sell'=>"CategorieAccountancySellCode"
+			,'ca.accountancy_code_buy'=>"CategorieAccountancyBuyCode"
+			/* *********************** SPÉ VET COMPANY } *********************** */
 		);
 		$this->import_updatekeys_array[$r] = array('ca.label'=>'Label');
 

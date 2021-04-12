@@ -395,3 +395,6 @@ ActionAvailableOnVariantProductOnly=Action disponible uniquement sur la variante
 ProductsPricePerCustomer=Prix produit par clients
 ProductSupplierExtraFields=Attributs supplémentaires (Prix fournisseur)
 DeleteLinkedProduct=Supprimer le produit enfant lié à la combinaison
+HelpCombinationNewReference=Référence de la nouvelle variante. Si le champ est laissé vide, la référence du produit d’origine sera utilisée et suffixée en fonction des attributs choisis.
+CombinationsSeparator=Séparateur utilisé pour générer les références des nouvelles variantes de produits.
+Recurring=Récurrent
