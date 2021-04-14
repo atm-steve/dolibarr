@@ -84,6 +84,7 @@ if($action == 'add') {
                         setEventMessages($expBatch->error, $expBatch->errors, 'errors');
                         $error++;
                     }
+                    $lineExp = new ExpeditionLigne($db);
                     $lineExp->fetch($expBatch->fk_expeditiondet);
                     $lineExp->qty += $qty;
                     $tmpBatch = $lineExp->detail_batch;
@@ -104,7 +105,7 @@ if($action == 'add') {
                             $lineIdToAddLot = $lineExp->id;
                         }
                     }
-                    else if(count($lineExp->details_entrepot) > 1) {
+                    else if(!empty($lineExp->details_entrepot) && count($lineExp->details_entrepot) > 1) {
                         // multi warehouse shipment lines
                         foreach($lineExp->details_entrepot as $detail_entrepot) {
                             if($detail_entrepot->entrepot_id == $lotStock->warehouseid) {
