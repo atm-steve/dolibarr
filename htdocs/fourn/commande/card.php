@@ -2631,7 +2631,7 @@ if ($action == 'create')
 
 			if ($action == 'classifyreception')
 			{
-				if ($usercanreceived && ($object->statut == CommandeFournisseur::STATUS_ORDERSENT || $object->statut == CommandeFournisseur::STATUS_RECEIVED_PARTIALLY))
+				if ($usercanreceived && ($object->statut == CommandeFournisseur::STATUS_ORDERSENT || $object->statut == CommandeFournisseur::STATUS_RECEIVED_PARTIALLY) && $user->admin)
 				{
 					// Set status to received (action=livraison)
 					print '<!-- form to record purchase order received -->'."\n";

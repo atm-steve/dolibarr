@@ -2917,7 +2917,7 @@ class Form
 
 				if (!empty($objp->idprodfournprice))
 				{
-					$outqty = $objp->quantity;
+					$outqty=$objp->quantity * $objp->conditionnement;
 					$outdiscount = $objp->remise_percent;
 					if (!empty($conf->dynamicprices->enabled) && !empty($objp->fk_supplier_price_expression)) {
 						$prod_supplier = new ProductFournisseur($this->db);
