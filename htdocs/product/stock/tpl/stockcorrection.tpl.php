@@ -63,6 +63,14 @@ print '<input type="hidden" name="action" value="correct_stock">';
 print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 print '<table class="border centpercent">';
 
+// User
+print '<tr>';
+print '<td width="20%">' . $langs->trans("User") . '</td>';
+print '<td colspan="5">';
+print $form->select_users($user->id, 'author');
+print '</td>';
+print '</tr>';
+
 // Warehouse or product
 print '<tr>';
 if ($object->element == 'product') {

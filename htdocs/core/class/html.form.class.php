@@ -2765,6 +2765,7 @@ class Form
 		$maxlengtharticle = (empty($conf->global->PRODUCT_MAX_LENGTH_COMBO) ? 48 : $conf->global->PRODUCT_MAX_LENGTH_COMBO);
 
 		$langs->load('stocks');
+		$langs->load('suppliers');
 		// Units
 		if (!empty($conf->global->PRODUCT_USE_UNITS)) {
 			$langs->load('other');
@@ -2773,7 +2774,7 @@ class Form
 		$sql = "SELECT p.rowid, p.ref, p.label, p.price, p.duration, p.fk_product_type, p.stock,";
 		$sql .= " pfp.ref_fourn, pfp.rowid as idprodfournprice, pfp.price as fprice, pfp.quantity, pfp.remise_percent, pfp.remise, pfp.unitprice,";
 		$sql .= " pfp.fk_supplier_price_expression, pfp.fk_product, pfp.tva_tx, pfp.fk_soc, s.nom as name,";
-		$sql .= " pfp.supplier_reputation";
+		$sql .= " pfp.supplier_reputation,pfp.conditionnement";
 		// Units
 		if (!empty($conf->global->PRODUCT_USE_UNITS)) {
 			$sql .= ", u.label as unit_long, u.short_label as unit_short, p.weight, p.weight_units, p.length, p.length_units, p.width, p.width_units, p.height, p.height_units, p.surface, p.surface_units, p.volume, p.volume_units";
@@ -2953,6 +2954,10 @@ class Form
 						$optlabel .= " (".price($objp->unitprice * (!empty($conf->global->DISPLAY_DISCOUNTED_SUPPLIER_PRICE) ? (1 - $objp->remise_percent / 100) : 1), 1, $langs, 0, 0, -1, $conf->currency)."/".$langs->trans("Unit").")"; // Do not use strtolower because it breaks utf8 encoding
 						$outvallabel .= " (".price($objp->unitprice * (!empty($conf->global->DISPLAY_DISCOUNTED_SUPPLIER_PRICE) ? (1 - $objp->remise_percent / 100) : 1), 0, $langs, 0, 0, -1, $conf->currency)."/".$langs->transnoentities("Unit").")"; // Do not use strtolower because it breaks utf8 encoding
 					}
+					
+					$opt.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+					$outval.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+					
 					if ($objp->remise_percent >= 1)
 					{
 						$optlabel .= " - ".$langs->trans("Discount")." : ".vatrate($objp->remise_percent).' %';

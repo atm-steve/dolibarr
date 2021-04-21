@@ -1726,7 +1726,7 @@ class Product extends CommonObject
 		if (!empty($conf->global->PRODUCT_USE_SUPPLIER_PACKAGING)) $sql .= ", pfp.packaging";
 		$sql .= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price as pfp";
 		$sql .= " WHERE pfp.rowid = ".$prodfournprice;
-		if ($qty > 0) { $sql .= " AND pfp.quantity <= ".$qty;
+		if ($qty > 0) { $sql .= " AND pfp.quantity <= ".$qty." / IFNULL(pfp.conditionnement,1)";
 		}
 		$sql .= " ORDER BY pfp.quantity DESC";
 

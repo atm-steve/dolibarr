@@ -197,6 +197,11 @@ if ($action == 'setdesiredstock' && !empty($user->rights->produit->creer))
 // Correct stock
 if ($action == "correct_stock" && !$cancel)
 {
+
+	$author = new User($db);
+	if($_POST['author']>0) $author->fetch($_POST['author']);
+	else $author = clone $user; 
+
 	if (!(GETPOST("id_entrepot", 'int') > 0))
 	{
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Warehouse")), null, 'errors');
@@ -247,7 +252,7 @@ if ($action == "correct_stock" && !$cancel)
 
 			if ($object->hasbatch()) {
 				$result = $object->correct_stock_batch(
-					$user,
+					$author,
 					GETPOST("id_entrepot", 'int'),
 					$nbpiece,
 					GETPOST("mouvement", 'int'),
@@ -263,7 +268,7 @@ if ($action == "correct_stock" && !$cancel)
 				); // We do not change value of stock for a correction
 			} else {
 				$result = $object->correct_stock(
-					$user,
+					$author,
 					GETPOST("id_entrepot", 'int'),
 					$nbpiece,
 					GETPOST("mouvement", 'int'),

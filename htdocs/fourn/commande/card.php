@@ -2435,7 +2435,8 @@ if ($action == 'create')
 
 			// Send
 			if (empty($user->socid)) {
-				if (in_array($object->statut, array(CommandeFournisseur::STATUS_ACCEPTED, 3, 4, 5)) || !empty($conf->global->SUPPLIER_ORDER_SENDBYEMAIL_FOR_ALL_STATUS))
+				//if (in_array($object->statut, array(CommandeFournisseur::STATUS_ACCEPTED, 3, 4, 5)) || !empty($conf->global->SUPPLIER_ORDER_SENDBYEMAIL_FOR_ALL_STATUS))
+				if (in_array($object->statut, array(3)))
 				{
 					if ($usercanorder)
 					{
