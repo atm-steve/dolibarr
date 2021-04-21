@@ -1023,6 +1023,35 @@ if ($resql)
             	$tmpnbfieldbeforebalance=0;
             	$tmpnbfieldafterbalance=0;
             	$balancefieldfound=0;
+
+
+				$sqlforbalancereconcile ='SELECT SUM(b.amount) as previoustotal';
+				$sqlforbalancereconcile.= " FROM ";
+				$sqlforbalancereconcile.= " ".MAIN_DB_PREFIX."bank_account as ba,";
+				$sqlforbalancereconcile.= " ".MAIN_DB_PREFIX."bank as b";
+				$sqlforbalancereconcile.= " WHERE b.fk_account = ba.rowid";
+				$sqlforbalancereconcile.= " AND ba.entity IN (".getEntity('bank_account').")";
+				$sqlforbalancereconcile.= " AND b.fk_account = ".$search_account;
+				$sqlforbalancereconcile.= " AND b.rappro = 1";
+				$sqlforbalancereconcile = $db->query($sqlforbalancereconcile);
+				//print $sqlforbalance;
+
+				if ($sqlforbalancereconcile) {
+					$objforbalancereconcile = $db->fetch_object($sqlforbalancereconcile);
+					if ($objforbalancereconcile) {
+						if ($sortfield == 'b.datev,b.dateo,b.rowid' && $sortorder == 'desc,desc,desc')
+						{
+							$balance = $balancebefore;
+						}
+						// If sort is asc,asc,asc then total of previous date is balance of line before the next line to show
+						else
+						{
+							$balance = $objforbalancereconcile->previoustotal;
+						}
+					}
+				}
+				else dol_print_error($db);
+
             	foreach($arrayfields as $key => $val)
             	{
             		if ($key == 'balancebefore' || $key == 'balance')
