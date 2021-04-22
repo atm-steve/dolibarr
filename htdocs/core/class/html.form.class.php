@@ -2955,8 +2955,8 @@ class Form
 						$outvallabel .= " (".price($objp->unitprice * (!empty($conf->global->DISPLAY_DISCOUNTED_SUPPLIER_PRICE) ? (1 - $objp->remise_percent / 100) : 1), 0, $langs, 0, 0, -1, $conf->currency)."/".$langs->transnoentities("Unit").")"; // Do not use strtolower because it breaks utf8 encoding
 					}
 					
-					$opt.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
-					$outval.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+					$optlabel.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+					$outvallabel.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
 					
 					if ($objp->remise_percent >= 1)
 					{
