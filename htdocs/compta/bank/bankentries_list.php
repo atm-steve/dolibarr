@@ -1025,6 +1025,8 @@ if ($resql)
             	$balancefieldfound=0;
 
 
+            	//on récupère tous les virament qui n'ont pas encore été rapprochés
+				//TODO : gérer le cas desc => il faut récupérer la valeur après les potentiel reappro
 				$sqlforbalancereconcile ='SELECT SUM(b.amount) as previoustotal';
 				$sqlforbalancereconcile.= " FROM ";
 				$sqlforbalancereconcile.= " ".MAIN_DB_PREFIX."bank_account as ba,";
@@ -1034,14 +1036,14 @@ if ($resql)
 				$sqlforbalancereconcile.= " AND b.fk_account = ".$search_account;
 				$sqlforbalancereconcile.= " AND b.rappro = 1";
 				$sqlforbalancereconcile = $db->query($sqlforbalancereconcile);
-				//print $sqlforbalance;
+				//print $sqlforbalancereconcile;
 
 				if ($sqlforbalancereconcile) {
 					$objforbalancereconcile = $db->fetch_object($sqlforbalancereconcile);
 					if ($objforbalancereconcile) {
 						if ($sortfield == 'b.datev,b.dateo,b.rowid' && $sortorder == 'desc,desc,desc')
 						{
-							$balance = $balancebefore;
+							$balancebefore = $objforbalancereconcile->previoustotal + ($sign * $objp->amount);
 						}
 						// If sort is asc,asc,asc then total of previous date is balance of line before the next line to show
 						else
