@@ -201,7 +201,7 @@ class Tva extends CommonObject
 
 		// Update request
         $sql = "UPDATE ".MAIN_DB_PREFIX."tva SET";
-		$sql .= " tms='".$this->db->idate($this->tms)."',";
+		$sql .= " tms='".$this->db->idate(dol_now())."',";
 		$sql .= " datep='".$this->db->idate($this->datep)."',";
 		$sql .= " datev='".$this->db->idate($this->datev)."',";
 		$sql .= " amount=".price2num($this->amount).",";

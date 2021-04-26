@@ -623,7 +623,7 @@ class Salary extends CommonObject
      */
     public function info($id)
     {
-        $sql = 'SELECT ps.rowid, ps.datec, ps.fk_user_author';
+        $sql = 'SELECT ps.rowid, ps.datec, ps.tms, ps.fk_user_author, ps.fk_user_modif';
         $sql .= ' FROM '.MAIN_DB_PREFIX.'salary as ps';
         $sql .= ' WHERE ps.rowid = '.$id;
 
@@ -642,7 +642,15 @@ class Salary extends CommonObject
                     $cuser->fetch($obj->fk_user_author);
                     $this->user_creation = $cuser;
                 }
+
+		if ($obj->fk_user_modif) {
+			$muser = new User($this->db);
+			$muser->fetch($obj->fk_user_modif);
+			$this->user_modification = $muser;
+		}
+
                 $this->date_creation     = $this->db->jdate($obj->datec);
+		$this->date_modification = $this->db->jdate($obj->tms);
             }
             $this->db->free($result);
         }
