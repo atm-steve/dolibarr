@@ -1177,13 +1177,14 @@ if ($action == 'edit_vat' && ($user->rights->produit->creer || $user->rights->se
 
 	print '<br></form><br>';
 }
-
 if ($action == 'edit_price' && $object->getRights()->creer)
 {
+
 	print load_fiche_titre($langs->trans("NewPrice"), '');
 
 	if (empty($conf->global->PRODUIT_MULTIPRICES) && empty($conf->global->PRODUIT_CUSTOMER_PRICES_BY_QTY_MULTIPRICES))
 	{
+
 		print '<!-- Edit price -->'."\n";
 		print '<form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="POST">';
 		print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -1196,6 +1197,7 @@ if ($action == 'edit_price' && $object->getRights()->creer)
 		print '<table class="border centpercent">';
 
 		// VAT
+
 		print '<tr><td class="titlefield">'.$langs->trans("DefaultTaxRate").'</td><td>';
 		print $form->load_tva("tva_tx", $object->default_vat_code ? $object->tva_tx.' ('.$object->default_vat_code.')' : $object->tva_tx, $mysoc, '', $object->id, $object->tva_npr, $object->type, false, 1);
 		print '</td></tr>';
@@ -1248,6 +1250,7 @@ if ($action == 'edit_price' && $object->getRights()->creer)
 		// Price
 		$product = new Product($db);
 		$product->fetch($id, $ref, '', 1); //Ignore the math expression when getting the price
+
 		print '<tr id="price_numeric"><td>';
 		$text = $langs->trans('SellingPrice');
 		print $form->textwithpicto($text, $langs->trans("PrecisionUnitIsLimitedToXDecimals", $conf->global->MAIN_MAX_DECIMALS_UNIT), 1, 1);
@@ -1292,6 +1295,7 @@ if ($action == 'edit_price' && $object->getRights()->creer)
 
 		print '<br></form>';
 	} else {
+
 		print '<!-- Edit price per level -->'."\n";
 		?>
 		<script>
@@ -1357,6 +1361,8 @@ if ($action == 'edit_price' && $object->getRights()->creer)
 			print '</td>';
 
 			// VAT
+
+			// a la création il ne créer pas les deux autres tva
 			if (empty($conf->global->PRODUIT_MULTIPRICES_USE_VAT_PER_LEVEL)) {
 				print '<td>';
 				print '<input type="hidden" name="tva_tx['.$i.']" value="'.($object->default_vat_code ? $object->tva_tx.' ('.$object->default_vat_code.')' : $object->tva_tx).'">';
@@ -1367,6 +1373,7 @@ if ($action == 'edit_price' && $object->getRights()->creer)
 				print '<input type="hidden" name="localtax2_type['.$i.']" value="'.$object->localtax2_type.'">';
 				print '</td>';
 			} else {
+
 				// This option is kept for backward compatibility but has no sense
 				print '<td style="text-align: center">';
 				print $form->load_tva("tva_tx[".$i.']', $object->multiprices_tva_tx[$i], $mysoc, '', $object->id, false, $object->type, false, 1);
@@ -1414,7 +1421,6 @@ if ($action == 'edit_price' && $object->getRights()->creer)
 	}
 }
 
-
 // List of price changes - log historic (ordered by descending date)
 
 if ((empty($conf->global->PRODUIT_CUSTOMER_PRICES) || $action == 'showlog_default_price') && !in_array($action, array('edit_price', 'edit_vat')))
@@ -1446,6 +1452,7 @@ if ((empty($conf->global->PRODUIT_CUSTOMER_PRICES) || $action == 'showlog_defaul
     		// On l'ajoute donc pour remettre a niveau (pb vieilles versions)
     		// We emulate the change of the price from interface with the same value than the one into table llx_product
             if (!empty($conf->global->PRODUIT_MULTIPRICES)) {
+
             	$object->updatePrice(($object->multiprices_base_type[1] == 'TTC' ? $object->multiprices_ttc[1] : $object->multiprices[1]), $object->multiprices_base_type[1], $user, (empty($object->multiprices_tva_tx[1]) ? 0 : $object->multiprices_tva_tx[1]), ($object->multiprices_base_type[1] == 'TTC' ? $object->multiprices_min_ttc[1] : $object->multiprices_min[1]), 1);
             } else {
             	$object->updatePrice(($object->price_base_type == 'TTC' ? $object->price_ttc : $object->price), $object->price_base_type, $user, $object->tva_tx, ($object->price_base_type == 'TTC' ? $object->price_min_ttc : $object->price_min));
