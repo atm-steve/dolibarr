@@ -108,6 +108,8 @@ $pageprev = $page - 1;
 $pagenext = $page + 1;
 if (! $sortorder) $sortorder='desc,desc,desc';
 if (! $sortfield) $sortfield='b.datev,b.dateo,b.rowid';
+if ($sortfield == 'b.datev,b.dateo,b.rowid' && $sortorder == 'desc,desc,desc') $modedesc = true;
+else $modedesc = false;
 
 $mode_balance_ok=false;
 //if (($sortfield == 'b.datev' || $sortfield == 'b.datev,b.dateo,b.rowid'))    // TODO Manage balance when account not selected
@@ -552,6 +554,7 @@ if (! empty($credit)) $mode_balance_ok=false;
 if (! empty($thirdparty)) $mode_balance_ok=false;
 
 $sql.= $db->plimit($limit+1, $offset);
+
 //print $sql;
 dol_syslog('compta/bank/bankentries_list.php', LOG_DEBUG);
 $resql = $db->query($sql);
@@ -1002,7 +1005,7 @@ if ($resql)
                 if ($objforbalance)
                 {
                 	// If sort is desc,desc,desc then total of previous date + amount is the balancebefore of the previous line before the line to show
-                	if ($sortfield == 'b.datev,b.dateo,b.rowid' && $sortorder == 'desc,desc,desc')
+                	if ($modedesc)
                 	{
                 		$balancebefore = $objforbalance->previoustotal + ($sign * $objp->amount);
                 	}
@@ -1041,7 +1044,7 @@ if ($resql)
 				if ($sqlforbalancereconcile) {
 					$objforbalancereconcile = $db->fetch_object($sqlforbalancereconcile);
 					if ($objforbalancereconcile) {
-						if ($sortfield == 'b.datev,b.dateo,b.rowid' && $sortorder == 'desc,desc,desc')
+						if ($modedesc)
 						{
 							$balancebefore = $objforbalancereconcile->previoustotal + ($sign * $objp->amount);
 						}
@@ -1092,14 +1095,14 @@ if ($resql)
 
             	if (! empty($arrayfields['balancebefore']['checked']))
             	{
-	            	print '<td class="right">';
-	            	print price(price2num($balance, 'MT'), 1, $langs);
+	            	print ($modedesc) ? '<td class="center">' :  '<td class="right">';
+	            	print ($modedesc) ? '-' : price(price2num($balance, 'MT'), 1, $langs);
 	            	print '</td>';
             	}
             	if (! empty($arrayfields['balance']['checked']))
             	{
-            		print '<td class="right">';
-					print price(price2num($balance, 'MT'), 1, $langs);
+            		print ($modedesc) ? '<td class="center">' :  '<td class="right">';
+					print ($modedesc) ? '-' : price(price2num($balance, 'MT'), 1, $langs);
 					print '</td>';
             	}
 
@@ -1118,7 +1121,7 @@ if ($resql)
         }
 
 
-        if ($sortfield == 'b.datev,b.dateo,b.rowid' && $sortorder == 'desc,desc,desc')
+        if ($modedesc)
         {
         	$balance = price2num($balancebefore, 'MT');		// balance = balancebefore of previous line (sort is desc)
         	$balancebefore = price2num($balancebefore - ($sign * $objp->amount), 'MT');
