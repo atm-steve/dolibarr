@@ -382,8 +382,6 @@ ALTER TABLE llx_tva ADD COLUMN fk_account integer;
 
 INSERT INTO llx_payment_vat (rowid, fk_tva, datec, datep, amount, fk_typepaiement, num_paiement, note, fk_bank, fk_user_creat, fk_user_modif) SELECT rowid, rowid, NOW(), datep, amount, COALESCE(fk_typepayment, 0), num_payment, 'Created automatically by migration v13 to v14', fk_bank, fk_user_creat, fk_user_modif FROM llx_tva WHERE fk_bank IS NOT NULL;
 ALTER TABLE llx_tva ALTER COLUMN paye SET DEFAULT 0;
--- VMYSQL4.3 UPDATE llx_tva tva INNER JOIN llx_bank b ON (b.rowid = tva.fk_bank) SET tva.fk_account = b.fk_account WHERE tva.fk_account IS NULL;
--- VPGSQL8.2 UPDATE llx_tva tva SET fk_account = b.fk_account FROM llx_bank b WHERE b.rowid = tva.fk_bank AND tva.fk_account IS NULL;
 
 -- Salaires
 create table llx_salary
@@ -418,8 +416,6 @@ ALTER TABLE llx_payment_salary ADD COLUMN fk_salary integer;
 INSERT INTO llx_salary (rowid, ref, fk_user, amount, fk_projet, fk_typepayment, label, datesp, dateep, entity, note, fk_bank, paye) SELECT ps.rowid, ps.rowid, ps.fk_user, ps.amount, ps.fk_projet, ps.fk_typepayment, ps.label, ps.datesp, ps.dateep, ps.entity, ps.note, ps.fk_bank, 1 FROM llx_payment_salary ps WHERE ps.fk_salary IS NULL;
 UPDATE llx_payment_salary SET fk_salary = rowid WHERE fk_salary IS NULL;
 UPDATE llx_payment_salary SET ref = rowid WHERE ref IS NULL;
--- VMYSQL4.3 UPDATE llx_salary s INNER JOIN llx_bank b ON (b.rowid = s.fk_bank) SET s.fk_account = b.fk_account WHERE s.fk_account IS NULL;
--- VPGSQL8.2 UPDATE llx_salary s SET fk_account = b.fk_account FROM llx_bank b WHERE b.rowid = s.fk_bank AND s.fk_account IS NULL;
 
 ALTER TABLE llx_salary ALTER COLUMN paye set default 0;
 -- Rebuild sequence for postgres only after query INSERT INTO llx_salary(rowid, ...
