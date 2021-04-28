@@ -48,7 +48,6 @@ $value = GETPOST('value', 'alpha');
 $label = GETPOST('label', 'alpha');
 $scandir = GETPOST('scan_dir', 'alpha');
 $type = 'product';
-
 // Pricing Rules
 $select_pricing_rules = array(
 	'PRODUCT_PRICE_UNIQ'=>$langs->trans('PriceCatalogue'), // Unique price
@@ -96,6 +95,7 @@ if ($action == 'other' && GETPOST('value_PRODUIT_MULTIPRICES_LIMIT') > 0)
 	$res = dolibarr_set_const($db, "PRODUIT_MULTIPRICES_LIMIT", GETPOST('value_PRODUIT_MULTIPRICES_LIMIT'), 'chaine', 0, '', $conf->entity);
 	if (!($res > 0)) $error++;
 }
+
 if ($action == 'other')
 {
 	$princingrules = GETPOST('princingrule', 'alpha');

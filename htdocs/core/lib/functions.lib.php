@@ -4714,10 +4714,13 @@ function vatrate($rate, $addpercent = false, $info_bits = 0, $usestarfornpr = 0)
 	if (preg_match('/%/', $rate))
 	{
 		$rate = str_replace('%', '', $rate);
+
 		$addpercent = true;
 	}
+
 	if (preg_match('/\((.*)\)/', $rate, $reg))
 	{
+
 		$morelabel = ' ('.$reg[1].')';
 		$rate = preg_replace('/\s*'.preg_quote($morelabel, '/').'/', '', $rate);
 	}

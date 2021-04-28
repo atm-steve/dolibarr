@@ -63,7 +63,6 @@ if (empty($eid)) //This also disables fetch when eid == 0
 /*
  * Actions
  */
-
 if ($action == 'add')
 {
 	if ($eid == 0)
