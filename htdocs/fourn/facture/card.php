@@ -3329,7 +3329,13 @@ if ($action == 'create')
 		include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
 	}
 }
-
+?>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#idprodfournprice').select2('focus');
+		});
+	</script>
+<?php
 
 // End of page
 llxFooter();
