@@ -270,11 +270,12 @@ if ($nolinesbefore) {
 							}
 						});
 
-						if ($('*:focus').length == 0) {
-							$(document).one('keypress',function(e) {
+						$(document).on('keypress',function(e) {
+							if ($('input:focus').length == 0) {
 								$('#idprodfournprice').select2('open');
-							});
-						}
+							}
+						});
+
 					});
 				</script>
 					<?php
