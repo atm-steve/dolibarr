@@ -22,10 +22,10 @@ if (!empty($extrafieldsobjectkey))	// $extrafieldsobject is the $object->table_e
 			{
 				$align = $extrafields->getAlignFlag($key, $extrafieldsobjectkey);
 				print '<td';
-				if ($align) print ' class="'.$align.'"';
+				if ($align) print ' align="'.$align.'"';
 				print ' data-key="'.$key.'"';
 				print '>';
-				$tmpkey = 'options_'.$key;
+				$tmpkey='options_'.$key;
 
 				if (in_array($extrafields->attributes[$extrafieldsobjectkey]['type'][$key], array('date', 'datetime', 'timestamp')) && !is_numeric($obj->$tmpkey))
 				{

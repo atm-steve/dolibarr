@@ -33,7 +33,8 @@ if (!empty($extrafieldsobjectkey))	// $extrafieldsobject is the $object->table_e
 
 					$tooltip = empty($extrafields->attributes[$extrafieldsobjectkey]['help'][$key]) ? '' : $extrafields->attributes[$extrafieldsobjectkey]['help'][$key];
 
-					print getTitleFieldOfList($extrafields->attributes[$extrafieldsobjectkey]['label'][$key], 0, $_SERVER["PHP_SELF"], $sortonfield, "", $param, ($align ? 'align="'.$align.'" data-titlekey="'.$key.'"' : 'data-titlekey="'.$key.'"'), $sortfield, $sortorder, '', $disablesortlink, $tooltip)."\n";
+					print getTitleFieldOfList($extrafields->attributes[$extrafieldsobjectkey]['label'][$key], 0, $_SERVER["PHP_SELF"], $sortonfield, "", $param, ($align?'align="'.$align.'" data-titlekey="'.$key.'"':'data-titlekey="'.$key.'"'), $sortfield, $sortorder)."\n";
+
 				}
 			}
 		}
