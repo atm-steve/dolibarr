@@ -269,6 +269,12 @@ if ($nolinesbefore) {
 								$('#idprodfournprice').select2('open');
 							}
 						});
+
+						if ($('*:focus').length == 0) {
+							$(document).one('keypress',function(e) {
+								$('#idprodfournprice').select2('open');
+							});
+						}
 					});
 				</script>
 					<?php
