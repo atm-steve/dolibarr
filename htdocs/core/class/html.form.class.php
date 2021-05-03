@@ -2907,6 +2907,7 @@ class Form
 				}
 				if (!empty($conf->barcode->enabled) && !empty($objp->barcode)) {
 					$outvallabel .= ' ('.$outbarcode.')';
+					$optlabel .= ' - '.dol_trunc($outbarcode, $maxlengtharticle);
 				}
 				$outvallabel .= ' - '.dol_trunc($label, $maxlengtharticle);
 
