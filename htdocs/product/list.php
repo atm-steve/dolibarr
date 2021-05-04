@@ -152,6 +152,10 @@ $fieldstosearchall = array(
 	'p.label'=>"ProductLabel",
 	'p.description'=>"Description",
 	"p.note"=>"Note",
+	"p.note_public"=>"NotePublic",
+	"p.url"=>"PublicUrl",
+	"p.accountancy_code_sell"=>"AccountancyCodeSell",
+	"p.accountancy_code_buy"=>"AccountancyCodeBuy",
 
 );
 // multilang
