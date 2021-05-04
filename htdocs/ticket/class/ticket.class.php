@@ -2652,7 +2652,8 @@ class Ticket extends CommonObject
                             // If public interface is not enable, use link to internal page into mail
                             $url_public_ticket = (!empty($conf->global->TICKET_ENABLE_PUBLIC_INTERFACE) ?
                                 (!empty($conf->global->TICKET_URL_PUBLIC_INTERFACE) ? $conf->global->TICKET_URL_PUBLIC_INTERFACE.'/view.php' : dol_buildpath('/public/ticket/view.php', 2)) : dol_buildpath('/ticket/card.php', 2)).'?track_id='.$object->track_id;
-                            $message .= "\n".$langs->trans('TicketNewEmailBodyInfosTrackUrlCustomer').' : '.'<a href="'.$url_public_ticket.'">'.$object->track_id.'</a>'."\n";
+// [SPÉ ATM] commentage du lien interne dans les mails tant que l'interface publique des tickets n'est pas opérationelle
+                            //$message .= "\n".$langs->trans('TicketNewEmailBodyInfosTrackUrlCustomer').' : '.'<a href="'.$url_public_ticket.'">'.$object->track_id.'</a>'."\n";
 
                             // Build final message
                             $message = $message_intro.$message;
@@ -2664,7 +2665,10 @@ class Ticket extends CommonObject
                             	$sendto[] = $object->origin_email;
                             }
 
-                            if ($object->fk_soc > 0 && !in_array($object->origin_email, $sendto)) {
+							// [SPÉ ATM]: le `false` dans la condition
+							// [FM] il faudra faire une PR cœur avec une conf qui permette de ne pas envoyer de mail au tiers si
+							// le ticket a des contacts externes.
+                            if (false && $object->fk_soc > 0 && !in_array($object->origin_email, $sendto)) {
                             	$object->socid = $object->fk_soc;
                             	$object->fetch_thirdparty();
                             	if (!empty($object->thirdparty->email)) $sendto[] = $object->thirdparty->email;
