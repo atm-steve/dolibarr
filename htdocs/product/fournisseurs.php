@@ -938,8 +938,10 @@ END;
 				print_liste_field_titre("DiscountQtyMin", $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder, 'right ');
 				if (!empty($arrayfields['pfp.delivery_time_days']['checked']))		print_liste_field_titre("NbDaysToDelivery", $_SERVER["PHP_SELF"], "pfp.delivery_time_days", "", $param, '', $sortfield, $sortorder, 'right ');
 				if (!empty($arrayfields['pfp.supplier_reputation']['checked']))		print_liste_field_titre("ReputationForThisProduct", $_SERVER["PHP_SELF"], "pfp.supplier_reputation", "", $param, '', $sortfield, $sortorder, 'center ');
-				if (!empty($arrayfields['pfp.barcode']['checked']))					print_liste_field_titre("BarcodeValue", $_SERVER["PHP_SELF"], "pfp.barcode", "", $param, '', $sortfield, $sortorder, 'center ');
-				if (!empty($arrayfields['pfp.fk_barcode_type']['checked']))			print_liste_field_titre("BarcodeType", $_SERVER["PHP_SELF"], "pfp.fk_barcode_type", "", $param, '', $sortfield, $sortorder, 'center ');
+				if($conf->barcode->enabled) {
+					if (!empty($arrayfields['pfp.barcode']['checked'])) print_liste_field_titre("BarcodeValue", $_SERVER["PHP_SELF"], "pfp.barcode", "", $param, '', $sortfield, $sortorder, 'center ');
+					if (!empty($arrayfields['pfp.fk_barcode_type']['checked'])) print_liste_field_titre("BarcodeType", $_SERVER["PHP_SELF"], "pfp.fk_barcode_type", "", $param, '', $sortfield, $sortorder, 'center ');
+				}
 				if (!empty($arrayfields['pfp.packaging']['checked']))				print_liste_field_titre("PackagingForThisProduct", $_SERVER["PHP_SELF"], "pfp.packaging", "", $param, 'align="center"', $sortfield, $sortorder);
 				if (!empty($arrayfields['pfp.tms']['checked']))						print_liste_field_titre("DateModification", $_SERVER["PHP_SELF"], "pfp.tms", "", $param, '', $sortfield, $sortorder, 'right ', '', 1);
 
@@ -1070,23 +1072,23 @@ END;
 							}
 							print'</td>';
 						}
+						if($conf->barcode->enabled) {
+							// Barcode
+							if (!empty($arrayfields['pfp.barcode']['checked'])) {
+								print '<td align="right">';
+								print $productfourn->supplier_barcode;
+								print '</td>';
+							}
 
-						// Barcode
-						if (!empty($arrayfields['pfp.barcode']['checked'])) {
-							print '<td align="right">';
-							print $productfourn->supplier_barcode;
-							print '</td>';
+							// Barcode type
+							if (!empty($arrayfields['pfp.fk_barcode_type']['checked'])) {
+								print '<td class="center">';
+								$productfourn->barcode_type = !empty($productfourn->supplier_fk_barcode_type) ? $productfourn->supplier_fk_barcode_type : 0;
+								$productfourn->fetch_barcode();
+								print $productfourn->barcode_type_label ? $productfourn->barcode_type_label : ($productfourn->supplier_barcode ? '<div class="warning">' . $langs->trans("SetDefaultBarcodeType") . '<div>' : '');
+								print '</td>';
+							}
 						}
-
-						// Barcode type
-						if (!empty($arrayfields['pfp.fk_barcode_type']['checked'])) {
-							print '<td class="center">';
-							$productfourn->barcode_type = !empty($productfourn->supplier_fk_barcode_type) ? $productfourn->supplier_fk_barcode_type : 0;
-							$productfourn->fetch_barcode();
-							print $productfourn->barcode_type_label ? $productfourn->barcode_type_label : ($productfourn->supplier_barcode ? '<div class="warning">'.$langs->trans("SetDefaultBarcodeType").'<div>' : '');
-							print '</td>';
-						}
-
 						// Packaging
 						if (!empty($arrayfields['pfp.packaging']['checked'])) {
 							print '<td align="center">';

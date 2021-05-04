@@ -2969,6 +2969,10 @@ class Form
 						$optlabel .= " - ".dol_trunc($objp->name, 8);
 						$outvallabel .= " - ".dol_trunc($objp->name, 8);
 					}
+					if (! empty($conf->barcode->enabled) && !empty($objp->barcode)){
+						$optlabel .= " - ".$objp->barcode;
+						$outvallabel.=" - ".$objp->barcode;
+					}
 					if ($objp->supplier_reputation)
 					{
 						//TODO dictionary
