@@ -436,6 +436,10 @@ if ($action == 'confirm_delete_ticket' && GETPOST('confirm', 'alpha') == "yes" &
     }
 }
 
+// [SPÉ ATM] c'est un peu cool et surtout utile de pouvoir changer le tiers du ticket quand t'es pas admin et que tu t'es planté à la création
+$user->rights->societe->creer = 1;
+// [FIN SPÉ ATM]
+
 // Set parent company
 if ($action == 'set_thirdparty' && $user->rights->societe->creer) {
     if ($object->fetch(GETPOST('id', 'int'), '', GETPOST('track_id', 'alpha')) >= 0) {

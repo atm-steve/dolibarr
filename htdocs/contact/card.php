@@ -1275,6 +1275,8 @@ else
             // Full firstname and lastname separated with a dot : firstname.lastname
             include_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
             $login = dol_buildlogin($object->lastname, $object->firstname);
+			// [SPÉ ATM] le login = l’e-mail du contact
+            $login = $object->email;
 
             $generated_password = '';
             if (!$ldap_sid) // TODO ldap_sid ?
