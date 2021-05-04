@@ -153,10 +153,13 @@ $fieldstosearchall = array();
 foreach ($object->fields as $key => $val)
 {
 	// don't allow search in private notes for external users when doing "search in all"
-	if (!empty($user->socid) && $key == "note_private") {
-		continue;
-	}
 
+	//--Feature client
+	// commit c4b621e4dea1 ajout de la note private dans le recherche all
+	/*if (!empty($user->socid) && $key == "note_private") {
+		continue;
+	}*/
+	//--
 	if (empty($val['searchall'])) {
 		continue;
 	}
