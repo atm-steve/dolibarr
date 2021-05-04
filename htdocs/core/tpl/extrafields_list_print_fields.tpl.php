@@ -23,7 +23,6 @@ if (!empty($extrafieldsobjectkey))	// $extrafieldsobject is the $object->table_e
 				$align = $extrafields->getAlignFlag($key, $extrafieldsobjectkey);
 				print '<td';
 				if ($align) print ' align="'.$align.'"';
-				print ' data-key="'.$key.'"';
 				print '>';
 				$tmpkey='options_'.$key;
 
