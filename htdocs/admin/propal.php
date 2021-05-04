@@ -466,7 +466,8 @@ print '</table>';
 /*
  *  Payment mode
  */
-
+if (empty($conf->facture->enabled))
+{
 print '<br>';
 print load_fiche_titre($langs->trans("SuggestedPaymentModesIfNotDefinedInProposal"), '', '');
 
@@ -568,7 +569,7 @@ if (empty($conf->facture->enabled))
 print "</td></tr>";
 print "</table>";
 print "</form>";
-
+}
 
 print '<br>';
 
