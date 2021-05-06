@@ -78,6 +78,7 @@ $type = 'event';
 if (GETPOST("format", 'alpha')) $format = GETPOST("format", 'apha');
 if (GETPOST("type", 'apha'))   $type = GETPOST("type", 'alpha');
 
+
 $filters = array();
 if (GETPOST("year", 'int')) 	      $filters['year'] = GETPOST("year", 'int');
 if (GETPOST("id", 'int'))             $filters['id'] = GETPOST("id", 'int');
