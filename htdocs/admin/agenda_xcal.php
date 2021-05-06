@@ -180,6 +180,7 @@ $message .= $langs->trans("AgendaUrlOptions4", $user->login, $user->login).'<br>
 $message .= $langs->trans("AgendaUrlOptionsProject", $user->login, $user->login).'<br>';
 $message .= $langs->trans("AgendaUrlOptionsNotAutoEvent", 'systemauto', 'systemauto').'<br>';
 $message .= $langs->trans("AgendaUrlOptionsIncludeHolidays", '1', '1').'<br>';
+$message.=$langs->trans("AgendaUrlOptionsNotActionCode").'<br>';
 
 print info_admin($message);
 
