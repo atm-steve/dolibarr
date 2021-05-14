@@ -2969,11 +2969,11 @@ class Form
 						$outvallabel .= " - ".dol_trunc($objp->name, 8);
 					}
 					/* ******************** SPÉ VET COMPANY { ******************** */
-					// TODO: ce spé là ne serait pas à intégrer dans le cœur?
-					if (! empty($conf->barcode->enabled) && !empty($objp->barcode)){
+					// TODO: ce spé là ne serait pas à intégrer dans le cœur? bin si ;)
+					/*if (! empty($conf->barcode->enabled) && !empty($objp->barcode)){
 						$opt .= " - ".$objp->barcode;
 						$outval.=" - ".$objp->barcode;
-					}
+					}*/
 					/* ******************** SPÉ VET COMPANY } ******************** */
 					if ($objp->supplier_reputation)
 					{
