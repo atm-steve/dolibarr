@@ -117,6 +117,9 @@ if (empty($reshook) && is_array($extrafields->attributes[$object->table_element]
 			if ($object->element=='productlot')       $permok=$user->rights->stock->creer;
 			if ($object->element=='facturerec') 	  $permok=$user->rights->facture->creer;
 			if (($object->statut == 0 || ! empty($extrafields->attributes[$object->table_element]['alwayseditable'][$key]))
+				/* ———————————— SPÉ NAUVICA { ———————————— */
+				&& $extrafields->attributes[$object->table_element]['alwayseditable'][$key] != '0' // prevent the possibility of modifying extrafields previously set to "not editable"
+				/* ———————————— SPÉ NAUVICA } ———————————— */
 				&& $permok && ($action != 'edit_extras' || GETPOST('attribute') != $key)
 			    && empty($extrafields->attributes[$object->table_element]['computed'][$key]))
 			{
