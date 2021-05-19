@@ -534,7 +534,7 @@ class ProductCombination
 							$new_price += $variation_price;
 						}
 
-						$child->updatePrice($new_price, $new_type, $user, $new_vat, $new_min_price, $i, $new_npr, $new_psq,0, array(),$parent->default_vat_code);
+						$child->updatePrice($new_price, $new_type, $user, $new_vat, $new_min_price, $i, $new_npr, $new_psq, 0, array(), $parent->default_vat_code);
 					}
 				}
 			} else {
@@ -809,6 +809,7 @@ class ProductCombination
 				$newcomb->combination_price_levels[$i] = $productCombinationLevel;
 			}
 		}
+		//var_dump($newcomb->combination_price_levels);
 
 		$newproduct->weight += $weight_impact;
 
