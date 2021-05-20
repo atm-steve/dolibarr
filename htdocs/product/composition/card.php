@@ -605,15 +605,15 @@ if ($id > 0 || !empty($ref))
 						print '</td>';
 
 						// Optional
-￼						print '<td align="center">';
-￼						if ($qty) print '<input type="checkbox" name="prod_optional_'.$i.'" value="1" '.($optional?'checked':'').'>';
-￼						else
-￼						{
-￼							// TODO Hide field and show it when setting a qty
-￼							print '<input type="checkbox" name="prod_optional_'.$i.'" value="1">';
-￼							//print '<input type="checkbox" disabled name="prod_optional_'.$i.'" value="1">';
-￼						}
-￼						print '</td>';
+						print '<td align="center">';
+						if ($qty) print '<input type="checkbox" name="prod_optional_'.$i.'" value="1" '.($optional?'checked':'').'>';
+						else
+						{
+							// TODO Hide field and show it when setting a qty
+							print '<input type="checkbox" name="prod_optional_'.$i.'" value="1">';
+							//print '<input type="checkbox" disabled name="prod_optional_'.$i.'" value="1">';
+						}
+						print '</td>';
 
 						print '</tr>';
 					}
