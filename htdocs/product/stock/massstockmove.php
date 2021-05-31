@@ -287,75 +287,93 @@ if ($action == 'createmovements')
 				if (!empty($product->pmp)) $pricesrc = $product->pmp;
 				$pricedest = $pricesrc;
 
-
-                if (empty($assets)) {
+				//print 'price src='.$pricesrc.', price dest='.$pricedest;exit;
 
                     if(empty($conf->productbatch->enabled) || ! $product->hasbatch())        // If product does not need lot/serial
                     {
                         // Remove stock
-                        $result1 = $product->correct_stock($user, $id_sw, $qty, 1, GETPOST("label"), $pricesrc, GETPOST("codemove"));
-                        if($result1 < 0) {
+					$result1 = $product->correct_stock(
+						$user,
+						$id_sw,
+						$qty,
+						1,
+						GETPOST("label"),
+						$pricesrc,
+						GETPOST("codemove")
+					);
+					if ($result1 < 0)
+					{
                             $error++;
                             setEventMessages($product->errors, $product->errorss, 'errors');
                         }
 
                         // Add stock
-                        $result2 = $product->correct_stock($user, $id_tw, $qty, 0, GETPOST("label"), $pricedest, GETPOST("codemove"));
-                        if($result2 < 0) {
+					$result2 = $product->correct_stock(
+						$user,
+						$id_tw,
+						$qty,
+						0,
+						GETPOST("label"),
+						$pricedest,
+						GETPOST("codemove")
+					);
+					if ($result2 < 0)
+					{
                             $error++;
                             setEventMessages($product->errors, $product->errorss, 'errors');
                         }
-                    }
-                    else {
+				} else {
                         $arraybatchinfo = $product->loadBatchInfo($batch);
-                        if(count($arraybatchinfo) > 0) {
+					if (count($arraybatchinfo) > 0)
+					{
                             $firstrecord = array_shift($arraybatchinfo);
                             $dlc = $firstrecord['eatby'];
                             $dluo = $firstrecord['sellby'];
-
-                        }
-                        else {
+						//var_dump($batch); var_dump($arraybatchinfo); var_dump($firstrecord); var_dump($dlc); var_dump($dluo); exit;
+					} else {
                             $dlc = '';
                             $dluo = '';
                         }
 
                         // Remove stock
-                        $result1 = $product->correct_stock_batch($user, $id_sw, $qty, 1, GETPOST("label"), $pricesrc, $dlc, $dluo, $batch, GETPOST("codemove"));
-                        if($result1 < 0) {
+					$result1 = $product->correct_stock_batch(
+						$user,
+						$id_sw,
+						$qty,
+						1,
+						GETPOST("label"),
+						$pricesrc,
+						$dlc,
+						$dluo,
+						$batch,
+						GETPOST("codemove")
+					);
+					if ($result1 < 0)
+					{
                             $error++;
                             setEventMessages($product->errors, $product->errorss, 'errors');
                         }
 
                         // Add stock
-                        $result2 = $product->correct_stock_batch($user, $id_tw, $qty, 0, GETPOST("label"), $pricedest, $dlc, $dluo, $batch, GETPOST("codemove"));
-                        if($result2 < 0) {
+					$result2 = $product->correct_stock_batch(
+						$user,
+						$id_tw,
+						$qty,
+						0,
+						GETPOST("label"),
+						$pricedest,
+						$dlc,
+						$dluo,
+						$batch,
+						GETPOST("codemove")
+					);
+					if ($result2 < 0)
+					{
                             $error++;
                             setEventMessages($product->errors, $product->errorss, 'errors');
                         }
                     }
-
-                }else{
-                    foreach ($assets as $at_id)
-                    {
-                        $trans = new AssetTranfert($db);
-                        $trans->fetch($at_id);
-
-                        $res = $trans->makeTransfert();
-                        if ($res < 0)
-                        {
-                            $error++;
-                            setEventMessages("Erreur : ", $trans->errors, 'errors');
                         }else {
-                            $id_arrayelement = array_search($at_id, $assets);       //element du tableau d'assets concerné
-                            unset($listofdata[$key]['assets'][$id_arrayelement]);   //on supprime l'équipement dont le transfert a été effectué
-                            $_SESSION['massstockmove'] = json_encode($listofdata);
-                            $nb_transfer++;                                        //on ajoute 1 au compteur de transferts
-                        }
-                    }
-                }
-			}
-			else
-			{
 				// dol_print_error('',"Bad value saved into sessions");
 				$error++;
 			}
@@ -368,12 +386,11 @@ if ($action == 'createmovements')
 
 		$db->commit();
 		setEventMessages($langs->trans("StockMovementRecorded"), null, 'mesgs');
-        header("Location: ".$_SERVER['PHP_SELF']);
+		header("Location: ".DOL_URL_ROOT.'/product/stock/index.php'); // Redirect to avoid pb when using back
 		exit;
 	} else {
 		$db->rollback();
-		//setEventMessages($langs->trans("Error"), null, 'errors');
-        setEventMessage($nb_transfer . " tranferts ont été réalisés", 'mesgs');
+		setEventMessages($langs->trans("Error"), null, 'errors');
 	}
 }
 
@@ -446,26 +463,21 @@ if ($conf->global->PRODUIT_LIMIT_SIZE <= 0) {
 } else {
 	$limit = $conf->global->PRODUIT_LIMIT_SIZE;
 }
-
+$id_product = GETPOST('productid', 'int');
 $form->select_produits($id_product, 'productid', $filtertype, $limit, 0, -1, 2, '', 1, array(), 0, '1', 0, 'minwidth200imp maxwidth300', 1);
 print '</td>';
 // Batch number
 if ($conf->productbatch->enabled)
 {
 	print '<td>';
-	print '<input type="text" name="batch" class="flat maxwidth50" value="'.$batch.'">';
+	/*** SPE AMA ***/
+	print $form->selectarray("batch", array(), "batch", 1, 0, 0, '', 0, 0, 0, '', '', 1);
+//	print '<input type="text" name="batch" class="flat maxwidth50" value="'.$batch.'">';
+	/*** FIN SPE AMA ***/
 	print '</td>';
 }
-// In warehouse
-print '<td>';
-print $formproduct->selectWarehouses($id_sw, 'id_sw', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, array(), 'minwidth200imp maxwidth200');
-print '</td>';
-// Out warehouse
-print '<td>';
-print $formproduct->selectWarehouses($id_tw, 'id_tw', 'warehouseopen,warehouseinternal', 1, 0, 0, '', 0, 0, array(), 'minwidth200imp maxwidth200');
-print '</td>';
 // Qty
-print '<td class="center"><input type="text" class="flat maxwidth50" name="qty" value="'.$qty.'"></td>';
+print '<td class="center"><input type="number" step="any" min="0" class="flat maxwidth50" name="qty" value="'.$qty.'"></td>';
 // Button to add line
 print '<td class="right"><input type="submit" class="button" name="addline" value="'.dol_escape_htmltag($titletoadd).'"></td>';
 
@@ -498,50 +510,6 @@ foreach ($listofdata as $key => $val)
 	print '<td class="right"><a href="'.$_SERVER["PHP_SELF"].'?action=delline&idline='.$val['id'].'">'.img_delete($langs->trans("Remove")).'</a></td>';
 
 	print '</tr>';
-
-    if (!empty($val['assets']))
-    {
-        $i = 0;
-        foreach ($val['assets'] as $at_id)
-        {
-            $t = new AssetTranfert($db);
-            $t->fetch($at_id);
-
-            print '<tr class="oddeven">';
-
-            print '<td>';
-            print '<input type="hidden" name="parent_id" value="'.$val['id'].'">';
-            if (!empty($i)) $style = 'style="display:none;"';
-
-            print '<div '.$style.'>';
-            print 'Type transfert : '.$form->selectArray('type_trans', $t->TTypes, $t->type,0,0,1).'<br />';
-            print 'Date de mouvement : '.$form->select_date($t->date_mvt,'date_mouv', 0, 0, 0, '', 1, 0, 1);
-            print '</div>';
-            print '</td>';
-
-            print '<td>';
-            print '<input type="text" name="source_serial" id="source_serial" value="'.$t->source_serial.'" placeholder="Numero de série source">';
-            print '</td>';
-            print '<td>';
-            print '<input type="text" name="target_serial" id="target_serial" value="'.$t->target_serial.'" placeholder="Numero de série remplacement">';
-            print '</td>';
-            print '<td align="center" colspan="2">';
-            //print 'num inv';
-            print '<input type="text" name="num_inventaire" id="num_inventaire" value="'.$t->num_inventaire.'" placeholder="Numero inventaire">';
-            //print '<input type="text" name="user_id" id="user_id" value="'.$t->user_id.'" placeholder="Numero inventaire">';
-            print $form->select_dolusers(!empty($t->user_id) ? $t->user_id: "", 'user_id'.$t->id, 1);
-            print '</td>';
-            print '<td align="right" style="display: none;">';
-            print '<input class="button savetransfert" type="button" value="'.$langs->trans('Save').'" data-id="'.$t->id.'"/>';
-            print '</td>';
-
-
-            print '</tr>';
-            $i++;
-        }
-
-    }
-
 }
 
 print '</table>';
@@ -569,16 +537,136 @@ print $langs->trans("MovementLabel").': ';
 print '<input type="text" name="label" class="minwidth300" value="'.dol_escape_htmltag($labelmovement).'"><br>';
 print '<br>';
 
-if(!empty($listofdata)) print '<div class="center"><input class="button" type="submit" name="valid" value="'.dol_escape_htmltag($buttonrecord).'"></div>';
-
+print '<div class="center"><input class="button" type="submit" name="valid" value="'.dol_escape_htmltag($buttonrecord).'"></div>';
 
 print '<br>';
 print '</div>';
 
 print '</form>';
+
+$jsonConf = array(
+	'productbatchEnabled' => !empty($conf->productbatch->enabled)
+);
+
 ?>
     <script type="text/javascript">
         $(document).ready(function(){
+
+        	var massstockmoveConf = <?php print json_encode($jsonConf); ?>;
+
+        	/***** SPE AMA : TODO : a un jour intégrer coeur dolibarr ******/
+			// rechagement ajax de l'autocompletion des num de lot
+			if (massstockmoveConf.productbatchEnabled)
+			{
+				updateBatchOptions();
+
+				$(document).on("change", '#id_sw, #productid', function(event) {
+					updateBatchOptions();
+				});
+
+				$(document).on("change", 'form[name=formulaire] select[name=batch]', function(event) {
+					var maxQty = $(this).find('option:selected').attr("data-qty")
+					if(maxQty != undefined){
+						$('form[name=formulaire] input[name=qty]').attr('max', maxQty);
+						if(maxQty>0){
+							$('form[name=formulaire] input[name=qty]').val(1);
+						}
+					}
+				});
+
+			}
+
+
+			function updateBatchOptions() {
+				var data = {
+					'fk_warehouse': $('#id_sw').val(),
+					'fk_product': $('#productid').val()
+				};
+
+				// clean max input qty for batch
+				$('form[name=formulaire] input[name=qty]').removeAttr('max').prop( "disabled", false );
+				$('form[name=formulaire] input[name=addline]').prop( "disabled", false );
+
+				$.ajax({
+					url: "<?php print dol_buildpath('cliama/script/interface.php', 1) . '?get=available-batch'; ?>",
+					method: "POST",
+					data: data,
+					dataType: "json",
+					// La fonction à apeller si la requête aboutie
+					success: function (data) {
+						// Loading data
+						console.log(data);
+						if (data.result > 0) {
+							let inputBatch = $('form[name=formulaire] select[name=batch]');
+							updateImputOptions(inputBatch, data.TBatch, inputBatch.val());
+							//data-width="100%"
+							inputBatch.trigger('change');
+							inputBatch.select2({
+								width: 'resolve' // need to override the changed default
+							});
+
+							if(data.TBatch.length == 0 && data.hasbatch){
+								$('form[name=formulaire] input[name=qty]').attr('max', 0).prop( "disabled", true );
+								$('form[name=formulaire] input[name=addline]').prop( "disabled", true );
+
+							}
+
+						} else {
+							if (data.errorMessage.length > 0) {
+								$.jnotify(data.errorMessage, 'error', {timeout: 5, type: 'error', css: 'error'});
+							} else {
+								$.jnotify('UnknowError', 'error', {timeout: 5, type: 'error', css: 'error'});
+							}
+						}
+					},
+					// La fonction à appeler si la requête n'a pas abouti
+					error: function (jqXHR, textStatus) {
+						$.jnotify('Request failed' + textStatus, 'error', {timeout: 5, type: 'error', css: 'error'});
+					}
+				});
+			}
+
+			/**
+			 * add array element into select field
+			 *
+			 * @param {jQuery} target The select input jquery element
+			 * @param {array} data an array of object
+			 * @param {string} selected The current selected value
+			 */
+			function updateImputOptions(target, data = false, selected = -1 )
+			{
+
+				/* Remove all options from the select list */
+				target.empty();
+				target.prop("disabled", true);
+
+				if(Array.isArray(data))
+				{
+					/* Insert the new ones from the array above */
+					for(var i= 0; i < data.length; i++)
+					{
+						let item = data[i];
+						let newOption =  $('<option>', {
+							value: item.id,
+							text : item.label,
+							'data-qty' : item.qty
+						});
+
+						if(selected == item.id){
+							newOption.prop('selected');
+						}
+
+						target.append(newOption);
+					}
+
+					if(data.length > 0){
+						target.prop("disabled", false);
+					}
+				}
+			}
+
+			/***** FIN SPE AMA ******/
+
             $('.savetransfert').on('click', function(e){
                 var tr = $(this).closest('tr');
                 var id = $(this).data('id');
