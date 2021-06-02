@@ -588,7 +588,7 @@ $jsonConf = array(
 				$('form[name=formulaire] input[name=addline]').prop( "disabled", false );
 
 				$.ajax({
-					url: "<?php print dol_buildpath('cliama/script/interface.php', 1) . '?get=available-batch'; ?>",
+					url: "<?php print dol_buildpath('cliama/script/interface.php', 1) . '?get=available-stock'; ?>",
 					method: "POST",
 					data: data,
 					dataType: "json",
@@ -608,7 +608,9 @@ $jsonConf = array(
 							if(data.TBatch.length == 0 && data.hasbatch){
 								$('form[name=formulaire] input[name=qty]').attr('max', 0).prop( "disabled", true );
 								$('form[name=formulaire] input[name=addline]').prop( "disabled", true );
-
+							}
+							else if(!data.hasbatch){
+								$('form[name=formulaire] input[name=qty]').attr('max', data.warehouseStock);
 							}
 
 						} else {
