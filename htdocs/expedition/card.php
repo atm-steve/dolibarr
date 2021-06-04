@@ -977,13 +977,13 @@ if ($action == 'create')
 			print $form->textwithpicto($text, $htmltext);
 			print '</td></tr>';
 
-            // Delivery method
-            print "<tr><td>".$langs->trans("DeliveryMethod")."</td>";
-            print '<td colspan="3">';
-            $expe->fetch_delivery_methods();
-            print $form->selectarray("shipping_method_id", $expe->meths, GETPOST('shipping_method_id', 'int'), 1, 0, 0, "", 1);
-            if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"), 1);
-            print "</td></tr>\n";
+			// Delivery method
+			print "<tr><td>".$langs->trans("DeliveryMethod")."</td>";
+			print '<td colspan="3">';
+			$expe->fetch_delivery_methods();
+			print $form->selectarray("shipping_method_id", $expe->meths, GETPOST('shipping_method_id', 'int'), 1, 0, 0, "", 1);
+			if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionarySetup"), 1);
+			print "</td></tr>\n";
 
 			// Tracking number
 			print "<tr><td>".$langs->trans("TrackingNumber")."</td>";

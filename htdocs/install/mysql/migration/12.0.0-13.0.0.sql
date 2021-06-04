@@ -575,7 +575,7 @@ insert into llx_c_action_trigger (code,label,description,elementtype,rang) value
 insert into llx_c_action_trigger (code,label,description,elementtype,rang) values ('EXPENSE_REPORT_DELETE','Expense report deleted','Executed when an expense report is deleted','expensereport',205);
 
 -- Removed no more used function
--- VPGSQL8.2 DROP FUNCTION IF EXISTS update_modified_column_date_m CASCADE;
+-- VPGSQL8.2 DROP FUNCTION IF EXISTS update_modified_column_date_m() CASCADE;
 
 insert into llx_c_actioncomm (id, code, type, libelle, module, active, position) values ( 6,'AC_EMAIL_IN','system','reception Email',NULL, 1, 4);
 
@@ -583,4 +583,5 @@ insert into llx_c_actioncomm (id, code, type, libelle, module, active, position)
 -- VMYSQL4.3 ALTER TABLE llx_accounting_bookkeeping MODIFY COLUMN montant double(24,8) NULL;
 -- VPGSQL8.2 ALTER TABLE llx_accounting_bookkeeping ALTER COLUMN montant DROP NOT NULL;
 
+ALTER TABLE llx_export_model MODIFY COLUMN type varchar(64);
 
