@@ -232,7 +232,9 @@ if ($modecompta == 'CREANCES-DETTES')
 	if ($selected_cat === -2) {	// Without any category
 		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."categorie_product as cp ON p.rowid = cp.fk_product";
 	} elseif ($selected_cat) { 	// Into a specific category
-		$sql .= ", ".MAIN_DB_PREFIX."categorie as c, ".MAIN_DB_PREFIX."categorie_product as cp";
+		//$sql .= ", ".MAIN_DB_PREFIX."categorie as c, ".MAIN_DB_PREFIX."categorie_product as cp";
+		// VOIR TICKET 20444
+		$sql .= " INNER JOIN ".MAIN_DB_PREFIX."categorie_product as cp ON (cp.fk_product = p.rowid) INNER JOIN ".MAIN_DB_PREFIX."categorie as c ON (cp.fk_categorie = c.rowid)";
 	}
 	$sql .= " WHERE l.fk_facture = f.rowid";
 	$sql .= " AND f.fk_statut in (1,2)";
@@ -262,12 +264,12 @@ if ($modecompta == 'CREANCES-DETTES')
 				$listofcatsql .= $cat['rowid'];
 			}
 		}
+//VOIR TICKET 20444
+		$sql .= " AND ";
 
-		$sql .= " AND (p.rowid IN ";
-		$sql .= " (SELECT fk_product FROM ".MAIN_DB_PREFIX."categorie_product cp WHERE ";
 		if ($subcat) $sql .= "cp.fk_categorie IN (".$listofcatsql.")";
 		else $sql .= "cp.fk_categorie = ".$selected_cat;
-		$sql .= "))";
+
 	}
 	if ($selected_soc > 0) $sql .= " AND soc.rowid=".$selected_soc;
 	$sql .= " AND f.entity IN (".getEntity('invoice').")";
