@@ -765,7 +765,7 @@ if ($resql)
 
 	$moreforfilter = '';
 
-	$parameters = array();
+	$parameters = array('arrayfields'=>&$arrayfields);
 	$reshook = $hookmanager->executeHooks('printFieldPreListTitle', $parameters); // Note that $action and $object may have been modified by hook
 	if (empty($reshook)) $moreforfilter .= $hookmanager->resPrint;
 	else $moreforfilter = $hookmanager->resPrint;
