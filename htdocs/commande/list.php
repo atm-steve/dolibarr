@@ -384,6 +384,8 @@ if ($resql)
 	$title.=' - '.$langs->trans('StatusOrderToProcessShort');
 	if ($viewstatut == -3)
 	$title.=' - '.$langs->trans('StatusOrderValidated').', '.(empty($conf->expedition->enabled)?'':$langs->trans("StatusOrderSent").', ').$langs->trans('StatusOrderToBill');
+	if ($viewstatut == -4)
+		$title .= ' - '.$langs->trans("StatusOrderValidatedShort").'+'.$langs->trans("StatusOrderSentShort");
 
 	$num = $db->num_rows($resql);
 
