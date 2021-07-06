@@ -78,16 +78,17 @@ foreach ($linkedObjectBlock as $key => $objectlink)
 			// If not abandonned
     		$total = $total + $sign * $objectlink->total_ht;
     		echo price($objectlink->total_ht);
-    	}
-    	else
-    	{
+		} else {
     		echo '<strike>'.price($objectlink->total_ht).'</strike>';
     	}
 	}
     print '</td>';
     print '<td class="linkedcol-statut right">';
-    if(method_exists($objectlink, 'getSommePaiement')) print $objectlink->getLibStatut(3, $objectlink->getSommePaiement());
-    else print $objectlink->getLibStatut(3);
+    if (method_exists($objectlink, 'getSommePaiement')) {
+		print $objectlink->getLibStatut(3, $objectlink->getSommePaiement());
+	} else {
+		print $objectlink->getLibStatut(3);
+	}
     print '</td>';
     print '<td class="linkedcol-action right"><a class="reposition" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=dellink&dellinkid='.$key.'">'.img_picto($langs->transnoentitiesnoconv("RemoveLink"), 'unlink').'</a></td>';
     print "</tr>\n";
