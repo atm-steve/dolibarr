@@ -1248,6 +1248,7 @@ class Form
 		$out = '';
 
 		if (!empty($conf->use_javascript_ajax) && !empty($conf->global->COMPANY_USE_SEARCH_TO_SELECT) && !$forcecombo) {
+			include_once DOL_DOCUMENT_ROOT . '/core/lib/ajax.lib.php';
 			if (is_null($ajaxoptions)) {
 				$ajaxoptions = array();
 			}
