@@ -3340,7 +3340,7 @@ if ($action == 'create')
 
         $retained_warranty = GETPOST('retained_warranty', 'int');
         if(empty($retained_warranty)){
-            if(!empty($objectsrc->retained_warranty)){ // use previous situation value
+            if(isset($objectsrc->retained_warranty)){ // use previous situation value
                 $retained_warranty = $objectsrc->retained_warranty;
             }else{
                 $retained_warranty = $conf->global->INVOICE_SITUATION_DEFAULT_RETAINED_WARRANTY_PERCENT;
