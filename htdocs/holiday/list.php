@@ -106,7 +106,7 @@ $search_month_end    = GETPOST('search_month_end', 'int');
 $search_year_end     = GETPOST('search_year_end', 'int');
 $search_employee     = GETPOST('search_employee', 'int');
 $search_valideur     = GETPOST('search_valideur', 'int');
-$search_status       = GETPOST('search_statut', 'int');
+$search_status       = GETPOST('search_status', 'int');
 $search_type         = GETPOST('search_type', 'int');
 
 // Initialize technical objects
@@ -383,7 +383,7 @@ if ($resql)
 		//'builddoc'=>$langs->trans("PDFMerge"),
 		//'presend'=>$langs->trans("SendByMail"),
 	);
-	if ($user->rights->holiday->supprimer) $arrayofmassactions['predelete'] = '<span class="fa fa-trash paddingrightonly"></span>'.$langs->trans("Delete");
+	if ($user->rights->holiday->delete) $arrayofmassactions['predelete'] = '<span class="fa fa-trash paddingrightonly"></span>'.$langs->trans("Delete");
 	if (in_array($massaction, array('presend', 'predelete'))) $arrayofmassactions = array();
 	$massactionbutton = $form->selectMassAction('', $arrayofmassactions);
 

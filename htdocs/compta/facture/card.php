@@ -119,8 +119,11 @@ $usercancreate = $user->rights->facture->creer;
 $usercanissuepayment = $user->rights->facture->paiement;
 $usercandelete = $user->rights->facture->supprimer;
 $usercanvalidate = ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $usercancreate) || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->facture->invoice_advance->validate)));
-$usercansend = (empty($conf->global->MAIN_USE_ADVANCED_PERMS) || $user->rights->facture->invoice_advance->send);
-$usercanreopen = (empty($conf->global->MAIN_USE_ADVANCED_PERMS) || $user->rights->facture->invoice_advance->reopen);
+$usercansend = (empty($conf->global->MAIN_USE_ADVANCED_PERMS) || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->facture->invoice_advance->send)));
+$usercanreopen = ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $usercancreate) || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->facture->invoice_advance->reopen)));
+if (!empty($conf->global->INVOICE_DISALLOW_REOPEN)) {
+	$usercanreopen = false;
+}
 $usercanunvalidate = ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($usercancreate)) || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->facture->invoice_advance->unvalidate)));
 
 $usercanproductignorepricemin = ((!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->produit->ignore_price_min_advance)) || empty($conf->global->MAIN_USE_ADVANCED_PERMS));
@@ -189,7 +192,7 @@ if (empty($reshook))
 	   		$action = '';
 		}
 	} // Change status of invoice
-	elseif ($action == 'reopen' && $usercancreate) {
+	elseif ($action == 'reopen' && $usercanreopen) {
 		$result = $object->fetch($id);
 
 		if ($object->statut == Facture::STATUS_CLOSED || ($object->statut == Facture::STATUS_ABANDONED && ($object->close_code != 'replaced' || $object->getIdReplacingInvoice() == 0)) || ($object->statut == Facture::STATUS_VALIDATED && $object->paye == 1)) {    // ($object->statut == 1 && $object->paye == 1) should not happened but can be found when data are corrupted
@@ -3120,7 +3123,7 @@ if ($action == 'create')
 			// Type de facture
 			$facids = $facturestatic->list_replacable_invoices($soc->id);
 			if ($facids < 0) {
-				dol_print_error($db, $facturestatic);
+				dol_print_error($db, $facturestatic->error, $facturestatic->errors);
 				exit();
 			}
 			$options = "";
@@ -3128,10 +3131,10 @@ if ($action == 'create')
 				foreach ($facids as $facparam)
 				{
 					$options .= '<option value="'.$facparam ['id'].'"';
-					if ($facparam ['id'] == $_POST['fac_replacement'])
+					if ($facparam['id'] == $_POST['fac_replacement'])
 						$options .= ' selected';
-					$options .= '>'.$facparam ['ref'];
-					$options .= ' ('.$facturestatic->LibStatut(0, $facparam ['status']).')';
+					$options .= '>'.$facparam['ref'];
+					$options .= ' ('.$facturestatic->LibStatut($facparam['paid'], $facparam['status'], 0, $facparam['alreadypaid']).')';
 					$options .= '</option>';
 				}
 			}
@@ -3205,7 +3208,7 @@ if ($action == 'create')
 				$facids = $facturestatic->list_qualified_avoir_invoices($soc->id);
 				if ($facids < 0)
 				{
-					dol_print_error($db, $facturestatic);
+					dol_print_error($db, $facturestatic->error, $facturestatic->errors);
 					exit;
 				}
 				$optionsav = "";
@@ -3653,7 +3656,7 @@ if ($action == 'create')
 
 	$result = $object->fetch($id, $ref);
 	if ($result <= 0) {
-		dol_print_error($db, $object->error);
+		dol_print_error($db, $object->error, $object->errors);
 		exit();
 	}
 
@@ -5249,7 +5252,7 @@ if ($action == 'create')
 			}
 
 			// Create a credit note
-			if (($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_DEPOSIT || $object->type == Facture::TYPE_PROFORMA) && $object->statut > 0 && $usercancreate)
+			if (($object->type == Facture::TYPE_STANDARD || ($object->type == Facture::TYPE_DEPOSIT && empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS) ) || $object->type == Facture::TYPE_PROFORMA) && $object->statut > 0 && $usercancreate)
 			{
 				if (!$objectidnext)
 				{
