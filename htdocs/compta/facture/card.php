@@ -4848,7 +4848,15 @@ elseif ($id > 0 || !empty($ref))
 				print '<tr class="oddeven"><td>';
 				print $paymentstatic->getNomUrl(1);
 				print '</td>';
-				print '<td>'.dol_print_date($db->jdate($objp->dp), 'dayhour').'</td>';
+				print '<td>';
+				$dateofpayment = $db->jdate($objp->dp);
+				$tmparray = dol_getdate($dateofpayment);
+				if ($tmparray['seconds'] == 0 && $tmparray['minutes'] == 0 && ($tmparray['hours'] == 0 || $tmparray['hours'] == 12)) {	// We set hours to 0:00 or 12:00 because we don't know it
+					print dol_print_date($dateofpayment, 'day');
+				} else {	// Hours was set to real date of payment (special case for POS for example)
+					print dol_print_date($dateofpayment, 'dayhour', 'tzuser');
+				}
+				print '</td>';
 				$label = ($langs->trans("PaymentType".$objp->payment_code) != ("PaymentType".$objp->payment_code)) ? $langs->trans("PaymentType".$objp->payment_code) : $objp->payment_label;
 				print '<td>'.$label.' '.$objp->num_payment.'</td>';
 				if (!empty($conf->banque->enabled))
@@ -5345,7 +5353,7 @@ elseif ($id > 0 || !empty($ref))
 			}
 
 			// Create a credit note
-			if (($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_DEPOSIT || $object->type == Facture::TYPE_PROFORMA) && $object->statut > 0 && $usercancreate)
+			if (($object->type == Facture::TYPE_STANDARD || ($object->type == Facture::TYPE_DEPOSIT && empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS) ) || $object->type == Facture::TYPE_PROFORMA) && $object->statut > 0 && $usercancreate)
 			{
 				if (!$objectidnext)
 				{

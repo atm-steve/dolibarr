@@ -1241,6 +1241,16 @@ class Product extends CommonObject
                 }
             }
 
+            // Remove extrafields
+            if (!$error)
+            {
+            	$result = $this->deleteExtraFields();
+            	if ($result < 0) {
+            		$error++;
+            		dol_syslog(get_class($this)."::delete error -4 ".$this->error, LOG_ERR);
+            	}
+            }
+
             // Delete product
             if (!$error) {
                 $sqlz = "DELETE FROM ".MAIN_DB_PREFIX."product";
@@ -1265,16 +1275,6 @@ class Product extends CommonObject
                             $error++;
                         }
                     }
-                }
-            }
-
-            // Remove extrafields
-            if (!$error)
-            {
-                $result = $this->deleteExtraFields();
-                if ($result < 0) {
-                    $error++;
-                    dol_syslog(get_class($this)."::delete error -4 ".$this->error, LOG_ERR);
                 }
             }
 
@@ -1666,6 +1666,7 @@ class Product extends CommonObject
 			if ($result) {
 				if (count($prodcustprice->lines) > 0) {
 					$pu_ht = price($prodcustprice->lines[0]->price);
+					$price_min = price($prodcustprice->lines[0]->price_min);
 					$pu_ttc = price($prodcustprice->lines[0]->price_ttc);
 					$price_base_type = $prodcustprice->lines[0]->price_base_type;
 					$tva_tx = $prodcustprice->lines[0]->tva_tx;
