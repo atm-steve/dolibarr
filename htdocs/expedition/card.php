@@ -2569,6 +2569,12 @@ elseif ($id || $ref)
 				}
 			}
 
+			// Picking
+			if (1==1)
+			{
+			    print '<a class="butAction" href="http://dolibarr.cell-and-co.local/reportico/run.php?execute_mode=EXECUTE&project=Production&xmlin=Picking.xml&target_format=pdf&Expe='.$object->ref.'">Picking</a>';
+			}
+
 			// This is just to generate a delivery receipt
 			//var_dump($object->linkedObjectsIds['delivery']);
 			if ($conf->livraison_bon->enabled && ($object->statut == Expedition::STATUS_VALIDATED || $object->statut == Expedition::STATUS_CLOSED) && $user->rights->expedition->livraison->creer && empty($object->linkedObjectsIds['delivery']))
