@@ -332,9 +332,9 @@ class AccountancyExport
 			print length_accountg($line->numero_compte).$separator;
 			print length_accounta($line->subledger_account).$separator;
 			print $line->sens.$separator;
-			print price($line->montant).$separator;
-			print $line->label_operation.$separator;
-			print $line->doc_ref;
+			print price2fec(abs($line->montant)).$separator;
+			print dol_string_unaccent($line->label_operation).$separator;
+			print dol_string_unaccent($line->doc_ref);
 			print $end_line;
 		}
 	}
@@ -519,9 +519,8 @@ class AccountancyExport
 			$Tab['contrepartie'] = str_repeat(' ', 8);
 
 			// elarifr:  date format must be fixed format : 6 char ddmmyy = %d%m%yand not defined by user / dolibarr setting
-			if (!empty($data->date_echeance))
-				//$Tab['date_echeance'] = dol_print_date($data->date_echeance, $conf->global->ACCOUNTING_EXPORT_DATE);
-				$Tab['date_echeance'] = dol_print_date($data->date_echeance, '%d%m%y'); // elarifr:  format must be ddmmyy
+			if (!empty($data->date_lim_reglement))
+				$Tab['date_echeance'] = dol_print_date($data->date_lim_reglement, '%d%m%y'); // elarifr:  format must be ddmmyy
 			else
 				$Tab['date_echeance'] = '000000';
 
@@ -617,9 +616,8 @@ class AccountancyExport
 
 			$Tab['code_stat'] = str_repeat(' ', 4);
 
-			if (!empty($data->date_echeance))
-				//$Tab['date_echeance'] = dol_print_date($data->date_echeance, $conf->global->ACCOUNTING_EXPORT_DATE);
-				$Tab['date_echeance'] = dol_print_date($data->date_echeance, '%d%m%Y');
+			if (!empty($data->date_lim_reglement))
+				$Tab['date_echeance'] = dol_print_date($data->date_lim_reglement, '%d%m%Y');
 			else
 				$Tab['date_echeance'] = dol_print_date($data->doc_date, '%d%m%Y');
 
