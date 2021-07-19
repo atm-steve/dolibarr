@@ -110,8 +110,10 @@ if (is_array($extrafields->attributes[$elementtype]['type']) && count($extrafiel
 				if (!is_array($multicompanylabel_cache)) $multicompanylabel_cache = array();
 				if (empty($multicompanylabel_cache[$extrafields->attributes[$elementtype]['entityid'][$key]])) {
 					global $mc;
-					$mc->getInfo($extrafields->attributes[$elementtype]['entityid'][$key]);
-					$multicompanylabel_cache[$extrafields->attributes[$elementtype]['entityid'][$key]] = $mc->label ? $mc->label : $extrafields->attributes[$elementtype]['entityid'][$key];
+					if ($mc) {
+						$mc->getInfo($extrafields->attributes[$elementtype]['entityid'][$key]);
+						$multicompanylabel_cache[$extrafields->attributes[$elementtype]['entityid'][$key]] = $mc->label ? $mc->label : $extrafields->attributes[$elementtype]['entityid'][$key];
+					}
 				}
 				print $multicompanylabel_cache[$extrafields->attributes[$elementtype]['entityid'][$key]];
 			}
