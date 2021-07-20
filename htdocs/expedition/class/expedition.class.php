@@ -647,7 +647,7 @@ class Expedition extends CommonObject
 			return -1;
 		}
 	}
-
+/* ——————————— SPÉ AMA - part 1/4 —————————————— */
     /**
      * @return boolean
      */
@@ -671,7 +671,7 @@ class Expedition extends CommonObject
         }
 	    return false;
     }
-
+/* ————————— FIN SPE AMA - part 1/4 ———————————— */
 	/**
 	 *  Validate object and update stock if option enabled
 	 *
@@ -1027,7 +1027,6 @@ class Expedition extends CommonObject
 
 					$linebatch = new ExpeditionLineBatch($this->db);
 					$ret = $linebatch->fetchFromStock($value['id_batch']); // load serial, sellby, eatby
-//                    var_dump($ret, $value);exit;
 					if ($ret < 0)
 					{
 						$this->error = $linebatch->error;
@@ -1040,16 +1039,21 @@ class Expedition extends CommonObject
 					{
 						require_once DOL_DOCUMENT_ROOT.'/product/class/productbatch.class.php';
 						$prod_batch = new Productbatch($this->db);
-						$prod_batch->fetch($value['id_batch']);
 
-						if ($prod_batch->qty < $linebatch->qty)
-						{
-							$langs->load("errors");
-							$this->errors[] = $langs->trans('ErrorStockIsNotEnoughToAddProductOnShipment', $prod_batch->fk_product);
-							dol_syslog(get_class($this)."::addline_batch error=Product ".$prod_batch->batch.": ".$this->errorsToString(), LOG_ERR);
-							$this->db->rollback();
-							return -1;
+						/* ——————————— SPÉ AMA - part 2/4 —————————————— */
+						if (intval($value['id_batch']) > 0) {
+							$prod_batch->fetch($value['id_batch']);
+
+							if ($prod_batch->qty < $linebatch->qty)
+							{
+								$langs->load("errors");
+								$this->errors[] = $langs->trans('ErrorStockIsNotEnoughToAddProductOnShipment', $prod_batch->fk_product);
+								dol_syslog(get_class($this)."::addline_batch error=Product ".$prod_batch->batch.": ".$this->errorsToString(), LOG_ERR);
+								$this->db->rollback();
+								return -1;
+							}
 						}
+						/* ————————— FIN SPE AMA - part 2/4 ———————————— */
 					}
 
 					//var_dump($linebatch);
@@ -2300,9 +2304,11 @@ class Expedition extends CommonObject
 			}
 
 			// Call trigger
-            if (! $error && ! $notrigger)
+			/* ——————————— SPÉ AMA - part 3/4 —————————————— */
+			if (! $error && ! $notrigger)
 			{
-				$result = $this->call_trigger('SHIPPING_CLOSED', $user);
+	        /* ————————— FIN SPE AMA - part 3/4 ———————————— */
+	            $result = $this->call_trigger('SHIPPING_CLOSED', $user);
 				if ($result < 0) {
 					$error++;
 				}
@@ -2541,7 +2547,7 @@ class Expedition extends CommonObject
 
 		return CommonObject::commonReplaceThirdparty($db, $origin_id, $dest_id, $tables);
 	}
-
+	/* ——————————— SPÉ AMA - part 4/4 —————————————— */
     public function getBatchToDefineLine($fk_product) {
         foreach($this->lines as $line) {
             if(! empty($line->detail_batch) && $line->product_tobatch) {
@@ -2555,6 +2561,7 @@ class Expedition extends CommonObject
             }
         }
     }
+    /* ————————— FIN SPE AMA - part 4/4 ———————————— */
 }
 
 
