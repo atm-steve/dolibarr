@@ -45,7 +45,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/productlot.class.php';
+/* ——————————— SPÉ AMA - part 01/16 —————————————— */
 dol_include_once('/cliama/lib/cliama.lib.php');
+/* ————————— FIN SPE AMA - part 01/16 ———————————— */
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 
 if (!empty($conf->product->enabled) || !empty($conf->service->enabled))  require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
@@ -88,7 +90,10 @@ $cancel = GETPOST('cancel', 'alpha');
 $hidedetails = (GETPOST('hidedetails', 'int') ? GETPOST('hidedetails', 'int') : (!empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
 $hidedesc = (GETPOST('hidedesc', 'int') ? GETPOST('hidedesc', 'int') : (!empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DESC) ? 1 : 0));
 $hideref = (GETPOST('hideref', 'int') ? GETPOST('hideref', 'int') : (!empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_REF) ? 1 : 0));
+
+/* ——————————— SPÉ AMA - part 02/16 —————————————— */
 $needToDefineBatch = false;
+/* ————————— FIN SPE AMA - part 02/16 ———————————— */
 $object = new Expedition($db);
 $objectorder = new Commande($db);
 $extrafields = new ExtraFields($db);
@@ -416,10 +421,13 @@ if (empty($reshook))
 	)
 	{
 		$object->fetch_thirdparty();
-        if(!empty($conf->productbatch->enabled)) $needToDefineBatch = $object->hasToDefineBatchLine();
+
+		/* ——————————— SPÉ AMA - part 03/16 —————————————— */
+		if(!empty($conf->productbatch->enabled)) $needToDefineBatch = $object->hasToDefineBatchLine();
 
 		if(!$needToDefineBatch) $result = $object->valid($user);
-        else $result = -1;
+		else $result = -1;
+		/* ————————— FIN SPE AMA - part 03/16 ———————————— */
 		if ($result < 0) {
 			setEventMessages($object->error, $object->errors, 'errors');
 		} else {
@@ -692,7 +700,9 @@ if (empty($reshook))
 								// add lot to existing line
 								if ($line->fetch($lineIdToAddLot) > 0)
 								{
-								    $line->detail_batch = new stdClass;
+									/* ——————————— SPÉ AMA - part 04/16 —————————————— */
+									$line->detail_batch = new stdClass;
+									/* ————————— FIN SPE AMA - part 04/16 ———————————— */
 									$line->detail_batch->fk_origin_stock = $batch_id;
 									$line->detail_batch->batch = $lotStock->batch;
 									$line->detail_batch->entrepot_id = $lotStock->warehouseid;
@@ -1118,10 +1128,13 @@ if ($action == 'create')
 						$product->load_stock('warehouseopen'); // Load all $product->stock_warehouse[idwarehouse]->detail_batch
 						//var_dump($product->stock_warehouse[1]);
 
-                        getVirtualStockByWarehouse($product);
+
+						/* ——————————— SPÉ AMA - part 05/16 —————————————— */
+						getVirtualStockByWarehouse($product);
+						/* ————————— FIN SPE AMA - part 05/16 ———————————— */
 
 
-	                    print '<td>';
+						print '<td>';
 
 						// Show product and description
 						$product_static->type = $line->fk_product_type;
@@ -1226,7 +1239,10 @@ if ($action == 'create')
 										}
 										print $formproduct->selectWarehouses($tmpentrepot_id, 'entl'.$indiceAsked, '', 1, 0, $line->fk_product, '', 1, 0, array(), 'minwidth200', '', 1, $stockMin, 'stock DESC, e.ref');
 
-                                        foreach ($product->stock_warehouse as $id => $infos) print "<script type='text/javascript'>
+
+										/* ——————————— SPÉ AMA - part 06/16 —————————————— */
+										foreach ($product->stock_warehouse as $id => $infos) print "<script type='text/javascript'>
+										/* ————————— FIN SPE AMA - part 06/16 ———————————— */
 																									var html = $('#entl".$indiceAsked." > option[value=\"".$id."\"]').html();
 																									if (html.indexOf('(') != -1) html = html.substring(0, html.indexOf('(')) + '(".$langs->trans("Stock").':'.$product->stock_warehouse[$id]->real.")';
 																									$('#entl".$indiceAsked." > option[value=\"".$id."\"]').html(html);
@@ -1289,18 +1305,23 @@ if ($action == 'create')
 									$nbofsuggested++;
 								}
 							}
+							/* ——————————— SPÉ AMA - part 07/16 —————————————— */
 							 //Handle serial number later
                             print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
-                            print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
+                            print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="' . $quantityToBeDelivered . '">';
                             print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="0">';
                             print '</td>';
                             print '<td class="left">';
                             print  $langs->trans('Warehouse').' '.$langs->trans('and').'  '.$langs->trans('Batch').' '.$langs->trans('ToDefine').' ('.$product->stock_reel.')';
                             $subj++;
                             print '</td></tr>';
+							/* ————————— FIN SPE AMA - part 07/16 ———————————— */
 							print '<input name="idl'.$indiceAsked.'" type="hidden" value="'.$line->id.'">';
 							if (is_object($product->stock_warehouse[$warehouse_id]) && count($product->stock_warehouse[$warehouse_id]->detail_batch))
 							{
+								/* ——————————— SPÉ AMA - part 08/16 —————————————— */
+								break;
+								/* ————————— FIN SPE AMA - part 08/16 ———————————— */
 								foreach ($product->stock_warehouse[$warehouse_id]->detail_batch as $dbatch)	// $dbatch is instance of Productbatch
 								{
 									//var_dump($dbatch);
@@ -1308,7 +1329,10 @@ if ($action == 'create')
 									$deliverableQty = min($quantityToBeDelivered, $batchStock);
 									print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'>';
 									print '<td colspan="3" ></td><td class="center">';
-									print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="'.$deliverableQty.'">';
+
+									/* ——————————— SPÉ AMA - part 09/16 —————————————— */
+									print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
+									/* ————————— FIN SPE AMA - part 09/16 ———————————— */
 									print '</td>';
 
 									print '<!-- Show details of lot -->';
@@ -1454,19 +1478,25 @@ if ($action == 'create')
 									}
 								}
 							}
-                            //Handle serial number later
-                            print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
-                            print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
-                            print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="0">';
-                            print '</td>';
-                            print '<td class="left">';
-                            print $langs->trans('Warehouse').' '.$langs->trans('and').'  '.$langs->trans('Batch').' '.$langs->trans('ToDefine').' ('.$product->stock_reel.')';
-                            $subj++;
-                            print '</td></tr>';
+
+							/* ——————————— SPÉ AMA - part 10/16 —————————————— */
+							//Handle serial number later
+							print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
+							print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="' . $quantityToBeDelivered . '">';
+							print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="0">';
+							print '</td>';
+							print '<td class="left">';
+							print $langs->trans('Warehouse').' '.$langs->trans('and').'  '.$langs->trans('Batch').' '.$langs->trans('ToDefine').' ('.$product->stock_reel.')';
+							$subj++;
+							print '</td></tr>';
+							/* ————————— FIN SPE AMA - part 10/16 ———————————— */
 							foreach ($product->stock_warehouse as $warehouse_id=>$stock_warehouse)
 							{
 								$tmpwarehouseObject->fetch($warehouse_id);
 								if (($stock_warehouse->real > 0) && (count($stock_warehouse->detail_batch))) {
+									/* ——————————— SPÉ AMA - part 11/16 —————————————— */
+									break;
+									/* ————————— FIN SPE AMA - part 11/16 ———————————— */
 									foreach ($stock_warehouse->detail_batch as $dbatch)
 									{
 										//var_dump($dbatch);
@@ -1474,7 +1504,9 @@ if ($action == 'create')
 										$deliverableQty = min($quantityToBeDelivered, $batchStock);
 										if ($deliverableQty < 0) $deliverableQty = 0;
 										print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
-										print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="'.$deliverableQty.'">';
+								/* ——————————— SPÉ AMA - part 12/16 —————————————— */
+										print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
+								/* ————————— FIN SPE AMA - part 12/16 ———————————— */
 										print '</td>';
 
 										print '<td class="left">';
@@ -2233,7 +2265,9 @@ if ($action == 'create')
 						$line = new ExpeditionLigne($db);
 						foreach ($lines[$i]->detail_batch as $detail_batch)
 						{
-						    if($detail_batch->fk_origin_stock == 0) continue;
+							/* ——————————— SPÉ AMA - part 13/16 —————————————— */
+							if($detail_batch->fk_origin_stock == 0) continue;
+							/* ————————— FIN SPE AMA - part 13/16 ———————————— */
 							print '<tr>';
 							// Qty to ship or shipped
 							print '<td><input class="qtyl" name="qtyl'.$detail_batch->fk_expeditiondet.'_'.$detail_batch->id.'" id="qtyl'.$line_id.'_'.$detail_batch->id.'" type="text" size="4" value="'.$detail_batch->qty.'"></td>';
@@ -2311,11 +2345,13 @@ if ($action == 'create')
 					if (!empty($conf->stock->enabled))
 					{
 						print '<td class="linecolwarehousesource left">';
+						/* ——————————— SPÉ AMA - part 14/16 —————————————— */
 						if ($lines[$i]->entrepot_id > 0)
 						{
 							$entrepot = new Entrepot($db);
 							$entrepot->fetch($lines[$i]->entrepot_id);
 							print $entrepot->getNomUrl(1);
+
 						} elseif (count($lines[$i]->details_entrepot) > 1|| empty($lines[$i]->entrepot_id > 0))
 						{
 							$detail = '';
@@ -2336,6 +2372,7 @@ if ($action == 'create')
                             }
                             print $form->textwithtooltip(img_picto('', 'object_stock').' '.$langs->trans("DetailWarehouseNumber"), $detail);
                         }
+						/* ————————— FIN SPE AMA - part 14/16 ———————————— */
 						print '</td>';
 					}
 
@@ -2351,7 +2388,9 @@ if ($action == 'create')
 								$detail = '';
 								foreach ($lines[$i]->detail_batch as $dbatch)	// $dbatch is instance of ExpeditionLineBatch
 								{
-								    if(empty($dbatch->batch)) $dbatch->batch = $langs->trans('ToDefine');
+									/* ——————————— SPÉ AMA - part 15/16 —————————————— */
+									if(empty($dbatch->batch)) $dbatch->batch = $langs->trans('ToDefine');
+									/* ————————— FIN SPE AMA - part 15/16 ———————————— */
 									$detail .= $langs->trans("Batch").': '.$dbatch->batch;
 									if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
 										$detail .= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
@@ -2463,15 +2502,17 @@ if ($action == 'create')
 		{
 			if ($object->statut == Expedition::STATUS_DRAFT && $num_prod > 0)
 			{
+				/* ——————————— SPÉ AMA - part 16/16 —————————————— */
 				if (!$needToDefineBatch && ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expedition->creer))
 	  			 || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expedition->shipping_advance->validate))))
 				{
 					print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans("Validate").'</a>';
 				} else {
-				    if($needToDefineBatch) $msg = 'DefineBatch';
-				    else $msg = 'NotAllowed';
+					if($needToDefineBatch) $msg = 'DefineBatch';
+					else $msg = 'NotAllowed';
 					print '<a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans($msg).'">'.$langs->trans("Validate").'</a>';
 				}
+				/* ————————— FIN SPE AMA - part 16/16 ———————————— */
 			}
 
 			// TODO add alternative status
