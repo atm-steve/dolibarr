@@ -1242,11 +1242,11 @@ if ($action == 'create')
 
 										/* ——————————— SPÉ AMA - part 06/16 —————————————— */
 										foreach ($product->stock_warehouse as $id => $infos) print "<script type='text/javascript'>
+										var html = $('#entl".$indiceAsked." > option[value=\"".$id."\"]').html();
+										if (html.indexOf('(') != -1) html = html.substring(0, html.indexOf('(')) + '(".$langs->trans("Stock").':'.$product->stock_warehouse[$id]->real.")';
+										$('#entl".$indiceAsked." > option[value=\"".$id."\"]').html(html);
+										</script>";
 										/* ————————— FIN SPE AMA - part 06/16 ———————————— */
-																									var html = $('#entl".$indiceAsked." > option[value=\"".$id."\"]').html();
-																									if (html.indexOf('(') != -1) html = html.substring(0, html.indexOf('(')) + '(".$langs->trans("Stock").':'.$product->stock_warehouse[$id]->real.")';
-																									$('#entl".$indiceAsked." > option[value=\"".$id."\"]').html(html);
-																									</script>";
 
 										if ($tmpentrepot_id > 0 && $tmpentrepot_id == $warehouse_id)
 										{
