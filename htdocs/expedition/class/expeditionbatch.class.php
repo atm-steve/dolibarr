@@ -32,7 +32,10 @@ class ExpeditionLineBatch extends CommonObject
 	 * @var string ID to identify managed object
 	 */
 	public $element = 'expeditionlignebatch';
+
+	/* ——————————— SPÉ AMA - part 1/4 —————————————— */
 	public $table_element = 'expeditiondet_batch';
+	/* ————————— FIN SPE AMA - part 1/4 ———————————— */
 
 	private static $_table_element = 'expeditiondet_batch'; //!< Name of table without prefix where object is stored
 
@@ -45,6 +48,7 @@ class ExpeditionLineBatch extends CommonObject
 	public $fk_origin_stock;
 	public $fk_expeditiondet;
 
+/* ——————————— SPÉ AMA - part 2/4 —————————————— */
 	/**
 	 * @var array fields of object product
 	 */
@@ -57,6 +61,7 @@ class ExpeditionLineBatch extends CommonObject
         'qty' => array('type' => 'double', 'enabled' => 1,  'position' => 502, 'notnull' => 1),
         'fk_expeditiondet' => array('type' => 'integer', 'enabled' => 1, 'visible' => -2, 'notnull' => 1, 'position' => 510, 'foreignkey' => 'llx_expeditiondet.rowid'),
 	);
+/* ————————— FIN SPE AMA - part 2/4 ———————————— */
 
 	/**
 	 *  Constructor
@@ -147,7 +152,7 @@ class ExpeditionLineBatch extends CommonObject
 		else $this->fk_expeditiondet = $id_line_expdet;
 
 
-
+		/* ——————————— SPÉ AMA - part 3/4 —————————————— */
 		if (!$error) {
             $this->id = $this->db->last_insert_id(MAIN_DB_PREFIX.self::$_table_element);
             if(! $error && ! $notrigger) {
@@ -176,6 +181,7 @@ class ExpeditionLineBatch extends CommonObject
             $this->db->rollback();
             return -1 * $error;
         }
+		/* ————————— FIN SPE AMA - part 3/4 ———————————— */
     }
 
 	/**
@@ -264,6 +270,8 @@ class ExpeditionLineBatch extends CommonObject
 		}
 	}
 
+
+	/* ——————————— SPÉ AMA - part 4/4 —————————————— */
     /**
      * @return int $id or -1 if KO
      */
@@ -283,17 +291,19 @@ class ExpeditionLineBatch extends CommonObject
      * @param string $serial
      * @param int $fk_product
      * @param int $fk_warehouse
-     * @return int
+     * @return int ID of the fetched ExpeditionLineBatch if found;  -1 = SQL error; -2 = not found;
      */
     public function fetchByExpDetSerial($exp, $serial, $fk_product, $fk_warehouse) {
         if(! empty($exp->lines) && !empty($exp->id)) {
 
-            $sql = 'SELECT * FROM '.MAIN_DB_PREFIX.$this->table_element.' 
-            WHERE fk_expeditiondet IN 
+            $sql = 'SELECT * FROM '.MAIN_DB_PREFIX.$this->table_element.'
+            WHERE fk_expeditiondet IN
             (SELECT ed.rowid FROM '.MAIN_DB_PREFIX.$exp->table_element_line.' ed
             INNER JOIN '.MAIN_DB_PREFIX.'commandedet cd ON (cd.rowid = ed.fk_origin_line)
-            WHERE ed.fk_expedition = '.$exp->id.' AND ed.fk_entrepot='.$fk_warehouse.' AND cd.fk_product='.$fk_product.')';
-            $sql .= ' AND batch = '.$serial;
+            WHERE ed.fk_expedition = '.intval($exp->id)
+                   .' AND ed.fk_entrepot='.intval($fk_warehouse)
+                   .' AND cd.fk_product='.intval($fk_product).')'
+                   .' AND batch = "' . $serial . '"';
             $resql = $this->db->query($sql);
             if(! $resql) {
                 $this->errors[] = $this->db->lasterror()." - sql=$sql";
@@ -306,9 +316,8 @@ class ExpeditionLineBatch extends CommonObject
                     return $this->id;
                 }
                 else return -2;
-
-
             }
         }
     }
+    /* ————————— FIN SPE AMA - part 4/4 ———————————— */
 }

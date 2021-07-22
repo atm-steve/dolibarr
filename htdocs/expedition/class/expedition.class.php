@@ -372,12 +372,12 @@ class Expedition extends CommonObject
 					{	// no batch management
 						if (!$this->create_line($this->lines[$i]->entrepot_id, $this->lines[$i]->origin_line_id, $this->lines[$i]->qty, $this->lines[$i]->rang, $this->lines[$i]->array_options) > 0)
 						{
-							$error++;
+							FM::error($error);
 						}
 					} else {	// with batch management
 						if (!$this->create_line_batch($this->lines[$i], $this->lines[$i]->array_options) > 0)
 						{
-							$error++;
+							FM::error($error);
 						}
 					}
 				}
@@ -387,7 +387,7 @@ class Expedition extends CommonObject
 					$ret = $this->add_object_linked();
 					if (!$ret)
 					{
-						$error++;
+						FM::error($error);
 					}
 				}
 
@@ -397,7 +397,7 @@ class Expedition extends CommonObject
 					$result = $this->insertExtraFields();
 					if ($result < 0)
 					{
-						$error++;
+						FM::error($error);
 					}
 				}
 
@@ -405,7 +405,7 @@ class Expedition extends CommonObject
 				{
 					// Call trigger
 					$result = $this->call_trigger('SHIPPING_CREATE', $user);
-					if ($result < 0) { $error++; }
+					if ($result < 0) { FM::error($error); }
 					// End call triggers
 
 					if (!$error)
@@ -422,19 +422,19 @@ class Expedition extends CommonObject
 						return -1 * $error;
 					}
 				} else {
-					$error++;
+					FM::error($error);
 					$this->error = $this->db->lasterror()." - sql=$sql";
 					$this->db->rollback();
 					return -3;
 				}
 			} else {
-				$error++;
+				FM::error($error);
 				$this->error = $this->db->lasterror()." - sql=$sql";
 				$this->db->rollback();
 				return -2;
 			}
 		} else {
-			$error++;
+			FM::error($error);
 			$this->error = $this->db->error()." - sql=$sql";
 			$this->db->rollback();
 			return -1;
@@ -487,6 +487,7 @@ class Expedition extends CommonObject
 		$error = 0;
 		$stockLocationQty = array(); // associated array with batch qty in stock location
 
+		/** @var ExpeditionLineBatch[] $tab */
 		$tab = $line_ext->detail_batch;
 		// create stockLocation Qty array
 		foreach ($tab as $detbatch) $stockLocationQty[$detbatch->entrepot_id] += $detbatch->qty;
@@ -494,21 +495,22 @@ class Expedition extends CommonObject
 		// create shipment lines
 		foreach ($stockLocationQty as $stockLocation => $qty)
 		{
-			$line_id = $this->create_line($stockLocation, $line_ext->origin_line_id, $qty, $line_ext->rang, $array_options);
-			if ($line_id < 0) {
-				$error++;
-			} else {
+			///// FLO M: POURQUOI on crée une nouvelle ligne d’expédition ici ?
+			//$line_id = $this->create_line($stockLocation, $line_ext->origin_line_id, $qty, $line_ext->rang, $array_options);
+			//if ($line_id < 0) {
+			//	FM::error($error);
+			//} else {
 				// create shipment batch lines for stockLocation
 				foreach ($tab as $detbatch)
 				{
 					if ($detbatch->entrepot_id == $stockLocation) {
-						if (!($detbatch->create($line_id) > 0))		// Create an expeditionlinebatch
+						if (!($detbatch->create($line_ext->id) > 0))		// Create an expeditionlinebatch
 						{
-							$error++;
+							FM::error($error);
 						}
 					}
 				}
-			}
+			//}
 		}
 
 		if (!$error) return 1;
@@ -737,7 +739,7 @@ class Expedition extends CommonObject
 		if (!$resql)
 		{
 			$this->error = $this->db->lasterror();
-			$error++;
+			FM::error($error);
 		}
 
 		// If stock increment is done on sending (recommanded choice)
@@ -785,7 +787,7 @@ class Expedition extends CommonObject
 						// We decrement stock of product (and sub-products) -> update table llx_product_stock (key of this table is fk_product+fk_entrepot) and add a movement record.
 						$result = $mouvS->livraison($user, $obj->fk_product, $obj->fk_entrepot, $qty, $obj->subprice, $langs->trans("ShipmentValidatedInDolibarr", $numref));
 						if ($result < 0) {
-							$error++;
+							FM::error($error);
 							$this->error = $mouvS->error;
 							$this->errors = array_merge($this->errors, $mouvS->errors);
 							break;
@@ -797,7 +799,7 @@ class Expedition extends CommonObject
 						// Note: ->fk_origin_stock = id into table llx_product_batch (may be rename into llx_product_stock_batch in another version)
 						$result = $mouvS->livraison($user, $obj->fk_product, $obj->fk_entrepot, $qty, $obj->subprice, $langs->trans("ShipmentValidatedInDolibarr", $numref), '', $this->db->jdate($obj->eatby), $this->db->jdate($obj->sellby), $obj->batch, $obj->fk_origin_stock);
 						if ($result < 0) {
-							$error++;
+							FM::error($error);
 							$this->error = $mouvS->error;
 							$this->errors = array_merge($this->errors, $mouvS->errors);
 							break;
@@ -816,14 +818,16 @@ class Expedition extends CommonObject
 
 		if (!$ret)
 		{
-			$error++;
+			FM::error($error);
 		}
 
 		if (!$error && !$notrigger)
 		{
 			// Call trigger
 			$result = $this->call_trigger('SHIPPING_VALIDATE', $user);
-			if ($result < 0) { $error++; }
+			if ($result < 0) {
+				FM::error($error);
+			}
 			// End call triggers
 		}
 
@@ -838,7 +842,10 @@ class Expedition extends CommonObject
 				$sql = 'UPDATE '.MAIN_DB_PREFIX."ecm_files set filename = CONCAT('".$this->db->escape($this->newref)."', SUBSTR(filename, ".(strlen($this->ref) + 1).")), filepath = 'expedition/sending/".$this->db->escape($this->newref)."'";
 				$sql .= " WHERE filename LIKE '".$this->db->escape($this->ref)."%' AND filepath = 'expedition/sending/".$this->db->escape($this->ref)."' and entity = ".$conf->entity;
 				$resql = $this->db->query($sql);
-				if (!$resql) { $error++; $this->error = $this->db->lasterror(); }
+				if (!$resql) {
+					FM::error($error);
+					$this->error = $this->db->lasterror();
+				}
 
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
@@ -1149,12 +1156,17 @@ class Expedition extends CommonObject
 
 		dol_syslog(get_class($this)."::update", LOG_DEBUG);
 		$resql = $this->db->query($sql);
-		if (!$resql) { $error++; $this->errors[] = "Error ".$this->db->lasterror(); }
+		if (!$resql) {
+			FM::error($error);
+			$this->errors[] = "Error ".$this->db->lasterror();
+		}
 
 		if (!$error && !$notrigger) {
 			// Call trigger
 			$result = $this->call_trigger('SHIPPING_MODIFY', $user);
-			if ($result < 0) { $error++; }
+			if ($result < 0) {
+				FM::error($error);
+			}
 			// End call triggers
 		}
 
@@ -1198,13 +1210,15 @@ class Expedition extends CommonObject
 		$this->fetchObjectLinked($this->id, 'shipping', 0, 'delivery'); // Get deliveries linked to this shipment
 		if (count($this->linkedObjectsIds) > 0) {
 			$this->error = 'ErrorThereIsSomeDeliveries';
-			$error++;
+			FM::error($error);
 		}
 
 		if (!$error && !$notrigger) {
 			// Call trigger
 			$result = $this->call_trigger('SHIPPING_CANCEL', $user);
-			if ($result < 0) { $error++; }
+			if ($result < 0) {
+				FM::error($error);
+			}
 			// End call triggers
 		}
 
@@ -1244,7 +1258,8 @@ class Expedition extends CommonObject
 						$lotArray = ExpeditionLineBatch::fetchAll($this->db, $obj->expeditiondet_id);
 						if (!is_array($lotArray))
 						{
-							$error++; $this->errors[] = "Error ".$this->db->lasterror();
+							FM::error($error);
+							$this->errors[] = "Error ".$this->db->lasterror();
 						}
 					}
 					if (empty($lotArray)) {
@@ -1254,7 +1269,8 @@ class Expedition extends CommonObject
 						$result = $mouvS->reception($user, $obj->fk_product, $obj->fk_entrepot, $obj->qty, 0, $langs->trans("ShipmentCanceledInDolibarr", $this->ref)); // Price is set to 0, because we don't want to see WAP changed
 						if ($result < 0)
 						{
-							$error++; $this->errors = $this->errors + $mouvS->errors;
+							FM::error($error);
+							$this->errors = $this->errors + $mouvS->errors;
 							break;
 						}
 					} else {
@@ -1265,7 +1281,8 @@ class Expedition extends CommonObject
 							$result = $mouvS->reception($user, $obj->fk_product, $obj->fk_entrepot, $lot->qty, 0, $langs->trans("ShipmentCanceledInDolibarr", $this->ref), $lot->eatby, $lot->sellby, $lot->batch); // Price is set to 0, because we don't want to see WAP changed
 							if ($result < 0)
 							{
-								$error++; $this->errors = $this->errors + $mouvS->errors;
+								FM::error($error);
+								$this->errors = $this->errors + $mouvS->errors;
 								break;
 							}
 						}
@@ -1273,7 +1290,8 @@ class Expedition extends CommonObject
 					}
 				}
 			} else {
-				$error++; $this->errors[] = "Error ".$this->db->lasterror();
+				FM::error($error);
+				$this->errors[] = "Error ".$this->db->lasterror();
 			}
 		}
 
@@ -1282,7 +1300,8 @@ class Expedition extends CommonObject
 		{
 			if (ExpeditionLineBatch::deletefromexp($this->db, $this->id) < 0)
 			{
-				$error++; $this->errors[] = "Error ".$this->db->lasterror();
+				FM::error($error);
+				$this->errors[] = "Error ".$this->db->lasterror();
 			}
 		}
 
@@ -1296,7 +1315,9 @@ class Expedition extends CommonObject
 			{
 				// Delete linked object
 				$res = $this->deleteObjectLinked();
-				if ($res < 0) $error++;
+				if ($res < 0) {
+					FM::error($error);
+				}
 
 				// No delete expedition
 				if (!$error)
@@ -1400,13 +1421,15 @@ class Expedition extends CommonObject
 		if (count($this->linkedObjectsIds) > 0)
 		{
 			$this->error = 'ErrorThereIsSomeDeliveries';
-			$error++;
+			FM::error($error);
 		}
 
 		if (!$error && !$notrigger) {
 			// Call trigger
 			$result = $this->call_trigger('SHIPPING_DELETE', $user);
-			if ($result < 0) { $error++; }
+			if ($result < 0) {
+				FM::error($error);
+			}
 			// End call triggers
 		}
 
@@ -1446,7 +1469,8 @@ class Expedition extends CommonObject
 						$lotArray = ExpeditionLineBatch::fetchAll($this->db, $obj->expeditiondet_id);
 						if (!is_array($lotArray))
 						{
-							$error++; $this->errors[] = "Error ".$this->db->lasterror();
+							FM::error($error);
+							$this->errors[] = "Error ".$this->db->lasterror();
 						}
 					}
 					if (empty($lotArray)) {
@@ -1456,7 +1480,8 @@ class Expedition extends CommonObject
 						$result = $mouvS->reception($user, $obj->fk_product, $obj->fk_entrepot, $obj->qty, 0, $langs->trans("ShipmentDeletedInDolibarr", $this->ref)); // Price is set to 0, because we don't want to see WAP changed
 						if ($result < 0)
 						{
-							$error++; $this->errors = $this->errors + $mouvS->errors;
+							FM::error($error);
+							$this->errors = $this->errors + $mouvS->errors;
 							break;
 						}
 					} else {
@@ -1467,7 +1492,8 @@ class Expedition extends CommonObject
 							$result = $mouvS->reception($user, $obj->fk_product, $obj->fk_entrepot, $lot->qty, 0, $langs->trans("ShipmentDeletedInDolibarr", $this->ref), $lot->eatby, $lot->sellby, $lot->batch); // Price is set to 0, because we don't want to see WAP changed
 							if ($result < 0)
 							{
-								$error++; $this->errors = $this->errors + $mouvS->errors;
+								FM::error($error);
+								$this->errors = $this->errors + $mouvS->errors;
 								break;
 							}
 						}
@@ -1475,7 +1501,8 @@ class Expedition extends CommonObject
 					}
 				}
 			} else {
-				$error++; $this->errors[] = "Error ".$this->db->lasterror();
+				FM::error($error);
+				$this->errors[] = "Error ".$this->db->lasterror();
 			}
 		}
 
@@ -1484,7 +1511,8 @@ class Expedition extends CommonObject
 		{
 			if (ExpeditionLineBatch::deletefromexp($this->db, $this->id) < 0)
 			{
-				$error++; $this->errors[] = "Error ".$this->db->lasterror();
+				FM::error($error);
+				$this->errors[] = "Error ".$this->db->lasterror();
 			}
 		}
 
@@ -1501,11 +1529,15 @@ class Expedition extends CommonObject
 			{
 				// Delete linked object
 				$res = $this->deleteObjectLinked();
-				if ($res < 0) $error++;
+				if ($res < 0) {
+					FM::error($error);
+				}
 
-								// delete extrafields
-								$res = $this->deleteExtraFields();
-								if ($res < 0) $error++;
+				// delete extrafields
+				$res = $this->deleteExtraFields();
+				if ($res < 0) {
+					FM::error($error);
+				}
 
 				if (!$error)
 				{
@@ -2283,7 +2315,7 @@ class Expedition extends CommonObject
 							if ($result < 0) {
 								$this->error = $mouvS->error;
 								$this->errors = $mouvS->errors;
-								$error++; break;
+								FM::error($error); break;
 							}
 						} else {
 							// line with batch detail
@@ -2293,13 +2325,13 @@ class Expedition extends CommonObject
 							if ($result < 0) {
 								$this->error = $mouvS->error;
 								$this->errors = $mouvS->errors;
-								$error++; break;
+								FM::error($error); break;
 							}
 						}
 					}
 				} else {
 					$this->error = $this->db->lasterror();
-					$error++;
+					FM::error($error);
 				}
 			}
 
@@ -2310,12 +2342,12 @@ class Expedition extends CommonObject
 	        /* ————————— FIN SPE AMA - part 3/4 ———————————— */
 	            $result = $this->call_trigger('SHIPPING_CLOSED', $user);
 				if ($result < 0) {
-					$error++;
+					FM::error($error);
 				}
 			}
 		} else {
 			dol_print_error($this->db);
-			$error++;
+			FM::error($error);
 		}
 
 		if (!$error)
@@ -2355,10 +2387,10 @@ class Expedition extends CommonObject
 			// Call trigger
 			$result = $this->call_trigger('SHIPPING_BILLED', $user);
 			if ($result < 0) {
-				$error++;
+				FM::error($error);
 			}
 		} else {
-			$error++;
+			FM::error($error);
 			$this->errors[] = $this->db->lasterror;
 		}
 
@@ -2451,7 +2483,7 @@ class Expedition extends CommonObject
 							if ($result < 0) {
 								$this->error = $mouvS->error;
 								$this->errors = $mouvS->errors;
-								$error++; break;
+								FM::error($error); break;
 							}
 						} else {
 							// line with batch detail
@@ -2461,13 +2493,13 @@ class Expedition extends CommonObject
 							if ($result < 0) {
 								$this->error = $mouvS->error;
 								$this->errors = $mouvS->errors;
-								$error++; break;
+								FM::error($error); break;
 							}
 						}
 					}
 				} else {
 					$this->error = $this->db->lasterror();
-					$error++;
+					FM::error($error);
 				}
 			}
 
@@ -2475,11 +2507,11 @@ class Expedition extends CommonObject
 				// Call trigger
 				$result = $this->call_trigger('SHIPPING_REOPEN', $user);
 				if ($result < 0) {
-					$error++;
+					FM::error($error);
 				}
 			}
 		} else {
-			$error++;
+			FM::error($error);
 			$this->errors[] = $this->db->lasterror();
 		}
 
@@ -2548,12 +2580,19 @@ class Expedition extends CommonObject
 		return CommonObject::commonReplaceThirdparty($db, $origin_id, $dest_id, $tables);
 	}
 	/* ——————————— SPÉ AMA - part 4/4 —————————————— */
+	/**
+	 * Retourne la première (ligne de détail sans entrepôt) associée à
+	 * (la ligne d’expédition "à définir" correspondant au produit).
+	 * @param $fk_product
+	 * @return mixed
+	 */
     public function getBatchToDefineLine($fk_product) {
         foreach($this->lines as $line) {
+        	if ($fk_product != $line->fk_product) continue;
             if(! empty($line->detail_batch) && $line->product_tobatch) {
                 if(is_array($line->detail_batch)) {
                     foreach($line->detail_batch as $dbatch) {
-                        if(empty($dbatch->fk_origin_stock) && $fk_product == $line->fk_product) {
+                        if(empty($dbatch->fk_origin_stock)) {
                             return $dbatch;
                         }
                     }
@@ -2820,7 +2859,7 @@ class ExpeditionLigne extends CommonObjectLine
 				$result = $this->insertExtraFields();
 				if ($result < 0)
 				{
-					$error++;
+					FM::error($error);
 				}
 			}
 
@@ -2830,7 +2869,7 @@ class ExpeditionLigne extends CommonObjectLine
 				$result = $this->call_trigger('LINESHIPPING_INSERT', $user);
 				if ($result < 0)
 				{
-					$error++;
+					FM::error($error);
 				}
 				// End call triggers
 			}
@@ -2849,7 +2888,7 @@ class ExpeditionLigne extends CommonObjectLine
 			$this->db->rollback();
 			return -1 * $error;
 		} else {
-			$error++;
+			FM::error($error);
 		}
 	}
 
@@ -2877,7 +2916,7 @@ class ExpeditionLigne extends CommonObjectLine
 			if (!$this->db->query($sql))
 			{
 				$this->errors[] = $this->db->lasterror()." - sql=$sql";
-				$error++;
+				FM::error($error);
 			}
 		}
 
@@ -2893,7 +2932,7 @@ class ExpeditionLigne extends CommonObjectLine
 				if ($result < 0)
 				{
 					$this->errors[] = $this->error;
-					$error++;
+					FM::error($error);
 				}
 			}
 			if (!$error && !$notrigger)
@@ -2903,13 +2942,13 @@ class ExpeditionLigne extends CommonObjectLine
 				if ($result < 0)
 				{
 					$this->errors[] = $this->error;
-					$error++;
+					FM::error($error);
 				}
 				// End call triggers
 			}
 		} else {
 			$this->errors[] = $this->db->lasterror()." - sql=$sql";
-			$error++;
+			FM::error($error);
 		}
 
 		if (!$error) {
@@ -2956,7 +2995,7 @@ class ExpeditionLigne extends CommonObjectLine
 			{
 				dol_syslog(get_class($this).'::update only possible for one batch', LOG_ERR);
 				$this->errors[] = 'ErrorBadParameters';
-				$error++;
+				FM::error($error);
 			} else {
 				$batch = $this->detail_batch[0]->batch;
 				$batch_id = $this->detail_batch[0]->fk_origin_stock;
@@ -2965,7 +3004,7 @@ class ExpeditionLigne extends CommonObjectLine
 				{
 					dol_syslog(get_class($this).'::update only possible for batch of same warehouse', LOG_ERR);
 					$this->errors[] = 'ErrorBadParameters';
-					$error++;
+					FM::error($error);
 				}
 				$qty = price2num($this->detail_batch[0]->qty);
 			}
@@ -2974,11 +3013,16 @@ class ExpeditionLigne extends CommonObjectLine
 			$batch = $this->detail_batch->batch;
 			$batch_id = $this->detail_batch->fk_origin_stock;
 			$expedition_batch_id = $this->detail_batch->id;
+
+			/* ——————————— SPÉ AMA - part x/x —————————————— */
+			if ($this->entrepot_id === null) $this->entrepot_id = $this->detail_batch->entrepot_id;
+			else
+			/* ————————— FIN SPE AMA - part x/x ———————————— */
 			if ($this->entrepot_id != $this->detail_batch->entrepot_id)
 			{
 				dol_syslog(get_class($this).'::update only possible for batch of same warehouse', LOG_ERR);
 				$this->errors[] = 'ErrorBadParameters';
-				$error++;
+				FM::error($error);
 			}
 			$qty = price2num($this->detail_batch->qty);
 		}
@@ -2988,7 +3032,7 @@ class ExpeditionLigne extends CommonObjectLine
 		{
 			dol_syslog(get_class($this).'::update missing line id and/or warehouse id', LOG_ERR);
 			$this->errors[] = 'ErrorMandatoryParametersNotProvided';
-			$error++;
+			FM::error($error);
 			return -1;
 		}
 
@@ -3001,7 +3045,7 @@ class ExpeditionLigne extends CommonObjectLine
 			if (empty($batch_id) || empty($this->fk_product)) {
 				dol_syslog(get_class($this).'::update missing fk_origin_stock (batch_id) and/or fk_product', LOG_ERR);
 				$this->errors[] = 'ErrorMandatoryParametersNotProvided';
-				$error++;
+				FM::error($error);
 			}
 
 			// fetch remaining lot qty
@@ -3009,7 +3053,7 @@ class ExpeditionLigne extends CommonObjectLine
 			if (!$error && ($lotArray = ExpeditionLineBatch::fetchAll($this->db, $this->id)) < 0)
 			{
 				$this->errors[] = $this->db->lasterror()." - ExpeditionLineBatch::fetchAll";
-				$error++;
+				FM::error($error);
 			} else {
 				// caculate new total line qty
 				foreach ($lotArray as $lot)
@@ -3029,7 +3073,7 @@ class ExpeditionLigne extends CommonObjectLine
 				if ($lot->fetch(0, $this->fk_product, $batch) < 0)
 				{
 					$this->errors[] = $lot->errors;
-					$error++;
+					FM::error($error);
 				}
 				if (!$error && !empty($expedition_batch_id))
 				{
@@ -3041,7 +3085,7 @@ class ExpeditionLigne extends CommonObjectLine
 					if (!$this->db->query($sql))
 					{
 						$this->errors[] = $this->db->lasterror()." - sql=$sql";
-						$error++;
+						FM::error($error);
 					}
 				}
 				if (!$error && $this->detail_batch->qty > 0)
@@ -3059,7 +3103,7 @@ class ExpeditionLigne extends CommonObjectLine
 						if ($shipmentLot->create($this->id) < 0)
 						{
 							$this->errors[] = $shipmentLot->errors;
-							$error++;
+							FM::error($error);
 						}
 					}
 				}
@@ -3076,19 +3120,19 @@ class ExpeditionLigne extends CommonObjectLine
 			if (!$this->db->query($sql))
 			{
 				$this->errors[] = $this->db->lasterror()." - sql=$sql";
-				$error++;
+				FM::error($error);
 			}
 		}
 
 		if (!$error)
 		{
-			if (!$error)
+			if (!$error)  // never too careful
 			{
 				$result = $this->insertExtraFields();
 				if ($result < 0)
 				{
 					$this->errors[] = $this->error;
-					$error++;
+					FM::error($error);
 				}
 			}
 		}
@@ -3100,7 +3144,7 @@ class ExpeditionLigne extends CommonObjectLine
 			if ($result < 0)
 			{
 				$this->errors[] = $this->error;
-				$error++;
+				FM::error($error);
 			}
 			// End call triggers
 		}

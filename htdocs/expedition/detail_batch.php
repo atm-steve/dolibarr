@@ -18,6 +18,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+
+
+// ——————————————————————————————————————————
+// AMA SPE - CE FICHIER N'EXISTE QUE CHEZ AMA
+// ——————————————————————————————————————————
+
+
 /**
  *      \file       htdocs/expedition/note.php
  *      \ingroup    expedition
@@ -70,9 +78,12 @@ if($action == 'add') {
                 $lotStock = new Productbatch($db);
                 $expBatch = new ExpeditionLineBatch($db);
                 $lotStock->fetch($fk_productbatch);
-                foreach($object->lines as $line) {
-                    if($line->id == $TExpeditionDetIds[$fk_productbatch]) $lineExp = $line;
-                }
+				foreach($object->lines as $line) {
+					if($line->id == $TExpeditionDetIds[$fk_productbatch]) {
+						$lineExp = $line;
+						break;
+					}
+				}
 
                 $res = $expBatch->fetchByExpDetSerial($object, $lotStock->batch, $lotStock->fk_product, $lotStock->warehouseid);
                 /**
@@ -120,6 +131,7 @@ if($action == 'add') {
                     if($lineIdToAddLot > 0) {
                         $lineExp->fetch($lineIdToAddLot);
                         $lineExp->qty += $qty;
+                        if (empty($lineExp->entrepot_id)) $lineExp->entrepot_id = intval($lotStock->warehouseid);
 
                         $tmpBatch = $lineExp->detail_batch;
                         unset($lineExp->detail_batch);
@@ -209,62 +221,69 @@ if($action == 'add') {
     }
 }
 if($action == 'deleteline') {
+	// suppression d’une ligne de détail de ligne d’expédition
     $db->begin();
     $fkExpBatch = GETPOST('fk_exp_batch', 'int');
     $fk_product = GETPOST('fk_product','int');
     $expBatch = new ExpeditionLineBatch($db);
     $expBatch->fetchCommon($fkExpBatch);
     $expLine = new ExpeditionLigne($db);
+	$expLine->fetch($expBatch->fk_expeditiondet);
+	$batchqty = $expBatch->qty;
 
-    $expBatchToDefine = $object->getBatchToDefineLine($fk_product);
-    if(!empty($expBatchToDefine)) {
-        //MAJ TO Define batch qty
-        $expBatchToDefine->qty+=$expBatch->qty;
-        $res = $expBatchToDefine->updateQty();
-        if($res <= 0) {
-            $error++;
-            setEventMessage($expBatchToDefine->errors, 'errors');
-        }
-        //MAJ To define line qty
-        $expLine->fetch($expBatchToDefine->fk_expeditiondet);
-        $expLine->qty += $expBatch->qty;
-        $expLine->entrepot_id = 0;
-        $res = $expLine->update($user);
-        if($res <= 0) {
-            $error++;
-            setEventMessage($expLine->errors, 'errors');
-        }
-    } else {
-        $expLine->fetch($expBatch->fk_expeditiondet);
+//	$expBatchToDefine = $object->getBatchToDefineLine($fk_product);
+//	$expLine->fetch($expBatchToDefine->fk_expeditiondet);
+
+//	if(!empty($expBatchToDefine)) {
+//        //MAJ TO Define batch qty
+//        $expBatchToDefine->qty+=$expBatch->qty;
+//        $res = $expBatchToDefine->updateQty();
+//        if($res <= 0) {
+//            $error++;
+//            setEventMessage($expBatchToDefine->errors, 'errors');
+//        }
+//        //MAJ To define line qty
+////        $expLine->fetch($expBatchToDefine->fk_expeditiondet);
+//        $expLine->qty += $expBatch->qty;
+//        $expLine->entrepot_id = 0;
+//        $res = $expLine->update($user);
+//        if($res <= 0) {
+//            $error++;
+//            setEventMessage($expLine->errors, 'errors');
+//        }
+//    } else {
+//        $expLine->fetch($expBatch->fk_expeditiondet);
         //Create to define if not exists
-        $expLine->origin_line_id = $expLine->fk_origin_line;
-        $expLine->entrepot_id = 0;
-        $expLine->detail_batch[0] = new ExpeditionLineBatch($db);
-        $expLine->detail_batch[0]->fk_origin_stock = 0;
-        $expLine->detail_batch[0]->batch = '';
-        $expLine->detail_batch[0]->entrepot_id = 0;
-        $expLine->detail_batch[0]->qty = $expBatch->qty;
-        if($object->create_line_batch($expLine, $expLine->array_options) < 0) {
-            setEventMessages($object->error, $object->errors, 'errors');
-            $error++;
-        }
+//        $expLine->origin_line_id = $expLine->fk_origin_line;
+//        $expLine->entrepot_id = 0;
+//        $expLineBatch = new ExpeditionLineBatch($db);
+//        $expLine->detail_batch = $expLineBatch->fetchAll($this->db, $expLine->id, $expLine->fk_product);
+//        $expLine->detail_batch[0] = new ExpeditionLineBatch($db);
+//        $expLine->detail_batch[0]->fk_origin_stock = 0;
+//        $expLine->detail_batch[0]->batch = '';
+//        $expLine->detail_batch[0]->entrepot_id = 0;
+//        $expLine->detail_batch[0]->qty = $expBatch->qty;
+//        if($object->create_line_batch($expLine, $expLine->array_options) < 0) {
+//            setEventMessages($object->error, $object->errors, 'errors');
+//            $error++;
+//        }
 
-    }
+//    }
 
 
-    $expLine->fetch($expBatch->fk_expeditiondet);
+//    $expLine->fetch($expBatch->fk_expeditiondet);
 
     //MAJ ExpLine Qty
-    if($expBatch->qty >= $expLine->qty) {
-        $res = $expLine->delete($user);
-    } else {
-        $expLine->qty -= $expBatch->qty;
-        $res = $expLine->update($user);
-    }
-    if($res <= 0) {
-        $error++;
-        setEventMessage($expLine->errors, 'errors');
-    }
+//    if($expBatch->qty >= $expLine->qty) {
+//        $res = $expLine->delete($user);
+//    } else {
+//        $expLine->qty -= $expBatch->qty;
+//        $res = $expLine->update($user);
+//    }
+//    if($res <= 0) {
+//        $error++;
+//        setEventMessage($expLine->errors, 'errors');
+//    }
 
     $res = $expBatch->deleteCommon($user);
     if($res <= 0) {
@@ -273,6 +292,8 @@ if($action == 'deleteline') {
     }
 
      if(! $error) {
+     	$expLine->qty -= $batchqty;
+     	$expLine->update($user);
         $db->commit();
         header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
         exit();
