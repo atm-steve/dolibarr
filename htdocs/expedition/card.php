@@ -1320,48 +1320,47 @@ if ($action == 'create')
 							if (is_object($product->stock_warehouse[$warehouse_id]) && count($product->stock_warehouse[$warehouse_id]->detail_batch))
 							{
 								/* ——————————— SPÉ AMA - part 08/16 —————————————— */
-								break;
+//								foreach ($product->stock_warehouse[$warehouse_id]->detail_batch as $dbatch)	// $dbatch is instance of Productbatch
+//								{
+//									//var_dump($dbatch);
+//									$batchStock = + $dbatch->qty; // To get a numeric
+//									$deliverableQty = min($quantityToBeDelivered, $batchStock);
+//									print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'>';
+//									print '<td colspan="3" ></td><td class="center">';
+//
+//									/* ——————————— SPÉ AMA - part 09/16 —————————————— */
+//									print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
+//									/* ————————— FIN SPE AMA - part 09/16 ———————————— */
+//									print '</td>';
+//
+//									print '<!-- Show details of lot -->';
+//									print '<td class="left">';
+//
+//									print $staticwarehouse->getNomUrl(0).' / ';
+//
+//									print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$dbatch->id.'">';
+//
+//									$detail = '';
+//									$detail .= $langs->trans("Batch").': '.$dbatch->batch;
+//									if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
+//										$detail .= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
+//									}
+//									if (empty($conf->global->PRODUCT_DISABLE_EATBY)) {
+//										$detail .= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby, "day");
+//									}
+//									$detail .= ' - '.$langs->trans("Qty").': '.$dbatch->qty;
+//									$detail .= '<br>';
+//									print $detail;
+//
+//									$quantityToBeDelivered -= $deliverableQty;
+//									if ($quantityToBeDelivered < 0)
+//									{
+//										$quantityToBeDelivered = 0;
+//									}
+//									$subj++;
+//									print '</td></tr>';
+//								}
 								/* ————————— FIN SPE AMA - part 08/16 ———————————— */
-								foreach ($product->stock_warehouse[$warehouse_id]->detail_batch as $dbatch)	// $dbatch is instance of Productbatch
-								{
-									//var_dump($dbatch);
-									$batchStock = + $dbatch->qty; // To get a numeric
-									$deliverableQty = min($quantityToBeDelivered, $batchStock);
-									print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'>';
-									print '<td colspan="3" ></td><td class="center">';
-
-									/* ——————————— SPÉ AMA - part 09/16 —————————————— */
-									print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
-									/* ————————— FIN SPE AMA - part 09/16 ———————————— */
-									print '</td>';
-
-									print '<!-- Show details of lot -->';
-									print '<td class="left">';
-
-									print $staticwarehouse->getNomUrl(0).' / ';
-
-									print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$dbatch->id.'">';
-
-									$detail = '';
-									$detail .= $langs->trans("Batch").': '.$dbatch->batch;
-									if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
-										$detail .= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
-									}
-									if (empty($conf->global->PRODUCT_DISABLE_EATBY)) {
-										$detail .= ' - '.$langs->trans("EatByDate").': '.dol_print_date($dbatch->eatby, "day");
-									}
-									$detail .= ' - '.$langs->trans("Qty").': '.$dbatch->qty;
-									$detail .= '<br>';
-									print $detail;
-
-									$quantityToBeDelivered -= $deliverableQty;
-									if ($quantityToBeDelivered < 0)
-									{
-										$quantityToBeDelivered = 0;
-									}
-									$subj++;
-									print '</td></tr>';
-								}
 							} else {
 								print '<!-- Case there is no details of lot at all -->';
 								print '<tr class="oddeven"><td colspan="3"></td><td class="center">';
@@ -1495,42 +1494,41 @@ if ($action == 'create')
 								$tmpwarehouseObject->fetch($warehouse_id);
 								if (($stock_warehouse->real > 0) && (count($stock_warehouse->detail_batch))) {
 									/* ——————————— SPÉ AMA - part 11/16 —————————————— */
-									break;
+//									foreach ($stock_warehouse->detail_batch as $dbatch)
+//									{
+//										//var_dump($dbatch);
+//										$batchStock = + $dbatch->qty; // To get a numeric
+//										$deliverableQty = min($quantityToBeDelivered, $batchStock);
+//										if ($deliverableQty < 0) $deliverableQty = 0;
+//										print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
+//							            /* ——————————— SPÉ AMA - part 12/16 —————————————— */
+//										print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
+//							            /* ————————— FIN SPE AMA - part 12/16 ———————————— */
+//										print '</td>';
+//
+//										print '<td class="left">';
+//
+//										print $tmpwarehouseObject->getNomUrl(0).' / ';
+//
+//										print '<!-- Show details of lot -->';
+//										print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$dbatch->id.'">';
+//
+//										//print '|'.$line->fk_product.'|'.$dbatch->batch.'|<br>';
+//										print $langs->trans("Batch").': ';
+//										$result = $productlotObject->fetch(0, $line->fk_product, $dbatch->batch);
+//										if ($result > 0) print $productlotObject->getNomUrl(1);
+//										else print 'TableLotIncompleteRunRepairWithParamStandardEqualConfirmed';
+//										print ' ('.$dbatch->qty.')';
+//										$quantityToBeDelivered -= $deliverableQty;
+//										if ($quantityToBeDelivered < 0)
+//										{
+//											$quantityToBeDelivered = 0;
+//										}
+//										//dol_syslog('deliverableQty = '.$deliverableQty.' batchStock = '.$batchStock);
+//										$subj++;
+//										print '</td></tr>';
+//									}
 									/* ————————— FIN SPE AMA - part 11/16 ———————————— */
-									foreach ($stock_warehouse->detail_batch as $dbatch)
-									{
-										//var_dump($dbatch);
-										$batchStock = + $dbatch->qty; // To get a numeric
-										$deliverableQty = min($quantityToBeDelivered, $batchStock);
-										if ($deliverableQty < 0) $deliverableQty = 0;
-										print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
-								/* ——————————— SPÉ AMA - part 12/16 —————————————— */
-										print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
-								/* ————————— FIN SPE AMA - part 12/16 ———————————— */
-										print '</td>';
-
-										print '<td class="left">';
-
-										print $tmpwarehouseObject->getNomUrl(0).' / ';
-
-										print '<!-- Show details of lot -->';
-										print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$dbatch->id.'">';
-
-										//print '|'.$line->fk_product.'|'.$dbatch->batch.'|<br>';
-										print $langs->trans("Batch").': ';
-										$result = $productlotObject->fetch(0, $line->fk_product, $dbatch->batch);
-										if ($result > 0) print $productlotObject->getNomUrl(1);
-										else print 'TableLotIncompleteRunRepairWithParamStandardEqualConfirmed';
-										print ' ('.$dbatch->qty.')';
-										$quantityToBeDelivered -= $deliverableQty;
-										if ($quantityToBeDelivered < 0)
-										{
-											$quantityToBeDelivered = 0;
-										}
-										//dol_syslog('deliverableQty = '.$deliverableQty.' batchStock = '.$batchStock);
-										$subj++;
-										print '</td></tr>';
-									}
 								}
 							}
 						}
