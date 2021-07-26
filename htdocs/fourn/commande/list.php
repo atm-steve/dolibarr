@@ -183,11 +183,11 @@ $error = 0;
 
 if (GETPOST('cancel', 'alpha')) { $action = 'list'; $massaction = ''; }
 if (!GETPOST('confirmmassaction', 'alpha') && $massaction != 'presend' && $massaction != 'confirm_presend' && $massaction != 'confirm_createsupplierbills') { $massaction = ''; }
-if (empty($ref_supplier) && $massaction == 'confirm_createsupplierbills')
-{
-	setEventMessage($langs->trans("Error_RefSupplierRequired"), 'errors');
-	$massaction = 'createbills';
-}
+//if (empty($ref_supplier) && $massaction == 'confirm_createsupplierbills')
+//{
+//	setEventMessage($langs->trans("Error_RefSupplierRequired"), 'errors');
+//	$massaction = 'createbills';
+//}
 $parameters = array('socid'=>$socid);
 $reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
@@ -324,6 +324,21 @@ if (empty($reshook))
 					$fk_parent_line = 0;
 					$num = count($lines);
 
+/**************************** SPE VECOMPANY PART 1/2 **************************/
+/** Fait dans le coeur car les autres solutions étaient
+ * jugées trop chronophages et ne garantissaient pas le fonctionnement final
+ */
+					if($conf->subtotal->enabled && ! class_exists('TSubtotal')) {
+						dol_include_once('/subtotal/class/subtotal.class.php');
+					}
+
+					if($conf->subtotal->enabled && class_exists('TSubtotal')) {
+						$subtotal = new TSubtotal();
+						$subtotal->addTitle($objecttmp, $langs->trans('Order'). ' : ' . $cmd->ref, 0);
+					}
+
+/**************************** FIN SPE VECOMPANY PART 1/2 **************************/
+
 					for ($i = 0; $i < $num; $i++)
 					{
 						$desc = ($lines[$i]->desc ? $lines[$i]->desc : $lines[$i]->libelle);
@@ -385,7 +400,7 @@ if (empty($reshook))
 								false,
 								$lines[$i]->array_options,
 								$lines[$i]->fk_unit,
-								$objecttmp->origin_id,
+								$id_order,
 								$lines[$i]->pa_ht,
 								$lines[$i]->ref_supplier,
 								$lines[$i]->special_code,
@@ -406,6 +421,12 @@ if (empty($reshook))
 							}
 						}
 					}
+
+/**************************** SPE VECOMPANY PART 2/2 **************************/
+					if($conf->subtotal->enabled && class_exists('TSubtotal')) {
+						$subtotal->addTotal($objecttmp, $langs->trans('Total'). ' : ' . $cmd->ref, 0);
+					}
+/**************************** FIN SPE VECOMPANY PART 2/2  **************************/
 				}
 			}
 
@@ -742,15 +763,6 @@ if ($resql)
 		print '<td>';
 		print $form->selectyesno('validate_invoices', 1, 1);
 		print '</td>';
-		print '</tr>';
-		print '<tr class="fieldrequired" style="display:none">';
-		print '<td>';
-		print $langs->trans('RefSupplier');
-		print '</td>';
-		print '<td>';
-		print '<input name="refsupplier" type="text" id="refsupplier">';
-		print '</td>';
-		print '</tr>';
 		print '</table>';
 		if (!empty($conf->use_javascript_ajax)) {
 			?>
