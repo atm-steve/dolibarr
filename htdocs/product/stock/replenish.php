@@ -569,13 +569,13 @@ if ($usevirtualstock == 1)
 {
 	print $langs->trans("CurentSelectionMode").': ';
 	print '<span class="a-mesure">'.$langs->trans("UseVirtualStock").'</span>';
-	print ' <a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=physical'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($multiwarehouse? '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse) : '').'">'.$langs->trans("UsePhysicalStock").'</a>';
+	print ' <a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=physical'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($multiwarehouse? '&multiwarehouse[]='.implode('&multiwarehouse[]=', $multiwarehouse) : '').'">'.$langs->trans("UsePhysicalStock").'</a>';
 	print '<br>';
 }
 if ($usevirtualstock == 0)
 {
 	print $langs->trans("CurentSelectionMode").': ';
-	print '<a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=virtual'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($multiwarehouse? '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse) : '').'">'.$langs->trans("UseVirtualStock").'</a>';
+	print '<a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=virtual'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($multiwarehouse? '&multiwarehouse[]='.implode('&multiwarehouse[]=', $multiwarehouse) : '').'">'.$langs->trans("UseVirtualStock").'</a>';
 	print ' <span class="a-mesure">'.$langs->trans("UsePhysicalStock").'</span>';
 	print '<br>';
 }
@@ -633,7 +633,7 @@ if ($search_ref || $search_label || $sall || $salert || $draftorder || GETPOST('
 	$filters .= '&mode='.urlencode($mode);
 	if ($fk_supplier > 0) $filters .= '&fk_supplier='.urlencode($fk_supplier);
 	if ($fk_entrepot > 0) $filters .= '&fk_entrepot='.urlencode($fk_entrepot);
-	if ($multiwarehouse) $filters .=  '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse);
+	if ($multiwarehouse) $filters .=  '&multiwarehouse[]='.implode('&multiwarehouse[]=', $multiwarehouse);
 } else {
 	$filters = '&search_ref='.urlencode($search_ref).'&search_label='.urlencode($search_label);
 	$filters .= '&fourn_id='.urlencode($fourn_id);
@@ -643,7 +643,7 @@ if ($search_ref || $search_label || $sall || $salert || $draftorder || GETPOST('
 	$filters .= '&mode='.urlencode($mode);
 	if ($fk_supplier > 0) $filters .= '&fk_supplier='.urlencode($fk_supplier);
 	if ($fk_entrepot > 0) $filters .= '&fk_entrepot='.urlencode($fk_entrepot);
-	if ($multiwarehouse) $filters .=  '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse);
+	if ($multiwarehouse) $filters .=  '&multiwarehouse[]='.implode('&multiwarehouse[]=', $multiwarehouse);
 }
 if ($limit > 0 && $limit != $conf->liste_limit) {
 	$filters .= '&limit='.urlencode($limit);
@@ -655,7 +655,7 @@ $param .= '&search_ref='.urlencode($search_ref);
 $param .= '&mode='.urlencode($mode);
 $param .= '&fk_supplier='.urlencode($fk_supplier);
 $param .= '&fk_entrepot='.urlencode($fk_entrepot);
-if ($multiwarehouse) $filters .=  '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse);
+if ($multiwarehouse) $filters .=  '&multiwarehouse[]='.implode('&multiwarehouse[]=', $multiwarehouse);
 
 $stocklabel = $langs->trans('Stock');
 $stocklabelbis = $langs->trans('Stock');
@@ -793,10 +793,13 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		{
 			// If option to increase/decrease is not on an object validation, virtual stock may differs from physical stock.
 			$stock = $prod->stock_theorique;
-			//TODO $stockwarehouse = $prod->stock_warehouse[$fk_entrepot]->;
+			$stockwarehouse =  $prod->stock_theorique;
 		} else {
 			$stock = $prod->stock_reel;
-			$stockwarehouse = $prod->stock_warehouse[$fk_entrepot]->real;
+
+			foreach ($multiwarehouse as $fk_entrepot){
+				$stockwarehouse+= $prod->stock_warehouse[$fk_entrepot]->real;
+			}
 		}
 
 		// Force call prod->load_stats_xxx to choose status to count (otherwise it is loaded by load_stock function)
@@ -897,7 +900,9 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		print '<td class="right"><a href="replenishorders.php?search_product='.$prod->id.'">'.$ordered.'</a> '.$picto.'</td>';
 
 		// To order
-		print '<td class="right"><input type="text" size="4" name="tobuy'.$i.'" value="'.($multiwarehouse ? $stocktobuywarehouse : $stocktobuy).'"></td>';
+		print '<td class="right"><input type="text" size="4" name="tobuy'.$i.'" value="'.($multiwarehouse ? $stocktobuywarehouse : $stocktobuy).'">';
+
+		print '</td>';
 
 		// Supplier
 		print '<td class="right">';
