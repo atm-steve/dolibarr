@@ -288,9 +288,23 @@ if (empty($reshook))
 				$objecttmp->origin    = 'order_supplier';
 				$objecttmp->origin_id = $id_order;
 
+				/**************************** SPE VECOMPANY PART 1/3 **************************/
+				/** Fait dans le coeur car les autres solutions étaient
+				 * jugées trop chronophages et ne garantissaient pas le fonctionnement final
+				 */
+				if (!isset($provIncrement)) {$provIncrement = 0;}else {$provIncrement++;}
+				$objecttmp->ref_supplier = '(PROV'.date('ymd-His').($provIncrement?'-'.$provIncrement:'').')';
+				/**************************** FIN SPE VECOMPANY PART 1/3 **************************/
+
 				$res = $objecttmp->create($user);
 
-				if ($res > 0) $nb_bills_created++;
+				if ($res > 0){
+					$nb_bills_created++;
+				}
+				else {
+					setEventMessage($objecttmp->error, 'errors');
+					break;
+				}
 			}
 
 			if ($objecttmp->id > 0)
@@ -324,20 +338,20 @@ if (empty($reshook))
 					$fk_parent_line = 0;
 					$num = count($lines);
 
-/**************************** SPE VECOMPANY PART 1/2 **************************/
-/** Fait dans le coeur car les autres solutions étaient
- * jugées trop chronophages et ne garantissaient pas le fonctionnement final
- */
-					if($conf->subtotal->enabled && ! class_exists('TSubtotal')) {
+					/**************************** SPE VECOMPANY PART 2/3 **************************/
+					/** Fait dans le coeur car les autres solutions étaient
+					 * jugées trop chronophages et ne garantissaient pas le fonctionnement final
+					 */
+					if ($conf->subtotal->enabled && ! class_exists('TSubtotal')) {
 						dol_include_once('/subtotal/class/subtotal.class.php');
 					}
 
-					if($conf->subtotal->enabled && class_exists('TSubtotal')) {
+					if ($conf->subtotal->enabled && class_exists('TSubtotal')) {
 						$subtotal = new TSubtotal();
 						$subtotal->addTitle($objecttmp, $langs->trans('Order'). ' : ' . $cmd->ref, 0);
 					}
 
-/**************************** FIN SPE VECOMPANY PART 1/2 **************************/
+					/**************************** FIN SPE VECOMPANY PART 2/3 **************************/
 
 					for ($i = 0; $i < $num; $i++)
 					{
@@ -422,11 +436,11 @@ if (empty($reshook))
 						}
 					}
 
-/**************************** SPE VECOMPANY PART 2/2 **************************/
-					if($conf->subtotal->enabled && class_exists('TSubtotal')) {
+					/**************************** SPE VECOMPANY PART 3/3 **************************/
+					if ($conf->subtotal->enabled && class_exists('TSubtotal')) {
 						$subtotal->addTotal($objecttmp, $langs->trans('Total'). ' : ' . $cmd->ref, 0);
 					}
-/**************************** FIN SPE VECOMPANY PART 2/2  **************************/
+					/**************************** FIN SPE VECOMPANY PART 3/3  **************************/
 				}
 			}
 

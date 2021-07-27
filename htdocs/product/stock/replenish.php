@@ -58,11 +58,22 @@ $salert = GETPOST('salert', 'alpha');
 $includeproductswithoutdesiredqty = GETPOST('includeproductswithoutdesiredqty', 'alpha');
 $mode = GETPOST('mode', 'alpha');
 $draftorder = GETPOST('draftorder', 'alpha');
+$multiwarehouse = GETPOST('multiwarehouse', 'none');
+if (!is_array($multiwarehouse))
+{
+	$multiwarehouse = explode(',', $multiwarehouse);
+}
 
 
 $fourn_id = GETPOST('fourn_id', 'int');
 $fk_supplier = GETPOST('fk_supplier', 'int');
 $fk_entrepot = GETPOST('fk_entrepot', 'int');
+
+if ($fk_entrepot > 0 && !in_array($fk_entrepot, $multiwarehouse)){
+	$multiwarehouse[] = $fk_entrepot;
+}
+$multiwarehouse = array_map('intval', $multiwarehouse);
+
 $texte = '';
 
 $sortfield = GETPOST('sortfield', 'aZ09comma');
@@ -558,13 +569,13 @@ if ($usevirtualstock == 1)
 {
 	print $langs->trans("CurentSelectionMode").': ';
 	print '<span class="a-mesure">'.$langs->trans("UseVirtualStock").'</span>';
-	print ' <a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=physical'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($fk_entrepot > 0 ? '&fk_entrepot='.$fk_entrepot : '').'">'.$langs->trans("UsePhysicalStock").'</a>';
+	print ' <a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=physical'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($multiwarehouse? '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse) : '').'">'.$langs->trans("UsePhysicalStock").'</a>';
 	print '<br>';
 }
 if ($usevirtualstock == 0)
 {
 	print $langs->trans("CurentSelectionMode").': ';
-	print '<a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=virtual'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($fk_entrepot > 0 ? '&fk_entrepot='.$fk_entrepot : '').'">'.$langs->trans("UseVirtualStock").'</a>';
+	print '<a class="a-mesure-disabled" href="'.$_SERVER["PHP_SELF"].'?mode=virtual'.($fk_supplier > 0 ? '&fk_supplier='.$fk_supplier : '').($multiwarehouse? '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse) : '').'">'.$langs->trans("UseVirtualStock").'</a>';
 	print ' <span class="a-mesure">'.$langs->trans("UsePhysicalStock").'</span>';
 	print '<br>';
 }
@@ -622,6 +633,7 @@ if ($search_ref || $search_label || $sall || $salert || $draftorder || GETPOST('
 	$filters .= '&mode='.urlencode($mode);
 	if ($fk_supplier > 0) $filters .= '&fk_supplier='.urlencode($fk_supplier);
 	if ($fk_entrepot > 0) $filters .= '&fk_entrepot='.urlencode($fk_entrepot);
+	if ($multiwarehouse) $filters .=  '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse);
 } else {
 	$filters = '&search_ref='.urlencode($search_ref).'&search_label='.urlencode($search_label);
 	$filters .= '&fourn_id='.urlencode($fourn_id);
@@ -631,6 +643,7 @@ if ($search_ref || $search_label || $sall || $salert || $draftorder || GETPOST('
 	$filters .= '&mode='.urlencode($mode);
 	if ($fk_supplier > 0) $filters .= '&fk_supplier='.urlencode($fk_supplier);
 	if ($fk_entrepot > 0) $filters .= '&fk_entrepot='.urlencode($fk_entrepot);
+	if ($multiwarehouse) $filters .=  '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse);
 }
 if ($limit > 0 && $limit != $conf->liste_limit) {
 	$filters .= '&limit='.urlencode($limit);
@@ -642,6 +655,7 @@ $param .= '&search_ref='.urlencode($search_ref);
 $param .= '&mode='.urlencode($mode);
 $param .= '&fk_supplier='.urlencode($fk_supplier);
 $param .= '&fk_entrepot='.urlencode($fk_entrepot);
+if ($multiwarehouse) $filters .=  '&multiwarehouse='.implode('&multiwarehouse[]=', $multiwarehouse);
 
 $stocklabel = $langs->trans('Stock');
 $stocklabelbis = $langs->trans('Stock');
@@ -701,7 +715,7 @@ if (!empty($conf->service->enabled) && $type == 1) print '<td class="liste_titre
 print '<td class="liste_titre right">'.$form->textwithpicto($langs->trans('IncludeEmptyDesiredStock'), $langs->trans('IncludeProductWithUndefinedAlerts')).'&nbsp;<input type="checkbox" id="includeproductswithoutdesiredqty" name="includeproductswithoutdesiredqty" '.(!empty($includeproductswithoutdesiredqtychecked) ? $includeproductswithoutdesiredqtychecked : '').'></td>';
 print '<td class="liste_titre right"></td>';
 print '<td class="liste_titre right">'.$langs->trans('AlertOnly').'&nbsp;<input type="checkbox" id="salert" name="salert" '.(!empty($alertchecked) ? $alertchecked : '').'></td>';
-if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0)
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $multiwarehouse)
 {
 	print '<td class="liste_titre">&nbsp;</td>';
 }
@@ -731,7 +745,8 @@ if (!empty($conf->service->enabled) && $type == 1) print_liste_field_titre('Dura
 print_liste_field_titre('DesiredStock', $_SERVER["PHP_SELF"], 'p.desiredstock', $param, '', '', $sortfield, $sortorder, 'right ');
 print_liste_field_titre('StockLimitShort', $_SERVER["PHP_SELF"], 'p.seuil_stock_alerte', $param, '', '', $sortfield, $sortorder, 'right ');
 print_liste_field_titre($stocklabel, $_SERVER["PHP_SELF"], 'stock_physique', $param, '', '', $sortfield, $sortorder, 'right ');
-if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0)
+
+if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $multiwarehouse)
 {
 	print_liste_field_titre($stocklabelbis, $_SERVER["PHP_SELF"], 'stock_real_warehouse', $param, '', '', $sortfield, $sortorder, 'right ');
 }
@@ -862,10 +877,10 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		}
 
 		// Desired stock
-		print '<td class="right">'.($fk_entrepot > 0 ? $desiredstockwarehouse : $desiredstock).'</td>';
+		print '<td class="right">'.($multiwarehouse ? $desiredstockwarehouse : $desiredstock).'</td>';
 
 		// Limit stock for alert
-		print '<td class="right">'.($fk_entrepot > 0 ? $alertstockwarehouse : $alertstock).'</td>';
+		print '<td class="right">'.($multiwarehouse ? $alertstockwarehouse : $alertstock).'</td>';
 
 		// Current stock (all warehouses)
 		print '<td class="right">'.$warning.$stock;
@@ -873,7 +888,7 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		print '</td>';
 
 		// Current stock (warehouse selected only)
-		if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $fk_entrepot > 0)
+		if (!empty($conf->global->STOCK_ALLOW_ADD_LIMIT_STOCK_BY_WAREHOUSE) && $multiwarehouse)
 		{
 			print '<td class="right">'.$warningwarehouse.$stockwarehouse.'</td>';
 		}
@@ -882,7 +897,7 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		print '<td class="right"><a href="replenishorders.php?search_product='.$prod->id.'">'.$ordered.'</a> '.$picto.'</td>';
 
 		// To order
-		print '<td class="right"><input type="text" size="4" name="tobuy'.$i.'" value="'.($fk_entrepot > 0 ? $stocktobuywarehouse : $stocktobuy).'"></td>';
+		print '<td class="right"><input type="text" size="4" name="tobuy'.$i.'" value="'.($multiwarehouse ? $stocktobuywarehouse : $stocktobuy).'"></td>';
 
 		// Supplier
 		print '<td class="right">';
