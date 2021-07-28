@@ -73,7 +73,7 @@ if ($fk_entrepot > 0 && !in_array($fk_entrepot, $multiwarehouse)){
 	$multiwarehouse[] = $fk_entrepot;
 }
 $multiwarehouse = array_map('intval', $multiwarehouse);
-
+$multiwarehouse = array_unique($multiwarehouse);
 $texte = '';
 
 $sortfield = GETPOST('sortfield', 'aZ09comma');
@@ -798,7 +798,7 @@ while ($i < ($limit ? min($num, $limit) : $num))
 			$stock = $prod->stock_reel;
 
 			foreach ($multiwarehouse as $fk_multientrepot){
-				$stockwarehouse+= $prod->stock_warehouse[$fk_multientrepot]->real;
+				$stockwarehouse+= doubleval($prod->stock_warehouse[$fk_multientrepot]->real);
 			}
 		}
 
