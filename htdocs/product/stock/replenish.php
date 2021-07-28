@@ -797,8 +797,8 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		} else {
 			$stock = $prod->stock_reel;
 
-			foreach ($multiwarehouse as $fk_entrepot){
-				$stockwarehouse+= $prod->stock_warehouse[$fk_entrepot]->real;
+			foreach ($multiwarehouse as $fk_multientrepot){
+				$stockwarehouse+= $prod->stock_warehouse[$fk_multientrepot]->real;
 			}
 		}
 
