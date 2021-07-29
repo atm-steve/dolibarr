@@ -210,72 +210,28 @@ if ($action == 'deleteline') {
     $fkExpBatch = GETPOST('fk_exp_batch', 'int');
     $fk_product = GETPOST('fk_product', 'int');
     $expBatch = new ExpeditionLineBatch($db);
-    $expBatch->fetchCommon($fkExpBatch);
-    $expLine = new ExpeditionLigne($db);
+    $res = $expBatch->fetchCommon($fkExpBatch);
 
-    $expBatchToDefine = $object->getBatchToDefineLine($fk_product);
-    if (!empty($expBatchToDefine)) {
-        //MAJ TO Define batch qty
-        $expBatchToDefine->qty+=$expBatch->qty;
-        $res = $expBatchToDefine->updateQty();
-        if ($res <= 0) {
-            $error++;
-            setEventMessage($expBatchToDefine->errors, 'errors');
-        }
-        //MAJ To define line qty
-        $expLine->fetch($expBatchToDefine->fk_expeditiondet);
-        $expLine->qty += $expBatch->qty;
-        $expLine->entrepot_id = 0;
-        $res = $expLine->update($user);
-        if ($res <= 0) {
-            $error++;
-            setEventMessage($expLine->errors, 'errors');
-        }
-    } else {
-        $expLine->fetch($expBatch->fk_expeditiondet);
-        //Create to define if not exists
-        $expLine->origin_line_id = $expLine->fk_origin_line;
-        $expLine->entrepot_id = 0;
-        $expLine->detail_batch[0] = new ExpeditionLineBatch($db);
-        $expLine->detail_batch[0]->fk_origin_stock = 0;
-        $expLine->detail_batch[0]->batch = '';
-        $expLine->detail_batch[0]->entrepot_id = 0;
-        $expLine->detail_batch[0]->qty = $expBatch->qty;
-        if ($object->create_line_batch($expLine, $expLine->array_options) < 0) {
-            setEventMessages($object->error, $object->errors, 'errors');
-            $error++;
-        }
-    }
+    if ($res>0) {
+		$res = $expBatch->deleteCommon($user);
+		if ($res <= 0) {
+			$error++;
+			setEventMessage($expBatch->error, 'errors');
+		}
 
-
-    $expLine->fetch($expBatch->fk_expeditiondet);
-
-    //MAJ ExpLine Qty
-    if ($expBatch->qty >= $expLine->qty) {
-        $res = $expLine->delete($user);
-    } else {
-        $expLine->qty -= $expBatch->qty;
-        $res = $expLine->update($user);
-    }
-    if ($res <= 0) {
-        $error++;
-        setEventMessage($expLine->errors, 'errors');
-    }
-
-    $res = $expBatch->deleteCommon($user);
-    if ($res <= 0) {
-        $error++;
-        setEventMessage($expLine->errors, 'errors');
-    }
-
-	if (! $error) {
-        $db->commit();
-        header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
-        exit();
+		if (! $error) {
+			$db->commit();
+			header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
+			exit();
+		}
+		else {
+			$db->rollback();
+		}
 	}
     else {
-        $db->rollback();
-    }
+		$error++;
+		setEventMessage($langs->trans('noFound'), 'errors');
+	}
 }
 
 /*
