@@ -2336,7 +2336,7 @@ if ($action == 'create')
 						// Qty to ship or shipped
 						print '<td><input class="qtyl" name="qtyl'.$line_id.'_0[]" type="text" size="4" value="0"></td>';
 						// Batch number managment
-						print '<td>'.$speAmaFormProduct->selectLotStock('', 'batchl'.$line_id.'_0[]', '', 1, 0, $lines[$i]->fk_product, 0, array(), '', 1).'</td>';
+						print '<td>'.$speAmaFormProduct->selectLotStock('', 'batchl'.$line_id.'_0[]', '', 1, 0, $lines[$i]->fk_product, $entrepot_id, array(), '', 1).'</td>';
 
 						print '</tr>';
 					} elseif (!empty($conf->stock->enabled))
