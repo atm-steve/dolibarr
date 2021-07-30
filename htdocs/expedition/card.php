@@ -2314,6 +2314,7 @@ if ($action == 'create')
 					{
 						print '<!-- case edit 1 -->';
 						$line = new ExpeditionLigne($db);
+						$entrepot_id = 0;
 						foreach ($lines[$i]->detail_batch as $detail_batch)
 						{
 							print '<tr>';
