@@ -54,6 +54,8 @@ $id_tw = GETPOST('id_tw', 'int');
 $batch = GETPOST('batch');
 $qty = GETPOST('qty');
 $idline = GETPOST('idline');
+$dateMovement = GETPOST('dateMovement', 'alphanohtml');
+$timeMovement = GETPOST('timeMovement', 'alphanohtml');
 
 $sortfield = GETPOST('sortfield', 'aZ09comma');
 $sortorder = GETPOST('sortorder', 'aZ09comma');
@@ -88,15 +90,14 @@ if ($action == 'addline')
 		$error++;
 		setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Product")), null, 'errors');
 	}
-	else
-    {
+	else {
         $p = new Product($db);
         $p->fetch($id_product);
         $p->get_sousproduits_arbo();
 
         $p->load_stock();
-        if(array_key_exists($id_sw, $p->stock_warehouse)) {
-            if($p->stock_warehouse[$id_sw]->real < $qty) {
+        if (array_key_exists($id_sw, $p->stock_warehouse)) {
+            if ($p->stock_warehouse[$id_sw]->real < $qty) {
                 setEventMessages($langs->trans('NotEnoughStock'), null, 'errors');
                 $error++;
             }
@@ -138,14 +139,14 @@ if ($action == 'addline')
      * ajouter un contrôle en plus empêchant de transférer
      * des produits non sérialisés d'un entrepôt "neuf" vers un entrepôt "occasion" (lié à la catégorisation des entrepôts)
      */
-    if(!empty($conf->global->CLIAMA_NEW_WAREHOUSE_CATEGORY)
+    if (!empty($conf->global->CLIAMA_NEW_WAREHOUSE_CATEGORY)
         && !empty($conf->global->CLIAMA_USED_WAREHOUSE_CATEGORY)) {
         $categoryNew = new Categorie($db);
         $categoryUsed = new Categorie($db);
         $categoryNew->fetch($conf->global->CLIAMA_NEW_WAREHOUSE_CATEGORY);
         $categoryUsed->fetch($conf->global->CLIAMA_USED_WAREHOUSE_CATEGORY);
 
-        if($categoryNew->containsObject('stock', $id_sw) && $categoryUsed->containsObject('stock', $id_tw)) {
+        if ($categoryNew->containsObject('stock', $id_sw) && $categoryUsed->containsObject('stock', $id_tw)) {
             $error++;
             setEventMessages($langs->trans("NewCategoryCantGoToUsed"), null, 'errors');
         }
@@ -171,7 +172,7 @@ if ($action == 'addline')
 			}
 		}
 
-        if(! $error &&  !empty($producttmp->array_options['options_type_asset']))
+        if (! $error &&  !empty($producttmp->array_options['options_type_asset']))
         {
             $assets = array();
 
@@ -184,7 +185,16 @@ if ($action == 'addline')
                 $t->type = 'Transfert';
                 $t->fk_entrepot_source =  $id_sw;
                 $t->fk_entrepot_dest =$id_tw;
-                $t->date_mvt = dol_now();
+
+				$t->date_mvt = dol_now();
+				if (!empty($dateMovement)){
+					$t->date_mvt = date_create_from_format('y-m-d H:i', $dateMovement.' '.$timeMovement);
+					if (!$t->date_mvt){
+						$t->date_mvt = dol_now();
+					}
+				}
+
+
                 $t->num_inventaire = '';
 
                 $res = $t->create($user);
@@ -202,7 +212,6 @@ if ($action == 'addline')
                 $i++;
             }
         }
-
 	}
 
 	// TODO Check qty is ok for stock move. Note qty may not be enough yet, but we make a check now to report a warning.
@@ -253,90 +262,90 @@ if ($action == 'createmovements')
 {
 	$error = 0;
     $nb_transfer=0;
-//	if (!GETPOST("label"))
-//	{
-//		$error++;
-//		setEventMessages($langs->trans("ErrorFieldRequired"), $langs->transnoentitiesnoconv("MovementLabel"), null, 'errors');
-//	}
+	//  if (!GETPOST("label"))
+	//  {
+	//      $error++;
+	//      setEventMessages($langs->trans("ErrorFieldRequired"), $langs->transnoentitiesnoconv("MovementLabel"), null, 'errors');
+	//  }
 
 	$db->begin();
 
 	{
 		$product = new Product($db);
 
-		foreach ($listofdata as $key => $val)	// Loop on each movement to do
+	foreach ($listofdata as $key => $val)	// Loop on each movement to do
 		{
-			$id = $val['id'];
-			$id_product = $val['id_product'];
-			$id_sw = $val['id_sw'];
-			$id_tw = $val['id_tw'];
-			$qty = price2num($val['qty']);
-			$batch = $val['batch'];
-			$dlc = -1; // They are loaded later from serial
-			$dluo = -1; // They are loaded later from serial
-            $assets = $val['assets'];
+		$id = $val['id'];
+		$id_product = $val['id_product'];
+		$id_sw = $val['id_sw'];
+		$id_tw = $val['id_tw'];
+		$qty = price2num($val['qty']);
+		$batch = $val['batch'];
+		$dlc = -1; // They are loaded later from serial
+		$dluo = -1; // They are loaded later from serial
+		$assets = $val['assets'];
 
-			if (!$error && $id_sw <> $id_tw && is_numeric($qty) && $id_product)
-			{
-				$result = $product->fetch($id_product);
+		if (!$error && $id_sw <> $id_tw && is_numeric($qty) && $id_product)
+		{
+			$result = $product->fetch($id_product);
 
-				$product->load_stock('novirtual'); // Load array product->stock_warehouse
+			$product->load_stock('novirtual'); // Load array product->stock_warehouse
 
-				// Define value of products moved
-				$pricesrc = 0;
-				if (!empty($product->pmp)) $pricesrc = $product->pmp;
-				$pricedest = $pricesrc;
+			// Define value of products moved
+			$pricesrc = 0;
+			if (!empty($product->pmp)) $pricesrc = $product->pmp;
+			$pricedest = $pricesrc;
 
-				//print 'price src='.$pricesrc.', price dest='.$pricedest;exit;
+			//print 'price src='.$pricesrc.', price dest='.$pricedest;exit;
 
-                    if(empty($conf->productbatch->enabled) || ! $product->hasbatch())        // If product does not need lot/serial
-                    {
-                        // Remove stock
-					$result1 = $product->correct_stock(
-						$user,
-						$id_sw,
-						$qty,
-						1,
-						GETPOST("label"),
-						$pricesrc,
-						GETPOST("codemove")
-					);
-					if ($result1 < 0)
-					{
-                            $error++;
-                            setEventMessages($product->errors, $product->errorss, 'errors');
-                        }
+			if (empty($conf->productbatch->enabled) || ! $product->hasbatch())        // If product does not need lot/serial
+				{
+				// Remove stock
+				$result1 = $product->correct_stock(
+				$user,
+				$id_sw,
+				$qty,
+				1,
+				GETPOST("label"),
+				$pricesrc,
+				GETPOST("codemove")
+				);
+				if ($result1 < 0)
+				{
+					$error++;
+					setEventMessages($product->errors, $product->errorss, 'errors');
+				}
 
-                        // Add stock
-					$result2 = $product->correct_stock(
-						$user,
-						$id_tw,
-						$qty,
-						0,
-						GETPOST("label"),
-						$pricedest,
-						GETPOST("codemove")
-					);
-					if ($result2 < 0)
-					{
-                            $error++;
-                            setEventMessages($product->errors, $product->errorss, 'errors');
-                        }
-				} else {
-                        $arraybatchinfo = $product->loadBatchInfo($batch);
-					if (count($arraybatchinfo) > 0)
-					{
+				// Add stock
+				$result2 = $product->correct_stock(
+				$user,
+				$id_tw,
+				$qty,
+				0,
+				GETPOST("label"),
+				$pricedest,
+				GETPOST("codemove")
+				);
+				if ($result2 < 0)
+				{
+					$error++;
+					setEventMessages($product->errors, $product->errorss, 'errors');
+				}
+			} else {
+				$arraybatchinfo = $product->loadBatchInfo($batch);
+				if (count($arraybatchinfo) > 0)
+				{
                             $firstrecord = array_shift($arraybatchinfo);
                             $dlc = $firstrecord['eatby'];
                             $dluo = $firstrecord['sellby'];
 						//var_dump($batch); var_dump($arraybatchinfo); var_dump($firstrecord); var_dump($dlc); var_dump($dluo); exit;
-					} else {
-                            $dlc = '';
-                            $dluo = '';
-                        }
+				} else {
+					$dlc = '';
+					$dluo = '';
+				}
 
                         // Remove stock
-					$result1 = $product->correct_stock_batch(
+						$result1 = $product->correct_stock_batch(
 						$user,
 						$id_sw,
 						$qty,
@@ -347,15 +356,15 @@ if ($action == 'createmovements')
 						$dluo,
 						$batch,
 						GETPOST("codemove")
-					);
-					if ($result1 < 0)
-					{
+				);
+				if ($result1 < 0)
+				{
                             $error++;
                             setEventMessages($product->errors, $product->errorss, 'errors');
-                        }
+				}
 
                         // Add stock
-					$result2 = $product->correct_stock_batch(
+						$result2 = $product->correct_stock_batch(
 						$user,
 						$id_tw,
 						$qty,
@@ -366,18 +375,18 @@ if ($action == 'createmovements')
 						$dluo,
 						$batch,
 						GETPOST("codemove")
-					);
-					if ($result2 < 0)
-					{
+				);
+				if ($result2 < 0)
+				{
                             $error++;
                             setEventMessages($product->errors, $product->errorss, 'errors');
-                        }
-                    }
-                        }else {
-				// dol_print_error('',"Bad value saved into sessions");
-				$error++;
+				}
 			}
+		}else {
+			// dol_print_error('',"Bad value saved into sessions");
+			$error++;
 		}
+	}
 	}
 
 	if (!$error)
@@ -386,7 +395,7 @@ if ($action == 'createmovements')
 
 		$db->commit();
 		setEventMessages($langs->trans("StockMovementRecorded"), null, 'mesgs');
-		header("Location: ".DOL_URL_ROOT.'/product/stock/index.php'); // Redirect to avoid pb when using back
+		header("Location: ".DOL_URL_ROOT.'/product/stock/movement_list.php'); // Redirect to avoid pb when using back
 		exit;
 	} else {
 		$db->rollback();
@@ -472,7 +481,7 @@ if ($conf->productbatch->enabled)
 	print '<td>';
 	/*** SPE AMA ***/
 	print $form->selectarray("batch", array(), "batch", 1, 0, 0, '', 0, 0, 0, '', '', 1);
-//	print '<input type="text" name="batch" class="flat maxwidth50" value="'.$batch.'">';
+	//  print '<input type="text" name="batch" class="flat maxwidth50" value="'.$batch.'">';
 	/*** FIN SPE AMA ***/
 	print '</td>';
 }
@@ -534,8 +543,17 @@ print '<span class="fieldrequired">'.$langs->trans("InventoryCode").':</span> ';
 print '<input type="text" name="codemove" class="maxwidth300" value="'.dol_escape_htmltag($codemove).'"> &nbsp; ';
 print '<span class="clearbothonsmartphone"></span>';
 print $langs->trans("MovementLabel").': ';
-print '<input type="text" name="label" class="minwidth300" value="'.dol_escape_htmltag($labelmovement).'"><br>';
-print '<br>';
+print '<input type="text" name="label" class="minwidth300" value="'.dol_escape_htmltag($labelmovement).'">';
+
+
+/***** SPE AMA ******/
+print ' '.$langs->trans("DateMovement").': ';
+$inputDateMovement = GETPOSTISSET('dateMovement') ? GETPOST('dateMovement') : date('Y-m-d');
+$inputTimeMovement = GETPOSTISSET('timeMovement') ? GETPOST('timeMovement') : date('H:i');
+print '<input type="date" name="dateMovement"  value="'.$inputDateMovement.'" required /><input type="time" name="timeMovement" min="00:00" max="23:59" value="'.$inputTimeMovement.'" required /><br>';
+/***** FIN SPE AMA ******/
+
+print '<br><br>';
 
 print '<div class="center"><input class="button" type="submit" name="valid" value="'.dol_escape_htmltag($buttonrecord).'"></div>';
 
@@ -583,6 +601,10 @@ $jsonConf = array(
 					'fk_product': $('#productid').val()
 				};
 
+				if(data.fk_warehouse < 1 || data.fk_product < 1){
+					return ;
+				}
+
 				// clean max input qty for batch
 				$('form[name=formulaire] input[name=qty]').removeAttr('max').prop( "disabled", false );
 				$('form[name=formulaire] input[name=addline]').prop( "disabled", false );
@@ -595,7 +617,6 @@ $jsonConf = array(
 					// La fonction à apeller si la requête aboutie
 					success: function (data) {
 						// Loading data
-						console.log(data);
 						if (data.result > 0) {
 							let inputBatch = $('form[name=formulaire] select[name=batch]');
 							updateImputOptions(inputBatch, data.TBatch, inputBatch.val());
@@ -623,7 +644,7 @@ $jsonConf = array(
 					},
 					// La fonction à appeler si la requête n'a pas abouti
 					error: function (jqXHR, textStatus) {
-						$.jnotify('Request failed' + textStatus, 'error', {timeout: 5, type: 'error', css: 'error'});
+						$.jnotify('Ajax Request failed : ' + textStatus, 'error', {timeout: 5, type: 'error', css: 'error'});
 					}
 				});
 			}
@@ -682,7 +703,7 @@ $jsonConf = array(
                 var num_inv = tr.find('[name="num_inventaire"]').val();
 
                 $.ajax({
-                    url: "<?php echo dol_buildpath('/cliama/script/interface.php',1) ?>"
+                    url: "<?php echo dol_buildpath('/cliama/script/interface.php', 1) ?>"
                     ,data: {
                         put:'save_transfert'
                         ,id:id
