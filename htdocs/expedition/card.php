@@ -2251,7 +2251,7 @@ if ($action == 'create')
 								appendNewLineBatchselector($(lineBatchSelectWrap)); // Ajoute une ligne vierge
 								checkQtyAskedVsInput(); // vérifie les quantité demandé et retire la ligne vierge si besoin
 
-								$(lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl").change (function(event) {
+								$(document).on("change", lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl", function() {
 								   checkQtyAskedVsInput();
 								});
 
@@ -2282,11 +2282,11 @@ if ($action == 'create')
 							    $(lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl").each (function(event) {
 								    elementItemNumb++;
 								    qtyTotal = qtyTotal + parseFloat($(this).val());
-								    element = $(this)[0];
+								    let element = $(this)[0];
 								    if(qtyTotal >= qtyAsked){
 
-								    	if(qtyTotal > qtyAsked){
-								    		element.setCustomValidity("'.$langs->transnoentitiesnoconv('QuantyTooHighAgainstQtyAsked').'");
+										if(qtyTotal > qtyAsked){
+								    		element.setCustomValidity("' . $langs->transnoentitiesnoconv('QuantyTooHighAgainstQtyAsked') . '");
 								    	}
 
 								    	if(parseFloat($(this).val()) == 0 && elementItemNumb > 0) {
