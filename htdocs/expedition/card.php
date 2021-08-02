@@ -2273,7 +2273,7 @@ if ($action == 'create')
 								});
 
 
-							// Vérifi les qté saisi par rapport à la demande
+							// Vérifie les qté saisies par rapport à la demande
 							function checkQtyAskedVsInput(){
 							    var qtyTotal = 0;
 								var qtyAsked = '.doubleval($lines[$i]->qty_asked).';
