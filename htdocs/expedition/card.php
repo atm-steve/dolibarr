@@ -45,7 +45,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/stock/class/productlot.class.php';
+/* ——————————— SPÉ AMA - part 01/16 —————————————— */
 dol_include_once('/cliama/lib/cliama.lib.php');
+/* ————————— FIN SPE AMA - part 01/16 ———————————— */
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 
 if (!empty($conf->product->enabled) || !empty($conf->service->enabled))  require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
@@ -88,7 +90,7 @@ $cancel = GETPOST('cancel', 'alpha');
 $hidedetails = (GETPOST('hidedetails', 'int') ? GETPOST('hidedetails', 'int') : (!empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
 $hidedesc = (GETPOST('hidedesc', 'int') ? GETPOST('hidedesc', 'int') : (!empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DESC) ? 1 : 0));
 $hideref = (GETPOST('hideref', 'int') ? GETPOST('hideref', 'int') : (!empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_REF) ? 1 : 0));
-$needToDefineBatch = false;
+
 $object = new Expedition($db);
 $objectorder = new Commande($db);
 $extrafields = new ExtraFields($db);
@@ -416,10 +418,9 @@ if (empty($reshook))
 	)
 	{
 		$object->fetch_thirdparty();
-        if(!empty($conf->productbatch->enabled)) $needToDefineBatch = $object->hasToDefineBatchLine();
 
-		if(!$needToDefineBatch) $result = $object->valid($user);
-        else $result = -1;
+		$result = $object->valid($user);
+
 		if ($result < 0) {
 			setEventMessages($object->error, $object->errors, 'errors');
 		} else {
@@ -619,13 +620,20 @@ if (empty($reshook))
 				if (is_array($lines[$i]->detail_batch) && count($lines[$i]->detail_batch) > 0)
 				{
 					// line with lot
-					foreach ($lines[$i]->detail_batch as $detail_batch)
+					foreach ($lines[$i]->detail_batch as $di => $detail_batch)
 					{
 						$lotStock = new Productbatch($db);
 						$batch = "batchl".$detail_batch->fk_expeditiondet."_".$detail_batch->fk_origin_stock;
 						$qty = "qtyl".$detail_batch->fk_expeditiondet.'_'.$detail_batch->id;
 						$batch_id = GETPOST($batch, 'int');
 						$batch_qty = GETPOST($qty, 'int');
+
+						if (empty($batch_id)) {
+							// delete
+							$batch_id = $detail_batch->fk_origin_stock;
+							$batch_qty = 0;
+						}
+
 						if (!empty($batch_id) && ($batch_id != $detail_batch->fk_origin_stock || $batch_qty != $detail_batch->qty))
 						{
 							if ($lotStock->fetch($batch_id) > 0 && $line->fetch($detail_batch->fk_expeditiondet) > 0)	// $line is ExpeditionLine
@@ -648,82 +656,90 @@ if (empty($reshook))
 									setEventMessages($line->error, $line->errors, 'errors');
 									$error++;
 								}
-							} else {
-								setEventMessages($lotStock->error, $lotStock->errors, 'errors');
-								$error++;
 							}
 						}
+
+
 						unset($_POST[$batch]);
 						unset($_POST[$qty]);
 					}
+
+					/** ****************** SPE AMA AJOUT NEW BATCH MULTIPLE part 1/2 TODO à mettre dans le coeur ********************/
 					// add new batch
-					$lotStock = new Productbatch($db);
 					$batch = "batchl".$line_id."_0";
 					$qty = "qtyl".$line_id."_0";
-					$batch_id = GETPOST($batch, 'int');
-					$batch_qty = GETPOST($qty, 'int');
-					$lineIdToAddLot = 0;
-//					var_dump($_REQUEST, $batch, $batch_id, $batch_qty);exit;
-					if ($batch_qty > 0 && !empty($batch_id))
+					$Tbatch_id = GETPOST($batch, 'array');
+					$Tbatch_qty = GETPOST($qty, 'array');
+					foreach ($Tbatch_qty as $li)
 					{
-						if ($lotStock->fetch($batch_id) > 0)
+						$lotStock = new Productbatch($db);
+						$lineIdToAddLot = 0;
+
+						$batch_id  = $Tbatch_id[$li];
+						$batch_qty = $Tbatch_qty[$li];
+						/** ****************** FIN SPE AMA AJOUT NEW BATCH MULTIPLE  part 1/2 TODO à mettre dans le coeur ****************** */
+						if ($batch_qty > 0 && !empty($batch_id) && intval($batch_id) > 0)
 						{
-							// check if lotStock warehouse id is same as line warehouse id
-							if ($lines[$i]->entrepot_id > 0)
+							if ($lotStock->fetch($batch_id) > 0)
 							{
-								// single warehouse shipment line
-								if ($lines[$i]->entrepot_id == $lotStock->warehouseid)
+								// check if lotStock warehouse id is same as line warehouse id
+								if ($lines[$i]->entrepot_id > 0)
 								{
-									$lineIdToAddLot = $line_id;
-								}
-							} elseif (count($lines[$i]->details_entrepot) > 1)
-							{
-								// multi warehouse shipment lines
-								foreach ($lines[$i]->details_entrepot as $detail_entrepot)
-								{
-									if ($detail_entrepot->entrepot_id == $lotStock->warehouseid)
+									// single warehouse shipment line
+									if ($lines[$i]->entrepot_id == $lotStock->warehouseid)
 									{
-										$lineIdToAddLot = $detail_entrepot->line_id;
+										$lineIdToAddLot = $line_id;
+									}
+								} elseif (count($lines[$i]->details_entrepot) > 1)
+								{
+									// multi warehouse shipment lines
+									foreach ($lines[$i]->details_entrepot as $detail_entrepot)
+									{
+										if ($detail_entrepot->entrepot_id == $lotStock->warehouseid)
+										{
+											$lineIdToAddLot = $detail_entrepot->line_id;
+										}
 									}
 								}
-							}
-							if ($lineIdToAddLot)
-							{
-								// add lot to existing line
-								if ($line->fetch($lineIdToAddLot) > 0)
+								if ($lineIdToAddLot)
 								{
-								    $line->detail_batch = new stdClass;
-									$line->detail_batch->fk_origin_stock = $batch_id;
-									$line->detail_batch->batch = $lotStock->batch;
-									$line->detail_batch->entrepot_id = $lotStock->warehouseid;
-									$line->detail_batch->qty = $batch_qty;
-									if ($line->update($user) < 0) {
+									// add lot to existing line
+									if ($line->fetch($lineIdToAddLot) > 0)
+									{
+										$line->detail_batch->fk_origin_stock = $batch_id;
+										$line->detail_batch->batch = $lotStock->batch;
+										$line->detail_batch->entrepot_id = $lotStock->warehouseid;
+										$line->detail_batch->qty = $batch_qty;
+										if ($line->update($user) < 0) {
+											setEventMessages($line->error, $line->errors, 'errors');
+											$error++;
+										}
+									} else {
 										setEventMessages($line->error, $line->errors, 'errors');
 										$error++;
 									}
 								} else {
-									setEventMessages($line->error, $line->errors, 'errors');
-									$error++;
+									// create new line with new lot
+									$line->origin_line_id = $lines[$i]->origin_line_id;
+									$line->entrepot_id = $lotStock->warehouseid;
+									$line->detail_batch[0] = new ExpeditionLineBatch($db);
+									$line->detail_batch[0]->fk_origin_stock = $batch_id;
+									$line->detail_batch[0]->batch = $lotStock->batch;
+									$line->detail_batch[0]->entrepot_id = $lotStock->warehouseid;
+									$line->detail_batch[0]->qty = $batch_qty;
+									if ($object->create_line_batch($line, $line->array_options) < 0)
+									{
+										setEventMessages($object->error, $object->errors, 'errors');
+										$error++;
+									}
 								}
 							} else {
-								// create new line with new lot
-								$line->origin_line_id = $lines[$i]->origin_line_id;
-								$line->entrepot_id = $lotStock->warehouseid;
-								$line->detail_batch[0] = new ExpeditionLineBatch($db);
-								$line->detail_batch[0]->fk_origin_stock = $batch_id;
-								$line->detail_batch[0]->batch = $lotStock->batch;
-								$line->detail_batch[0]->entrepot_id = $lotStock->warehouseid;
-								$line->detail_batch[0]->qty = $batch_qty;
-								if ($object->create_line_batch($line, $line->array_options) < 0)
-								{
-									setEventMessages($object->error, $object->errors, 'errors');
-									$error++;
-								}
+								setEventMessages($lotStock->error, $lotStock->errors, 'errors');
+								$error++;
 							}
-						} else {
-							setEventMessages($lotStock->error, $lotStock->errors, 'errors');
-							$error++;
+							/** ****************** SPE AMA AJOUT NEW BATCH MULTIPLE part 2/2 TODO à mettre dans le coeur ********************/
 						}
+						/** ****************** FIN SPE AMA AJOUT NEW BATCH MULTIPLE 2/2 TODO à mettre dans le coeur ********************/
 					}
 				} else {
 					if ($lines[$i]->fk_product > 0)
@@ -1118,10 +1134,8 @@ if ($action == 'create')
 						$product->load_stock('warehouseopen'); // Load all $product->stock_warehouse[idwarehouse]->detail_batch
 						//var_dump($product->stock_warehouse[1]);
 
-                        getVirtualStockByWarehouse($product);
-
-
-	                    print '<td>';
+						print '<td>';
+						print '<a name="'.$line->id.'"></a>'; // ancre pour retourner sur la ligne
 
 						// Show product and description
 						$product_static->type = $line->fk_product_type;
@@ -1226,12 +1240,6 @@ if ($action == 'create')
 										}
 										print $formproduct->selectWarehouses($tmpentrepot_id, 'entl'.$indiceAsked, '', 1, 0, $line->fk_product, '', 1, 0, array(), 'minwidth200', '', 1, $stockMin, 'stock DESC, e.ref');
 
-                                        foreach ($product->stock_warehouse as $id => $infos) print "<script type='text/javascript'>
-																									var html = $('#entl".$indiceAsked." > option[value=\"".$id."\"]').html();
-																									if (html.indexOf('(') != -1) html = html.substring(0, html.indexOf('(')) + '(".$langs->trans("Stock").':'.$product->stock_warehouse[$id]->real.")';
-																									$('#entl".$indiceAsked." > option[value=\"".$id."\"]').html(html);
-																									</script>";
-
 										if ($tmpentrepot_id > 0 && $tmpentrepot_id == $warehouse_id)
 										{
 											//print $stock.' '.$quantityToBeDelivered;
@@ -1289,15 +1297,6 @@ if ($action == 'create')
 									$nbofsuggested++;
 								}
 							}
-							 //Handle serial number later
-                            print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
-                            print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
-                            print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="0">';
-                            print '</td>';
-                            print '<td class="left">';
-                            print  $langs->trans('Warehouse').' '.$langs->trans('and').'  '.$langs->trans('Batch').' '.$langs->trans('ToDefine').' ('.$product->stock_reel.')';
-                            $subj++;
-                            print '</td></tr>';
 							print '<input name="idl'.$indiceAsked.'" type="hidden" value="'.$line->id.'">';
 							if (is_object($product->stock_warehouse[$warehouse_id]) && count($product->stock_warehouse[$warehouse_id]->detail_batch))
 							{
@@ -1306,7 +1305,11 @@ if ($action == 'create')
 									//var_dump($dbatch);
 									$batchStock = + $dbatch->qty; // To get a numeric
 									$deliverableQty = min($quantityToBeDelivered, $batchStock);
-									print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'>';
+									/** ************* SPE AMA ************************** */
+									// Ne pas afficher les lots qui ne servent pas
+									$style = empty($deliverableQty) ? ' style="display:none;" ' : '';
+									/** ************* FIN SPE AMA ********************** */
+									print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.$style.' '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'>';
 									print '<td colspan="3" ></td><td class="center">';
 									print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="'.$deliverableQty.'">';
 									print '</td>';
@@ -1454,15 +1457,6 @@ if ($action == 'create')
 									}
 								}
 							}
-                            //Handle serial number later
-                            print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
-                            print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0">';
-                            print '<input name="batchl'.$indiceAsked.'_'.$subj.'" type="hidden" value="0">';
-                            print '</td>';
-                            print '<td class="left">';
-                            print $langs->trans('Warehouse').' '.$langs->trans('and').'  '.$langs->trans('Batch').' '.$langs->trans('ToDefine').' ('.$product->stock_reel.')';
-                            $subj++;
-                            print '</td></tr>';
 							foreach ($product->stock_warehouse as $warehouse_id=>$stock_warehouse)
 							{
 								$tmpwarehouseObject->fetch($warehouse_id);
@@ -1476,7 +1470,6 @@ if ($action == 'create')
 										print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
 										print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="'.$deliverableQty.'">';
 										print '</td>';
-
 										print '<td class="left">';
 
 										print $tmpwarehouseObject->getNomUrl(0).' / ';
@@ -2223,17 +2216,150 @@ if ($action == 'create')
 					print '</td>';
 				}
 
-				if ($action == 'editline' && $lines[$i]->id == $line_id)
-				{
+				if ($action == 'editline' && $lines[$i]->id == $line_id) {
 					// edit mode
-					print '<td colspan="'.$editColspan.'" class="center"><table class="nobordernopadding">';
+					/** ************* SPE AMA ************************** */
+					// Ajoute le id="line-batch-select-wrap-'.$i.'" pour la couche de JS Todo : voir pour mettre dans le coeur
+					print '<td colspan="' . $editColspan . '" class="center">';
+
+					if (is_array($lines[$i]->detail_batch) && count($lines[$i]->detail_batch) > 0)
+					{
+						if (!class_exists('SpeAmaFormProduct')){
+							dol_include_once('cliama/class/SpeAmaFormProduct.class.php');
+						}
+
+						$speAmaFormProduct = new SpeAmaFormProduct($db);
+
+						// Gestion JS des lots
+						print '
+						<div id="line-batch-actions-container">
+						<a href="#" id="clean-batch-selection" >'.$langs->trans('ClearBatchSelection').'</a>
+						<a href="#" id="new-line-batch-selection" title="'.$langs->trans('NewLine').'" ><span class="fa fa-plus"></span></a>
+						</div>
+						<script>
+							/* Javascript library of module discountrules */
+							$( document ).ready(function() {
+								var lineBatchSelectWrap = "#line-batch-select-wrap-' . $i . '";
+
+								// transforme tout les champ qty en number avec une valeur mini à 0
+								$(lineBatchSelectWrap + " .qtyl").attr("type","number").attr("min",0).attr("step","any");
+
+								// Cas particulier de la première ligne qui ne doit pas être à zero sinon ont per le bach en cours et le système déraille
+								$(lineBatchSelectWrap + " tr:first-child .qtyl").prop("required", true).attr("min",1);
+
+								// init et vérifications
+								appendNewLineBatchselector($(lineBatchSelectWrap)); // Ajoute une ligne vierge
+								checkQtyAskedVsInput(); // vérifie les quantité demandé et retire la ligne vierge si besoin
+
+								$(document).on("change", lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl", function() {
+								   checkQtyAskedVsInput();
+								});
+
+								$( "#clean-batch-selection" ).click(function(event) {
+								    event.preventDefault();
+								    $(lineBatchSelectWrap + " tr:not(:first-child) .qtyl, " + lineBatchSelectWrap + " tr:not(:first-child) select[name^=\'batchl\']").each(function( index ) {
+										$( this ).val("0").trigger("change");
+									});
+
+								    // retrait de toutes les lignes sauf la première et la dernière car la premier ne doit JAMAIS être delete et la dernière sert pour  cloner
+							    	$( "#new-line-batch-selection" ).appendTo($( "#line-batch-actions-container" )).show(); // move button + to secure place
+								    $(lineBatchSelectWrap + " tr:not(:first-child):not(#line-batch-select-wrap-to-clone)").remove();  // suppression des lignes sauf celle qui sert de template
+								    appendNewLineBatchselector($(lineBatchSelectWrap)); // on remet une ligne libre
+								});
+
+								$( "#new-line-batch-selection" ).click(function(event) {
+								    event.preventDefault();
+								    appendNewLineBatchselector($(lineBatchSelectWrap));
+								});
+
+
+							// Vérifie les qté saisies par rapport à la demande
+							function checkQtyAskedVsInput(){
+							    var qtyTotal = 0;
+								var qtyAsked = '.doubleval($lines[$i]->qty_asked).';
+								var elementItemNumb = 0;
+
+							    $(lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl").each (function(event) {
+								    elementItemNumb++;
+								    qtyTotal = qtyTotal + parseFloat($(this).val());
+								    let element = $(this)[0];
+								    if(qtyTotal >= qtyAsked){
+
+										if(qtyTotal > qtyAsked){
+								    		element.setCustomValidity("' . $langs->transnoentitiesnoconv('QuantyTooHighAgainstQtyAsked') . '");
+								    	}
+
+								    	if(parseFloat($(this).val()) == 0 && elementItemNumb > 0) {
+											$( "#new-line-batch-selection" ).appendTo($( "#line-batch-actions-container" )); // déplace le bouton plus en sécurité avant de supprimer la ligne
+											$(this).closest( "tr" ).remove();
+								    	}
+								    }else{
+								        element.setCustomValidity("");
+								    }
+								});
+
+							     if(qtyTotal >= qtyAsked){
+							          $( "#new-line-batch-selection" ).hide();
+							     }else {
+							         $( "#new-line-batch-selection" ).show();
+							     }
+
+							}
+							});
+
+							/**
+							*
+							* @param {jQuery} el
+							*/
+							function appendNewLineBatchselector(el){
+							    var newLineOfBatchSelection = $( "#line-batch-select-wrap-to-clone" ).clone();
+							    newLineOfBatchSelection.removeAttr( "id" );
+							    $( "#new-line-batch-selection" ).appendTo(newLineOfBatchSelection.find( "td:last-child" )).show();
+							    newLineOfBatchSelection.appendTo(el).show();
+							    addSelect2ToTarget (newLineOfBatchSelection.find( "select[name^=\'batchl\']" ));
+							}
+
+
+							/**
+							*
+							* @param {jQuery} el
+							*/
+							function addSelect2ToTarget (el) {
+								el.select2({
+									dir: \'ltr\',
+									width: \'resolve\',		/* off or resolve */
+									minimumInputLength: 0,
+									language: select2arrayoflanguage,
+									containerCssClass: \':all:\',					/* Line to add class of origin SELECT propagated to the new <span class="select2-selection...> tag */
+									templateResult: function (data, container) {	/* Format visible output into combo list */
+										/* Code to add class of origin OPTION propagated to the new select2 <li> tag */
+										if (data.element) { $(container).addClass($(data.element).attr("class")); }
+										//console.log(data.html);
+										if ($(data.element).attr("data-html") != undefined) return htmlEntityDecodeJs($(data.element).attr("data-html"));		// If property html set, we decode html entities and use this
+										return data.text;
+									},
+									templateSelection: function (selection) {		/* Format visible output of selected value */
+										return selection.text;
+									},
+									escapeMarkup: function(markup) {
+										return markup;
+									},
+									dropdownCssClass: \'ui-dialog\'
+								});
+							}
+						</script>
+						';
+					}
+
+					print '<table id="line-batch-select-wrap-'.$i.'" class="nobordernopadding">';
+					/** ************* FIN SPE AMA ************************** */
 					if (is_array($lines[$i]->detail_batch) && count($lines[$i]->detail_batch) > 0)
 					{
 						print '<!-- case edit 1 -->';
 						$line = new ExpeditionLigne($db);
+						$entrepot_id = 0;
 						foreach ($lines[$i]->detail_batch as $detail_batch)
 						{
-						    if($detail_batch->fk_origin_stock == 0) continue;
 							print '<tr>';
 							// Qty to ship or shipped
 							print '<td><input class="qtyl" name="qtyl'.$detail_batch->fk_expeditiondet.'_'.$detail_batch->id.'" id="qtyl'.$line_id.'_'.$detail_batch->id.'" type="text" size="4" value="'.$detail_batch->qty.'"></td>';
@@ -2250,11 +2376,12 @@ if ($action == 'create')
 							print '</tr>';
 						}
 						// add a 0 qty lot row to be able to add a lot
-						print '<tr>';
+						print '<tr id="line-batch-select-wrap-to-clone" style="display: none;" >';
 						// Qty to ship or shipped
-						print '<td><input class="qtyl" name="qtyl'.$line_id.'_0" id="qtyl'.$line_id.'_0" type="text" size="4" value="0"></td>';
+						print '<td><input class="qtyl" name="qtyl'.$line_id.'_0[]" type="text" size="4" value="0"></td>';
 						// Batch number managment
-						print '<td>'.$formproduct->selectLotStock('', 'batchl'.$line_id.'_0', '', 1, 0, $lines[$i]->fk_product).'</td>';
+						print '<td>'.$speAmaFormProduct->selectLotStock('', 'batchl'.$line_id.'_0[]', '', 1, 0, $lines[$i]->fk_product, $entrepot_id, array(), '', 1).'</td>';
+
 						print '</tr>';
 					} elseif (!empty($conf->stock->enabled))
 					{
@@ -2316,10 +2443,9 @@ if ($action == 'create')
 							$entrepot = new Entrepot($db);
 							$entrepot->fetch($lines[$i]->entrepot_id);
 							print $entrepot->getNomUrl(1);
-						} elseif (count($lines[$i]->details_entrepot) > 1|| empty($lines[$i]->entrepot_id > 0))
+						} elseif (count($lines[$i]->details_entrepot) > 1)
 						{
 							$detail = '';
-							$qtyShippedNoWarehouse = $lines[$i]->qty_shipped;
                             foreach ($lines[$i]->details_entrepot as $detail_entrepot)
                             {
                                 if ($detail_entrepot->entrepot_id > 0)
@@ -2327,12 +2453,7 @@ if ($action == 'create')
                                     $entrepot = new Entrepot($db);
                                     $entrepot->fetch($detail_entrepot->entrepot_id);
                                     $detail .= $langs->trans("DetailWarehouseFormat", $entrepot->libelle, $detail_entrepot->qty_shipped).'<br/>';
-                                    $qtyShippedNoWarehouse -= $detail_entrepot->qty_shipped;
                                 }
-                            }
-                            if(!empty($qtyShippedNoWarehouse)){
-                                $needToDefineBatch = true;
-                                $detail .= $langs->trans("DetailWarehouseFormat", $langs->trans('ToDefine'), $qtyShippedNoWarehouse).'<br/>';
                             }
                             print $form->textwithtooltip(img_picto('', 'object_stock').' '.$langs->trans("DetailWarehouseNumber"), $detail);
                         }
@@ -2351,7 +2472,6 @@ if ($action == 'create')
 								$detail = '';
 								foreach ($lines[$i]->detail_batch as $dbatch)	// $dbatch is instance of ExpeditionLineBatch
 								{
-								    if(empty($dbatch->batch)) $dbatch->batch = $langs->trans('ToDefine');
 									$detail .= $langs->trans("Batch").': '.$dbatch->batch;
 									if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
 										$detail .= ' - '.$langs->trans("SellByDate").': '.dol_print_date($dbatch->sellby, "day");
@@ -2463,14 +2583,12 @@ if ($action == 'create')
 		{
 			if ($object->statut == Expedition::STATUS_DRAFT && $num_prod > 0)
 			{
-				if (!$needToDefineBatch && ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expedition->creer))
-	  			 || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expedition->shipping_advance->validate))))
+				if ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expedition->creer))
+	  			 || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expedition->shipping_advance->validate)))
 				{
 					print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans("Validate").'</a>';
 				} else {
-				    if($needToDefineBatch) $msg = 'DefineBatch';
-				    else $msg = 'NotAllowed';
-					print '<a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans($msg).'">'.$langs->trans("Validate").'</a>';
+					print '<a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans("NotAllowed").'">'.$langs->trans("Validate").'</a>';
 				}
 			}
 

@@ -489,8 +489,13 @@ class Expedition extends CommonObject
 
 		$tab = $line_ext->detail_batch;
 		// create stockLocation Qty array
-		foreach ($tab as $detbatch) $stockLocationQty[$detbatch->entrepot_id] += $detbatch->qty;
-
+		foreach ($tab as $detbatch)
+		{
+			if ($detbatch->entrepot_id)
+			{
+				$stockLocationQty[$detbatch->entrepot_id] += $detbatch->qty;
+			}
+		}
 		// create shipment lines
 		foreach ($stockLocationQty as $stockLocation => $qty)
 		{
@@ -647,30 +652,6 @@ class Expedition extends CommonObject
 			return -1;
 		}
 	}
-
-    /**
-     * @return boolean
-     */
-	public function hasToDefineBatchLine() {
-        global $langs;
-        if(! empty($this->lines)) {
-            foreach($this->lines as $line) {
-                if(empty($line->entrepot_id > 0) && count($line->details_entrepot) <= 1) {
-                    $this->error = $langs->trans('DefineBatch');
-                    return true;
-                }
-                if(count($line->details_entrepot) > 1) {
-                    foreach($line->details_entrepot as $detail_entrepot) {
-                        if(empty($detail_entrepot->entrepot_id)) {
-                            $this->error = $langs->trans('DefineBatch');
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-	    return false;
-    }
 
 	/**
 	 *  Validate object and update stock if option enabled
@@ -1027,7 +1008,6 @@ class Expedition extends CommonObject
 
 					$linebatch = new ExpeditionLineBatch($this->db);
 					$ret = $linebatch->fetchFromStock($value['id_batch']); // load serial, sellby, eatby
-//                    var_dump($ret, $value);exit;
 					if ($ret < 0)
 					{
 						$this->error = $linebatch->error;
@@ -1040,10 +1020,10 @@ class Expedition extends CommonObject
 					{
 						require_once DOL_DOCUMENT_ROOT.'/product/class/productbatch.class.php';
 						$prod_batch = new Productbatch($this->db);
-						$prod_batch->fetch($value['id_batch']);
+							$prod_batch->fetch($value['id_batch']);
 
 						if ($prod_batch->qty < $linebatch->qty)
-						{
+							{
 							$langs->load("errors");
 							$this->errors[] = $langs->trans('ErrorStockIsNotEnoughToAddProductOnShipment', $prod_batch->fk_product);
 							dol_syslog(get_class($this)."::addline_batch error=Product ".$prod_batch->batch.": ".$this->errorsToString(), LOG_ERR);
@@ -2177,9 +2157,11 @@ class Expedition extends CommonObject
 	}
 
 	/**
-	 *	Classify the shipping as closed.
+	 *    Classify the shipping as closed.
 	 *
-	 *	@return     int     <0 if KO, >0 if OK
+	 * @param int $notrigger for trigger
+	 * @return     int     <0 if KO, >0 if OK
+	 * @throws Exception
 	 */
 	public function setClosed($notrigger = 0)
 	{
@@ -2300,9 +2282,11 @@ class Expedition extends CommonObject
 			}
 
 			// Call trigger
-            if (! $error && ! $notrigger)
+			/* ——————————— SPÉ AMA - part 3/4 —————————————— */
+			if (! $error && ! $notrigger)
 			{
-				$result = $this->call_trigger('SHIPPING_CLOSED', $user);
+				/* ————————— FIN SPE AMA - part 3/4 ———————————— */
+	            $result = $this->call_trigger('SHIPPING_CLOSED', $user);
 				if ($result < 0) {
 					$error++;
 				}
@@ -2541,20 +2525,6 @@ class Expedition extends CommonObject
 
 		return CommonObject::commonReplaceThirdparty($db, $origin_id, $dest_id, $tables);
 	}
-
-    public function getBatchToDefineLine($fk_product) {
-        foreach($this->lines as $line) {
-            if(! empty($line->detail_batch) && $line->product_tobatch) {
-                if(is_array($line->detail_batch)) {
-                    foreach($line->detail_batch as $dbatch) {
-                        if(empty($dbatch->fk_origin_stock) && $fk_product == $line->fk_product) {
-                            return $dbatch;
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 
