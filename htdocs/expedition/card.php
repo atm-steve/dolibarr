@@ -2281,7 +2281,6 @@ if ($action == 'create')
 
 							    $(lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl").each (function(event) {
 								    elementItemNumb++;
-								    console.log(elementItemNumb);
 								    qtyTotal = qtyTotal + parseFloat($(this).val());
 								    element = $(this)[0];
 								    if(qtyTotal >= qtyAsked){
