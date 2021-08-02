@@ -2247,8 +2247,13 @@ if ($action == 'create')
 								// Cas particulier de la première ligne qui ne doit pas être à zero sinon ont per le bach en cours et le système déraille
 								$(lineBatchSelectWrap + " tr:first-child .qtyl").prop("required", true).attr("min",1);
 
-								appendNewLineBatchselector($(lineBatchSelectWrap));
+								// init et vérifications
+								appendNewLineBatchselector($(lineBatchSelectWrap)); // Ajoute une ligne vierge
+								checkQtyAskedVsInput(); // vérifie les quantité demandé et retire la ligne vierge si besoin
 
+								$(document).on("change", lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl", function() {
+								   checkQtyAskedVsInput();
+								});
 
 								$( "#clean-batch-selection" ).click(function(event) {
 								    event.preventDefault();
@@ -2257,8 +2262,8 @@ if ($action == 'create')
 									});
 
 								    // retrait de toutes les lignes sauf la première et la dernière car la premier ne doit JAMAIS être delete et la dernière sert pour  cloner
-							    	$( "#new-line-batch-selection" ).appendTo($( "#line-batch-actions-container" )); // move button + to secure place
-								     $(lineBatchSelectWrap + " tr:not(:first-child):not(#line-batch-select-wrap-to-clone)").remove();
+							    	$( "#new-line-batch-selection" ).appendTo($( "#line-batch-actions-container" )).show(); // move button + to secure place
+								    $(lineBatchSelectWrap + " tr:not(:first-child):not(#line-batch-select-wrap-to-clone)").remove();  // suppression des lignes sauf celle qui sert de template
 								    appendNewLineBatchselector($(lineBatchSelectWrap)); // on remet une ligne libre
 								});
 
@@ -2267,6 +2272,39 @@ if ($action == 'create')
 								    appendNewLineBatchselector($(lineBatchSelectWrap));
 								});
 
+
+							// Vérifie les qté saisies par rapport à la demande
+							function checkQtyAskedVsInput(){
+							    var qtyTotal = 0;
+								var qtyAsked = '.doubleval($lines[$i]->qty_asked).';
+								var elementItemNumb = 0;
+
+							    $(lineBatchSelectWrap + " tr:not(#line-batch-select-wrap-to-clone) .qtyl").each (function(event) {
+								    elementItemNumb++;
+								    qtyTotal = qtyTotal + parseFloat($(this).val());
+								    let element = $(this)[0];
+								    if(qtyTotal >= qtyAsked){
+
+										if(qtyTotal > qtyAsked){
+								    		element.setCustomValidity("' . $langs->transnoentitiesnoconv('QuantyTooHighAgainstQtyAsked') . '");
+								    	}
+
+								    	if(parseFloat($(this).val()) == 0 && elementItemNumb > 0) {
+											$( "#new-line-batch-selection" ).appendTo($( "#line-batch-actions-container" )); // déplace le bouton plus en sécurité avant de supprimer la ligne
+											$(this).closest( "tr" ).remove();
+								    	}
+								    }else{
+								        element.setCustomValidity("");
+								    }
+								});
+
+							     if(qtyTotal >= qtyAsked){
+							          $( "#new-line-batch-selection" ).hide();
+							     }else {
+							         $( "#new-line-batch-selection" ).show();
+							     }
+
+							}
 							});
 
 							/**
@@ -2276,10 +2314,11 @@ if ($action == 'create')
 							function appendNewLineBatchselector(el){
 							    var newLineOfBatchSelection = $( "#line-batch-select-wrap-to-clone" ).clone();
 							    newLineOfBatchSelection.removeAttr( "id" );
-							    $( "#new-line-batch-selection" ).appendTo(newLineOfBatchSelection.find( "td:last-child" ));
+							    $( "#new-line-batch-selection" ).appendTo(newLineOfBatchSelection.find( "td:last-child" )).show();
 							    newLineOfBatchSelection.appendTo(el).show();
 							    addSelect2ToTarget (newLineOfBatchSelection.find( "select[name^=\'batchl\']" ));
 							}
+
 
 							/**
 							*
