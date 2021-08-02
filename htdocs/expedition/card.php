@@ -2222,7 +2222,7 @@ if ($action == 'create')
 					// Ajoute le id="line-batch-select-wrap-'.$i.'" pour la couche de JS Todo : voir pour mettre dans le coeur
 					print '<td colspan="' . $editColspan . '" class="center">';
 
-					if (!empty($conf->stock->enabled) || is_array($lines[$i]->detail_batch) && count($lines[$i]->detail_batch) > 0)
+					if (is_array($lines[$i]->detail_batch) && count($lines[$i]->detail_batch) > 0)
 					{
 						if (!class_exists('SpeAmaFormProduct')){
 							dol_include_once('cliama/class/SpeAmaFormProduct.class.php');
@@ -2232,7 +2232,10 @@ if ($action == 'create')
 
 						// Gestion JS des lots
 						print '
-						<div><a href="#" id="clean-batch-selection" >'.$langs->trans('ClearBatchSelection').'</a> <a href="#" id="new-line-batch-selection" title="'.$langs->trans('NewLine').'" ><span class="fa fa-plus"></span></a></div>
+						<div id="line-batch-actions-container">
+						<a href="#" id="clean-batch-selection" >'.$langs->trans('ClearBatchSelection').'</a>
+						<a href="#" id="new-line-batch-selection" title="'.$langs->trans('NewLine').'" ><span class="fa fa-plus"></span></a>
+						</div>
 						<script>
 							/* Javascript library of module discountrules */
 							$( document ).ready(function() {
@@ -2254,9 +2257,9 @@ if ($action == 'create')
 									});
 
 								    // retrait de toutes les lignes sauf la première et la dernière car la premier ne doit JAMAIS être delete et la dernière sert pour  cloner
-							    	//$( "#new-line-batch-selection" ).appendTo($( "#line-batch-select-wrap-to-clone td:last-child" )); // move button + to secure place
-								    // $(lineBatchSelectWrap + " tr:not(:first-child):not(:last-child)").remove();
-								    //appendNewLineBatchselector($(lineBatchSelectWrap)); // on remet une ligne libre
+							    	$( "#new-line-batch-selection" ).appendTo($( "#line-batch-actions-container" )); // move button + to secure place
+								     $(lineBatchSelectWrap + " tr:not(:first-child):not(#line-batch-select-wrap-to-clone)").remove();
+								    appendNewLineBatchselector($(lineBatchSelectWrap)); // on remet une ligne libre
 								});
 
 								$( "#new-line-batch-selection" ).click(function(event) {
@@ -2272,9 +2275,10 @@ if ($action == 'create')
 							*/
 							function appendNewLineBatchselector(el){
 							    var newLineOfBatchSelection = $( "#line-batch-select-wrap-to-clone" ).clone();
+							    newLineOfBatchSelection.removeAttr( "id" );
 							    $( "#new-line-batch-selection" ).appendTo(newLineOfBatchSelection.find( "td:last-child" ));
-							    newLineOfBatchSelection.show().appendTo(el);
-							   // addSelect2ToTarget (newLineOfBatchSelection.find( "select[name^=\'batchl\']" ));
+							    newLineOfBatchSelection.appendTo(el).show();
+							    addSelect2ToTarget (newLineOfBatchSelection.find( "select[name^=\'batchl\']" ));
 							}
 
 							/**
