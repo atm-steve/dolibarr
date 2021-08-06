@@ -3746,9 +3746,10 @@ class Product extends CommonObject
 	 * @param  int $id_fils Id of child product/service
 	 * @param  int $qty     Quantity
 	 * @param  int $incdec  1=Increase/decrease stock of child when parent stock increase/decrease
+	 *  @param		int	$optional	1=Mark component as optional
 	 * @return int                < 0 if KO, > 0 if OK
 	 */
-	public function add_sousproduit($id_pere, $id_fils, $qty, $incdec = 1)
+	/** SPE AMA */	public function add_sousproduit($id_pere, $id_fils, $qty, $incdec = 1, $optional = 0)
 	{
 		// phpcs:enable
 		// Clean parameters
@@ -3761,6 +3762,11 @@ class Product extends CommonObject
 		if (!is_numeric($incdec)) {
 			$incdec = 0;
 		}
+		/** SPE AMA */
+		if (! is_numeric($optional)){
+			$optional=0;
+		}
+		/** FIN SPE AMA */
 
 		$result = $this->del_sousproduit($id_pere, $id_fils);
 		if ($result < 0) {
@@ -3781,8 +3787,8 @@ class Product extends CommonObject
 					$this->error = "isFatherOfThis";
 					return -1;
 				} else {
-					$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'product_association(fk_product_pere,fk_product_fils,qty,incdec)';
-					$sql .= ' VALUES ('.$id_pere.', '.$id_fils.', '.$qty.', '.$incdec.')';
+					/** SPE AMA */		$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'product_association(fk_product_pere,fk_product_fils,qty,incdec,optional)';
+					/** SPE AMA */		$sql .= ' VALUES ('.$id_pere.', '.$id_fils.', '.$qty.', '.$incdec.', '.$optional.')';
 					if (!$this->db->query($sql)) {
 						 dol_print_error($this->db);
 						 return -1;
@@ -3802,9 +3808,10 @@ class Product extends CommonObject
 	 * @param  int $id_fils Id of child product/service
 	 * @param  int $qty     Quantity
 	 * @param  int $incdec  1=Increase/decrease stock of child when parent stock increase/decrease
+	 * @param		int	$optional	1=Mark component as optional SPE AMA
 	 * @return int                < 0 if KO, > 0 if OK
 	 */
-	public function update_sousproduit($id_pere, $id_fils, $qty, $incdec = 1)
+	/** SPE AMA */	public function update_sousproduit($id_pere, $id_fils, $qty, $incdec = 1, $optional = 0)
 	{
 		// phpcs:enable
 		// Clean parameters
@@ -3820,10 +3827,16 @@ class Product extends CommonObject
 		if (!is_numeric($qty)) {
 			$qty = 1;
 		}
+		/** SPE AMA */
+		if (!is_numeric($optional)) {
+			$optional = 0;
+		}
+		/** FIN SPE AMA */
 
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.'product_association SET ';
 		$sql .= 'qty='.$qty;
 		$sql .= ',incdec='.$incdec;
+		/** SPE AMA */		$sql.= ' ,optional='.$optional;
 		$sql .= ' WHERE fk_product_pere='.$id_pere.' AND fk_product_fils='.$id_fils;
 
 		if (!$this->db->query($sql)) {
@@ -3876,7 +3889,7 @@ class Product extends CommonObject
 	public function is_sousproduit($fk_parent, $fk_child)
 	{
 		// phpcs:enable
-		$sql = "SELECT fk_product_pere, qty, incdec";
+		/** SPE AMA */		$sql = "SELECT fk_product_pere, qty, incdec, optional";
 		$sql .= " FROM ".MAIN_DB_PREFIX."product_association";
 		$sql .= " WHERE fk_product_pere  = ".((int) $fk_parent);
 		$sql .= " AND fk_product_fils = ".((int) $fk_child);
@@ -3890,6 +3903,7 @@ class Product extends CommonObject
 
 				$this->is_sousproduit_qty = $obj->qty;
 				$this->is_sousproduit_incdec = $obj->incdec;
+				/** SPE AMA */  $this->is_sousproduit_optional = $obj->optional;
 
 				return true;
 			} else {
@@ -4222,6 +4236,7 @@ class Product extends CommonObject
 				$type = (!empty($desc_pere[2]) ? $desc_pere[2] : '');
 				$label = (!empty($desc_pere[3]) ? $desc_pere[3] : '');
 				$incdec = !empty($desc_pere[4]) ? $desc_pere[4] : 0;
+				/** SPE AMA */	$optional=!empty($desc_pere[6]) ? $desc_pere[6] : 0;
 
 				if ($multiply < 1) { $multiply = 1;
 				}
@@ -4246,6 +4261,7 @@ class Product extends CommonObject
 					'desiredstock'=>$tmpproduct->desiredstock,
 					'level'=>$level,
 					'incdec'=>$incdec,
+				/** SPE AMA */		'optional'=>$optional,
 					'entity'=>$tmpproduct->entity
 				);
 
@@ -4370,7 +4386,7 @@ class Product extends CommonObject
 	 */
 	public function getFather()
 	{
-		$sql = "SELECT p.rowid, p.label as label, p.ref as ref, pa.fk_product_pere as id, p.fk_product_type, pa.qty, pa.incdec, p.entity";
+		/** SPE AMA */		$sql = "SELECT p.rowid, p.label as label, p.ref as ref, pa.fk_product_pere as id, p.fk_product_type, pa.qty, pa.incdec, p.entity, pa.optional";
 		$sql .= " FROM ".MAIN_DB_PREFIX."product_association as pa,";
 		$sql .= " ".MAIN_DB_PREFIX."product as p";
 		$sql .= " WHERE p.rowid = pa.fk_product_pere";
@@ -4387,6 +4403,7 @@ class Product extends CommonObject
 				$prods[$record['id']]['label'] = $record['label'];
 				$prods[$record['id']]['qty'] = $record['qty'];
 				$prods[$record['id']]['incdec'] = $record['incdec'];
+				/** SPE AMA */	$prods[$record['id']]['optional'] = $record['optional'];
 				$prods[$record['id']]['fk_product_type'] = $record['fk_product_type'];
 				$prods[$record['id']]['entity'] = $record['entity'];
 			}
@@ -4416,6 +4433,7 @@ class Product extends CommonObject
 
 		$sql = "SELECT p.rowid, p.ref, p.label as label, p.fk_product_type,";
 		$sql .= " pa.qty as qty, pa.fk_product_fils as id, pa.incdec";
+		/** SPE AMA */		$sql .= ",pa.optional";
 		$sql .= " FROM ".MAIN_DB_PREFIX."product as p,";
 		$sql .= " ".MAIN_DB_PREFIX."product_association as pa";
 		$sql .= " WHERE p.rowid = pa.fk_product_fils";
@@ -4447,7 +4465,8 @@ class Product extends CommonObject
 				 2=>$rec['fk_product_type'],
 				 3=>$this->db->escape($rec['label']),
 				 4=>$rec['incdec'],
-				 5=>$rec['ref']
+				 5=>$rec['ref'],
+				/** SPE AMA */	 6=>$rec['optional']
 				);
 				//$prods[$this->db->escape($rec['label'])]= array(0=>$rec['id'],1=>$rec['qty'],2=>$rec['fk_product_type']);
 				//$prods[$this->db->escape($rec['label'])]= array(0=>$rec['id'],1=>$rec['qty']);

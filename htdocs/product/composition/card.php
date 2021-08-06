@@ -77,7 +77,7 @@ if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->se
 		$qty = price2num(GETPOST("prod_qty_".$i, 'alpha'), 'MS');
 		if ($qty > 0)
 		{
-			if ($object->add_sousproduit($id, GETPOST("prod_id_".$i, 'int'), $qty, GETPOST("prod_incdec_".$i, 'int')) > 0)
+			/** SPE AMA */	if ($object->add_sousproduit($id, GETPOST("prod_id_".$i, 'int'), $qty, GETPOST("prod_incdec_".$i, 'int'), GETPOST("prod_optional_".$i, 'int')) > 0)
 			{
 				//var_dump($i.' '.GETPOST("prod_id_".$i, 'int'), $qty, GETPOST("prod_incdec_".$i, 'int'));
 				$action = 'edit';
@@ -114,7 +114,7 @@ if ($action == 'add_prod' && ($user->rights->produit->creer || $user->rights->se
 	{
 		foreach ($TProduct as $id_product => $row)
 		{
-			if ($row['qty'] > 0) $object->update_sousproduit($id, $id_product, $row['qty'], isset($row['incdec']) ? 1 : 0);
+			/** SPE AMA */ if ($row['qty'] > 0) $object->update_sousproduit($id, $id_product, $row['qty'], isset($row['incdec']) ? 1 : 0, isset($row['optional']) ? 1 : 0);
 			else $object->del_sousproduit($id, $id_product);
 		}
 		setEventMessages('RecordSaved', null);
@@ -317,6 +317,7 @@ if ($id > 0 || !empty($ref))
 		if (!empty($conf->stock->enabled)) print '<td class="right">'.$langs->trans('Stock').'</td>';
 		print '<td class="center">'.$langs->trans('Qty').'</td>';
 		print '<td class="center">'.$langs->trans('ComposedProductIncDecStock').'</td>';
+		/** SPE AMA */ print '<td align="center">'.$langs->trans('ComposedProductOptional').'</td>';
 		print '</tr>'."\n";
 
 		$totalsell = 0;
@@ -374,14 +375,16 @@ if ($id > 0 || !empty($ref))
 					// Stock
 					if (!empty($conf->stock->enabled)) print '<td class="right">'.$value['stock'].'</td>'; // Real stock
 
-					// Qty + IncDec
+					// Qty + IncDec + Optional
 					if ($user->rights->produit->creer || $user->rights->service->creer)
 					{
 						print '<td class="center"><input type="text" value="'.$nb_of_subproduct.'" name="TProduct['.$productstatic->id.'][qty]" size="4" class="right" /></td>';
 						print '<td class="center"><input type="checkbox" name="TProduct['.$productstatic->id.'][incdec]" value="1" '.($value['incdec'] == 1 ? 'checked' : '').' /></td>';
+						/** SPE AMA */			print '<td align="center"><input type="checkbox" name="TProduct['.$productstatic->id.'][optional]" value="1" '.($value['optional']==1?'checked':''  ).' /></td>';
 					} else {
 						print '<td>'.$nb_of_subproduct.'</td>';
 						print '<td>'.($value['incdec'] == 1 ? 'x' : '').'</td>';
+						/** SPE AMA */			print '<td>'.($value['optional']==1?'x':''  ).'</td>';
 					}
 
 					print '</tr>'."\n";
@@ -408,6 +411,8 @@ if ($id > 0 || !empty($ref))
 					if (!empty($conf->stock->enabled)) print '<td></td>'; // Real stock
 					print '<td class="center">'.$value['nb'].'</td>';
 					print '<td>&nbsp;</td>';
+
+					/** SPE AMA */		print '<td>&nbsp;</td>';
 
 					print '</tr>'."\n";
 				}
@@ -440,6 +445,9 @@ if ($id > 0 || !empty($ref))
 			// Stock
 			if (!empty($conf->stock->enabled)) print '<td class="liste_total right">&nbsp;</td>';
 
+
+			/** SPE AMA */	print '<td>&nbsp;</td>';
+
 			print '<td class="right" colspan="2">';
 			if ($user->rights->produit->creer || $user->rights->service->creer)
 			{
@@ -448,7 +456,7 @@ if ($id > 0 || !empty($ref))
 			print '</td>';
 			print '</tr>'."\n";
 		} else {
-			$colspan = 8;
+			/** SPE AMA */			$colspan = 9; // +1 pour la colonne optional
 			if (!empty($conf->stock->enabled)) $colspan++;
 
 			print '<tr class="oddeven">';
@@ -513,6 +521,8 @@ if ($id > 0 || !empty($ref))
 			//print '<th class="liste_titre center">'.$langs->trans("IsInPackage").'</td>';
 			print '<th class="liste_titre right">'.$langs->trans("Qty").'</td>';
 			print '<th class="center">'.$langs->trans('ComposedProductIncDecStock').'</th>';
+			/** SPE AMA */	print '<th align="center">'.$langs->trans('ComposedProductOptional').'</th>';
+
 			print '</tr>';
 			if ($resql)
 			{
@@ -577,10 +587,13 @@ if ($id > 0 || !empty($ref))
 							//$addchecked = ' checked';
 							$qty = $object->is_sousproduit_qty;
 							$incdec = $object->is_sousproduit_incdec;
-						} else {
+							/** SPE AMA */				$optional=$object->is_sousproduit_optional;
+						}
+						else {
 							//$addchecked = '';
 							$qty = 0;
 							$incdec = 0;
+							/** SPE AMA */				$optional=0;
 						}
 						// Contained into package
 						/*print '<td class="center"><input type="hidden" name="prod_id_'.$i.'" value="'.$objp->rowid.'">';
@@ -598,6 +611,19 @@ if ($id > 0 || !empty($ref))
 						}
 						print '</td>';
 
+						/** SPE AMA */
+						// Optional
+						print '<td align="center">';
+						var_dump($qty);
+						if ($qty) print '<input type="checkbox" name="prod_optional_'.$i.'" value="1" '.($optional?'checked':'').'>';
+						else {
+							// TODO Hide field and show it when setting a qty
+							print '<input type="checkbox" name="prod_optional_'.$i.'" value="1">';
+							//print '<input type="checkbox" disabled name="prod_optional_'.$i.'" value="1">';
+						}
+						print '</td>';
+						/** FIN SPE AMA  */
+
 						print '</tr>';
 					}
 					$i++;
@@ -608,6 +634,7 @@ if ($id > 0 || !empty($ref))
 					print '<td></td>';
 					print '<td></td>';
 					print '<td></td>';
+					/** SPE AMA */		print '<td></td>';
 					print '</tr>';
 				}
 			} else {
