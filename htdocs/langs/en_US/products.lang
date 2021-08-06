@@ -395,3 +395,6 @@ ActionAvailableOnVariantProductOnly=Action only available on the variant of prod
 ProductsPricePerCustomer=Product prices per customers
 ProductSupplierExtraFields=Additional Attributes (Supplier Prices)
 DeleteLinkedProduct=Delete the child product linked to the combination
+
+# SPE AMA
+ComposedProductOptional=Optional
