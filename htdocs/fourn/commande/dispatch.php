@@ -823,30 +823,17 @@ if ($id > 0 || !empty($ref)) {
 						$linktoprod .= ' - '.$objp->label."\n";
 
 						if (!empty($conf->productbatch->enabled)) {
-							if ($objp->tobatch) {
-								print '<td>';
-								print $linktoprod;
-								print "</td>";
-								print '<td class="dispatch_batch_number"></td>';
-								if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
-									print '<td class="dispatch_dluo"></td>';
-								}
-								if (empty($conf->global->PRODUCT_DISABLE_EATBY)) {
-									print '<td class="dispatch_dlc"></td>';
-								}
-							} else {
-								print '<td>';
-								print $linktoprod;
-								print "</td>";
-								print '<td class="dispatch_batch_number">';
-								print $langs->trans("ProductDoesNotUseBatchSerial");
-								print '</td>';
-								if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
-									print '<td class="dispatch_dluo"></td>';
-								}
-								if (empty($conf->global->PRODUCT_DISABLE_EATBY)) {
-									print '<td class="dispatch_dlc"></td>';
-								}
+							print '<td>';
+							print $linktoprod;
+							print "</td>";
+							print '<td class="dispatch_batch_number">';
+							if (!$objp->tobatch) print $langs->trans("ProductDoesNotUseBatchSerial");
+							print '</td>';
+							if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
+								print '<td class="dispatch_dluo"></td>';
+							}
+							if (empty($conf->global->PRODUCT_DISABLE_EATBY)) {
+								print '<td class="dispatch_dlc"></td>';
 							}
 						} else {
 							print '<td colspan="4">';
@@ -1210,8 +1197,12 @@ if ($id > 0 || !empty($ref)) {
 						}
 					} else {
 						print '<td class="dispatch_batch_number"></td>';
-						print '<td class="dispatch_dluo"></td>';
-						print '<td class="dispatch_dlc"></td>';
+						if (empty($conf->global->PRODUCT_DISABLE_EATBY)) {
+							print '<td class="dispatch_dluo"></td>';
+						}
+						if (empty($conf->global->PRODUCT_DISABLE_SELLBY)) {
+							print '<td class="dispatch_dlc"></td>';
+						}
 					}
 				}
 
