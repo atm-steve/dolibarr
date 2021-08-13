@@ -515,37 +515,6 @@ if ($result) {
 		}
 		if ($objp->code_sell_l == -1) $objp->code_sell_l = '';
 
-		/* ************************ SPÉ VET COMPANY { ************************ */
-		// TODO: à intégrer dans le cœur
-        $parameters = array('objp' => &$objp);
-        $reshook=$hookmanager->executeHooks('selectlineaccountancycode',$parameters);    // Note that $action and $object may have been modified by hook
-
-		if (!empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES))
-        {
-            if (empty($objp->code_sell))
-            {
-                // get account from categories of the product
-                list($cat_code, $cat_label) = getCategoryAccountancyCode($objp->product_id, 'product');
-                if (!empty($cat_code))
-                {
-                    if ($cat_code < 0) $cat_label = '';
-                    else
-                    {
-                        $objp->aarowid_suggest = $accounting->fetch('', $cat_code, 1);
-                        $objp->aarowid = $objp->aarowid_suggest;
-                    }
-                }
-            }
-        }
-
-		if (! empty($objp->code_sell)) {
-			$objp->code_sell_p = $objp->code_sell;       // Code on product
-		} else {
-			if (empty($cat_code)) $code_sell_p_notset = 'color:orange';
-		}
-		if (empty($objp->code_sell_l) && empty($objp->code_sell_p) && empty($cat_code)) $code_sell_p_notset = 'color:red';
-		/* ************************ SPÉ VET COMPANY } ************************ */
-
 		// Search suggested account for product/service (similar code exists in page index.php to make automatic binding)
 		$suggestedaccountingaccountfor = '';
 		if (($objp->country_code == $mysoc->country_code) || empty($objp->country_code)) {  // If buyer in same country than seller (if not defined, we assume it is same country)
@@ -579,6 +548,39 @@ if ($result) {
 			$objp->code_sell_l = $accountdeposittoventilated->ref;
 			$objp->aarowid_suggest = $accountdeposittoventilated->rowid;
 		}
+
+		/* ************************ SPÉ VET COMPANY { ************************ */
+		// TODO: à intégrer dans le cœur
+        $parameters = array('objp' => &$objp);
+        $reshook=$hookmanager->executeHooks('selectlineaccountancycode',$parameters);    // Note that $action and $object may have been modified by hook
+
+		if (!empty($conf->global->CATEGORIE_USE_ACCOUNTANCY_CODES))
+        {
+            if (empty($objp->code_sell))
+            {
+                // get account from categories of the product
+                list($cat_code, $cat_label) = getCategoryAccountancyCode($objp->product_id, 'product');
+                if (!empty($cat_code))
+                {
+                    if ($cat_code < 0) $cat_label = '';
+                    else
+                    {
+                        $objp->aarowid_suggest = $accounting->fetch('', $cat_code, 1);
+                        $objp->aarowid = $objp->aarowid_suggest;
+                    }
+                }
+            }
+        }
+
+		if (! empty($objp->code_sell)) {
+			$objp->code_sell_p = $objp->code_sell;       // Code on product
+		} else {
+			if (empty($cat_code)) $code_sell_p_notset = 'color:orange';
+		}
+		if (empty($objp->code_sell_l) && empty($objp->code_sell_p) && empty($cat_code)) $code_sell_p_notset = 'color:red';
+		/* ************************ SPÉ VET COMPANY } ************************ */
+
+
 
 		if (!empty($objp->code_sell_p)) {
 			// Value was defined previously
