@@ -1,4 +1,17 @@
-# Dolibarr language file - en_US - hrm
+# Dolibarr language file - fr_FR - hrm
+
+
+#
+# Generic
+#
+
+# Module label 'ModuleHrmName'
+ModuleHrmName = GRH
+# Module description 'ModuleHrmDesc'
+ModuleHrmDesc = GRH description
+
+
+
 # Admin
 HRM_EMAIL_EXTERNAL_SERVICE=Adresse email du service GRH externe à prévenir
 Establishments=Etablissements

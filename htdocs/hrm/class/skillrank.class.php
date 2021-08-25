@@ -18,13 +18,13 @@
 
 /**
  * \file        class/skillrank.class.php
- * \ingroup     hrmtest
+ * \ingroup     hrm
  * \brief       This file is a CRUD class file for SkillRank (Create/Read/Update/Delete)
  */
 
 // Put here all includes required by your class file
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
-dol_include_once('hrmtest/lib/hrmtest_skillrank.lib.php');
+dol_include_once('hrm/lib/hrm_skillrank.lib.php');
 
 /**
  * Class for SkillRank
@@ -34,7 +34,7 @@ class SkillRank extends CommonObject
 	/**
 	 * @var string ID of module.
 	 */
-	public $module = 'hrmtest';
+	public $module = 'hrm';
 
 	/**
 	 * @var string ID to identify managed object.
@@ -44,7 +44,7 @@ class SkillRank extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'hrmtest_skillrank';
+	public $table_element = 'hrm_skillrank';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
@@ -60,7 +60,7 @@ class SkillRank extends CommonObject
 	/**
 	 * @var string String with name of icon for skillrank. Must be the part after the 'object_' into object_skillrank.png
 	 */
-	public $picto = 'skillrank@hrmtest';
+	public $picto = 'skillrank@hrm';
 
 
 	const STATUS_DRAFT = 0;
@@ -103,7 +103,7 @@ class SkillRank extends CommonObject
 	 */
 	public $fields=array(
 		'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>'1', 'position'=>1, 'notnull'=>1, 'visible'=>0, 'noteditable'=>'1', 'index'=>1, 'css'=>'left', 'comment'=>"Id"),
-		'fk_skill' => array('type'=>'integer:Skill:hrmtest/class/skill.class.php:1', 'label'=>'Skill', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'visible'=>1, 'index'=>1,),
+		'fk_skill' => array('type'=>'integer:Skill:hrm/class/skill.class.php:1', 'label'=>'Skill', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'visible'=>1, 'index'=>1,),
 		'rank' => array('type'=>'integer', 'label'=>'Rank', 'enabled'=>'1', 'position'=>4, 'notnull'=>1, 'visible'=>1, 'default' => 0),
 		'fk_object' => array('type'=>'integer', 'label'=>'object', 'enabled'=>'1', 'position'=>5, 'notnull'=>1, 'visible'=>0,),
 		'date_creation' => array('type'=>'datetime', 'label'=>'DateCreation', 'enabled'=>'1', 'position'=>500, 'notnull'=>1, 'visible'=>-2,),
@@ -129,7 +129,7 @@ class SkillRank extends CommonObject
 	// /**
 	//  * @var string    Name of subtable line
 	//  */
-	// public $table_element_line = 'hrmtest_skillrankline';
+	// public $table_element_line = 'hrm_skillrankline';
 
 	// /**
 	//  * @var string    Field with ID of parent key if this object has a parent
@@ -151,7 +151,7 @@ class SkillRank extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	// protected $childtablesoncascade = array('hrmtest_skillrankdet');
+	// protected $childtablesoncascade = array('hrm_skillrankdet');
 
 	// /**
 	//  * @var SkillRankLine[]     Array of subtable lines
@@ -179,7 +179,7 @@ class SkillRank extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrmtest->skillrank->read) {
+		/*if ($user->rights->hrm->skillrank->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -515,8 +515,8 @@ class SkillRank extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->skillrank->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->skillrank->skillrank_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->skillrank->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->skillrank->skillrank_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -582,15 +582,15 @@ class SkillRank extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->hrmtest->dir_output.'/skillrank/'.$oldref;
-				$dirdest = $conf->hrmtest->dir_output.'/skillrank/'.$newref;
+				$dirsource = $conf->hrm->dir_output.'/skillrank/'.$oldref;
+				$dirdest = $conf->hrm->dir_output.'/skillrank/'.$newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this)."::validate() rename dir ".$dirsource." into ".$dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->hrmtest->dir_output.'/skillrank/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->hrm->dir_output.'/skillrank/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^'.preg_quote($oldref, '/').'/', $newref, $dirsource);
@@ -633,8 +633,8 @@ class SkillRank extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -657,8 +657,8 @@ class SkillRank extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -681,8 +681,8 @@ class SkillRank extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -718,7 +718,7 @@ class SkillRank extends CommonObject
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
-		$url = dol_buildpath('/hrmtest/skillrank_card.php', 1).'?id='.$this->id;
+		$url = dol_buildpath('/hrm/skillrank_card.php', 1).'?id='.$this->id;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -830,7 +830,7 @@ class SkillRank extends CommonObject
 		// phpcs:enable
 		if (empty($this->labelStatus) || empty($this->labelStatusShort)) {
 			global $langs;
-			//$langs->load("hrmtest@hrmtest");
+			//$langs->load("hrm@hrm");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->trans('Draft');
 			$this->labelStatus[self::STATUS_VALIDATED] = $langs->trans('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->trans('Disabled');
@@ -939,22 +939,22 @@ class SkillRank extends CommonObject
 	public function getNextNumRef()
 	{
 		global $langs, $conf;
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->HRMTEST_SKILLRANK_ADDON)) {
-			$conf->global->HRMTEST_SKILLRANK_ADDON = 'mod_skillrank_standard';
+		if (empty($conf->global->hrm_SKILLRANK_ADDON)) {
+			$conf->global->hrm_SKILLRANK_ADDON = 'mod_skillrank_standard';
 		}
 
-		if (!empty($conf->global->HRMTEST_SKILLRANK_ADDON)) {
+		if (!empty($conf->global->hrm_SKILLRANK_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->HRMTEST_SKILLRANK_ADDON.".php";
-			$classname = $conf->global->HRMTEST_SKILLRANK_ADDON;
+			$file = $conf->global->hrm_SKILLRANK_ADDON.".php";
+			$classname = $conf->global->hrm_SKILLRANK_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 			foreach ($dirmodels as $reldir) {
-				$dir = dol_buildpath($reldir."core/modules/hrmtest/");
+				$dir = dol_buildpath($reldir."core/modules/hrm/");
 
 				// Load file with numbering class (if found)
 				$mybool |= @include_once $dir.$file;
@@ -1004,7 +1004,7 @@ class SkillRank extends CommonObject
 		$result = 0;
 		$includedocgeneration = 0;
 
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
 		if (!dol_strlen($modele)) {
 			$modele = 'standard_skillrank';
@@ -1016,7 +1016,7 @@ class SkillRank extends CommonObject
 			}
 		}
 
-		$modelpath = "core/modules/hrmtest/doc/";
+		$modelpath = "core/modules/hrm/doc/";
 
 		if ($includedocgeneration && !empty($modele)) {
 			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);

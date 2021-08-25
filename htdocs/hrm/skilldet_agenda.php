@@ -18,7 +18,7 @@
 
 /**
  *  \file       skilldet_agenda.php
- *  \ingroup    hrmtest
+ *  \ingroup    hrm
  *  \brief      Tab of events on Skilldet
  */
 
@@ -77,12 +77,12 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/contact/class/contact.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-dol_include_once('/hrmtest/class/skilldet.class.php');
-dol_include_once('/hrmtest/lib/hrmtest_skilldet.lib.php');
+dol_include_once('/hrm/class/skilldet.class.php');
+dol_include_once('/hrm/lib/hrm_skilldet.lib.php');
 
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+$langs->loadLangs(array("hrm@hrm", "other"));
 
 // Get parameters
 $id = GETPOST('id', 'int');
@@ -121,7 +121,7 @@ if (!$sortorder) {
 // Initialize technical objects
 $object = new Skilldet($db);
 $extrafields = new ExtraFields($db);
-$diroutputmassaction = $conf->hrmtest->dir_output.'/temp/massgeneration/'.$user->id;
+$diroutputmassaction = $conf->hrm->dir_output.'/temp/massgeneration/'.$user->id;
 $hookmanager->initHooks(array('skilldetagenda', 'globalcard')); // Note that conf->hooks_modules contains array
 // Fetch optionals attributes and labels
 $extrafields->fetch_name_optionals_label($object->table_element);
@@ -129,17 +129,17 @@ $extrafields->fetch_name_optionals_label($object->table_element);
 // Load object
 include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be include, not include_once  // Must be include, not include_once. Include fetch and fetch_thirdparty but not fetch_optionals
 if ($id > 0 || !empty($ref)) {
-	$upload_dir = $conf->hrmtest->multidir_output[$object->entity]."/".$object->id;
+	$upload_dir = $conf->hrm->multidir_output[$object->entity]."/".$object->id;
 }
 
-$permissiontoadd = $user->rights->hrmtest->skilldet->write; // Used by the include of actions_addupdatedelete.inc.php
+$permissiontoadd = $user->rights->hrm->skilldet->write; // Used by the include of actions_addupdatedelete.inc.php
 
 // Security check (enable the most restrictive one)
 //if ($user->socid > 0) accessforbidden();
 //if ($user->socid > 0) $socid = $user->socid;
 //$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 //restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-//if (empty($conf->hrmtest->enabled)) accessforbidden();
+//if (empty($conf->hrm->enabled)) accessforbidden();
 //if (!$permissiontoread) accessforbidden();
 
 
@@ -191,7 +191,7 @@ if ($object->id > 0) {
 
 	// Object card
 	// ------------------------------------------------------------
-	$linkback = '<a href="'.dol_buildpath('/hrmtest/skilldet_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	$linkback = '<a href="'.dol_buildpath('/hrm/skilldet_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
 
 	$morehtmlref = '<div class="refidno">';
 	/*

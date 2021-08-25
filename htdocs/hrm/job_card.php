@@ -18,7 +18,7 @@
 
 /**
  *    \file       job_card.php
- *        \ingroup    hrmtest
+ *        \ingroup    hrm
  *        \brief      Page to create/edit/view job
  */
 
@@ -81,11 +81,11 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
-dol_include_once('/hrmtest/class/job.class.php');
-dol_include_once('/hrmtest/lib/hrmtest_job.lib.php');
+dol_include_once('/hrm/class/job.class.php');
+dol_include_once('/hrm/lib/hrm_job.lib.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+$langs->loadLangs(array("hrm@hrm", "other"));
 
 // Get parameters
 $id = GETPOST('id', 'int');
@@ -101,7 +101,7 @@ $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 // Initialize technical objects
 $object = new Job($db);
 $extrafields = new ExtraFields($db);
-$diroutputmassaction = $conf->hrmtest->dir_output . '/temp/massgeneration/' . $user->id;
+$diroutputmassaction = $conf->hrm->dir_output . '/temp/massgeneration/' . $user->id;
 $hookmanager->initHooks(array('jobcard', 'globalcard')); // Note that conf->hooks_modules contains array
 
 // Fetch optionals attributes and labels
@@ -126,19 +126,19 @@ if (empty($action) && empty($id) && empty($ref)) {
 include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
 
 
-$permissiontoread = $user->rights->hrmtest->job->read;
-$permissiontoadd = $user->rights->hrmtest->job->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-$permissiontodelete = $user->rights->hrmtest->job->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-$permissionnote = $user->rights->hrmtest->job->write; // Used by the include of actions_setnotes.inc.php
-$permissiondellink = $user->rights->hrmtest->job->write; // Used by the include of actions_dellink.inc.php
-$upload_dir = $conf->hrmtest->multidir_output[isset($object->entity) ? $object->entity : 1] . '/job';
+$permissiontoread = $user->rights->hrm->job->read;
+$permissiontoadd = $user->rights->hrm->job->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
+$permissiontodelete = $user->rights->hrm->job->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
+$permissionnote = $user->rights->hrm->job->write; // Used by the include of actions_setnotes.inc.php
+$permissiondellink = $user->rights->hrm->job->write; // Used by the include of actions_dellink.inc.php
+$upload_dir = $conf->hrm->multidir_output[isset($object->entity) ? $object->entity : 1] . '/job';
 
 // Security check (enable the most restrictive one)
 //if ($user->socid > 0) accessforbidden();
 //if ($user->socid > 0) $socid = $user->socid;
 //$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 //restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-//if (empty($conf->hrmtest->enabled)) accessforbidden();
+//if (empty($conf->hrm->enabled)) accessforbidden();
 //if (!$permissiontoread) accessforbidden();
 
 
@@ -155,19 +155,19 @@ if ($reshook < 0) {
 if (empty($reshook)) {
 	$error = 0;
 
-	$backurlforlist = dol_buildpath('/hrmtest/job_list.php', 1);
+	$backurlforlist = dol_buildpath('/hrm/job_list.php', 1);
 
 	if (empty($backtopage) || ($cancel && empty($id))) {
 		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
 			if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
 				$backtopage = $backurlforlist;
 			} else {
-				$backtopage = dol_buildpath('/hrmtest/job_card.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
+				$backtopage = dol_buildpath('/hrm/job_card.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
 			}
 		}
 	}
 
-	$triggermodname = 'HRMTEST_JOB_MODIFY'; // Name of trigger action code to execute when we modify record
+	$triggermodname = 'hrm_JOB_MODIFY'; // Name of trigger action code to execute when we modify record
 
 
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
@@ -193,7 +193,7 @@ if (empty($reshook)) {
 	}
 
 	// Actions to send emails
-	$triggersendname = 'HRMTEST_JOB_SENTBYMAIL';
+	$triggersendname = 'hrm_JOB_SENTBYMAIL';
 	$autocopy = 'MAIN_MAIL_AUTOCOPY_JOB_TO';
 	$trackid = 'job' . $object->id;
 	include DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
@@ -364,7 +364,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	// Object card
 	// ------------------------------------------------------------
-	$linkback = '<a href="' . dol_buildpath('/hrmtest/job_list.php', 1) . '?restore_lastsearch_values=1' . (!empty($socid) ? '&socid=' . $socid : '') . '">' . $langs->trans("BackToList") . '</a>';
+	$linkback = '<a href="' . dol_buildpath('/hrm/job_list.php', 1) . '?restore_lastsearch_values=1' . (!empty($socid) ? '&socid=' . $socid : '') . '">' . $langs->trans("BackToList") . '</a>';
 
 	$morehtmlref = '<div class="refidno">';
 	/*
@@ -539,11 +539,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		if ($includedocgeneration) {
 			$objref = dol_sanitizeFileName($object->ref);
 			$relativepath = $objref . '/' . $objref . '.pdf';
-			$filedir = $conf->hrmtest->dir_output . '/' . $object->element . '/' . $objref;
+			$filedir = $conf->hrm->dir_output . '/' . $object->element . '/' . $objref;
 			$urlsource = $_SERVER["PHP_SELF"] . "?id=" . $object->id;
-			$genallowed = $user->rights->hrmtest->job->read; // If you can read, you can build the PDF to read content
-			$delallowed = $user->rights->hrmtest->job->write; // If you can create/edit, you can remove a file on card
-			print $formfile->showdocuments('hrmtest:Job', $object->element . '/' . $objref, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf, 1, 0, 0, 28, 0, '', '', '', $langs->defaultlang);
+			$genallowed = $user->rights->hrm->job->read; // If you can read, you can build the PDF to read content
+			$delallowed = $user->rights->hrm->job->write; // If you can create/edit, you can remove a file on card
+			print $formfile->showdocuments('hrm:Job', $object->element . '/' . $objref, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf, 1, 0, 0, 28, 0, '', '', '', $langs->defaultlang);
 		}
 
 		// Show links to link elements
@@ -555,7 +555,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 		$MAXEVENT = 10;
 
-		$morehtmlright = '<a href="' . dol_buildpath('/hrmtest/job_agenda.php', 1) . '?id=' . $object->id . '">';
+		$morehtmlright = '<a href="' . dol_buildpath('/hrm/job_agenda.php', 1) . '?id=' . $object->id . '">';
 		$morehtmlright .= $langs->trans("SeeAll");
 		$morehtmlright .= '</a>';
 
@@ -570,7 +570,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	// Presend form
 	$modelmail = 'job';
 	$defaulttopic = 'InformationMessage';
-	$diroutput = $conf->hrmtest->dir_output;
+	$diroutput = $conf->hrm->dir_output;
 	$trackid = 'job' . $object->id;
 
 	include DOL_DOCUMENT_ROOT . '/core/tpl/card_presend.tpl.php';

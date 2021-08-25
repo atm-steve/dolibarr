@@ -18,13 +18,13 @@
 
 /**
  * \file        class/evaluationdet.class.php
- * \ingroup     hrmtest
+ * \ingroup     hrm
  * \brief       This file is a CRUD class file for Evaluationdet (Create/Read/Update/Delete)
  */
 
 // Put here all includes required by your class file
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
-dol_include_once('hrmtest/class/skillrank.class.php');
+dol_include_once('hrm/class/skillrank.class.php');
 //require_once DOL_DOCUMENT_ROOT . '/societe/class/societe.class.php';
 //require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
@@ -36,7 +36,7 @@ class Evaluationdet extends CommonObject
 	/**
 	 * @var string ID of module.
 	 */
-	public $module = 'hrmtest';
+	public $module = 'hrm';
 
 	/**
 	 * @var string ID to identify managed object.
@@ -46,7 +46,7 @@ class Evaluationdet extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'hrmtest_evaluationdet';
+	public $table_element = 'hrm_evaluationdet';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
@@ -62,7 +62,7 @@ class Evaluationdet extends CommonObject
 	/**
 	 * @var string String with name of icon for evaluationdet. Must be the part after the 'object_' into object_evaluationdet.png
 	 */
-	public $picto = 'evaluationdet@hrmtest';
+	public $picto = 'evaluationdet@hrm';
 
 
 	const STATUS_DRAFT = 0;
@@ -106,8 +106,8 @@ class Evaluationdet extends CommonObject
 		'tms' => array('type'=>'timestamp', 'label'=>'DateModification', 'enabled'=>'1', 'position'=>501, 'notnull'=>0, 'visible'=>-2,),
 		'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>'1', 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
 		'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>'1', 'position'=>511, 'notnull'=>-1, 'visible'=>-2,),
-		'fk_skill' => array('type'=>'integer:Skill:hrmtest/class/skill.class.php:1', 'label'=>'Skill', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'visible'=>1, 'index'=>1,),
-		'fk_evaluation' => array('type'=>'integer:Evaluation:hrmtest/class/evaluation.class.php:1', 'label'=>'Evaluation', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'visible'=>1, 'index'=>1,),
+		'fk_skill' => array('type'=>'integer:Skill:hrm/class/skill.class.php:1', 'label'=>'Skill', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'visible'=>1, 'index'=>1,),
+		'fk_evaluation' => array('type'=>'integer:Evaluation:hrm/class/evaluation.class.php:1', 'label'=>'Evaluation', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'visible'=>1, 'index'=>1,),
 		'fk_rank' => array('type'=>'integer', 'label'=>'Rank', 'enabled'=>'1', 'position'=>4, 'notnull'=>1, 'visible'=>1,),
 		'required_rank' => array('type'=>'integer', 'label'=>'requiredRank', 'enabled'=>'1', 'position'=>5, 'notnull'=>1, 'visible'=>1,),
 		'import_key' => array('type'=>'varchar(14)', 'label'=>'ImportId', 'enabled'=>'1', 'position'=>1000, 'notnull'=>-1, 'visible'=>-2,),
@@ -130,7 +130,7 @@ class Evaluationdet extends CommonObject
 	// /**
 	//  * @var string    Name of subtable line
 	//  */
-	// public $table_element_line = 'hrmtest_evaluationdetline';
+	// public $table_element_line = 'hrm_evaluationdetline';
 
 	// /**
 	//  * @var string    Field with ID of parent key if this object has a parent
@@ -152,7 +152,7 @@ class Evaluationdet extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	// protected $childtablesoncascade = array('hrmtest_evaluationdetdet');
+	// protected $childtablesoncascade = array('hrm_evaluationdetdet');
 
 	// /**
 	//  * @var EvaluationdetLine[]     Array of subtable lines
@@ -180,7 +180,7 @@ class Evaluationdet extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrmtest->evaluationdet->read) {
+		/*if ($user->rights->hrm->evaluationdet->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -498,8 +498,8 @@ class Evaluationdet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->evaluationdet->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->evaluationdet->evaluationdet_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->evaluationdet->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->evaluationdet->evaluationdet_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -565,15 +565,15 @@ class Evaluationdet extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->hrmtest->dir_output.'/evaluationdet/'.$oldref;
-				$dirdest = $conf->hrmtest->dir_output.'/evaluationdet/'.$newref;
+				$dirsource = $conf->hrm->dir_output.'/evaluationdet/'.$oldref;
+				$dirdest = $conf->hrm->dir_output.'/evaluationdet/'.$newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this)."::validate() rename dir ".$dirsource." into ".$dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->hrmtest->dir_output.'/evaluationdet/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->hrm->dir_output.'/evaluationdet/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^'.preg_quote($oldref, '/').'/', $newref, $dirsource);
@@ -616,8 +616,8 @@ class Evaluationdet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -640,8 +640,8 @@ class Evaluationdet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -664,8 +664,8 @@ class Evaluationdet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -701,7 +701,7 @@ class Evaluationdet extends CommonObject
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
-		$url = dol_buildpath('/hrmtest/evaluationdet_card.php', 1).'?id='.$this->id;
+		$url = dol_buildpath('/hrm/evaluationdet_card.php', 1).'?id='.$this->id;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -813,7 +813,7 @@ class Evaluationdet extends CommonObject
 		// phpcs:enable
 		if (empty($this->labelStatus) || empty($this->labelStatusShort)) {
 			global $langs;
-			//$langs->load("hrmtest@hrmtest");
+			//$langs->load("hrm@hrm");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->trans('Draft');
 			$this->labelStatus[self::STATUS_VALIDATED] = $langs->trans('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->trans('Disabled');
@@ -922,22 +922,22 @@ class Evaluationdet extends CommonObject
 	public function getNextNumRef()
 	{
 		global $langs, $conf;
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->HRMTEST_EVALUATIONDET_ADDON)) {
-			$conf->global->HRMTEST_EVALUATIONDET_ADDON = 'mod_evaluationdet_standard';
+		if (empty($conf->global->hrm_EVALUATIONDET_ADDON)) {
+			$conf->global->hrm_EVALUATIONDET_ADDON = 'mod_evaluationdet_standard';
 		}
 
-		if (!empty($conf->global->HRMTEST_EVALUATIONDET_ADDON)) {
+		if (!empty($conf->global->hrm_EVALUATIONDET_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->HRMTEST_EVALUATIONDET_ADDON.".php";
-			$classname = $conf->global->HRMTEST_EVALUATIONDET_ADDON;
+			$file = $conf->global->hrm_EVALUATIONDET_ADDON.".php";
+			$classname = $conf->global->hrm_EVALUATIONDET_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 			foreach ($dirmodels as $reldir) {
-				$dir = dol_buildpath($reldir."core/modules/hrmtest/");
+				$dir = dol_buildpath($reldir."core/modules/hrm/");
 
 				// Load file with numbering class (if found)
 				$mybool |= @include_once $dir.$file;
@@ -987,7 +987,7 @@ class Evaluationdet extends CommonObject
 		$result = 0;
 		$includedocgeneration = 0;
 
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
 		if (!dol_strlen($modele)) {
 			$modele = 'standard_evaluationdet';
@@ -999,7 +999,7 @@ class Evaluationdet extends CommonObject
 			}
 		}
 
-		$modelpath = "core/modules/hrmtest/doc/";
+		$modelpath = "core/modules/hrm/doc/";
 
 		if ($includedocgeneration && !empty($modele)) {
 			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);

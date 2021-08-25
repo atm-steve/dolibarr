@@ -18,7 +18,7 @@
 
 /**
  *   	\file       skilldet_list.php
- *		\ingroup    hrmtest
+ *		\ingroup    hrm
  *		\brief      List page for skilldet
  */
 
@@ -78,14 +78,14 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 
-// load hrmtest libraries
+// load hrm libraries
 require_once __DIR__.'/class/skilldet.class.php';
 
 // for other modules
 //dol_include_once('/othermodule/class/otherobject.class.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+$langs->loadLangs(array("hrm@hrm", "other"));
 
 $action     = GETPOST('action', 'aZ09') ?GETPOST('action', 'aZ09') : 'view'; // The action 'add', 'create', 'edit', 'update', 'view', ...
 $massaction = GETPOST('massaction', 'alpha'); // The bulk action (combo box choice into lists)
@@ -115,7 +115,7 @@ $pagenext = $page + 1;
 // Initialize technical objects
 $object = new Skilldet($db);
 $extrafields = new ExtraFields($db);
-$diroutputmassaction = $conf->hrmtest->dir_output.'/temp/massgeneration/'.$user->id;
+$diroutputmassaction = $conf->hrm->dir_output.'/temp/massgeneration/'.$user->id;
 $hookmanager->initHooks(array('skilldetlist')); // Note that conf->hooks_modules contains array
 
 // Fetch optionals attributes and labels
@@ -175,12 +175,12 @@ include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_array_fields.tpl.php';
 $object->fields = dol_sort_array($object->fields, 'position');
 $arrayfields = dol_sort_array($arrayfields, 'position');
 
-$permissiontoread = $user->rights->hrmtest->skilldet->read;
-$permissiontoadd = $user->rights->hrmtest->skilldet->write;
-$permissiontodelete = $user->rights->hrmtest->skilldet->delete;
+$permissiontoread = $user->rights->hrm->skilldet->read;
+$permissiontoadd = $user->rights->hrm->skilldet->write;
+$permissiontodelete = $user->rights->hrm->skilldet->delete;
 
 // Security check
-if (empty($conf->hrmtest->enabled)) {
+if (empty($conf->hrm->enabled)) {
 	accessforbidden('Module not enabled');
 }
 
@@ -190,7 +190,7 @@ if ($user->socid > 0) accessforbidden();
 //$socid = 0; if ($user->socid > 0) $socid = $user->socid;
 //$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 //restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-//if (empty($conf->hrmtest->enabled)) accessforbidden();
+//if (empty($conf->hrm->enabled)) accessforbidden();
 //if (!$permissiontoread) accessforbidden();
 
 
@@ -237,7 +237,7 @@ if (empty($reshook)) {
 	// Mass actions
 	$objectclass = 'Skilldet';
 	$objectlabel = 'Skilldet';
-	$uploaddir = $conf->hrmtest->dir_output;
+	$uploaddir = $conf->hrm->dir_output;
 	include DOL_DOCUMENT_ROOT.'/core/actions_massactions.inc.php';
 }
 
@@ -377,7 +377,7 @@ if (is_numeric($nbtotalofrecords) && ($limit > $nbtotalofrecords || empty($limit
 if ($num == 1 && !empty($conf->global->MAIN_SEARCH_DIRECT_OPEN_IF_ONLY_ONE) && $search_all && !$page) {
 	$obj = $db->fetch_object($resql);
 	$id = $obj->rowid;
-	header("Location: ".dol_buildpath('/hrmtest/skilldet_card.php', 1).'?id='.$id);
+	header("Location: ".dol_buildpath('/hrm/skilldet_card.php', 1).'?id='.$id);
 	exit;
 }
 
@@ -457,7 +457,7 @@ print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 print '<input type="hidden" name="page" value="'.$page.'">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 
-$newcardbutton = dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/hrmtest/skilldet_card.php', 1).'?action=create&backtopage='.urlencode($_SERVER['PHP_SELF']), '', $permissiontoadd);
+$newcardbutton = dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/hrm/skilldet_card.php', 1).'?action=create&backtopage='.urlencode($_SERVER['PHP_SELF']), '', $permissiontoadd);
 
 print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_'.$object->picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
 
@@ -720,7 +720,7 @@ if (in_array('builddoc', $arrayofmassactions) && ($nbtotalofrecords === '' || $n
 	$genallowed = $permissiontoread;
 	$delallowed = $permissiontoadd;
 
-	print $formfile->showdocuments('massfilesarea_hrmtest', '', $filedir, $urlsource, 0, $delallowed, '', 1, 1, 0, 48, 1, $param, $title, '', '', '', null, $hidegeneratedfilelistifempty);
+	print $formfile->showdocuments('massfilesarea_hrm', '', $filedir, $urlsource, 0, $delallowed, '', 1, 1, 0, 48, 1, $param, $title, '', '', '', null, $hidegeneratedfilelistifempty);
 }
 
 // End of page

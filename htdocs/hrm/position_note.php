@@ -18,8 +18,8 @@
 
 /**
  *  \file       position_note.php
- *  \ingroup    hrmtest
- *  \ingroup    hrmtest
+ *  \ingroup    hrm
+ *  \ingroup    hrm
  *  \brief      Tab for notes on Position
  */
 
@@ -75,11 +75,11 @@ if (!$res) {
 	die("Include of main fails");
 }
 
-dol_include_once('/hrmtest/class/position.class.php');
-dol_include_once('/hrmtest/lib/hrmtest_position.lib.php');
+dol_include_once('/hrm/class/position.class.php');
+dol_include_once('/hrm/lib/hrm_position.lib.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest", "companies"));
+$langs->loadLangs(array("hrm@hrm", "companies"));
 
 // Get parameters
 $id = GETPOST('id', 'int');
@@ -91,7 +91,7 @@ $backtopage = GETPOST('backtopage', 'alpha');
 // Initialize technical objects
 $object = new Position($db);
 $extrafields = new ExtraFields($db);
-$diroutputmassaction = $conf->hrmtest->dir_output.'/temp/massgeneration/'.$user->id;
+$diroutputmassaction = $conf->hrm->dir_output.'/temp/massgeneration/'.$user->id;
 $hookmanager->initHooks(array('positionnote', 'globalcard')); // Note that conf->hooks_modules contains array
 // Fetch optionals attributes and labels
 $extrafields->fetch_name_optionals_label($object->table_element);
@@ -99,18 +99,18 @@ $extrafields->fetch_name_optionals_label($object->table_element);
 // Load object
 include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be include, not include_once  // Must be include, not include_once. Include fetch and fetch_thirdparty but not fetch_optionals
 if ($id > 0 || !empty($ref)) {
-	$upload_dir = $conf->hrmtest->multidir_output[$object->entity]."/".$object->id;
+	$upload_dir = $conf->hrm->multidir_output[$object->entity]."/".$object->id;
 }
 
-$permissionnote = $user->rights->hrmtest->position->write; // Used by the include of actions_setnotes.inc.php
-$permissiontoadd = $user->rights->hrmtest->position->write; // Used by the include of actions_addupdatedelete.inc.php
+$permissionnote = $user->rights->hrm->position->write; // Used by the include of actions_setnotes.inc.php
+$permissiontoadd = $user->rights->hrm->position->write; // Used by the include of actions_addupdatedelete.inc.php
 
 // Security check (enable the most restrictive one)
 //if ($user->socid > 0) accessforbidden();
 //if ($user->socid > 0) $socid = $user->socid;
 //$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 //restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-//if (empty($conf->hrmtest->enabled)) accessforbidden();
+//if (empty($conf->hrm->enabled)) accessforbidden();
 //if (!$permissiontoread) accessforbidden();
 
 
@@ -146,7 +146,7 @@ if ($id > 0 || !empty($ref)) {
 
 	// Object card
 	// ------------------------------------------------------------
-	$linkback = '<a href="'.dol_buildpath('/hrmtest/position_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	$linkback = '<a href="'.dol_buildpath('/hrm/position_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
 
 	$morehtmlref = '<div class="refidno">';
 	/*

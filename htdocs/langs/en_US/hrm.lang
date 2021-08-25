@@ -1,4 +1,6 @@
 # Dolibarr language file - en_US - hrm
+
+
 # Admin
 HRM_EMAIL_EXTERNAL_SERVICE=Email to prevent HRM external service
 Establishments=Establishments
@@ -17,3 +19,83 @@ Employees=Employees
 Employee=Employee
 NewEmployee=New employee
 ListOfEmployees=List of employees
+
+
+
+
+
+#
+# Generic
+#
+
+# Module label 'ModuleHrmName'
+ModuleHrmTestName = GRH
+# Module description 'ModuleHrmDesc'
+ModuleHrmDesc = Grh description
+
+#
+# Admin page
+#
+HrmTestSetup = Hrm setup
+Settings = Settings
+HrmTestSetupPage = Hrm setup page
+HRMTEST_MYPARAM1 = My param 1
+HRMTEST_MYPARAM1Tooltip = My param 1 tooltip
+HRMTEST_MYPARAM2=My param 2
+HRMTEST_MYPARAM2Tooltip=My param 2 tooltip
+
+
+#
+# About page
+#
+About = About
+HrmAbout = About Hrm
+HrmAboutPage = Hrm about page
+
+#
+# Sample page
+#
+MyPageName = My page name
+
+#
+# Sample widget
+#
+MyWidget = My widget
+MyWidgetDescription = My widget description
+
+traduction_note=Translate
+description=Description
+deplacement=shift
+list=List
+
+# Job
+fkUser=User
+DateEval=Evaluation date
+
+
+# Skill
+NewSkill=New Skill
+SKILL_TYPE_EXPERTISE=Know-how
+SKILL_TYPE_SOFT_SKILL=Expertise
+SKILL_TYPE_KNOWLEDGE=knowledge
+SkillType=Skill type
+Skilldets=Skill levels
+Skilldet=Skill level
+rank=Rank
+ErrNoSkillSelected=No skill selected
+ErrSkillAlreadyAdded=This skill is already in the list
+SkillHasNoLines=This skill has no lines
+
+NoUser=No user
+NewJob=New Job
+Eval=Evaluation
+NewEval=New evaluation
+
+# Position
+date_end=End date
+date_start=Start date
+fk_user=User
+fk_job=Job
+EndContract=End of contract
+ErrorBadObjectType= Bad object type provided
+RequiredRank=Required rank

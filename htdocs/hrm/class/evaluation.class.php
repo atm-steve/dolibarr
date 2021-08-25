@@ -18,13 +18,13 @@
 
 /**
  * \file        class/evaluation.class.php
- * \ingroup     hrmtest
+ * \ingroup     hrm
  * \brief       This file is a CRUD class file for Evaluation (Create/Read/Update/Delete)
  */
 
 // Put here all includes required by your class file
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
-dol_include_once('hrmtest/class/evaluationdet.class.php');
+dol_include_once('hrm/class/evaluationdet.class.php');
 //require_once DOL_DOCUMENT_ROOT . '/societe/class/societe.class.php';
 //require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
@@ -36,7 +36,7 @@ class Evaluation extends CommonObject
 	/**
 	 * @var string ID of module.
 	 */
-	public $module = 'hrmtest';
+	public $module = 'hrm';
 
 	/**
 	 * @var string ID to identify managed object.
@@ -46,7 +46,7 @@ class Evaluation extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'hrmtest_evaluation';
+	public $table_element = 'hrm_evaluation';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
@@ -62,7 +62,7 @@ class Evaluation extends CommonObject
 	/**
 	 * @var string String with name of icon for evaluation. Must be the part after the 'object_' into object_evaluation.png
 	 */
-	public $picto = 'evaluation@hrmtest';
+	public $picto = 'evaluation@hrm';
 
 
 	const STATUS_DRAFT = 0;
@@ -116,7 +116,7 @@ class Evaluation extends CommonObject
 		'status' => array('type'=>'smallint', 'label'=>'Status', 'enabled'=>'1', 'position'=>1000, 'notnull'=>1, 'default'=>0, 'visible'=>5, 'index'=>1, 'arrayofkeyval'=>array('0'=>'Brouillon', '1'=>'Valid&eacute;'),),
 		'date_eval' => array('type'=>'datetime', 'label'=>'DateEval', 'enabled'=>'1', 'position'=>502, 'notnull'=>0, 'visible'=>1,),
 		'fk_user' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'fkUser', 'enabled'=>'1', 'position'=>504, 'notnull'=>1, 'visible'=>1,),
-		'fk_job' => array('type'=>'integer:Job:/hrmtest/class/job.class.php', 'label'=>'Job', 'enabled'=>'1', 'position'=>505, 'notnull'=>1, 'visible'=>1,),
+		'fk_job' => array('type'=>'integer:Job:/hrm/class/job.class.php', 'label'=>'Job', 'enabled'=>'1', 'position'=>505, 'notnull'=>1, 'visible'=>1,),
 	);
 	public $rowid;
 	public $ref;
@@ -141,7 +141,7 @@ class Evaluation extends CommonObject
 	 /**
 	  * @var string    Name of subtable line
 	  */
-	 public $table_element_line = 'hrmtest_evaluationdet';
+	 public $table_element_line = 'hrm_evaluationdet';
 
 	 /**
 	  * @var string    Field with ID of parent key if this object has a parent
@@ -163,7 +163,7 @@ class Evaluation extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	 protected $childtablesoncascade = array('@Evaluationdet:hrmtest/class/evaluationdet.class.php:fk_evaluation');
+	 protected $childtablesoncascade = array('@Evaluationdet:hrm/class/evaluationdet.class.php:fk_evaluation');
 
 	 /**
 	  * @var Evaluationdet[]     Array of subtable lines
@@ -191,7 +191,7 @@ class Evaluation extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrmtest->evaluation->read) {
+		/*if ($user->rights->hrm->evaluation->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -228,7 +228,7 @@ class Evaluation extends CommonObject
 
 		if ($resultcreate > 0)
 		{
-			dol_include_once('hrmtest/class/skillrank.class.php');
+			dol_include_once('hrm/class/skillrank.class.php');
 			$skillRank = new SkillRank($this->db);
 			$TRequiredRanks = $skillRank->fetchAll('ASC', 't.rowid', 0, 0, array('customsql' => 'fk_object='.$this->fk_job.' AND objecttype="job"'));
 
@@ -562,8 +562,8 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->evaluation->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->evaluation->evaluation_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->evaluation->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->evaluation->evaluation_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -629,15 +629,15 @@ class Evaluation extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->hrmtest->dir_output.'/evaluation/'.$oldref;
-				$dirdest = $conf->hrmtest->dir_output.'/evaluation/'.$newref;
+				$dirsource = $conf->hrm->dir_output.'/evaluation/'.$oldref;
+				$dirdest = $conf->hrm->dir_output.'/evaluation/'.$newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this)."::validate() rename dir ".$dirsource." into ".$dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->hrmtest->dir_output.'/evaluation/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->hrm->dir_output.'/evaluation/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^'.preg_quote($oldref, '/').'/', $newref, $dirsource);
@@ -680,8 +680,8 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -704,8 +704,8 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -728,8 +728,8 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -765,7 +765,7 @@ class Evaluation extends CommonObject
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
-		$url = dol_buildpath('/hrmtest/evaluation_card.php', 1).'?id='.$this->id;
+		$url = dol_buildpath('/hrm/evaluation_card.php', 1).'?id='.$this->id;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -877,7 +877,7 @@ class Evaluation extends CommonObject
 		// phpcs:enable
 		if (empty($this->labelStatus) || empty($this->labelStatusShort)) {
 			global $langs;
-			//$langs->load("hrmtest@hrmtest");
+			//$langs->load("hrm@hrm");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->trans('Draft');
 			$this->labelStatus[self::STATUS_VALIDATED] = $langs->trans('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->trans('Disabled');
@@ -987,22 +987,22 @@ class Evaluation extends CommonObject
 	public function getNextNumRef()
 	{
 		global $langs, $conf;
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->HRMTEST_EVALUATION_ADDON)) {
-			$conf->global->HRMTEST_EVALUATION_ADDON = 'mod_evaluation_standard';
+		if (empty($conf->global->hrm_EVALUATION_ADDON)) {
+			$conf->global->hrm_EVALUATION_ADDON = 'mod_evaluation_standard';
 		}
 
-		if (!empty($conf->global->HRMTEST_EVALUATION_ADDON)) {
+		if (!empty($conf->global->hrm_EVALUATION_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->HRMTEST_EVALUATION_ADDON.".php";
-			$classname = $conf->global->HRMTEST_EVALUATION_ADDON;
+			$file = $conf->global->hrm_EVALUATION_ADDON.".php";
+			$classname = $conf->global->hrm_EVALUATION_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 			foreach ($dirmodels as $reldir) {
-				$dir = dol_buildpath($reldir."core/modules/hrmtest/");
+				$dir = dol_buildpath($reldir."core/modules/hrm/");
 
 				// Load file with numbering class (if found)
 				$mybool |= @include_once $dir.$file;
@@ -1052,7 +1052,7 @@ class Evaluation extends CommonObject
 		$result = 0;
 		$includedocgeneration = 0;
 
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
 		if (!dol_strlen($modele)) {
 			$modele = 'standard_evaluation';
@@ -1064,7 +1064,7 @@ class Evaluation extends CommonObject
 			}
 		}
 
-		$modelpath = "core/modules/hrmtest/doc/";
+		$modelpath = "core/modules/hrm/doc/";
 
 		if ($includedocgeneration && !empty($modele)) {
 			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
@@ -1130,7 +1130,7 @@ class Evaluation extends CommonObject
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
 			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook.
-			include dol_buildpath('hrmtest/core/tpl/objectline_title.tpl.php');
+			include dol_buildpath('hrm/core/tpl/objectline_title.tpl.php');
 		}
 
 		$i = 0;
@@ -1221,7 +1221,7 @@ class Evaluation extends CommonObject
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
 			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook printObjectLine and printObjectSubLine.
-			include dol_buildpath('hrmtest/core/tpl/objectline_view.tpl.php');
+			include dol_buildpath('hrm/core/tpl/objectline_view.tpl.php');
 		}
 
 	}

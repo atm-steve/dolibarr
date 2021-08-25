@@ -18,7 +18,7 @@
 
 /**
  *    \file       position_card.php
- *        \ingroup    hrmtest
+ *        \ingroup    hrm
  *        \brief      Page to create/edit/view position
  */
 
@@ -81,10 +81,10 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
-dol_include_once('/hrmtest/class/position.class.php');
-dol_include_once('/hrmtest/class/job.class.php');
-dol_include_once('/hrmtest/lib/hrmtest_position.lib.php');
-//dol_include_once('/hrmtest/position.php');
+dol_include_once('/hrm/class/position.class.php');
+dol_include_once('/hrm/class/job.class.php');
+dol_include_once('/hrm/lib/hrm_position.lib.php');
+//dol_include_once('/hrm/position.php');
 
 $action 	= GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view'; // The action 'add', 'create', 'edit', 'update', 'view', ...
 $backtopage = GETPOST('backtopage', 'alpha');
@@ -100,7 +100,7 @@ if ($res < 0) {
 }
 
 
-$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+$langs->loadLangs(array("hrm@hrm", "other"));
 
 
 DisplayPositionCard($conf, $langs, $db, $object, $permissiontoadd, $lineid);
@@ -143,7 +143,7 @@ function DisplayPositionCard($conf, $langs, $db, &$object, $permissiontoadd, $li
 
 	$extrafields = new ExtraFields($db);
 
-	$diroutputmassaction = $conf->hrmtest->dir_output . '/temp/massgeneration/' . $user->id;
+	$diroutputmassaction = $conf->hrm->dir_output . '/temp/massgeneration/' . $user->id;
 	$hookmanager->initHooks(array('positioncard', 'globalcard')); // Note that conf->hooks_modules contains array
 
 	// Fetch optionals attributes and labels
@@ -167,19 +167,19 @@ function DisplayPositionCard($conf, $langs, $db, &$object, $permissiontoadd, $li
 	// Load object
 	include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
 
-	$permissiontoread = $user->rights->hrmtest->position->read;
-	$permissiontoadd = $user->rights->hrmtest->position->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-	$permissiontodelete = $user->rights->hrmtest->position->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-	$permissionnote = $user->rights->hrmtest->position->write; // Used by the include of actions_setnotes.inc.php
-	$permissiondellink = $user->rights->hrmtest->position->write; // Used by the include of actions_dellink.inc.php
-	$upload_dir = $conf->hrmtest->multidir_output[isset($object->entity) ? $object->entity : 1] . '/position';
+	$permissiontoread = $user->rights->hrm->position->read;
+	$permissiontoadd = $user->rights->hrm->position->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
+	$permissiontodelete = $user->rights->hrm->position->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
+	$permissionnote = $user->rights->hrm->position->write; // Used by the include of actions_setnotes.inc.php
+	$permissiondellink = $user->rights->hrm->position->write; // Used by the include of actions_dellink.inc.php
+	$upload_dir = $conf->hrm->multidir_output[isset($object->entity) ? $object->entity : 1] . '/position';
 
 	// Security check (enable the most restrictive one)
 	//if ($user->socid > 0) accessforbidden();
 	//if ($user->socid > 0) $socid = $user->socid;
 	//$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 	//restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-	//if (empty($conf->hrmtest->enabled)) accessforbidden();
+	//if (empty($conf->hrm->enabled)) accessforbidden();
 	//if (!$permissiontoread) accessforbidden();
 
 
@@ -196,19 +196,19 @@ function DisplayPositionCard($conf, $langs, $db, &$object, $permissiontoadd, $li
 	if (empty($reshook)) {
 		$error = 0;
 
-		$backurlforlist = dol_buildpath('/hrmtest/position_list.php', 1);
+		$backurlforlist = dol_buildpath('/hrm/position_list.php', 1);
 
 		if (empty($backtopage) || ($cancel && empty($fk_job))) {
 			if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
 				if (empty($fk_job) && (($action != 'add' && $action != 'create') || $cancel)) {
 					$backtopage = $backurlforlist;
 				} else {
-					$backtopage = dol_buildpath('/hrmtest/position.php', 1) . '?fk_job=' . ($fk_job > 0 ? $fk_job : '__ID__');
+					$backtopage = dol_buildpath('/hrm/position.php', 1) . '?fk_job=' . ($fk_job > 0 ? $fk_job : '__ID__');
 				}
 			}
 		}
 
-		$triggermodname = 'HRMTEST_POSITION_MODIFY'; // Name of trigger action code to execute when we modify record
+		$triggermodname = 'hrm_POSITION_MODIFY'; // Name of trigger action code to execute when we modify record
 
 		// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 		include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
@@ -233,7 +233,7 @@ function DisplayPositionCard($conf, $langs, $db, &$object, $permissiontoadd, $li
 		}
 
 		// Actions to send emails
-		$triggersendname = 'HRMTEST_POSITION_SENTBYMAIL';
+		$triggersendname = 'hrm_POSITION_SENTBYMAIL';
 		$autocopy = 'MAIN_MAIL_AUTOCOPY_POSITION_TO';
 		$trackid = 'position' . $object->id;
 		include DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
@@ -359,7 +359,7 @@ function DisplayPositionCard($conf, $langs, $db, &$object, $permissiontoadd, $li
 
 		// Object card
 		// ------------------------------------------------------------
-		$linkback = '<a href="' . dol_buildpath('/hrmtest/position.php', 1) . '?restore_lastsearch_values=1' . (!empty($object->fk_job) ? '&fk_job=' . $object->fk_job : '') . '">' . $langs->trans("BackToList") . '</a>';
+		$linkback = '<a href="' . dol_buildpath('/hrm/position.php', 1) . '?restore_lastsearch_values=1' . (!empty($object->fk_job) ? '&fk_job=' . $object->fk_job : '') . '">' . $langs->trans("BackToList") . '</a>';
 
 		$morehtmlref = '<div class="refidno">';
 
@@ -463,7 +463,7 @@ print '</div><div class="fichehalfright"><div class="ficheaddleft">';
 
 $MAXEVENT = 10;
 
-$morehtmlright = '<a href="' . dol_buildpath('/hrmtest/position_agenda.php', 1) . '?id=' . $object->id . '">';
+$morehtmlright = '<a href="' . dol_buildpath('/hrm/position_agenda.php', 1) . '?id=' . $object->id . '">';
 $morehtmlright .= $langs->trans("SeeAll");
 $morehtmlright .= '</a>';
 // List of actions on element

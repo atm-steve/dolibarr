@@ -18,7 +18,7 @@
 
 /**
  *    \file       skill_tab.php
- *        \ingroup    hrmtest
+ *        \ingroup    hrm
  *        \brief      Page to add/delete/view skill to jobs/users
  */
 
@@ -82,12 +82,12 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
 require_once DOL_DOCUMENT_ROOT . '/user/class/user.class.php';
-dol_include_once('/hrmtest/class/skill.class.php');
-dol_include_once('/hrmtest/class/skillrank.class.php');
-dol_include_once('/hrmtest/lib/hrmtest_skill.lib.php');
+dol_include_once('/hrm/class/skill.class.php');
+dol_include_once('/hrm/class/skillrank.class.php');
+dol_include_once('/hrm/lib/hrm_skill.lib.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+$langs->loadLangs(array("hrm@hrm", "other"));
 
 $id = GETPOST('id', 'int');
 $fk_skill = GETPOST('fk_skill', 'int');
@@ -107,7 +107,7 @@ $skill = new SkillRank($db);
 // Initialize technical objects
 if (in_array($objecttype, $TAuthorizedObjects)) {
 	if ($objecttype == 'job') {
-		dol_include_once('/hrmtest/class/job.class.php');
+		dol_include_once('/hrm/class/job.class.php');
 		$object = new Job($db);
 	} else if ($objecttype == "user") {
 		$object = new User($db);
@@ -119,13 +119,13 @@ $hookmanager->initHooks(array('skilltab', 'globalcard')); // Note that conf->hoo
 // Load object
 include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
 
-$permissiontoread = $user->rights->hrmtest->skill->read;
-$permissiontoadd = $user->rights->hrmtest->skill->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-$permissiontodelete = $user->rights->hrmtest->skill->delete;
+$permissiontoread = $user->rights->hrm->skill->read;
+$permissiontoadd = $user->rights->hrm->skill->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
+$permissiontodelete = $user->rights->hrm->skill->delete;
 
 // Security check (enable the most restrictive one)
 if ($user->socid > 0) accessforbidden();
-if (empty($conf->hrmtest->enabled)) accessforbidden();
+if (empty($conf->hrm->enabled)) accessforbidden();
 if (!$permissiontoread) accessforbidden();
 
 
@@ -142,14 +142,14 @@ if ($reshook < 0) {
 if (empty($reshook)) {
 	$error = 0;
 
-	$backurlforlist = dol_buildpath('/hrmtest/skill_list.php', 1);
+	$backurlforlist = dol_buildpath('/hrm/skill_list.php', 1);
 
 	if (empty($backtopage) || ($cancel && empty($id))) {
 		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
 			if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
 				$backtopage = $backurlforlist;
 			} else {
-				$backtopage = dol_buildpath('/hrmtest/skill_list.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
+				$backtopage = dol_buildpath('/hrm/skill_list.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
 			}
 		}
 	}
@@ -213,9 +213,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	// view configuration
 	if ($objecttype == 'job') {
-		dol_include_once('/hrmtest/lib/hrmtest_job.lib.php');
+		dol_include_once('/hrm/lib/hrm_job.lib.php');
 		$head = jobPrepareHead($object);
-		$listLink = dol_buildpath('/hrmtest/job_list.php', 1);
+		$listLink = dol_buildpath('/hrm/job_list.php', 1);
 	} else if ($objecttype == "user") {
 		require_once DOL_DOCUMENT_ROOT . "/core/lib/usergroups.lib.php";
 		$head = user_prepare_head($object);

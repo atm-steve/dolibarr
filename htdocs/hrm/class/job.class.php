@@ -18,7 +18,7 @@
 
 /**
  * \file        class/job.class.php
- * \ingroup     hrmtest
+ * \ingroup     hrm
  * \brief       This file is a CRUD class file for Job (Create/Read/Update/Delete)
  */
 
@@ -35,7 +35,7 @@ class Job extends CommonObject
 	/**
 	 * @var string ID of module.
 	 */
-	public $module = 'hrmtest';
+	public $module = 'hrm';
 
 	/**
 	 * @var string ID to identify managed object.
@@ -45,7 +45,7 @@ class Job extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'hrmtest_job';
+	public $table_element = 'hrm_job';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
@@ -129,7 +129,7 @@ class Job extends CommonObject
 	// /**
 	//  * @var string    Name of subtable line
 	//  */
-	// public $table_element_line = 'hrmtest_jobline';
+	// public $table_element_line = 'hrm_jobline';
 
 	// /**
 	//  * @var string    Field with ID of parent key if this object has a parent
@@ -151,7 +151,7 @@ class Job extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	// protected $childtablesoncascade = array('hrmtest_jobdet');
+	// protected $childtablesoncascade = array('hrm_jobdet');
 
 	// /**
 	//  * @var JobLine[]     Array of subtable lines
@@ -179,7 +179,7 @@ class Job extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrmtest->job->read) {
+		/*if ($user->rights->hrm->job->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -493,8 +493,8 @@ class Job extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->job->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->job->job_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->job->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->job->job_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -560,15 +560,15 @@ class Job extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->hrmtest->dir_output.'/job/'.$oldref;
-				$dirdest = $conf->hrmtest->dir_output.'/job/'.$newref;
+				$dirsource = $conf->hrm->dir_output.'/job/'.$oldref;
+				$dirdest = $conf->hrm->dir_output.'/job/'.$newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this)."::validate() rename dir ".$dirsource." into ".$dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->hrmtest->dir_output.'/job/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->hrm->dir_output.'/job/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^'.preg_quote($oldref, '/').'/', $newref, $dirsource);
@@ -611,8 +611,8 @@ class Job extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -635,8 +635,8 @@ class Job extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -659,8 +659,8 @@ class Job extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -696,7 +696,7 @@ class Job extends CommonObject
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
-		$url = dol_buildpath('/hrmtest/job_card.php', 1).'?id='.$this->id;
+		$url = dol_buildpath('/hrm/job_card.php', 1).'?id='.$this->id;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -808,7 +808,7 @@ class Job extends CommonObject
 		// phpcs:enable
 		if (empty($this->labelStatus) || empty($this->labelStatusShort)) {
 			global $langs;
-			//$langs->load("hrmtest@hrmtest");
+			//$langs->load("hrm@hrm");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->trans('Draft');
 			$this->labelStatus[self::STATUS_VALIDATED] = $langs->trans('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->trans('Disabled');
@@ -917,22 +917,22 @@ class Job extends CommonObject
 	public function getNextNumRef()
 	{
 		global $langs, $conf;
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->HRMTEST_JOB_ADDON)) {
-			$conf->global->HRMTEST_JOB_ADDON = 'mod_job_standard';
+		if (empty($conf->global->hrm_JOB_ADDON)) {
+			$conf->global->hrm_JOB_ADDON = 'mod_job_standard';
 		}
 
-		if (!empty($conf->global->HRMTEST_JOB_ADDON)) {
+		if (!empty($conf->global->hrm_JOB_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->HRMTEST_JOB_ADDON.".php";
-			$classname = $conf->global->HRMTEST_JOB_ADDON;
+			$file = $conf->global->hrm_JOB_ADDON.".php";
+			$classname = $conf->global->hrm_JOB_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 			foreach ($dirmodels as $reldir) {
-				$dir = dol_buildpath($reldir."core/modules/hrmtest/");
+				$dir = dol_buildpath($reldir."core/modules/hrm/");
 
 				// Load file with numbering class (if found)
 				$mybool |= @include_once $dir.$file;
@@ -982,7 +982,7 @@ class Job extends CommonObject
 		$result = 0;
 		$includedocgeneration = 0;
 
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
 		if (!dol_strlen($modele)) {
 			$modele = 'standard_job';
@@ -994,7 +994,7 @@ class Job extends CommonObject
 			}
 		}
 
-		$modelpath = "core/modules/hrmtest/doc/";
+		$modelpath = "core/modules/hrm/doc/";
 
 		if ($includedocgeneration && !empty($modele)) {
 			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);

@@ -18,7 +18,7 @@
 
 /**
  *    \file       skill_card.php
- *        \ingroup    hrmtest
+ *        \ingroup    hrm
  *        \brief      Page to create/edit/view skill
  */
 
@@ -81,12 +81,12 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
-dol_include_once('/hrmtest/class/skill.class.php');
-dol_include_once('/hrmtest/lib/hrmtest_skill.lib.php');
+dol_include_once('/hrm/class/skill.class.php');
+dol_include_once('/hrm/lib/hrm_skill.lib.php');
 
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+$langs->loadLangs(array("hrm@hrm", "other"));
 
 // Get parameters
 $id = GETPOST('id', 'int');
@@ -102,7 +102,7 @@ $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 // Initialize technical objects
 $object = new Skill($db);
 $extrafields = new ExtraFields($db);
-//$diroutputmassaction = $conf->hrmtest->dir_output.'/temp/massgeneration/'.$user->id;
+//$diroutputmassaction = $conf->hrm->dir_output.'/temp/massgeneration/'.$user->id;
 $hookmanager->initHooks(array('skillcard', 'globalcard')); // Note that conf->hooks_modules contains array
 
 // Fetch optionals attributes and labels
@@ -127,19 +127,19 @@ if (empty($action) && empty($id) && empty($ref)) {
 include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
 
 
-$permissiontoread = $user->rights->hrmtest->skill->read;
-$permissiontoadd = $user->rights->hrmtest->skill->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-$permissiontodelete = $user->rights->hrmtest->skill->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-$permissionnote = $user->rights->hrmtest->skill->write; // Used by the include of actions_setnotes.inc.php
-$permissiondellink = $user->rights->hrmtest->skill->write; // Used by the include of actions_dellink.inc.php
-$upload_dir = $conf->hrmtest->multidir_output[isset($object->entity) ? $object->entity : 1] . '/skill';
+$permissiontoread = $user->rights->hrm->skill->read;
+$permissiontoadd = $user->rights->hrm->skill->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
+$permissiontodelete = $user->rights->hrm->skill->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
+$permissionnote = $user->rights->hrm->skill->write; // Used by the include of actions_setnotes.inc.php
+$permissiondellink = $user->rights->hrm->skill->write; // Used by the include of actions_dellink.inc.php
+$upload_dir = $conf->hrm->multidir_output[isset($object->entity) ? $object->entity : 1] . '/skill';
 
 // Security check (enable the most restrictive one)
 //if ($user->socid > 0) accessforbidden();
 //if ($user->socid > 0) $socid = $user->socid;
 //$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 //restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-//if (empty($conf->hrmtest->enabled)) accessforbidden();
+//if (empty($conf->hrm->enabled)) accessforbidden();
 //if (!$permissiontoread) accessforbidden();
 
 
@@ -156,20 +156,20 @@ if ($reshook < 0) {
 if (empty($reshook)) {
 	$error = 0;
 
-	$backurlforlist = dol_buildpath('/hrmtest/skill_list.php', 1);
+	$backurlforlist = dol_buildpath('/hrm/skill_list.php', 1);
 
 	if (empty($backtopage) || ($cancel && empty($id))) {
 		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
 			if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
 				//$backtopage = $backurlforlist;
-				$backtopage = dol_buildpath('/hrmtest/skill_card.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
+				$backtopage = dol_buildpath('/hrm/skill_card.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
 			} else {
-				$backtopage = dol_buildpath('/hrmtest/skill_card.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
+				$backtopage = dol_buildpath('/hrm/skill_card.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
 			}
 		}
 	}
 
-	$triggermodname = 'HRMTEST_SKILL_MODIFY'; // Name of trigger action code to execute when we modify record
+	$triggermodname = 'hrm_SKILL_MODIFY'; // Name of trigger action code to execute when we modify record
 
 
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
@@ -213,7 +213,7 @@ if (empty($reshook)) {
 	}
 
 	// Actions to send emails
-	$triggersendname = 'HRMTEST_SKILL_SENTBYMAIL';
+	$triggersendname = 'hrm_SKILL_SENTBYMAIL';
 	$autocopy = 'MAIN_MAIL_AUTOCOPY_SKILL_TO';
 	$trackid = 'skill' . $object->id;
 	include DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
@@ -448,7 +448,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	// Object card
 	// ------------------------------------------------------------
-	$linkback = '<a href="' . dol_buildpath('/hrmtest/skill_list.php', 1) . '?restore_lastsearch_values=1' . (!empty($socid) ? '&socid=' . $socid : '') . '">' . $langs->trans("BackToList") . '</a>';
+	$linkback = '<a href="' . dol_buildpath('/hrm/skill_list.php', 1) . '?restore_lastsearch_values=1' . (!empty($socid) ? '&socid=' . $socid : '') . '">' . $langs->trans("BackToList") . '</a>';
 
 
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
@@ -474,7 +474,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print dol_get_fiche_end();
 
 
-	//dol_include_once('/hrmtest/tpl/hrmtest_skillde.fiche.tpl.php');
+	//dol_include_once('/hrm/tpl/hrm_skillde.fiche.tpl.php');
 
 	// Buttons for actions
 
@@ -515,14 +515,14 @@ if ($action != "create" && $action != "edit") {
 	require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 	require_once DOL_DOCUMENT_ROOT . '/core/lib/company.lib.php';
 
-	// load hrmtest libraries
+	// load hrm libraries
 	require_once __DIR__ . '/class/skilldet.class.php';
 
 // for other modules
 //dol_include_once('/othermodule/class/otherobject.class.php');
 
 // Load translation files required by the page
-	$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+	$langs->loadLangs(array("hrm@hrm", "other"));
 
 	$action = GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view'; // The action 'add', 'create', 'edit', 'update', 'view', ...
 	$massaction = GETPOST('massaction', 'alpha'); // The bulk action (combo box choice into lists)
@@ -552,7 +552,7 @@ if ($action != "create" && $action != "edit") {
 // Initialize technical objects
 	$objectline = new Skilldet($db);
 	$extrafields = new ExtraFields($db);
-//	$diroutputmassaction = $conf->hrmtest->dir_output . '/temp/massgeneration/' . $user->id;
+//	$diroutputmassaction = $conf->hrm->dir_output . '/temp/massgeneration/' . $user->id;
 //	$hookmanager->initHooks(array('skilldetlist')); // Note that conf->hooks_modules contains array
 
 // Fetch optionals attributes and labels
@@ -611,12 +611,12 @@ if ($action != "create" && $action != "edit") {
 	$objectline->fields = dol_sort_array($objectline->fields, 'position');
 	$arrayfields = dol_sort_array($arrayfields, 'position');
 
-	$permissiontoread = $user->rights->hrmtest->skilldet->read;
-	$permissiontoadd = $user->rights->hrmtest->skilldet->write;
-	$permissiontodelete = $user->rights->hrmtest->skilldet->delete;
+	$permissiontoread = $user->rights->hrm->skilldet->read;
+	$permissiontoadd = $user->rights->hrm->skilldet->write;
+	$permissiontodelete = $user->rights->hrm->skilldet->delete;
 
 // Security check
-	if (empty($conf->hrmtest->enabled)) {
+	if (empty($conf->hrm->enabled)) {
 		accessforbidden('Module not enabled');
 	}
 
@@ -665,7 +665,7 @@ if ($action != "create" && $action != "edit") {
 		// Mass actions
 		$objectclass = 'Skilldet';
 		$objectlabel = 'Skilldet';
-		$uploaddir = $conf->hrmtest->dir_output;
+		$uploaddir = $conf->hrm->dir_output;
 		//include DOL_DOCUMENT_ROOT.'/core/actions_massactions.inc.php';
 	}*/
 
@@ -790,7 +790,7 @@ if ($action != "create" && $action != "edit") {
 //	if ($num == 1 && !empty($conf->global->MAIN_SEARCH_DIRECT_OPEN_IF_ONLY_ONE) && $search_all && !$page) {
 //		$obj = $db->fetch_object($resql);
 //		$id = $obj->rowid;
-//		header("Location: " . dol_buildpath('/hrmtest/skilldet_card.php', 1) . '?id=' . $id);
+//		header("Location: " . dol_buildpath('/hrm/skilldet_card.php', 1) . '?id=' . $id);
 //		exit;
 //	}
 
@@ -855,8 +855,8 @@ if ($action != "create" && $action != "edit") {
 	}
 
 	$param_fk = "&fk_skill=" . $id . "&fk_user_creat=" . $user->rowid;
-	$backtopage = dol_buildpath('/hrmtest/skill_card.php', 1) . '?id=' . $id;
-	//$newcardbutton = dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/hrmtest/skilldet_card.php', 1) . '?action=create&backtopage=' . urlencode($_SERVER['PHP_SELF']) . $param_fk . '&backtopage=' . $backtopage, '', $permissiontoadd);
+	$backtopage = dol_buildpath('/hrm/skill_card.php', 1) . '?id=' . $id;
+	//$newcardbutton = dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/hrm/skilldet_card.php', 1) . '?action=create&backtopage=' . urlencode($_SERVER['PHP_SELF']) . $param_fk . '&backtopage=' . $backtopage, '', $permissiontoadd);
 
 	print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_' . $object->picto, 0, "", '', '', 0, 0, 1);
 
@@ -1075,10 +1075,10 @@ if ($action != "create" && $action != "edit") {
 		print '<td>';
 		// add pencil
 		//@todo change to proper call dol_
-		//print '<a class="timeline-btn" href="' . dol_buildpath("custom/hrmtest/skilldet_card.php?action=edit&id=" . $objectline->id, 1) . '"><i class="fa fa-pencil" title="' . $langs->trans("Modify") . '" ></i></a>';
+		//print '<a class="timeline-btn" href="' . dol_buildpath("custom/hrm/skilldet_card.php?action=edit&id=" . $objectline->id, 1) . '"><i class="fa fa-pencil" title="' . $langs->trans("Modify") . '" ></i></a>';
 		// add trash
 		//@todo change to proper call dol_
-		//print '<a class="timeline-btn" href="'.dol_buildpath("custom/hrmtest/skilldet_card.php?action=delete&id=".$objectline->id,1)  .'"><i class="fa fa-trash" title="'.$langs->trans("Delete").'" ></i></a>';
+		//print '<a class="timeline-btn" href="'.dol_buildpath("custom/hrm/skilldet_card.php?action=delete&id=".$objectline->id,1)  .'"><i class="fa fa-trash" title="'.$langs->trans("Delete").'" ></i></a>';
 		//print '</td>';
 
 
@@ -1140,7 +1140,7 @@ if ($action != "create" && $action != "edit") {
 //		$genallowed = $permissiontoread;
 //		$delallowed = $permissiontoadd;
 //
-//		print $formfile->showdocuments('massfilesarea_hrmtest', '', $filedir, $urlsource, 0, $delallowed, '', 1, 1, 0, 48, 1, $param, $title, '', '', '', null, $hidegeneratedfilelistifempty);
+//		print $formfile->showdocuments('massfilesarea_hrm', '', $filedir, $urlsource, 0, $delallowed, '', 1, 1, 0, 48, 1, $param, $title, '', '', '', null, $hidegeneratedfilelistifempty);
 //	}
 
 	print '<div class="fichecenter"><div class="fichehalfleft">';
@@ -1153,7 +1153,7 @@ if ($action != "create" && $action != "edit") {
 
 	$MAXEVENT = 10;
 
-	$morehtmlright = '<a href="' . dol_buildpath('/hrmtest/skill_agenda.php', 1) . '?id=' . $object->id . '">';
+	$morehtmlright = '<a href="' . dol_buildpath('/hrm/skill_agenda.php', 1) . '?id=' . $object->id . '">';
 	$morehtmlright .= $langs->trans("SeeAll");
 	$morehtmlright .= '</a>';
 	// List of actions on element

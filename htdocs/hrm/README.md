@@ -1,11 +1,11 @@
-# HRMTEST FOR [DOLIBARR ERP CRM](https://www.dolibarr.org)
+# hrm FOR [DOLIBARR ERP CRM](https://www.dolibarr.org)
 
 ## Features
 
 Description of the module...
 
 <!--
-![Screenshot hrmtest](img/screenshot_hrmtest.png?raw=true "HrmTest"){imgmd}
+![Screenshot hrm](img/screenshot_hrm.png?raw=true "hrm"){imgmd}
 -->
 
 Other external modules are available on [Dolistore.com](https://www.dolistore.com).
@@ -58,11 +58,11 @@ Note: If this screen tell you there is no custom directory, check your setup is 
 
 ### From a GIT repository
 
-- Clone the repository in ```$dolibarr_main_document_root_alt/hrmtest```
+- Clone the repository in ```$dolibarr_main_document_root_alt/hrm```
 
 ```sh
 cd ....../custom
-git clone git@github.com:gitlogin/hrmtest.git hrmtest
+git clone git@github.com:gitlogin/hrm.git hrm
 ```
 
 ### <a name="final_steps"></a>Final steps

@@ -18,7 +18,7 @@
 
 /**
  * \file        class/skill.class.php
- * \ingroup     hrmtest
+ * \ingroup     hrm
  * \brief       This file is a CRUD class file for Skill (Create/Read/Update/Delete)
  */
 
@@ -35,7 +35,7 @@ class Skill extends CommonObject
 	/**
 	 * @var string ID of module.
 	 */
-	public $module = 'hrmtest';
+	public $module = 'hrm';
 
 	/**
 	 * @var string ID to identify managed object.
@@ -45,7 +45,7 @@ class Skill extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'hrmtest_skill';
+	public $table_element = 'hrm_skill';
 
 
 	/**
@@ -67,7 +67,7 @@ class Skill extends CommonObject
 	/**
 	 * @var string String with name of icon for skill. Must be the part after the 'object_' into object_skill.png
 	 */
-	public $picto = 'skill@hrmtest';
+	public $picto = 'skill@hrm';
 
 
 	const STATUS_DRAFT = 0;
@@ -141,7 +141,7 @@ class Skill extends CommonObject
 	// /**
 	//  * @var string    Name of subtable line
 	//  */
-	// public $table_element_line = 'hrmtest_skillline';
+	// public $table_element_line = 'hrm_skillline';
 
 	// /**
 	//  * @var string    Field with ID of parent key if this object has a parent
@@ -163,7 +163,7 @@ class Skill extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	// protected $childtablesoncascade = array('hrmtest_skilldet');
+	// protected $childtablesoncascade = array('hrm_skilldet');
 
 	// /**
 	//  * @var SkillLine[]     Array of subtable lines
@@ -191,7 +191,7 @@ class Skill extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrmtest->skill->read) {
+		/*if ($user->rights->hrm->skill->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -538,8 +538,8 @@ class Skill extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->skill->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->skill->skill_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->skill->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->skill->skill_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -605,15 +605,15 @@ class Skill extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->hrmtest->dir_output.'/skill/'.$oldref;
-				$dirdest = $conf->hrmtest->dir_output.'/skill/'.$newref;
+				$dirsource = $conf->hrm->dir_output.'/skill/'.$oldref;
+				$dirdest = $conf->hrm->dir_output.'/skill/'.$newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this)."::validate() rename dir ".$dirsource." into ".$dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->hrmtest->dir_output.'/skill/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->hrm->dir_output.'/skill/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^'.preg_quote($oldref, '/').'/', $newref, $dirsource);
@@ -656,8 +656,8 @@ class Skill extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -680,8 +680,8 @@ class Skill extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -704,8 +704,8 @@ class Skill extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -726,7 +726,7 @@ class Skill extends CommonObject
 	 */
 	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1)
 	{
-		return '<a href="'.dol_buildpath('/hrmtest/skill_card.php?id='.$this->id,1).'">'.$this->label.'</a>';
+		return '<a href="'.dol_buildpath('/hrm/skill_card.php?id='.$this->id,1).'">'.$this->label.'</a>';
 	}
 
 	/**
@@ -753,7 +753,7 @@ class Skill extends CommonObject
 		// phpcs:enable
 		if (empty($this->labelStatus) || empty($this->labelStatusShort)) {
 			global $langs;
-			//$langs->load("hrmtest@hrmtest");
+			//$langs->load("hrm@hrm");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->trans('Draft');
 			$this->labelStatus[self::STATUS_VALIDATED] = $langs->trans('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->trans('Disabled');
@@ -862,22 +862,22 @@ class Skill extends CommonObject
 	public function getNextNumRef()
 	{
 		global $langs, $conf;
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->HRMTEST_SKILL_ADDON)) {
-			$conf->global->HRMTEST_SKILL_ADDON = 'mod_skill_standard';
+		if (empty($conf->global->hrm_SKILL_ADDON)) {
+			$conf->global->hrm_SKILL_ADDON = 'mod_skill_standard';
 		}
 
-		if (!empty($conf->global->HRMTEST_SKILL_ADDON)) {
+		if (!empty($conf->global->hrm_SKILL_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->HRMTEST_SKILL_ADDON.".php";
-			$classname = $conf->global->HRMTEST_SKILL_ADDON;
+			$file = $conf->global->hrm_SKILL_ADDON.".php";
+			$classname = $conf->global->hrm_SKILL_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 			foreach ($dirmodels as $reldir) {
-				$dir = dol_buildpath($reldir."core/modules/hrmtest/");
+				$dir = dol_buildpath($reldir."core/modules/hrm/");
 
 				// Load file with numbering class (if found)
 				$mybool |= @include_once $dir.$file;
@@ -927,7 +927,7 @@ class Skill extends CommonObject
 		$result = 0;
 		$includedocgeneration = 0;
 
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
 		if (!dol_strlen($modele)) {
 			$modele = 'standard_skill';
@@ -939,7 +939,7 @@ class Skill extends CommonObject
 			}
 		}
 
-		$modelpath = "core/modules/hrmtest/doc/";
+		$modelpath = "core/modules/hrm/doc/";
 
 		if ($includedocgeneration && !empty($modele)) {
 			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);

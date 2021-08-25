@@ -18,7 +18,7 @@
 
 /**
  * \file        class/skilldet.class.php
- * \ingroup     hrmtest
+ * \ingroup     hrm
  * \brief       This file is a CRUD class file for Skilldet (Create/Read/Update/Delete)
  */
 
@@ -35,7 +35,7 @@ class Skilldet extends CommonObject
 	/**
 	 * @var string ID of module.
 	 */
-	public $module = 'hrmtest';
+	public $module = 'hrm';
 
 	/**
 	 * @var string ID to identify managed object.
@@ -45,7 +45,7 @@ class Skilldet extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'hrmtest_skilldet';
+	public $table_element = 'hrm_skilldet';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
@@ -61,7 +61,7 @@ class Skilldet extends CommonObject
 	/**
 	 * @var string String with name of icon for skilldet. Must be the part after the 'object_' into object_skilldet.png
 	 */
-	public $picto = 'skilldet@hrmtest';
+	public $picto = 'skilldet@hrm';
 
 
 	const STATUS_DRAFT = 0;
@@ -105,7 +105,7 @@ class Skilldet extends CommonObject
 		'description' => array('type'=>'text', 'label'=>'Description', 'enabled'=>'1', 'position'=>60, 'notnull'=>0, 'visible'=>1,),
 		'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>'1', 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
 		'fk_user_modif' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>'1', 'position'=>511, 'notnull'=>-1, 'visible'=>0,),
-		'fk_skill' => array('type'=>'integer:Skill:/hrmtest/class/skill.class.php', 'label'=>'fk_skill', 'enabled'=>'1', 'position'=>513, 'notnull'=>1, 'visible'=>0,),
+		'fk_skill' => array('type'=>'integer:Skill:/hrm/class/skill.class.php', 'label'=>'fk_skill', 'enabled'=>'1', 'position'=>513, 'notnull'=>1, 'visible'=>0,),
 	);
 	public $rowid;
 	public $description;
@@ -121,7 +121,7 @@ class Skilldet extends CommonObject
 	// /**
 	//  * @var string    Name of subtable line
 	//  */
-	// public $table_element_line = 'hrmtest_skilldetline';
+	// public $table_element_line = 'hrm_skilldetline';
 
 	// /**
 	//  * @var string    Field with ID of parent key if this object has a parent
@@ -143,7 +143,7 @@ class Skilldet extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	// protected $childtablesoncascade = array('hrmtest_skilldetdet');
+	// protected $childtablesoncascade = array('hrm_skilldetdet');
 
 	// /**
 	//  * @var SkilldetLine[]     Array of subtable lines
@@ -171,7 +171,7 @@ class Skilldet extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrmtest->skilldet->read) {
+		/*if ($user->rights->hrm->skilldet->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -485,8 +485,8 @@ class Skilldet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->skilldet->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->skilldet->skilldet_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->skilldet->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->skilldet->skilldet_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -552,15 +552,15 @@ class Skilldet extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->hrmtest->dir_output.'/skilldet/'.$oldref;
-				$dirdest = $conf->hrmtest->dir_output.'/skilldet/'.$newref;
+				$dirsource = $conf->hrm->dir_output.'/skilldet/'.$oldref;
+				$dirdest = $conf->hrm->dir_output.'/skilldet/'.$newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this)."::validate() rename dir ".$dirsource." into ".$dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->hrmtest->dir_output.'/skilldet/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->hrm->dir_output.'/skilldet/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^'.preg_quote($oldref, '/').'/', $newref, $dirsource);
@@ -603,8 +603,8 @@ class Skilldet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -627,8 +627,8 @@ class Skilldet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -651,8 +651,8 @@ class Skilldet extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -688,7 +688,7 @@ class Skilldet extends CommonObject
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
-		$url = dol_buildpath('/hrmtest/skilldet_card.php', 1).'?id='.$this->id;
+		$url = dol_buildpath('/hrm/skilldet_card.php', 1).'?id='.$this->id;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -800,7 +800,7 @@ class Skilldet extends CommonObject
 		// phpcs:enable
 		if (empty($this->labelStatus) || empty($this->labelStatusShort)) {
 			global $langs;
-			//$langs->load("hrmtest@hrmtest");
+			//$langs->load("hrm@hrm");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->trans('Draft');
 			$this->labelStatus[self::STATUS_VALIDATED] = $langs->trans('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->trans('Disabled');
@@ -909,22 +909,22 @@ class Skilldet extends CommonObject
 	public function getNextNumRef()
 	{
 		global $langs, $conf;
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->HRMTEST_SKILLDET_ADDON)) {
-			$conf->global->HRMTEST_SKILLDET_ADDON = 'mod_skilldet_standard';
+		if (empty($conf->global->hrm_SKILLDET_ADDON)) {
+			$conf->global->hrm_SKILLDET_ADDON = 'mod_skilldet_standard';
 		}
 
-		if (!empty($conf->global->HRMTEST_SKILLDET_ADDON)) {
+		if (!empty($conf->global->hrm_SKILLDET_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->HRMTEST_SKILLDET_ADDON.".php";
-			$classname = $conf->global->HRMTEST_SKILLDET_ADDON;
+			$file = $conf->global->hrm_SKILLDET_ADDON.".php";
+			$classname = $conf->global->hrm_SKILLDET_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 			foreach ($dirmodels as $reldir) {
-				$dir = dol_buildpath($reldir."core/modules/hrmtest/");
+				$dir = dol_buildpath($reldir."core/modules/hrm/");
 
 				// Load file with numbering class (if found)
 				$mybool |= @include_once $dir.$file;
@@ -974,7 +974,7 @@ class Skilldet extends CommonObject
 		$result = 0;
 		$includedocgeneration = 0;
 
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
 		if (!dol_strlen($modele)) {
 			$modele = 'standard_skilldet';
@@ -986,7 +986,7 @@ class Skilldet extends CommonObject
 			}
 		}
 
-		$modelpath = "core/modules/hrmtest/doc/";
+		$modelpath = "core/modules/hrm/doc/";
 
 		if ($includedocgeneration && !empty($modele)) {
 			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);

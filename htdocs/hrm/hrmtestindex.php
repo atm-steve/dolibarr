@@ -19,9 +19,9 @@
  */
 
 /**
- *	\file       hrmtest/hrmtestindex.php
- *	\ingroup    hrmtest
- *	\brief      Home page of hrmtest top menu
+ *	\file       hrm/hrmindex.php
+ *	\ingroup    hrm
+ *	\brief      Home page of hrm top menu
  */
 
 // Load Dolibarr environment
@@ -58,13 +58,13 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest"));
+$langs->loadLangs(array("hrm@hrm"));
 
 $action = GETPOST('action', 'aZ09');
 
 
 // Security check
-// if (! $user->rights->hrmtest->myobject->read) {
+// if (! $user->rights->hrm->myobject->read) {
 // 	accessforbidden();
 // }
 $socid = GETPOST('socid', 'int');
@@ -91,16 +91,16 @@ $now = dol_now();
 $form = new Form($db);
 $formfile = new FormFile($db);
 
-llxHeader("", $langs->trans("HrmTestArea"));
+llxHeader("", $langs->trans("hrmArea"));
 
-print load_fiche_titre($langs->trans("HrmTestArea"), '', 'hrmtest.png@hrmtest');
+print load_fiche_titre($langs->trans("hrmArea"), '', 'hrm.png@hrm');
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
 
 
 /* BEGIN MODULEBUILDER DRAFT MYOBJECT
 // Draft MyObject
-if (! empty($conf->hrmtest->enabled) && $user->rights->hrmtest->read)
+if (! empty($conf->hrm->enabled) && $user->rights->hrm->read)
 {
 	$langs->load("orders");
 
@@ -181,10 +181,10 @@ $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
 
 /* BEGIN MODULEBUILDER LASTMODIFIED MYOBJECT
 // Last modified myobject
-if (! empty($conf->hrmtest->enabled) && $user->rights->hrmtest->read)
+if (! empty($conf->hrm->enabled) && $user->rights->hrm->read)
 {
 	$sql = "SELECT s.rowid, s.ref, s.label, s.date_creation, s.tms";
-	$sql.= " FROM ".MAIN_DB_PREFIX."hrmtest_myobject as s";
+	$sql.= " FROM ".MAIN_DB_PREFIX."hrm_myobject as s";
 	//if (! $user->rights->societe->client->voir && ! $socid) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 	$sql.= " WHERE s.entity IN (".getEntity($myobjectstatic->element).")";
 	//if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;

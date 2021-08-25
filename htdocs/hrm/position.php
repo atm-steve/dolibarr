@@ -18,7 +18,7 @@
 
 /**
  *    \file       position.php
- *        \ingroup    hrmtest
+ *        \ingroup    hrm
  *        \brief      Page to create/edit/view position
  */
 
@@ -81,10 +81,10 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
-dol_include_once('/hrmtest/class/position.class.php');
-dol_include_once('/hrmtest/class/job.class.php');
-dol_include_once('/hrmtest/lib/hrmtest_position.lib.php');
-dol_include_once('/hrmtest/lib/hrmtest_job.lib.php');
+dol_include_once('/hrm/class/position.class.php');
+dol_include_once('/hrm/class/job.class.php');
+dol_include_once('/hrm/lib/hrm_position.lib.php');
+dol_include_once('/hrm/lib/hrm_job.lib.php');
 
 $action 	= GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view'; // The action 'add', 'create', 'edit', 'update', 'view', ...
 $backtopage = GETPOST('backtopage', 'alpha');
@@ -94,7 +94,7 @@ $fk_job 	= GETPOST('fk_job', 'int');
 global $langs, $db;
 
 // Load translation files required by the page
-$langs->loadLangs(array("hrmtest@hrmtest", "other"));
+$langs->loadLangs(array("hrm@hrm", "other"));
 
 DisplayJob($conf, $langs, $db, $object, $permissiontoadd, $lineid);
 
@@ -140,7 +140,7 @@ function DisplayJob($conf, $langs, $db, $object, $permissiontoadd, $lineid)
 
 	$extrafields = new ExtraFields($db);
 
-	$diroutputmassaction = $conf->hrmtest->dir_output . '/temp/massgeneration/' . $user->id;
+	$diroutputmassaction = $conf->hrm->dir_output . '/temp/massgeneration/' . $user->id;
 	$hookmanager->initHooks(array('positiontab', 'globalcard')); // Note that conf->hooks_modules contains array
 
 	// Fetch optionals attributes and labels
@@ -164,19 +164,19 @@ function DisplayJob($conf, $langs, $db, $object, $permissiontoadd, $lineid)
 	// Load object
 	include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
 
-	$permissiontoread = $user->rights->hrmtest->position->read;
-	$permissiontoadd = $user->rights->hrmtest->position->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-	$permissiontodelete = $user->rights->hrmtest->position->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-	$permissionnote = $user->rights->hrmtest->position->write; // Used by the include of actions_setnotes.inc.php
-	$permissiondellink = $user->rights->hrmtest->position->write; // Used by the include of actions_dellink.inc.php
-	$upload_dir = $conf->hrmtest->multidir_output[isset($object->entity) ? $object->entity : 1] . '/position';
+	$permissiontoread = $user->rights->hrm->position->read;
+	$permissiontoadd = $user->rights->hrm->position->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
+	$permissiontodelete = $user->rights->hrm->position->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
+	$permissionnote = $user->rights->hrm->position->write; // Used by the include of actions_setnotes.inc.php
+	$permissiondellink = $user->rights->hrm->position->write; // Used by the include of actions_dellink.inc.php
+	$upload_dir = $conf->hrm->multidir_output[isset($object->entity) ? $object->entity : 1] . '/position';
 
 	// Security check (enable the most restrictive one)
 	//if ($user->socid > 0) accessforbidden();
 	//if ($user->socid > 0) $socid = $user->socid;
 	//$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 	//restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-	//if (empty($conf->hrmtest->enabled)) accessforbidden();
+	//if (empty($conf->hrm->enabled)) accessforbidden();
 	//if (!$permissiontoread) accessforbidden();
 
 
@@ -193,20 +193,20 @@ function DisplayJob($conf, $langs, $db, $object, $permissiontoadd, $lineid)
 	if (empty($reshook)) {
 		$error = 0;
 
-		$backurlforlist = dol_buildpath('/hrmtest/position_list.php', 1);
-		$backtopage = dol_buildpath('/hrmtest/position.php', 1) . '?fk_job=' . ($fk_job > 0 ? $fk_job : '__ID__');
+		$backurlforlist = dol_buildpath('/hrm/position_list.php', 1);
+		$backtopage = dol_buildpath('/hrm/position.php', 1) . '?fk_job=' . ($fk_job > 0 ? $fk_job : '__ID__');
 
 		if (empty($backtopage) || ($cancel && empty($fk_job))) {
 			if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
 				if (empty($fk_job) && (($action != 'add' && $action != 'create') || $cancel)) {
 					$backtopage = $backurlforlist;
 				} else {
-					$backtopage = dol_buildpath('/hrmtest/position.php', 1) . '?fk_job=' . ($fk_job > 0 ? $fk_job : '__ID__');
+					$backtopage = dol_buildpath('/hrm/position.php', 1) . '?fk_job=' . ($fk_job > 0 ? $fk_job : '__ID__');
 				}
 			}
 		}
 
-		$triggermodname = 'HRMTEST_POSITION_MODIFY'; // Name of trigger action code to execute when we modify record
+		$triggermodname = 'hrm_POSITION_MODIFY'; // Name of trigger action code to execute when we modify record
 
 
 		if ($action == 'addposition')
@@ -214,7 +214,7 @@ function DisplayJob($conf, $langs, $db, $object, $permissiontoadd, $lineid)
 			$object = new Position($db);
 			if(empty($cancel) && (empty($ref) || $fk_user < 0 || $fk_job < 0))
 			{
-				$redir = dol_buildpath('/hrmtest/position.php', 1) . '?action=create&backtopage=' . urlencode($_SERVER['PHP_SELF']) . '&fk_job=' . $fk_job;
+				$redir = dol_buildpath('/hrm/position.php', 1) . '?action=create&backtopage=' . urlencode($_SERVER['PHP_SELF']) . '&fk_job=' . $fk_job;
 				header("Location: ".$redir);
 				setEventMessage($langs->trans('FieldsRequired'), 'errors');
 				exit;
@@ -248,7 +248,7 @@ function DisplayJob($conf, $langs, $db, $object, $permissiontoadd, $lineid)
 		}
 
 		// Actions to send emails
-		$triggersendname = 'HRMTEST_POSITION_SENTBYMAIL';
+		$triggersendname = 'hrm_POSITION_SENTBYMAIL';
 		$autocopy = 'MAIN_MAIL_AUTOCOPY_POSITION_TO';
 		$trackid = 'position' . $object->id;
 		include DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
@@ -369,7 +369,7 @@ function DisplayJob($conf, $langs, $db, $object, $permissiontoadd, $lineid)
 
 		// Object card
 		// ------------------------------------------------------------
-		$linkback = '<a href="' . dol_buildpath('/hrmtest/position_list.php', 1) . '?restore_lastsearch_values=1' . (!empty($fk_job) ? '&fk_job=' . $fk_job : '') . '">' . $langs->trans("BackToList") . '</a>';
+		$linkback = '<a href="' . dol_buildpath('/hrm/position_list.php', 1) . '?restore_lastsearch_values=1' . (!empty($fk_job) ? '&fk_job=' . $fk_job : '') . '">' . $langs->trans("BackToList") . '</a>';
 
 		$morehtmlref = '<div class="refidno">';
 
@@ -423,7 +423,7 @@ function DisplayPositionList($conf, $langs, $db, $object)
 	require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 	require_once DOL_DOCUMENT_ROOT . '/core/lib/company.lib.php';
 
-	// load hrmtest libraries
+	// load hrm libraries
 	require_once __DIR__ . '/class/position.class.php';
 
 	// for other modules
@@ -457,7 +457,7 @@ function DisplayPositionList($conf, $langs, $db, $object)
 	$object = new Position($db);
 
 	$extrafields = new ExtraFields($db);
-	$diroutputmassaction = $conf->hrmtest->dir_output . '/temp/massgeneration/' . $user->id;
+	$diroutputmassaction = $conf->hrm->dir_output . '/temp/massgeneration/' . $user->id;
 	$hookmanager->initHooks(array('positiontablist')); // Note that conf->hooks_modules contains array
 
 	// Fetch optionals attributes and labels
@@ -517,12 +517,12 @@ function DisplayPositionList($conf, $langs, $db, $object)
 	$object->fields = dol_sort_array($object->fields, 'position');
 	$arrayfields = dol_sort_array($arrayfields, 'position');
 
-	$permissiontoread = $user->rights->hrmtest->position->read;
-	$permissiontoadd = $user->rights->hrmtest->position->write;
-	$permissiontodelete = $user->rights->hrmtest->position->delete;
+	$permissiontoread = $user->rights->hrm->position->read;
+	$permissiontoadd = $user->rights->hrm->position->write;
+	$permissiontodelete = $user->rights->hrm->position->delete;
 
 	// Security check
-	if (empty($conf->hrmtest->enabled)) {
+	if (empty($conf->hrm->enabled)) {
 		accessforbidden('Module not enabled');
 	}
 
@@ -532,7 +532,7 @@ function DisplayPositionList($conf, $langs, $db, $object)
 	//$socid = 0; if ($user->socid > 0) $socid = $user->socid;
 	//$isdraft = (($object->status == $object::STATUS_DRAFT) ? 1 : 0);
 	//restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
-	//if (empty($conf->hrmtest->enabled)) accessforbidden();
+	//if (empty($conf->hrm->enabled)) accessforbidden();
 	//if (!$permissiontoread) accessforbidden();
 
 
@@ -578,7 +578,7 @@ function DisplayPositionList($conf, $langs, $db, $object)
 		// Mass actions
 		$objectclass = 'Position';
 		$objectlabel = 'Position';
-		$uploaddir = $conf->hrmtest->dir_output;
+		$uploaddir = $conf->hrm->dir_output;
 		include DOL_DOCUMENT_ROOT . '/core/actions_massactions.inc.php';
 	}
 
@@ -719,7 +719,7 @@ function DisplayPositionList($conf, $langs, $db, $object)
 	if ($num == 1 && !empty($conf->global->MAIN_SEARCH_DIRECT_OPEN_IF_ONLY_ONE) && $search_all && !$page) {
 		$obj = $db->fetch_object($resql);
 		$id = $obj->rowid;
-		header("Location: " . dol_buildpath('/hrmtest/position.php', 1) . '?id=' . $id);
+		header("Location: " . dol_buildpath('/hrm/position.php', 1) . '?id=' . $id);
 		exit;
 	}
 
@@ -799,7 +799,7 @@ function DisplayPositionList($conf, $langs, $db, $object)
 	print '<input type="hidden" name="page" value="' . $page . '">';
 	print '<input type="hidden" name="contextpage" value="' . $contextpage . '">';
 
-	$newcardbutton = dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/hrmtest/position.php', 1) . '?action=create&backtopage=' . urlencode($_SERVER['PHP_SELF']) . '&fk_job=' . $fk_job, '', $permissiontoadd);
+	$newcardbutton = dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/hrm/position.php', 1) . '?action=create&backtopage=' . urlencode($_SERVER['PHP_SELF']) . '&fk_job=' . $fk_job, '', $permissiontoadd);
 
 	print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_' . $object->picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
 
@@ -1061,7 +1061,7 @@ function DisplayPositionList($conf, $langs, $db, $object)
 		$genallowed = $permissiontoread;
 		$delallowed = $permissiontoadd;
 
-		print $formfile->showdocuments('massfilesarea_hrmtest', '', $filedir, $urlsource, 0, $delallowed, '', 1, 1, 0, 48, 1, $param, $title, '', '', '', null, $hidegeneratedfilelistifempty);
+		print $formfile->showdocuments('massfilesarea_hrm', '', $filedir, $urlsource, 0, $delallowed, '', 1, 1, 0, 48, 1, $param, $title, '', '', '', null, $hidegeneratedfilelistifempty);
 	}
 	return array($arrayfields, $object, $action, $obj, $totalarray);
 }

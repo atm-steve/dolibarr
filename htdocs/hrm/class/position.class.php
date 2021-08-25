@@ -18,7 +18,7 @@
 
 /**
  * \file        class/position.class.php
- * \ingroup     hrmtest
+ * \ingroup     hrm
  * \brief       This file is a CRUD class file for Position (Create/Read/Update/Delete)
  */
 
@@ -35,7 +35,7 @@ class Position extends CommonObject
 	/**
 	 * @var string ID of module.
 	 */
-	public $module = 'hrmtest';
+	public $module = 'hrm';
 
 	/**
 	 * @var string ID to identify managed object.
@@ -45,7 +45,7 @@ class Position extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'hrmtest_position';
+	public $table_element = 'hrm_position';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
@@ -107,7 +107,7 @@ class Position extends CommonObject
 		'tms' => array('type'=>'timestamp', 'label'=>'DateModification', 'enabled'=>'1', 'position'=>501, 'notnull'=>0, 'visible'=>-2,),
 		'fk_contrat' => array('type'=>'integer:Contrat:contrat/class/contrat.class.php', 'label'=>'fk_contrat', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>0,),
 		'fk_user' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'fk_user', 'enabled'=>'1', 'position'=>55, 'notnull'=>1, 'visible'=>1,),
-		'fk_job' => array('type'=>'integer:Job:/hrmtest/class/job.class.php', 'label'=>'fk_job', 'enabled'=>'1', 'position'=>56, 'notnull'=>1, 'visible'=>1,),
+		'fk_job' => array('type'=>'integer:Job:/hrm/class/job.class.php', 'label'=>'fk_job', 'enabled'=>'1', 'position'=>56, 'notnull'=>1, 'visible'=>1,),
 		'date_start' => array('type'=>'datetime', 'label'=>'date_start', 'enabled'=>'1', 'position'=>51, 'notnull'=>0, 'visible'=>1,),
 		'date_end' => array('type'=>'datetime', 'label'=>'date_end', 'enabled'=>'1', 'position'=>52, 'notnull'=>0, 'visible'=>1,),
 		'commentaire_abandon' => array('type'=>'varchar(255)', 'label'=>'commentaire_abandon', 'enabled'=>'1', 'position'=>502, 'notnull'=>0, 'visible'=>1,),
@@ -141,7 +141,7 @@ class Position extends CommonObject
 	// /**
 	//  * @var string    Name of subtable line
 	//  */
-	// public $table_element_line = 'hrmtest_positionline';
+	// public $table_element_line = 'hrm_positionline';
 
 	// /**
 	//  * @var string    Field with ID of parent key if this object has a parent
@@ -163,7 +163,7 @@ class Position extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	// protected $childtablesoncascade = array('hrmtest_positiondet');
+	// protected $childtablesoncascade = array('hrm_positiondet');
 
 	// /**
 	//  * @var PositionLine[]     Array of subtable lines
@@ -190,7 +190,7 @@ class Position extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrmtest->position->read) {
+		/*if ($user->rights->hrm->position->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -504,8 +504,8 @@ class Position extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->position->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->position->position_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->position->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->position->position_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -572,15 +572,15 @@ class Position extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->hrmtest->dir_output . '/position/' . $oldref;
-				$dirdest = $conf->hrmtest->dir_output . '/position/' . $newref;
+				$dirsource = $conf->hrm->dir_output . '/position/' . $oldref;
+				$dirdest = $conf->hrm->dir_output . '/position/' . $newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this) . "::validate() rename dir " . $dirsource . " into " . $dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->hrmtest->dir_output . '/position/' . $newref, 'files', 1, '^' . preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->hrm->dir_output . '/position/' . $newref, 'files', 1, '^' . preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^' . preg_quote($oldref, '/') . '/', $newref, $dirsource);
@@ -623,8 +623,8 @@ class Position extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -647,8 +647,8 @@ class Position extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -671,8 +671,8 @@ class Position extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrmtest->hrmtest_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -708,7 +708,7 @@ class Position extends CommonObject
 		$label .= '<br>';
 		$label .= '<b>' . $langs->trans('Ref') . ':</b> ' . $this->ref;
 
-		$url = dol_buildpath('/hrmtest/position_card.php', 1) . '?id=' . $this->id;
+		$url = dol_buildpath('/hrm/position_card.php', 1) . '?id=' . $this->id;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -821,7 +821,7 @@ class Position extends CommonObject
 		// phpcs:enable
 		if (empty($this->labelStatus) || empty($this->labelStatusShort)) {
 			global $langs;
-			//$langs->load("hrmtest@hrmtest");
+			//$langs->load("hrm@hrm");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->trans('Draft');
 			$this->labelStatus[self::STATUS_VALIDATED] = $langs->trans('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->trans('Disabled');
@@ -930,22 +930,22 @@ class Position extends CommonObject
 	public function getNextNumRef()
 	{
 		global $langs, $conf;
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->HRMTEST_POSITION_ADDON)) {
-			$conf->global->HRMTEST_POSITION_ADDON = 'mod_position_standard';
+		if (empty($conf->global->hrm_POSITION_ADDON)) {
+			$conf->global->hrm_POSITION_ADDON = 'mod_position_standard';
 		}
 
-		if (!empty($conf->global->HRMTEST_POSITION_ADDON)) {
+		if (!empty($conf->global->hrm_POSITION_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->HRMTEST_POSITION_ADDON . ".php";
-			$classname = $conf->global->HRMTEST_POSITION_ADDON;
+			$file = $conf->global->hrm_POSITION_ADDON . ".php";
+			$classname = $conf->global->hrm_POSITION_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array)$conf->modules_parts['models']);
 			foreach ($dirmodels as $reldir) {
-				$dir = dol_buildpath($reldir . "core/modules/hrmtest/");
+				$dir = dol_buildpath($reldir . "core/modules/hrm/");
 
 				// Load file with numbering class (if found)
 				$mybool |= @include_once $dir . $file;
@@ -995,7 +995,7 @@ class Position extends CommonObject
 		$result = 0;
 		$includedocgeneration = 0;
 
-		$langs->load("hrmtest@hrmtest");
+		$langs->load("hrm@hrm");
 
 		if (!dol_strlen($modele)) {
 			$modele = 'standard_position';
@@ -1007,7 +1007,7 @@ class Position extends CommonObject
 			}
 		}
 
-		$modelpath = "core/modules/hrmtest/doc/";
+		$modelpath = "core/modules/hrm/doc/";
 
 		if ($includedocgeneration && !empty($modele)) {
 			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
