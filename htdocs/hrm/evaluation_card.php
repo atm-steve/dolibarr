@@ -242,7 +242,7 @@ if (empty($reshook)) {
 		//var_dump("need close");
 		// save evaldet lines to user;
 		$sk = new SkillRank($db);
-		$SkillrecordsForActiveUser = $sk->fetchAll('ASC','fk_skill',0,0,array("customsql"=>"fk_object = ".$user->id ." AND objecttype ='".SkillRank::SKILLRANK_TYPE_USER."'"),'AND');
+		$SkillrecordsForActiveUser = $sk->fetchAll('ASC','fk_skill',0,0,array("customsql"=>"fk_object = ".$object->fk_user ." AND objecttype ='".SkillRank::SKILLRANK_TYPE_USER."'"),'AND');
 
 		$errors = 0;
 		// on parcours les evaldets de l'eval
@@ -257,7 +257,7 @@ if (empty($reshook)) {
 
 				if ($res > 0){
 					$newSkill = new SkillRank($db);
-					$resCreate = $newSkill->cloneFromCurrentSkill($currentSkill,$user);
+					$resCreate = $newSkill->cloneFromCurrentSkill($currentSkill,$user,$object->fk_user);
 
 					if ($resCreate > 0 ){
 
@@ -289,7 +289,7 @@ if (empty($reshook)) {
 					$updSkill->update($user);
 				}else{ // sinon on ajoute la skill
 					$newSkill = new SkillRank($db);
-					$resCreate = $newSkill->cloneFromCurrentSkill($currentSkill,$user);
+					$resCreate = $newSkill->cloneFromCurrentSkill($currentSkill,$user,$object->fk_user);
 				}
 
 
