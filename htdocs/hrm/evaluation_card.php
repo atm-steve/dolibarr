@@ -204,15 +204,20 @@ if (empty($reshook)) {
 		{
 			foreach ($object->lines as $line)
 			{
-				if ($line->fk_rank >= 0 )
+				if ($line->fk_rank > 0 )
 				{
 					$skillRank = new SkillRank($db);
-					$skillRank->fetch($line->fk_rank);
-					if ($TNote[$line->fk_skill] != $skillRank->rank)
-					{
-						$skillRank->rank = $TNote[$line->fk_skill];
-						$skillRank->update($user);
+					$resSkillRank = $skillRank->fetch($line->fk_rank);
+					if ($resSkillRank > 0 ) {
+						if ($TNote[$line->fk_skill] != $skillRank->rank)
+						{
+							$skillRank->rank = $TNote[$line->fk_skill];
+							$skillRank->update($user);
+						}
+					}else{
+						setEventMessage($langs->trans('NoRankFound'));
 					}
+
 				}
 				else
 				{

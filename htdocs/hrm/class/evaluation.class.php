@@ -1130,7 +1130,7 @@ class Evaluation extends CommonObject
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
 			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook.
-			include dol_buildpath('hrm/core/tpl/objectline_title.tpl.php');
+			include dol_buildpath('hrm/tpl/objectline_title.tpl.php');
 		}
 
 		$i = 0;
@@ -1221,7 +1221,7 @@ class Evaluation extends CommonObject
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
 			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook printObjectLine and printObjectSubLine.
-			include dol_buildpath('hrm/core/tpl/objectline_view.tpl.php');
+			include dol_buildpath('hrm/tpl/objectline_view.tpl.php');
 		}
 
 	}
