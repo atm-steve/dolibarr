@@ -355,7 +355,12 @@ class SkillRank extends CommonObject
 		return $result;
 	}
 
-	public function cloneFromCurrentSkill($currentSkill,$user){
+	/**
+	 * @param SkillRank $currentSkill
+	 * @param $user
+	 * @return int
+	 */
+	public function cloneFromCurrentSkill(SkillRank $currentSkill,$user){
 
 		$this->fk_skill 		= $currentSkill->fk_skill;
 		$this->rank 			= $currentSkill->rank;
@@ -365,9 +370,9 @@ class SkillRank extends CommonObject
 		$this->fk_user_creat 	= $currentSkill->fk_user_creat;
 		$this->fk_user_modif 	= $currentSkill->fk_user_modif;
 		$this->objecttype	 	= self::SKILLRANK_TYPE_USER;
-		$resCreate =  $this->create($user);
+		$result =  $this->create($user);
 
-		return $resCreate;
+		return $result;
 	}
 
 	/**
