@@ -328,9 +328,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	} else {
 		foreach ($TSkills as $skillElement) {
 			print '<tr>';
-			foreach ($skill->fields as $key => $infos) {
-				if ($infos['visible'] > 0) print '<td class="linecol' . $key . '">' . $skillElement->showOutputField($infos, $key, $skillElement->{$key}) . '</td>';
-			}
+			print '<td class="linecolfk_skill">';
+			print $skillElement->showOutputField($skill->fields['fk_skill'], 'fk_skill', $skillElement->fk_skill);
+			print '</td>';
+			print '<td class="linecolrank">';
+			print displayRankInfos($skillElement, 'TNote', $objecttype == 'job' ? 'edit' : 'view');
+			print '</td>';
 			print '<td class="linecoledit"></td>';
 			print '<td class="linecoldelete">';
 			if ($objecttype != 'user')
