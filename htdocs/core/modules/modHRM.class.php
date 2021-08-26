@@ -424,7 +424,11 @@ class modHRM extends DolibarrModules
 			// 0=Menu for internal users, 1=external users, 2=both
 			'user'=>2
 		);
-		$this->menu[$r++]=array(
+		/**
+		 * @todo  temporary commented  see with cdp for this one
+		 *
+		 */
+	/*$this->menu[$r++]=array(
 			// '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'fk_menu'=>'fk_mainmenu=hrm,fk_leftmenu=list_position',
 			// This is a Left menu entry
@@ -503,7 +507,7 @@ class modHRM extends DolibarrModules
 			'target'=>'',
 			// 0=Menu for internal users, 1=external users, 2=both
 			'user'=>2,
-		);
+		);*/
 
 		//  -------------JOB------------------
 		$this->menu[$r++]=array(
@@ -669,8 +673,12 @@ class modHRM extends DolibarrModules
 			'user'=>2,
 		);
 
+		/**
+		 * @todo  temporary commented  see with cdp for this one
+		 *
+		 */
 		//  -------------IMPORT------------------
-		$this->menu[$r++]=array(
+		/*$this->menu[$r++]=array(
 			// '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'fk_menu'=>'fk_mainmenu=hrm',
 			// This is a Left menu entry
@@ -689,7 +697,7 @@ class modHRM extends DolibarrModules
 			'target'=>'',
 			// 0=Menu for internal users, 1=external users, 2=both
 			'user'=>2,
-		);
+		);*/
 
 
 
