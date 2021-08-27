@@ -407,7 +407,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     	';
 
 	    if (! empty($conf->use_javascript_ajax) && $object->status == 0) {
-	        include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
+	        include DOL_DOCUMENT_ROOT . '/core/tpl/+ajaxrow.tpl.php';
 	    }
 
 	    print '<div class="div-table-responsive-no-min">';
