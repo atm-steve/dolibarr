@@ -4655,7 +4655,6 @@ elseif ($id > 0 || ! empty($ref))
 	<input type="hidden" name="id" value="' . $object->id . '">
 	';
 
-	$tmp_id
 	if (! empty($conf->use_javascript_ajax) && $object->statut == 0) {
 		include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
 	}
