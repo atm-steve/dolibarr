@@ -2462,6 +2462,9 @@ abstract class CommonObject
 		if (! $this->db->query($sql))
 		{
 			dol_print_error($this->db);
+			return -1;
+		} else {
+			return 1;
 		}
 	}
 
@@ -2476,9 +2479,14 @@ abstract class CommonObject
 	{
         // phpcs:enable
 		$num = count($rows);
+		$cpt = 0;
 		for ($i = 0 ; $i < $num ; $i++)
 		{
-			$this->updateRangOfLine($rows[$i], ($i+1));
+			$cpt++;
+			$res = $this->updateRangOfLine($rows[$i], $cpt);
+			if ($res < 0) {
+				$cpt-=1;
+			}
 		}
 	}
 

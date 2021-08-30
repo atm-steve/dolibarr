@@ -135,6 +135,8 @@ elseif($action==='save_composed_product')
 		setEventMessages('RecordSaved', null);
 	}
 	$action='';
+	header("Location: ".$_SERVER["PHP_SELF"].'?id='.$object->id);
+	exit;
 }
 elseif($action === 'confirm_makeproduct' && !empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT))
 {
@@ -442,7 +444,7 @@ if ($id > 0 || ! empty($ref))
 
 				if ($value['level'] <= 1)
 				{
-					print '<tr id="'.$object->sousprods[$parent_label][$value['id']][5].'" class="drag drop oddeven">';
+					print '<tr id="'.$object->sousprods[$parent_label][$value['id']][5].'" class="drag drop oddeven level1">';
 
 					print '<td>'.$object->sousprods[$parent_label][$value['id']][6].'</td>';
 
@@ -515,10 +517,11 @@ if ($id > 0 || ! empty($ref))
 					$hide='';
 					if (empty($conf->global->PRODUCT_SHOW_SUB_SUB_PRODUCTS)) $hide=' hideobject';	// By default, we do not show this. It makes screen very difficult to understand
 
-					print '<tr class="oddeven'.$hide.'" id="sub-'.$value['id_parent'].'">';
+					print '<tr class="oddeven'.$hide.'" id="sub" parent_id="'.$value['id_parent'].'">';
 
 					//$productstatic->ref=$value['label'];
 					$productstatic->ref=$value['ref'];
+					print '<td></td>';
 					print '<td>';
 					for ($i=0; $i < $value['level']; $i++)	print ' &nbsp; &nbsp; ';	// Add indentation
 					print $productstatic->getNomUrl(1, 'composition').'</td>';
@@ -534,7 +537,7 @@ if ($id > 0 || ! empty($ref))
 					if (! empty($conf->stock->enabled)) print '<td></td>';	// Real stock
 					print '<td class="center">'.$value['nb'].'</td>';
 					print '<td>&nbsp;</td>';
-
+					print '<td>&nbsp;</td>';
 					print '</tr>'."\n";
 				}
 			}
