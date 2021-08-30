@@ -2479,14 +2479,9 @@ abstract class CommonObject
 	{
         // phpcs:enable
 		$num = count($rows);
-		$cpt = 0;
 		for ($i = 0 ; $i < $num ; $i++)
 		{
-			$cpt++;
-			$res = $this->updateRangOfLine($rows[$i], $cpt);
-			if ($res < 0) {
-				$cpt-=1;
-			}
+			$this->updateRangOfLine($rows[$i], ($i+1));
 		}
 	}
 
