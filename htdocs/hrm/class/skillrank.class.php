@@ -356,6 +356,9 @@ class SkillRank extends CommonObject
 	}
 
 	/**
+	 *  Clone skillrank Object linked to job with user id
+	 *  The skillrank table is a join table that is marked for multiple objects
+	 *
 	 * @param SkillRank $currentSkill
 	 * @param $user
 	 * @return int

@@ -370,3 +370,5 @@ div.pagination li:first-child a.btnTitle{
 	background-color: #ddd;
 	border: 1px solid #ddd;
 }
+
+

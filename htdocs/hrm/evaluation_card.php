@@ -245,14 +245,14 @@ if (empty($reshook)) {
 		$SkillrecordsForActiveUser = $sk->fetchAll('ASC','fk_skill',0,0,array("customsql"=>"fk_object = ".$object->fk_user ." AND objecttype ='".SkillRank::SKILLRANK_TYPE_USER."'"),'AND');
 
 		$errors = 0;
-		// on parcours les evaldets de l'eval
+		// we go through the evaldets of the eval
 		foreach ($object->lines as $key => $line){
 
 			$currentSkill = new SkillRank($db);
 			$res =  $currentSkill->fetch($line->fk_rank);
 
 
-			// pas de reference  .. on ajoute la ligne pour le user
+			// no reference .. we add the line to use it
 			if (count($SkillrecordsForActiveUser) == 0){
 
 				if ($res > 0){
@@ -271,7 +271,7 @@ if (empty($reshook)) {
 				}
 
 			} else{
-				//check  si la skill est presente pour le user
+				//check if the skill is present to use it
 				$find = false;
 				$keyFind = 0;
 				foreach ($SkillrecordsForActiveUser as $k => $sr){
@@ -281,7 +281,7 @@ if (empty($reshook)) {
 						break;
 					}
 				}
-				// on update la skill user
+				//we update the skill user
 				if ($find){
 					$updSkill = $SkillrecordsForActiveUser[$k];
 
@@ -301,7 +301,7 @@ if (empty($reshook)) {
 	}
 
 	if ($action == 'reopen' ){
-		// pas de mise à jour ici on change juste le status de l'évaluation
+		// no update here we just change the evaluation status
 		$object->setStatut(Evaluation::STATUS_VALIDATED);
 
 	}

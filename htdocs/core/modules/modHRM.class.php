@@ -91,11 +91,11 @@ class modHRM extends DolibarrModules
 			'theme' => 0,
 			// Set this to relative path of css file if module has its own css file
 			'css' => array(
-				'/hrmtest/css/radio_js_number.css',
+				'/hrm/css/radio_js_number.css',
 			),
 			// Set this to relative path of js file if module must load a js on all pages
 			'js' => array(
-				//   '/hrmtest/js/hrmtest.js.php',
+				//   '/hrm/js/hrm.js.php',
 			),
 
 			// Set this to 1 if features of module are opened to external users
@@ -103,10 +103,10 @@ class modHRM extends DolibarrModules
 		);
 
 		// Data directories to create when module is enabled.
-		// Example: this->dirs = array("/hrmtest/temp","/hrmtest/subdir");
+		// Example: this->dirs = array("/hrm/temp","/hrm/subdir");
 		$this->dirs = array("/hrm/temp");
 
-		// Config pages. Put here list of php page, stored into hrmtest/admin directory, to use to setup module.
+		// Config pages. Put here list of php page, stored into hrm/admin directory, to use to setup module.
 		$this->config_page_url = array("setup.php@hrm");
 
 		// Dependencies
@@ -146,10 +146,10 @@ class modHRM extends DolibarrModules
 		// Array to add new pages in new tabs
 		$this->tabs = array();
 		$this->tabs[] = array('data'=>'user:+skill_tab:Skills:hrm@hrm:1:/hrm/skill_tab.php?id=__ID__&objecttype=user');  					// To add a new tab identified by code tabname1
-		//$this->tabs[] = array('data'=>'job:+tabname1:Poste:mylangfile@hrmtest:1:/hrmtest/poste_list.php?fk_job=__ID__');  					// To add a new tab identified by code tabname1
+		//$this->tabs[] = array('data'=>'job:+tabname1:Poste:mylangfile@hrm:1:/hrm/poste_list.php?fk_job=__ID__');  					// To add a new tab identified by code tabname1
 		// Example:
-		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@hrmtest:$user->rights->hrmtest->read:/hrmtest/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
-		// $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@hrmtest:$user->rights->othermodule->read:/hrmtest/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
+		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@hrm:$user->rights->hrm->read:/hrm/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
+		// $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@hrm:$user->rights->othermodule->read:/hrm/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
 		// $this->tabs[] = array('data'=>'objecttype:-tabname:NU:conditiontoremove');                                                     										// To remove an existing tab identified by code tabname
 		//
 		// Where objecttype can be
@@ -178,10 +178,10 @@ class modHRM extends DolibarrModules
 		$this->dictionaries = array();
 
 		// Boxes/Widgets
-		// Add here list of php file(s) stored in hrmtest/core/boxes that contains a class to show a widget.
+		// Add here list of php file(s) stored in hrm/core/boxes that contains a class to show a widget.
 		$this->boxes = array(
 			//  0 => array(
-			//      'file' => 'hrmtestwidget1.php@hrmtest',
+			//      'file' => 'hrmwidget1.php@hrm',
 			//      'note' => 'Widget provided by HrmTest',
 			//      'enabledbydefaulton' => 'Home',
 			//  ),
@@ -194,7 +194,7 @@ class modHRM extends DolibarrModules
 			//  0 => array(
 			//      'label' => 'MyJob label',
 			//      'jobtype' => 'method',
-			//      'class' => '/hrmtest/class/poste.class.php',
+			//      'class' => '/hrm/class/poste.class.php',
 			//      'objectname' => 'Poste',
 			//      'method' => 'doScheduledJob',
 			//      'parameters' => '',
@@ -202,7 +202,7 @@ class modHRM extends DolibarrModules
 			//      'frequency' => 2,
 			//      'unitfrequency' => 3600,
 			//      'status' => 0,
-			//      'test' => '$conf->hrmtest->enabled',
+			//      'test' => '$conf->hrm->enabled',
 			//      'priority' => 50,
 			//  ),
 		);
@@ -215,82 +215,82 @@ class modHRM extends DolibarrModules
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Read Position'; // Permission label
 		$this->rights[$r][4] = 'position';
-		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->read)
+		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->read)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Create/Update Position'; // Permission label
 		$this->rights[$r][4] = 'position';
-		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->write)
+		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Delete Position'; // Permission label
 		$this->rights[$r][4] = 'position';
-		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->delete)
+		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->delete)
 		$r++;
 
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Read job'; // Permission label
 		$this->rights[$r][4] = 'job';
-		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->read)
+		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->read)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Create/Update job'; // Permission label
 		$this->rights[$r][4] = 'job';
-		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->write)
+		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Delete job'; // Permission label
 		$this->rights[$r][4] = 'job';
-		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->delete)
+		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->delete)
 		$r++;
 		//Eval
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Read eval'; // Permission label
 		$this->rights[$r][4] = 'evaluation';
-		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->read)
+		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->read)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Create/Update eval'; // Permission label
 		$this->rights[$r][4] = 'evaluation';
-		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->write)
+		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Delete eval'; // Permission label
 		$this->rights[$r][4] = 'evaluation';
-		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->delete)
+		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->delete)
 		$r++;
 		//SKILL
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Read skill'; // Permission label
 		$this->rights[$r][4] = 'skill';
-		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->read)
+		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->read)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Create/Update skill'; // Permission label
 		$this->rights[$r][4] = 'skill';
-		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->write)
+		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Delete skill'; // Permission label
 		$this->rights[$r][4] = 'skill';
-		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->delete)
+		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->delete)
 		$r++;
 
 		//SKILLDET
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Read skilldet'; // Permission label
 		$this->rights[$r][4] = 'skilldet';
-		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->read)
+		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->read)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Create/Update skill'; // Permission label
 		$this->rights[$r][4] = 'skilldet';
-		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->write)
+		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = 'Delete skill'; // Permission label
 		$this->rights[$r][4] = 'skilldet';
-		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrmtest->poste->delete)
+		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->hrm->poste->delete)
 		$r++;
 
 		/* END MODULEBUILDER PERMISSIONS */
@@ -673,6 +673,27 @@ class modHRM extends DolibarrModules
 			'user'=>2,
 		);
 
+		//  -------------COMPARE------------------
+		$this->menu[$r++]=array(
+			// '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'fk_menu'=>'fk_mainmenu=hrm,fk_leftmenu=hrm_eval',
+			// This is a Left menu entry
+			'type'=>'left',
+			'titre'=>'Compare',
+			'mainmenu'=>'hrm',
+			'leftmenu'=>'',
+			'url'=>'/hrm/compare.php',
+			// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'langs'=>'hrm@hrm',
+			'position'=>1100+$r,
+			// Define condition to show or hide menu entry. Use '$conf->hrm->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'$conf->hrm->enabled',
+			// Use 'perms'=>'$user->rights->hrm->level1->level2' if you want your menu with a permission rules
+			'perms'=>'',
+			'target'=>'',
+			// 0=Menu for internal users, 1=external users, 2=both
+			'user'=>2,
+		);
 		/**
 		 * @todo  temporary commented  see with cdp for this one
 		 *

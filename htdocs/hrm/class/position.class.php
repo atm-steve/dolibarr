@@ -978,6 +978,19 @@ class Position extends CommonObject
 	}
 
 	/**
+	 * @param $userid
+	 * @return array|int of positions of user with for each of them the job fetched into that array
+	 */
+	public function get_for_user($userid)
+	{
+		$TPosition = array();
+
+		$TPosition = $this->fetchAll('ASC', 't.rowid', 0, 0, array('customsql' => 'fk_user=' . $userid));
+
+		return $TPosition;
+	}
+
+	/**
 	 *  Create a document onto disk according to template module.
 	 *
 	 * @param string $modele Force template to use ('' to not force)

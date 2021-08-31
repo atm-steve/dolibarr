@@ -65,3 +65,48 @@ function hrmAdminPrepareHead()
 
 	return $head;
 }
+
+/**
+ * @param $pLib
+ * @param $pName
+ * @param string $plus
+ * @param string $class
+ * @param false $autoDisabled
+ * @return string
+ */
+function displaySubmitButton($pLib,$pName,$plus="", $class='button', $autoDisabled = false){
+	$field = "<INPUT class='".$class."' TYPE='SUBMIT' NAME='$pName' VALUE=\"$pLib\" ";
+
+	if($autoDisabled && stripos($plus, 'onclick')===false) {
+		$field.=' onclick="this.disabled=true" ';
+	}
+
+	$field.=" $plus>\n";
+	return $field;
+}
+
+/**
+ * @param $pName
+ * @param $pVal
+ * @param string $plus
+ * @return string
+ */
+function hidden($pName,$pVal,$plus=""){
+	$field = '<input id="'.$pName.'" TYPE="HIDDEN" NAME="'.$pName.'" VALUE="'.$pVal.'" '.$plus.'> ';
+	return $field;
+}
+
+/**
+ * encapsulate end_form function
+ */
+function endf() {
+	print end_form();
+}
+
+/**
+ *  return end form
+ * @return string
+ */
+function end_form(){
+	return "</FORM>\n";
+}
