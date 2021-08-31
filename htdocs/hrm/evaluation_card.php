@@ -363,7 +363,7 @@ if ($action == 'create') {
 
 	print '</form>';
 
-	//dol_set_focus('input[name="ref"]');
+
 }
 
 // Part to edit record
@@ -429,16 +429,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	// Confirmation of action xxxx
 	if ($action == 'xxx') {
 		$formquestion = array();
-		/*
-		$forcecombo=0;
-		if ($conf->browser->name == 'ie') $forcecombo = 1;	// There is a bug in IE10 that make combo inside popup crazy
-		$formquestion = array(
-			// 'text' => $langs->trans("ConfirmClone"),
-			// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value' => 1),
-			// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value' => 1),
-			// array('type' => 'other',    'name' => 'idwarehouse',   'label' => $langs->trans("SelectWarehouseForStockDecrease"), 'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1, 0, 0, '', 0, $forcecombo))
-		);
-		*/
+
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('XXX'), $text, 'confirm_xxx', $formquestion, 0, 1, 220);
 	}
 
@@ -491,45 +482,47 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	 */
 
 	if (!empty($object->table_element_line)) {
-		// Show object lines
-		$result = $object->getLinesArray();
+		if ($object->status == Evaluation::STATUS_DRAFT) {
 
-		print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '' : '#line_'.GETPOST('lineid', 'int')).'" method="POST">
-		<input type="hidden" name="token" value="' . newToken().'">
+
+			// Show object lines
+			$result = $object->getLinesArray();
+
+			print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '' : '#line_' . GETPOST('lineid', 'int')) . '" method="POST">
+		<input type="hidden" name="token" value="' . newToken() . '">
 		<input type="hidden" name="action" value="saveSkill">
 		<input type="hidden" name="mode" value="">
 		<input type="hidden" name="page_y" value="">
-		<input type="hidden" name="id" value="' . $object->id.'">
+		<input type="hidden" name="id" value="' . $object->id . '">
 		';
 
-		if (!empty($conf->use_javascript_ajax) && $object->status == 0) {
-			include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
+			if (!empty($conf->use_javascript_ajax) && $object->status == 0) {
+				include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
+			}
+
+			print '<div class="div-table-responsive-no-min">';
+			if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
+				print '<table id="tablelines" class="noborder noshadow" width="100%">';
+			}
+
+
+			if (!empty($object->lines)) {
+				$object->printObjectLines($action, $mysoc, null, GETPOST('lineid', 'int'), 1);
+			}
+
+
+			if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
+				print '</table>';
+
+				if ($object->status == $object::STATUS_DRAFT && $permissiontoadd) print '<input class="button pull-right" type="submit" value="Enregistrer">';
+			}
+
+
+			print '</div>';
+
+			print "</form>\n";
+			print "<br>";
 		}
-
-		print '<div class="div-table-responsive-no-min">';
-		if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
-			print '<table id="tablelines" class="noborder noshadow" width="100%">';
-		}
-
-
-		if (!empty($object->lines)) {
-			$object->printObjectLines($action, $mysoc, null, GETPOST('lineid', 'int'), 1);
-		}
-
-
-
-		if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
-			print '</table>';
-
-			if ($object->status == $object::STATUS_DRAFT && $permissiontoadd) print '<input class="button pull-right" type="submit" value="Enregistrer">';
-		}
-
-
-		print '</div>';
-
-		print "</form>\n";
-		print "<br>";
-
 	}
 
 
@@ -581,6 +574,95 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 		print '</div>'."\n";
 	}
+
+	// list of comparison
+	if ($object->status != Evaluation::STATUS_DRAFT) {
+
+		// Recovery of skills related to this evaluation
+
+		$sql = 'select';
+		$sql .= '  e.ref,';
+		$sql .= '  e.date_creation,';
+		$sql .= '  e.fk_job,';
+		$sql .= '  j.ref as refjob,';
+		$sql .= '  ed.fk_skill,';
+
+		$sql .= '  sk.label as skilllabel,';
+		$sql .= '  sk.skill_type,';
+		$sql .= '  sk.description,';
+		$sql .= '  ed.fk_rank, '; /* fk sur skillrank à faire*/
+		$sql .= '  ed.required_rank,';
+		$sql .= '  skr.rank as userRankForSkill,';
+		$sql .= '  skr.objecttype';
+
+		$sql .= '  FROM ' . MAIN_DB_PREFIX . 'hrm_evaluation as e';
+		$sql .= '  LEFT JOIN ' . MAIN_DB_PREFIX . 'hrm_evaluationdet as ed ON  e.rowid = ed.fk_evaluation';
+		$sql .= '  LEFT JOIN ' . MAIN_DB_PREFIX . 'hrm_job as j ON e.fk_job = j.rowid';
+		$sql .= '  LEFT JOIN ' . MAIN_DB_PREFIX . 'hrm_skill as sk ON ed.fk_skill = sk.rowid';
+		$sql .= "  LEFT JOIN " . MAIN_DB_PREFIX . "hrm_skillrank as skr ON ed.fk_rank = skr.rowid AND skr.objecttype = 'evaluationdet'";
+		$sql .= " WHERE e.rowid =" . $object->id;
+
+		$resql = $db->query($sql);
+		$Tab = array();
+
+		if ($resql) {
+
+			$num = 0;
+			while ($obj = $db->fetch_object($resql)) {
+				$Tab[$num] = new stdClass();
+				$class = '';
+				$Tab[$num]->skill_type = $obj->skill_type;
+				$Tab[$num]->skilllabel = $obj->skilllabel;
+				$Tab[$num]->description = $obj->description;
+				$Tab[$num]->userRankForSkill = '<span class="radio_js_bloc_number TNote_1">' . $obj->userRankForSkill . '</span>';
+				$Tab[$num]->required_rank = '<span class="radio_js_bloc_number TNote_1">' . $obj->required_rank . '</span>';
+
+				if ($obj->userRankForSkill > $obj->required_rank) {
+					$class .= 'veryhappy';
+				} elseif ($obj->userRankForSkill == $obj->required_rank) {
+
+					$class .= 'happy';
+				} elseif ($obj->userRankForSkill < $obj->required_rank) {
+					$class .= 'sad';
+				}
+
+				$Tab[$num]->result = '<span class="' . $class . ' note">&nbsp;</span>';
+
+				$num++;
+
+			}
+
+			print load_fiche_titre($langs->trans("SkillList"), '', 'title');
+			print '<div class="underbanner clearboth"></div>';
+			print '<table class="noborder centpercent">';
+
+			print '<tr class="liste_titre">';
+			print '<th style="width:auto;text-align:auto" class="liste_titre">' . $langs->trans("TypeSkill") . ' </th>';
+			print '<th style="width:auto;text-align:auto" class="liste_titre">' . $langs->trans("labelSkill") . '</th>';
+			print '<th style="width:auto;text-align:auto" class="liste_titre">' . $langs->trans("SkillDesc") . '</th>';
+			print '<th style="width:auto;text-align:auto" class="liste_titre">' . $langs->trans("UserRank") . '</th>';
+			print '<th style="width:auto;text-align:auto" class="liste_titre">' . $langs->trans("RequiredRank") . '</th>';
+			print '<th style="width:auto;text-align:auto" class="liste_titre">' . $langs->trans("Result") . '</th>';
+			print '</tr>';
+
+			foreach ($Tab as $t) {
+
+				print '<tr>';
+				print ' <td>' . Skill::typeCodeToLabel($t->skill_type) . '</td>';
+				print ' <td>' . $t->skilllabel . '</td>';
+				print ' <td>' . $t->description . '</td>';
+				print ' <td>' . $t->userRankForSkill . '</td>';
+				print ' <td>' . $t->required_rank . '</td>';
+				print ' <td>' . $t->result . '</td>';
+				print '</tr>';
+			}
+
+			print '</table>';
+		}
+
+
+	}
+
 
 
 	// Select mail models is same action as presend

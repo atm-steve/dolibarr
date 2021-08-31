@@ -120,3 +120,15 @@ MaxLevelLowerThan= Max level lower than that demand
 SkillNotAcquired=Skill not acquired by all users and requested by the second comparator
 OrJobToCompare= Or job to compare
 legend=Legend
+
+TypeSkill= Skill type
+labelSkill= Label
+SkillDesc= Description
+UserRank=User Rank
+RequiredRank=Required rank
+Result=Result
+SkillList=Skill list
+
+knowHow=Know how
+HowToBe=How to be
+knowledge= Knowledge

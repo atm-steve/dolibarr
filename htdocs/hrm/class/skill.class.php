@@ -1011,5 +1011,16 @@ class Skill extends CommonObject
 		return $out;
 	}
 
+
+	public static function typeCodeToLabel($code){
+		global $langs;
+		$result = '';
+		switch ($code){
+			case 0 : $result = $langs->trans("knowHow") ; break; //"Savoir Faire"
+			case 1 : $result = $langs->trans("HowToBe") ; break; // "Savoir être"
+			case 9 : $result = $langs->trans("knowledge")  ; break; //"Savoir"
+		}
+		return $result;
+	}
 }
 

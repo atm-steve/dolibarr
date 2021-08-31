@@ -294,25 +294,25 @@ span.toosad {
 span.sad {
 	background:#bd4147;
 }
-	/*span.diffnote {
+span.diffnote {
 	display: inline-block;
 	background: url(img/smiley.png);
 	width:42px;
 	height: 42px;
 	overflow: hidden;
-	}
-	span.toohappy {
+}
+span.toohappy {
 	background-position: -105px 0px;
-	}
-	span.veryhappy {
+}
+span.veryhappy {
 	background-position: -53px 0px;
-	}
-	span.toosad {
+}
+span.toosad {
 	background-position: -105px -52px;
-	}
-	span.sad {
+}
+span.sad {
 	background-position: 0px -52px;
-	}*/
+}
 span.bubble {
 	background-color: #ccc;
 	border:1px;
