@@ -310,7 +310,7 @@ if ($viewstatut <> '')
 		//$sql.= ' AND c.facture = 0'; // invoice not created
 		$sql .= ' AND ((c.fk_statut IN (1,2)) OR (c.fk_statut = 3 AND c.facture = 0))'; // validated, in process or closed but not billed
 	}
-	if ($viewstatut == -4)	// To bill
+	if ($viewstatut == -5)	// To bill
 	{
 
 		$sql .= ' AND (c.fk_statut IN (1,2))'; // validated, in process
@@ -390,7 +390,7 @@ if ($resql)
 	$title.=' - '.$langs->trans('StatusOrderToProcessShort');
 	if ($viewstatut == -3)
 	$title.=' - '.$langs->trans('StatusOrderValidated').', '.(empty($conf->expedition->enabled)?'':$langs->trans("StatusOrderSent").', ').$langs->trans('StatusOrderToBill');
-	if ($viewstatut == -4)
+	if ($viewstatut == -5)
 		$title .= ' - '.$langs->trans("StatusOrderValidatedShort").'+'.$langs->trans("StatusOrderSentShort");
 
 	$num = $db->num_rows($resql);
@@ -718,7 +718,7 @@ if ($resql)
 			Commande::STATUS_SHIPMENTONPROCESS=>$langs->trans("StatusOrderSentShort"),
 			Commande::STATUS_CLOSED=>$langs->trans("StatusOrderDelivered"),
 			-3=>$langs->trans("StatusOrderValidatedShort").'+'.$langs->trans("StatusOrderSentShort").'+'.$langs->trans("StatusOrderDelivered"),
-			-4=>$langs->trans("StatusOrderValidatedShort").'+'.$langs->trans("StatusOrderSentShort"),
+			-5=>$langs->trans("StatusOrderValidatedShort").'+'.$langs->trans("StatusOrderSentShort"),
 			Commande::STATUS_CANCELED=>$langs->trans("StatusOrderCanceledShort")
 		);
 		print $form->selectarray('viewstatut', $liststatus, $viewstatut, -4, 0, 0, '', 0, 0, 0, '', 'maxwidth100');
