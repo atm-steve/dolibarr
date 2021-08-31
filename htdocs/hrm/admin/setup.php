@@ -17,8 +17,8 @@
  */
 
 /**
- * \file    hrmtest/admin/setup.php
- * \ingroup hrmtest
+ * \file    hrm/admin/setup.php
+ * \ingroup hrm
  * \brief   HrmTest setup page.
  */
 
@@ -54,11 +54,11 @@ global $langs, $user;
 
 // Libraries
 require_once DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php";
-require_once '../lib/hrmtest.lib.php';
+require_once '../lib/hrm.lib.php';
 //require_once "../class/myclass.class.php";
 
 // Translations
-$langs->loadLangs(array("admin", "hrmtest@hrmtest"));
+$langs->loadLangs(array("admin", "hrm@hrm"));
 
 // Access control
 if (!$user->admin) {
@@ -78,12 +78,6 @@ $arrayofparameters = array(
 	'HRMTEST_MINRANK'=>array('type'=>'integer', 'enabled'=>1),
 	'HRMTEST_MAXRANK'=>array('type'=>'integer','enabled'=>1),
 	'HRMTEST_DEFAULT_SKILL_DESCRIPTION'=>array('type'=>'textarea','enabled'=>1),
-	//'HRMTEST_MYPARAM3'=>array('type'=>'category:'.Categorie::TYPE_CUSTOMER, 'enabled'=>1),
-	//'HRMTEST_MYPARAM4'=>array('type'=>'emailtemplate:thirdparty', 'enabled'=>1),
-	//'HRMTEST_MYPARAM5'=>array('type'=>'yesno', 'enabled'=>1),
-	//'HRMTEST_MYPARAM5'=>array('type'=>'thirdparty_type', 'enabled'=>1),
-	//'HRMTEST_MYPARAM6'=>array('type'=>'securekey', 'enabled'=>1),
-	//'HRMTEST_MYPARAM7'=>array('type'=>'product', 'enabled'=>1),
 );
 
 $error = 0;
@@ -127,7 +121,7 @@ if ($action == 'updateMask') {
 	$file = ''; $classname = ''; $filefound = 0;
 	$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 	foreach ($dirmodels as $reldir) {
-		$file = dol_buildpath($reldir."core/modules/hrmtest/doc/pdf_".$modele."_".strtolower($tmpobjectkey).".modules.php", 0);
+		$file = dol_buildpath($reldir."core/modules/hrm/doc/pdf_".$modele."_".strtolower($tmpobjectkey).".modules.php", 0);
 		if (file_exists($file)) {
 			$filefound = 1;
 			$classname = "pdf_".$modele;
@@ -216,8 +210,8 @@ $linkback = '<a href="'.($backtopage ? $backtopage : DOL_URL_ROOT.'/admin/module
 print load_fiche_titre($langs->trans($page_name), $linkback, 'title_setup');
 
 // Configuration header
-$head = hrmtestAdminPrepareHead();
-print dol_get_fiche_head($head, 'settings', $langs->trans($page_name), -1, "hrmtest@hrmtest");
+$head = hrmAdminPrepareHead();
+print dol_get_fiche_head($head, 'settings', $langs->trans($page_name), -1, "hrm@hrm");
 
 // Setup page goes here
 echo '<span class="opacitymedium">'.$langs->trans("HrmTestSetupPage").'</span><br><br>';
@@ -400,7 +394,7 @@ if ($action == 'edit') {
 }
 
 
-$moduledir = 'hrmtest';
+$moduledir = 'hrm';
 $myTmpObjects = array();
 $myTmpObjects['evaluation'] = array('includerefgeneration'=>1, 'includedocgeneration'=>0);
 

@@ -99,3 +99,9 @@ fk_job=Job
 EndContract=End of contract
 ErrorBadObjectType= Bad object type provided
 RequiredRank=Required rank
+
+
+MustSetupMaxRank=You must register a maximum level for skills via administration module to create a skill
+HRMTEST_MINRANK=Minimum level for a skill
+HRMTEST_MAXRANK=Maximum level for a skill
+HRMTEST_DEFAULT_SKILL_DESCRIPTION=Default description of a skill level
