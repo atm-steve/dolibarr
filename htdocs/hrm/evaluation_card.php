@@ -239,7 +239,7 @@ if (empty($reshook)) {
 	}
 
 	if ($action == 'close'){
-		//var_dump("need close");
+
 		// save evaldet lines to user;
 		$sk = new SkillRank($db);
 		$SkillrecordsForActiveUser = $sk->fetchAll('ASC','fk_skill',0,0,array("customsql"=>"fk_object = ".$object->fk_user ." AND objecttype ='".SkillRank::SKILLRANK_TYPE_USER."'"),'AND');
@@ -483,21 +483,18 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	if (!empty($object->table_element_line)) {
 		if ($object->status == Evaluation::STATUS_DRAFT) {
-
-
-			// Show object lines
 			$result = $object->getLinesArray();
 
-			print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '' : '#line_' . GETPOST('lineid', 'int')) . '" method="POST">
-		<input type="hidden" name="token" value="' . newToken() . '">
+			print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '' : '#line_'.GETPOST('lineid', 'int')).'" method="POST">
+		<input type="hidden" name="token" value="' . newToken().'">
 		<input type="hidden" name="action" value="saveSkill">
 		<input type="hidden" name="mode" value="">
 		<input type="hidden" name="page_y" value="">
-		<input type="hidden" name="id" value="' . $object->id . '">
+		<input type="hidden" name="id" value="' . $object->id.'">
 		';
 
 			if (!empty($conf->use_javascript_ajax) && $object->status == 0) {
-				include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
+				include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
 			}
 
 			print '<div class="div-table-responsive-no-min">';
@@ -511,6 +508,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			}
 
 
+
 			if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
 				print '</table>';
 
@@ -522,6 +520,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 			print "</form>\n";
 			print "<br>";
+
+
 		}
 	}
 

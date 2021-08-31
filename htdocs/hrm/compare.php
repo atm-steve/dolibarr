@@ -402,7 +402,6 @@ function displayUsersListWithPicto(&$TUser, $fk_usergroup = 0, $namelist = 'list
 				$desc .= ' - ' . $langs->trans('DateLastEval') . ' : ' . dol_print_date($evaluation->date_eval);
 			}
 
-
 			if (!empty($user->array_options['options_DDA'])) $desc .= '<br />' . $langs->trans('Anciennete') . ' : ' . dol_print_date(strtotime($user->array_options['options_DDA']));
 
 			$out .= '<li fk_user="' . $user->id . '" class="' . $class . '">
@@ -513,8 +512,8 @@ function getSkillForJob($fk_job)
 			$Tab[$num]->label = $obj->label;
 			$Tab[$num]->description = $obj->description;
 			$Tab[$num]->skill_type = $obj->skill_type;
-			//$Tab[$num]->date_start = '';
-			//$Tab[$num]->date_end = '';
+			//$Tab[$num]->date_start = '';// du poste
+			//$Tab[$num]->date_end = ''; //  du poste
 			$Tab[$num]->fk_object = $obj->fk_object;
 			$Tab[$num]->objectType = SkillRank::SKILLRANK_TYPE_JOB;
 			$Tab[$num]->rank = $obj->rank;

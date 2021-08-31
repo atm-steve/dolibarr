@@ -224,12 +224,12 @@ class Skill extends CommonObject
 	 */
 	public function create(User $user, $notrigger = false)
 	{
-		global $langs;
-		$MaxNumberSkill = isset($conf->global->HRMTEST_MAXRANK) ? $conf->global->HRMTEST_MAXRANK : self::NB_TRADUCTION_LEVEL_PER_SKILL;
+		global $langs,$conf;
+		$MaxNumberSkill = isset($conf->global->HRM_MAXRANK) ? $conf->global->HRM_MAXRANK : self::NB_TRADUCTION_LEVEL_PER_SKILL;
 		$resultcreate = $this->createCommon($user, $notrigger);
 
 
-		$defaultSkillDesc = isset($conf->global->HRMTEST_DEFAULT_SKILL_DESCRIPTION) ? $conf->global->HRMTEST_DEFAULT_SKILL_DESCRIPTION : '';
+		$defaultSkillDesc = isset($conf->global->HRM_DEFAULT_SKILL_DESCRIPTION) ? $conf->global->HRM_DEFAULT_SKILL_DESCRIPTION : 'no Description';
 		if ($resultcreate > 0){
 			// skillDet create
 			require_once ( __DIR__ . '/skilldet.class.php');

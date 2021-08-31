@@ -673,13 +673,13 @@ class Evaluation extends CommonObject
 		$res = $db->query($sql);
 		if (!$res) { dol_print_error($db);}
 
-		$Tab = $res->fetch_assoc();
+		$Tab = $db->fetch_object($res);
 
 		if(empty($Tab)) return null;
 		else{
 
 			$evaluation = new Evaluation($db);
-			$evaluation->fetch($Tab[0]->rowid);
+			$evaluation->fetch($Tab->rowid);
 
 			return $evaluation;
 		}
@@ -1226,7 +1226,7 @@ class Evaluation extends CommonObject
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
 			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook printObjectLine and printObjectSubLine.
-			include dol_buildpath('hrm/core/tpl/objectline_view.tpl.php');
+			include dol_buildpath('hrm/tpl/objectline_view.tpl.php');
 		}
 
 	}

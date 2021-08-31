@@ -75,9 +75,9 @@ $scandir = GETPOST('scan_dir', 'alpha');
 $type = 'myobject';
 
 $arrayofparameters = array(
-	'HRMTEST_MINRANK'=>array('type'=>'integer', 'enabled'=>1),
-	'HRMTEST_MAXRANK'=>array('type'=>'integer','enabled'=>1),
-	'HRMTEST_DEFAULT_SKILL_DESCRIPTION'=>array('type'=>'textarea','enabled'=>1),
+	'HRM_MINRANK'=>array('type'=>'integer', 'enabled'=>1),
+	'HRM_MAXRANK'=>array('type'=>'integer','enabled'=>1),
+	'HRM_DEFAULT_SKILL_DESCRIPTION'=>array('type'=>'textarea','enabled'=>1),
 );
 
 $error = 0;
