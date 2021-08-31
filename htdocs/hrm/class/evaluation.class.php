@@ -138,20 +138,20 @@ class Evaluation extends CommonObject
 
 	// If this object has a subtable with lines
 
-	 /**
-	  * @var string    Name of subtable line
-	  */
-	 public $table_element_line = 'hrm_evaluationdet';
+	/**
+	 * @var string    Name of subtable line
+	 */
+	public $table_element_line = 'hrm_evaluationdet';
 
-	 /**
-	  * @var string    Field with ID of parent key if this object has a parent
-	  */
-	 public $fk_element = 'fk_evaluation';
+	/**
+	 * @var string    Field with ID of parent key if this object has a parent
+	 */
+	public $fk_element = 'fk_evaluation';
 
-	 /**
-	  * @var string    Name of subtable class that manage subtable lines
-	  */
-	 public $class_element_line = 'Evaluationdet';
+	/**
+	 * @var string    Name of subtable class that manage subtable lines
+	 */
+	public $class_element_line = 'Evaluationdet';
 
 	// /**
 	//  * @var array	List of child tables. To test if we can delete object.
@@ -163,12 +163,12 @@ class Evaluation extends CommonObject
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	 protected $childtablesoncascade = array('@Evaluationdet:hrm/class/evaluationdet.class.php:fk_evaluation');
+	protected $childtablesoncascade = array('@Evaluationdet:hrm/class/evaluationdet.class.php:fk_evaluation');
 
-	 /**
-	  * @var Evaluationdet[]     Array of subtable lines
-	  */
-	 public $lines = array();
+	/**
+	 * @var Evaluationdet[]     Array of subtable lines
+	 */
+	public $lines = array();
 
 
 
@@ -190,11 +190,7 @@ class Evaluation extends CommonObject
 			$this->fields['entity']['enabled'] = 0;
 		}
 
-		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->hrm->evaluation->read) {
-			$this->fields['myfield']['visible'] = 1;
-			$this->fields['myfield']['noteditable'] = 0;
-		}*/
+
 
 		// Unset fields that are disabled
 		foreach ($this->fields as $key => $val) {
@@ -562,13 +558,7 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->evaluation->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->evaluation->evaluation_advance->validate))))
-		 {
-		 $this->error='NotEnoughPermissions';
-		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
-		 return -1;
-		 }*/
+
 
 		$now = dol_now();
 
@@ -665,6 +655,36 @@ class Evaluation extends CommonObject
 		}
 	}
 
+	/**
+	 * 		Get the last evaluation by date for the user assigned
+	 *
+	 *		 @param $fk_user
+	 * 		 @return Evaluation|null
+	 */
+	public static function getLastEvaluationForUser($fk_user) {
+		global $db;
+
+
+		$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."hrm_evaluation ";
+		$sql.=	"WHERE fk_user=".$fk_user." ";
+		$sql.=	"ORDER BY date_eval DESC ";
+		$sql.=	"LIMIT 1 ";
+
+		$res = $db->query($sql);
+		if (!$res) { dol_print_error($db);}
+
+		$Tab = $res->fetch_assoc();
+
+		if(empty($Tab)) return null;
+		else{
+
+			$evaluation = new Evaluation($db);
+			$evaluation->fetch($Tab[0]->rowid);
+
+			return $evaluation;
+		}
+	}
+
 
 	/**
 	 *	Set draft status
@@ -680,12 +700,7 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
-		 {
-		 $this->error='Permission denied';
-		 return -1;
-		 }*/
+
 
 		return $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'EVALUATION_UNVALIDATE');
 	}
@@ -704,12 +719,7 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
-		 {
-		 $this->error='Permission denied';
-		 return -1;
-		 }*/
+
 
 		return $this->setStatusCommon($user, self::STATUS_CANCELED, $notrigger, 'EVALUATION_CANCEL');
 	}
@@ -728,12 +738,7 @@ class Evaluation extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->hrm->hrm_advance->validate))))
-		 {
-		 $this->error='Permission denied';
-		 return -1;
-		 }*/
+
 
 		return $this->setStatusCommon($user, self::STATUS_VALIDATED, $notrigger, 'EVALUATION_REOPEN');
 	}
@@ -989,15 +994,15 @@ class Evaluation extends CommonObject
 		global $langs, $conf;
 		$langs->load("hrm@hrm");
 
-		if (empty($conf->global->hrm_EVALUATION_ADDON)) {
-			$conf->global->hrm_EVALUATION_ADDON = 'mod_evaluation_standard';
+		if (empty($conf->global->HRMTEST_EVALUATION_ADDON)) {
+			$conf->global->HRMTEST_EVALUATION_ADDON = 'mod_evaluation_standard';
 		}
 
-		if (!empty($conf->global->hrm_EVALUATION_ADDON)) {
+		if (!empty($conf->global->HRMTEST_EVALUATION_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->hrm_EVALUATION_ADDON.".php";
-			$classname = $conf->global->hrm_EVALUATION_ADDON;
+			$file = $conf->global->HRMTEST_EVALUATION_ADDON.".php";
+			$classname = $conf->global->HRMTEST_EVALUATION_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
@@ -1130,7 +1135,7 @@ class Evaluation extends CommonObject
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
 			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook.
-			include dol_buildpath('hrm/tpl/objectline_title.tpl.php');
+			include dol_buildpath('hrm/core/tpl/objectline_title.tpl.php');
 		}
 
 		$i = 0;
@@ -1221,7 +1226,7 @@ class Evaluation extends CommonObject
 			// Output template part (modules that overwrite templates must declare this into descriptor)
 			// Use global variables + $dateSelector + $seller and $buyer
 			// Note: This is deprecated. If you need to overwrite the tpl file, use instead the hook printObjectLine and printObjectSubLine.
-			include dol_buildpath('hrm/tpl/objectline_view.tpl.php');
+			include dol_buildpath('hrm/core/tpl/objectline_view.tpl.php');
 		}
 
 	}
