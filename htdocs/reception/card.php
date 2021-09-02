@@ -1023,6 +1023,23 @@ if ($action == 'create')
 					}
 				}
 
+				/** ************* SPE AMA ************* */
+				$tableRowStyle = '';
+				if ($line->fk_product > 0)  // If predefined product
+				{
+					$product->fetch($line->fk_product);
+
+					$objectsrc->receptions[$line->id] = doubleval($objectsrc->receptions[$line->id]);
+
+					if (!empty($conf->productbatch->enabled)
+						&& !empty($product->status_batch)
+						&& empty($dispatchLines[$indiceAsked]['qty'])
+					) {
+						$tableRowStyle = 'display:none;';
+					}
+				}
+				/** ************* FIN SPE AMA ************* */
+
 				// Show product and description
 				$type = $line->product_type ? $line->product_type : $line->fk_product_type;
 				// Try to enhance type detection using date_start and date_end for free lines where type
@@ -1031,13 +1048,13 @@ if ($action == 'create')
 				if (!empty($line->date_end)) $type = 1;
 
 				print '<!-- line fk_commandefourndet='.$line->id.' for product='.$line->fk_product.' -->'."\n";
-				print '<tr class="oddeven">'."\n";
+				/** SPE AMA */	print '<tr class="oddeven" style="'.$tableRowStyle.'">'."\n";
 
 
 				// Product label
 				if ($line->fk_product > 0)  // If predefined product
 				{
-					$product->fetch($line->fk_product);
+					/** SPE AMA */ //					$product->fetch($line->fk_product); // Mise en comentaire car déja fait plus haut par le spé ama
 					$product->load_stock('warehouseopen'); // Load all $product->stock_warehouse[idwarehouse]->detail_batch
 					//var_dump($product->stock_warehouse[1]);
 
@@ -1118,7 +1135,18 @@ if ($action == 'create')
 					{
 						if (GETPOST('qtyl'.$indiceAsked, 'int')) $defaultqty = GETPOST('qtyl'.$indiceAsked, 'int');
 						print '<input name="idl'.$indiceAsked.'" type="hidden" value="'.$line->id.'">';
-						print '<input name="qtyl'.$indiceAsked.'" id="qtyl'.$indiceAsked.'" type="text" size="4" value="'.$deliverableQty.'">';
+
+						/** ************* SPE AMA ************* */
+						$maxValue = '';
+						if (!empty($conf->productbatch->enabled)
+							&& !empty($product->status_batch)
+						) {
+							$maxValue =  ' max="'.$deliverableQty.'" ';
+						}
+
+						print '<input name="qtyl'.$indiceAsked.'" id="qtyl'.$indiceAsked.'" type="number" min="0" size="4" '.$maxValue.' value="'.$deliverableQty.'">';
+
+						/** ************* FIN SPE AMA ************* */
 					} else print $langs->trans("NA");
 					print '</td>';
 
@@ -1187,7 +1215,7 @@ if ($action == 'create')
 						$line->array_options = $dispatchLines[$indiceAsked]['array_options'];
 					}
 
-					print $line->showOptionals($extrafields, 'edit', array('style'=>'class="oddeven"', 'colspan'=>$colspan), $indiceAsked);
+					print $line->showOptionals($extrafields, 'edit', array('style'=>'class="oddeven" style="'.$tableRowStyle.'"', 'colspan'=>$colspan), $indiceAsked);
 				}
 
 				$indiceAsked++;
