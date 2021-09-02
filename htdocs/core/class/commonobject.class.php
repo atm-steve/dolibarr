@@ -2463,6 +2463,9 @@ abstract class CommonObject
 		if (! $this->db->query($sql))
 		{
 			dol_print_error($this->db);
+			return -1;
+		} else {
+			return 1;
 		}
 		$parameters=array('rowid'=>$rowid, 'rang'=>$rang, 'fieldposition' => $fieldposition);
 	    $action='';

@@ -374,3 +374,4 @@ MakeProduct=Make product
 QtyToMake=Quantity to make
 FeatureDoesntHandleLotBatch=Feature doesn't handle lot/batch/serial number
 MakingProductFromAssociatedProducts=Allow production from associated products
+Rank=Rank

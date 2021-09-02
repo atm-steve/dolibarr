@@ -135,6 +135,8 @@ elseif($action==='save_composed_product')
 		setEventMessages('RecordSaved', null);
 	}
 	$action='';
+	header("Location: ".$_SERVER["PHP_SELF"].'?id='.$object->id);
+	exit;
 }
 elseif($action === 'confirm_makeproduct' && !empty($conf->global->PRODUIT_SOUSPRODUITS_MAKINGPRODUCT))
 {
@@ -315,7 +317,17 @@ if ($id > 0 || ! empty($ref))
 
 		$prodsfather = $object->getFather(); 		// Parent Products
 		$object->get_sousproduits_arbo();			// Load $object->sousprods
+		$parent_label = $object->label;
 		$prods_arbo=$object->get_arbo_each_prod();
+
+		$tmpid = $id;
+		if (! empty($conf->use_javascript_ajax)) {
+			$nboflines = $prods_arbo;
+			$table_element_line='product_association';
+
+			include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
+		}
+		$id = $tmpid;
 
 		if(empty($object->fk_default_warehouse)) $object->fetch($id);
 		$fk_default_warehouse = $object->fk_default_warehouse;
@@ -409,9 +421,10 @@ if ($id > 0 || ! empty($ref))
 		print '<input type="hidden" name="action" value="save_composed_product" />';
 		print '<input type="hidden" name="id" value="'.$id.'" />';
 
-		print '<table class="liste">';
+		print '<table id="tablelines" class="ui-sortable liste">';
 
-		print '<tr class="liste_titre">';
+		print '<tr class="liste_titre nodrag nodrop">';
+		print '<td>'.$langs->trans('Rank').'</td>';
 		print '<td>'.$langs->trans('ComposedProduct').'</td>';
 		print '<td>'.$langs->trans('Label').'</td>';
 		print '<td class="right" colspan="2">'.$langs->trans('MinSupplierPrice').'</td>';
@@ -419,6 +432,7 @@ if ($id > 0 || ! empty($ref))
 		if (! empty($conf->stock->enabled)) print '<td class="right">'.$langs->trans('Stock').'</td>';
 		print '<td class="center">'.$langs->trans('Qty').'</td>';
 		print '<td class="center">'.$langs->trans('ComposedProductIncDecStock').'</td>';
+		print '<td class="linecolmove" style="width: 10px"></td>';
 		print '</tr>'."\n";
 
 		$totalsell=0;
@@ -430,7 +444,9 @@ if ($id > 0 || ! empty($ref))
 
 				if ($value['level'] <= 1)
 				{
-					print '<tr class="oddeven">';
+					print '<tr id="'.$object->sousprods[$parent_label][$value['id']][5].'" class="drag drop oddeven level1">';
+
+					print '<td>'.$object->sousprods[$parent_label][$value['id']][6].'</td>';
 
 					$notdefined=0;
 					$nb_of_subproduct = $value['nb'];
@@ -462,7 +478,7 @@ if ($id > 0 || ! empty($ref))
 					print '</td>';
 
 					// Best selling price
-					$pricesell=$productstatic->price;
+					$pricesell=$productstatic->price_min;
 					if (! empty($conf->global->PRODUIT_MULTIPRICES))
 					{
 						$pricesell='Variable';
@@ -492,6 +508,8 @@ if ($id > 0 || ! empty($ref))
 						print '<td>'.($value['incdec']==1?'x':''  ).'</td>';
 					}
 
+					print '<td class="linecolmove tdlineupdown center">';
+					print '</td>';
 					print '</tr>'."\n";
 				}
 				else
@@ -499,10 +517,11 @@ if ($id > 0 || ! empty($ref))
 					$hide='';
 					if (empty($conf->global->PRODUCT_SHOW_SUB_SUB_PRODUCTS)) $hide=' hideobject';	// By default, we do not show this. It makes screen very difficult to understand
 
-					print '<tr class="oddeven'.$hide.'" id="sub-'.$value['id_parent'].'">';
+					print '<tr class="oddeven'.$hide.'" id="sub" parent_id="'.$value['id_parent'].'">';
 
 					//$productstatic->ref=$value['label'];
 					$productstatic->ref=$value['ref'];
+					print '<td></td>';
 					print '<td>';
 					for ($i=0; $i < $value['level']; $i++)	print ' &nbsp; &nbsp; ';	// Add indentation
 					print $productstatic->getNomUrl(1, 'composition').'</td>';
@@ -518,7 +537,7 @@ if ($id > 0 || ! empty($ref))
 					if (! empty($conf->stock->enabled)) print '<td></td>';	// Real stock
 					print '<td class="center">'.$value['nb'].'</td>';
 					print '<td>&nbsp;</td>';
-
+					print '<td>&nbsp;</td>';
 					print '</tr>'."\n";
 				}
 			}
