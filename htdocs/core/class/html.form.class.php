@@ -1132,7 +1132,7 @@ class Form
 			// mode 1
 			$urloption = 'htmlname='.urlencode($htmlname).'&outjson=1&filter='.urlencode($filter).($showtype ? '&showtype='.urlencode($showtype) : '');
 			$out .= ajax_autocompleter($selected, $htmlname, DOL_URL_ROOT.'/societe/ajax/company.php', $urloption, $conf->global->COMPANY_USE_SEARCH_TO_SELECT, 0, $ajaxoptions);
-			$out .= '<style type="text/css">.ui-autocomplete { z-index: 1003; }</style>';
+			$out .= '<style type="text/css">.ui-autocomplete { z-index: 2500; }</style>';
 			if (empty($hidelabel)) print $langs->trans("RefOrLabel").' : ';
 			elseif ($hidelabel > 1) {
 				$placeholder = ' placeholder="'.$langs->trans("RefOrLabel").'"';

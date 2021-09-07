@@ -2754,7 +2754,8 @@ class Ticket extends CommonObject
 								// If public interface is not enable, use link to internal page into mail
 								$url_public_ticket = (!empty($conf->global->TICKET_ENABLE_PUBLIC_INTERFACE) ?
 										(!empty($conf->global->TICKET_URL_PUBLIC_INTERFACE) ? $conf->global->TICKET_URL_PUBLIC_INTERFACE.'/view.php' : dol_buildpath('/public/ticket/view.php', 2)) : dol_buildpath('/ticket/card.php', 2)).'?track_id='.$object->track_id;
-								$message .= '<br>'.$langs->trans('TicketNewEmailBodyInfosTrackUrlCustomer').' : <a href="'.$url_public_ticket.'">'.$object->track_id.'</a><br>';
+								// 2021.07.23 MKO : Don't add link to intranet into the email sent to the customer
+								//$message .= '<br>'.$langs->trans('TicketNewEmailBodyInfosTrackUrlCustomer').' : <a href="'.$url_public_ticket.'">'.$object->track_id.'</a><br>';
 
 								// Build final message
 								$message = $message_intro.'<br><br>'.$message;
@@ -2766,11 +2767,12 @@ class Ticket extends CommonObject
 									$sendto[] = $object->origin_email;
 								}
 
-								if ($object->fk_soc > 0 && !in_array($object->origin_email, $sendto)) {
+								// 2021.08.07 MKO : we don't want to send the message to the thirdparty email
+								/*if ($object->fk_soc > 0 && !in_array($object->origin_email, $sendto)) {
 									$object->socid = $object->fk_soc;
 									$object->fetch_thirdparty();
 									if (!empty($object->thirdparty->email)) $sendto[] = $object->thirdparty->email;
-								}
+								}*/
 
 								// altairis: Add global email address reciepient
 								if ($conf->global->TICKET_NOTIFICATION_ALSO_MAIN_ADDRESS && !in_array($conf->global->TICKET_NOTIFICATION_EMAIL_TO, $sendto)) {
