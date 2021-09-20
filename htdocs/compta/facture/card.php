@@ -1119,7 +1119,8 @@ if (empty($reshook))
 							        //print 'New line based on invoice id '.$facture_source->tab_previous_situation_invoice[$lineIndex]->id.' fk_prev_id='.$source_fk_prev_id.' will be fk_prev_id='.$line->fk_prev_id.' '.$line->total_ht.' '.$line->situation_percent.'<br>';
 							    }
 							}
-
+                            $line->origin = $line->element;
+                            $line->origin_id = $line->id;
 							$line->fk_facture = $object->id;
 							$line->fk_parent_line = $fk_parent_line;
 
