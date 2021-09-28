@@ -4468,7 +4468,7 @@ class FactureLigne extends CommonInvoiceLine
 		 * Ne pouvais plus facturer car product_type = null
 		 * Anciennement : $sql.= " ".$this->product_type.",";
 		 */
-		$sql.= ' '.(! empty($this->product_type)?$this->product_type:"null").',';
+		$sql.= ' '.(! is_null($this->product_type)?$this->product_type:"null").',';
 		/*
 		 * Fin de SPE AKTEOS
 		 */
