@@ -4462,7 +4462,17 @@ class FactureLigne extends CommonInvoiceLine
 		$sql.= " '".$this->db->escape($this->localtax1_type)."',";
 		$sql.= " '".$this->db->escape($this->localtax2_type)."',";
 		$sql.= ' '.(! empty($this->fk_product)?$this->fk_product:"null").',';
-		$sql.= " ".$this->product_type.",";
+		
+		/*
+		 * SPE AKTEOS : TK DA020919
+		 * Ne pouvais plus facturer car product_type = null
+		 * Anciennement : $sql.= " ".$this->product_type.",";
+		 */
+		$sql.= ' '.(! empty($this->product_type)?$this->product_type:"null").',';
+		/*
+		 * Fin de SPE AKTEOS
+		 */
+
 		$sql.= " ".price2num($this->remise_percent).",";
 		$sql.= " ".price2num($this->subprice).",";
 		$sql.= ' '.(! empty($this->fk_remise_except)?$this->fk_remise_except:"null").',';
