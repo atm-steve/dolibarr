@@ -84,7 +84,10 @@ if (! defined('JS_JQUERY_DISABLE_DROPDOWN'))
 	print "\n/* JS CODE TO ENABLE dropdown */\n";
 	print '
                 jQuery(document).ready(function () {
-                  $(".dropdown dt a").on(\'click\', function () {
+                //************************************** SPE AU FIL DES MATIERES ******************************************
+                // Present dans le standard à partir de la 14.0
+		  $(document).on(\'click\', \'.dropdown dt a\', function () {
+		        //************************************** FIN SPE AU FIL DES MATIERES ******************************************
                   	  console.log("We click on dropdown");
                       //console.log($(this).parent().parent().find(\'dd ul\'));
                       $(this).parent().parent().find(\'dd ul\').slideToggle(\'fast\');
