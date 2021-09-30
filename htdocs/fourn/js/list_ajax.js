@@ -21,7 +21,7 @@ function listAjaxCommandeFourn(context) {
 
 		// On affiche la liste des commandes fournisseurs
 		console.log($(data).find('div.fiche form'));
-		$("#inclusion").append(form_commandes);
+		$("#id-right > .fiche").append(form_commandes);
 
 	});
 }
