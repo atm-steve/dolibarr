@@ -19,6 +19,9 @@ function listAjaxCommandeFourn(context) {
 		form_commandes.attr('action', form_commandes.attr('action').replace(context.pathToList, context.pathToOrderCustomer));
 		form_commandes.attr('action', form_commandes.attr('action') + '?id=' + context.id);
 
+		// Fait disparaitre le bouton d'ajout de commande fournisseur
+		form_commandes.find('li.paginationafterarrows').remove();
+
 		// On affiche la liste des commandes fournisseurs
 		console.log($(data).find('div.fiche form'));
 		$("#id-right > .fiche").append(form_commandes);
