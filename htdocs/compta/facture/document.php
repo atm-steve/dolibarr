@@ -70,7 +70,10 @@ $object = new Facture($db);
 if ($object->fetch($id))
 {
 	$object->fetch_thirdparty();
-	$upload_dir = $conf->facture->dir_output . "/" . dol_sanitizeFileName($object->ref);
+	$upload_dir = $conf->facture->multidir_output[$object->entity].'/'.dol_sanitizeFileName($object->ref);
+        if($object->entity == 1)$upload_dir= str_replace('invoice','facture',$upload_dir);
+        else $upload_dir= str_replace('facture','invoice',$upload_dir);
+	//$upload_dir = $conf->facture->dir_output . "/" . dol_sanitizeFileName($object->ref);
 }
 
 
