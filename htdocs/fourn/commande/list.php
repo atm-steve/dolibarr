@@ -248,13 +248,15 @@ if ($action == 'validate' && $permissiontovalidate)
 					if ($result >= 0)
 					{
 						// If we have permission, and if we don't need to provide the idwarehouse, we go directly on approved step
-						if (empty($conf->global->SUPPLIER_ORDER_NO_DIRECT_APPROVE) && $user->rights->fournisseur->commande->approuver && !(!empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_VALIDATE_ORDER) && $objecttmp->hasProductsOrServices(1)))
+						if (empty($conf->global->SUPPLIER_ORDER_NO_DIRECT_APPROVE) && $user->rights->fournisseur->commande->approuver && $objecttmp->hasProductsOrServices(1))
 						{
 							$result = $objecttmp->approve($user);
 							setEventMessages($langs->trans("SupplierOrderValidatedAndApproved"), array($objecttmp->ref));
 						} else {
 							setEventMessages($langs->trans("SupplierOrderValidated"), array($objecttmp->ref));
 						}
+						$param = (isset($type) ? '&type=' . $type : '');
+						$param .= '&show_stock_no_need=yes';
 					}
 					else
 					{
@@ -717,7 +719,9 @@ if ($resql)
 	include DOL_DOCUMENT_ROOT.'/core/tpl/massactions_pre.tpl.php';
 
 	if ($massaction == 'prevalidate') {
-		print $form->formconfirm($_SERVER["PHP_SELF"].$fieldstosearchall, $langs->trans("ConfirmMassValidation"), $langs->trans("ConfirmMassValidationQuestion"), "validate", null, '', 0, 200, 500, 1);
+		$param = (isset($type) ? '&type=' . $type : '');
+		$param .= '&show_stock_no_need=yes&';
+		print $form->formconfirm($_SERVER["PHP_SELF"].$param.$fieldstosearchall, $langs->trans("ConfirmMassValidation"), $langs->trans("ConfirmMassValidationQuestion"), "validate", null, '', 0, 200, 500, 1);
 	}
 
 	if ($massaction == 'createbills')
