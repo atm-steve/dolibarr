@@ -720,7 +720,9 @@ if ($resql)
 
 	if ($massaction == 'prevalidate') {
 		$param = (isset($type) ? '&type=' . $type : '');
-		$param .= '&show_stock_no_need=yes&';
+		/*LA LIGNE CI-DESSOUS EST SPE AU FIL DES MATIERES*/
+		if (empty($conf->global->SUPPLIER_ORDER_NO_DIRECT_APPROVE))	$param .= '&show_stock_no_need=yes';
+
 		print $form->formconfirm($_SERVER["PHP_SELF"].$param.$fieldstosearchall, $langs->trans("ConfirmMassValidation"), $langs->trans("ConfirmMassValidationQuestion"), "validate", null, '', 0, 200, 500, 1);
 	}
 
