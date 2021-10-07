@@ -4,6 +4,9 @@ function listAjaxCommandeFourn(context) {
 	}).done(function (data) {
 		// On remplace les liens de la pagination pour rester sur la liste de commandes fournisseurs en cas de changement de page
 		var form_commandes = $(data).find('div.fiche form[action*="list.php"]');
+		var les_div_juste_apres = $(data).find('div#show_files');
+		var les_div_juste_apres2 = $(data).find('div#show_files').next('div');
+		var les_div_juste_apres3 = $(data).find('div#show_files').next('div').next('div');
 		form_commandes.find('table.table-fiche-title a').each(function () {
 			$(this).attr('href', $(this).attr('href').replace(context.pathToList, context.pathToOrderCustomer));
 			$(this).attr('href', $(this).attr('href') + '&id=' + context.id) + context.yesno;
@@ -25,6 +28,9 @@ function listAjaxCommandeFourn(context) {
 		// On affiche la liste des commandes fournisseurs
 		console.log($(data).find('div.fiche form'));
 		$("#id-right > .fiche").append(form_commandes);
+		$(form_commandes).after(les_div_juste_apres3);
+		$(form_commandes).after(les_div_juste_apres2);
+		$(form_commandes).after(les_div_juste_apres);
 
 		if(context.action == 'delete') {
 			window.location.href = context.pathToOrderCustomer + '?id=' + context.id + context.yesno;
