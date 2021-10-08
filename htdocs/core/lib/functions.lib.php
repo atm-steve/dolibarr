@@ -6739,7 +6739,6 @@ function get_htmloutput_mesg($mesgstring = '', $mesgarray = '', $style = 'ok', $
 			$return = $out;
 		}
 	}
-
 	return $return;
 }
 

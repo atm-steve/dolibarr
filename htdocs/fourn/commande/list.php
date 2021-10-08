@@ -1237,6 +1237,10 @@ else
 	dol_print_error($db);
 }
 
+$parameters = array();
+$reshook = $hookmanager->executeHooks('printSetEventMessages', $parameters); // Note that $action and $object may have been modified by hook
+$sql .= $hookmanager->resPrint;
+
 // End of page
 llxFooter();
 $db->close();
