@@ -128,13 +128,13 @@ if (!$error && $massaction == 'confirm_presend')
 		$massaction = 'presend';
 	}
 
-	$receiver = $_POST['receiver'];
+	$receiver = GETPOST('receiver','alpha');
 	if (!is_array($receiver))
 	{
 		if (empty($receiver) || $receiver == '-1') $receiver = array();
 		else $receiver = array($receiver);
 	}
-	if (!trim($_POST['sendto']) && count($receiver) == 0 && count($listofobjectthirdparties) == 1)	// if only one recipient, receiver is mandatory
+	if (!trim(GETPOST('sendto','alpha')) && count($receiver) == 0 && count($listofobjectthirdparties) == 1)	// if only one recipient, receiver is mandatory
 	{
 	 	$error++;
 	   	setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Recipient")), null, 'warnings');
@@ -167,10 +167,10 @@ if (!$error && $massaction == 'confirm_presend')
 
 			// Define $sendto
 			$tmparray = array();
-			if (trim($_POST['sendto']))
+			if (trim(GETPOST('sendto','alpha')))
 			{
 				// Recipients are provided into free text
-				$tmparray[] = trim($_POST['sendto']);
+				$tmparray[] = trim(GETPOST('sendto'));
 			}
 			if (count($receiver) > 0)
 			{
@@ -191,16 +191,16 @@ if (!$error && $massaction == 'confirm_presend')
 			$sendto = implode(',', $tmparray);
 
 			// Define $sendtocc
-			$receivercc = $_POST['receivercc'];
+			$receivercc = GETPOST('receivercc','alpha');
 			if (!is_array($receivercc))
 			{
 				if ($receivercc == '-1') $receivercc = array();
 				else $receivercc = array($receivercc);
 			}
 			$tmparray = array();
-			if (trim($_POST['sendtocc']))
+			if (trim(GETPOST('sendtocc','alpha')))
 			{
-				$tmparray[] = trim($_POST['sendtocc']);
+				$tmparray[] = trim(GETPOST('sendtocc','alpha'));
 			}
 			if (count($receivercc) > 0)
 			{
@@ -308,7 +308,7 @@ if (!$error && $massaction == 'confirm_presend')
 				   	continue;
 				}
 
-				if ($_POST['addmaindocfile'])
+				if (GETPOST('addmaindocfile','alpha'))
 				{
 					// TODO Use future field $objectobj->fullpathdoc to know where is stored default file
 					// TODO If not defined, use $objectobj->modelpdf (or defaut invoice config) to know what is template to use to regenerate doc.
@@ -361,7 +361,7 @@ if (!$error && $massaction == 'confirm_presend')
 				$langs->load("commercial");
 
 				$reg = array();
-				$fromtype = GETPOST('fromtype');
+				$fromtype = GETPOST('fromtype','alpha');
 				if ($fromtype === 'user') {
 					$from = $user->getFullName($langs).' <'.$user->email.'>';
 				}
@@ -386,7 +386,7 @@ if (!$error && $massaction == 'confirm_presend')
 					}
 				}
 				else {
-					$from = $_POST['fromname'].' <'.$_POST['frommail'].'>';
+					$from = GETPOST('fromname','alpha').' <'.GETPOST('frommail','alpha').'>';
 				}
 
 				$replyto = $from;
