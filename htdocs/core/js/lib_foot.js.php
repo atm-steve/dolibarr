@@ -87,7 +87,15 @@ if (!defined('JS_JQUERY_DISABLE_DROPDOWN'))
 				  var lastopendropdown = null;
 
                   // Click onto the link "link to" or "hamburger", toggle dropdown
-				  $(".dropdown dt a").on(\'click\', function () {
+
+//************************************** SPE BCLS ******************************************
+                	// Present dans le standard à partir de la 14.0
+                	// Permet de faire marcher le burger de la liste appelée en ajax dans onglet agenda sur session
+				  $(document).on(\'click\', \'.dropdown dt a\', function () {
+//************************************** FIN SPE AU FIL DES MATIERES ******************************************
+
+
+
                   	  console.log("toggle dropdown dt a");
 
                       //$(this).parent().parent().find(\'dd ul\').slideToggle(\'fast\');
