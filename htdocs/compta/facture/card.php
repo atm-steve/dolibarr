@@ -311,8 +311,8 @@ if (empty($reshook))
 			//var_dump($array_of_total_ht_per_vat_rate);exit;
 			foreach ($array_of_total_ht_per_vat_rate as $vatrate => $tmpvalue)
 			{
-				$tmp_total_ht = $array_of_total_ht_per_vat_rate[$vatrate];
-				$tmp_total_ht_devise = $array_of_total_ht_devise_per_vat_rate[$vatrate];
+				$tmp_total_ht = price2num($array_of_total_ht_per_vat_rate[$vatrate]);
+				$tmp_total_ht_devise = price2num($array_of_total_ht_devise_per_vat_rate[$vatrate]);
 
 				if (($tmp_total_ht < 0 || $tmp_total_ht_devise < 0) && empty($conf->global->FACTURE_ENABLE_NEGATIVE_LINES))
 				{
@@ -2712,6 +2712,7 @@ if (empty($reshook))
  * View
  */
 
+
 $form = new Form($db);
 $formother = new FormOther($db);
 $formfile = new FormFile($db);
@@ -3123,7 +3124,7 @@ if ($action == 'create')
 			// Type de facture
 			$facids = $facturestatic->list_replacable_invoices($soc->id);
 			if ($facids < 0) {
-				dol_print_error($db, $facturestatic);
+				dol_print_error($db, $facturestatic->error, $facturestatic->errors);
 				exit();
 			}
 			$options = "";
@@ -3131,10 +3132,10 @@ if ($action == 'create')
 				foreach ($facids as $facparam)
 				{
 					$options .= '<option value="'.$facparam ['id'].'"';
-					if ($facparam ['id'] == $_POST['fac_replacement'])
+					if ($facparam['id'] == $_POST['fac_replacement'])
 						$options .= ' selected';
-					$options .= '>'.$facparam ['ref'];
-					$options .= ' ('.$facturestatic->LibStatut(0, $facparam ['status']).')';
+					$options .= '>'.$facparam['ref'];
+					$options .= ' ('.$facturestatic->LibStatut($facparam['paid'], $facparam['status'], 0, $facparam['alreadypaid']).')';
 					$options .= '</option>';
 				}
 			}
@@ -3208,7 +3209,7 @@ if ($action == 'create')
 				$facids = $facturestatic->list_qualified_avoir_invoices($soc->id);
 				if ($facids < 0)
 				{
-					dol_print_error($db, $facturestatic);
+					dol_print_error($db, $facturestatic->error, $facturestatic->errors);
 					exit;
 				}
 				$optionsav = "";
@@ -3648,15 +3649,23 @@ if ($action == 'create')
 		print '</table>';
 	}
 
-	print '</form>';
+	print "</form>\n";
 } elseif ($id > 0 || !empty($ref)) {
+	if (empty($object->id)) {
+		llxHeader();
+		$langs->load('errors');
+		echo '<div class="error">'.$langs->trans("ErrorRecordNotFound").'</div>';
+		llxFooter();
+		exit;
+	}
+
 	/*
 	 * Show object in view mode
 	 */
 
 	$result = $object->fetch($id, $ref);
 	if ($result <= 0) {
-		dol_print_error($db, $object->error);
+		dol_print_error($db, $object->error, $object->errors);
 		exit();
 	}
 
@@ -5116,7 +5125,8 @@ if ($action == 'create')
 			// Reopen a standard paid invoice
 			if ((($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_REPLACEMENT)
 				|| ($object->type == Facture::TYPE_CREDIT_NOTE && empty($discount->id))
-				|| ($object->type == Facture::TYPE_DEPOSIT && empty($discount->id)))
+				|| ($object->type == Facture::TYPE_DEPOSIT && empty($discount->id))
+				|| ($object->type == Facture::TYPE_SITUATION && empty($discount->id)))
 				&& ($object->statut == Facture::STATUS_CLOSED || $object->statut == Facture::STATUS_ABANDONED || ($object->statut == 1 && $object->paye == 1))   // Condition ($object->statut == 1 && $object->paye == 1) should not happened but can be found due to corrupted data
 				&& ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $usercancreate) || $usercanreopen))				// A paid invoice (partially or completely)
 			{
@@ -5252,7 +5262,7 @@ if ($action == 'create')
 			}
 
 			// Create a credit note
-			if (($object->type == Facture::TYPE_STANDARD || $object->type == Facture::TYPE_DEPOSIT || $object->type == Facture::TYPE_PROFORMA) && $object->statut > 0 && $usercancreate)
+			if (($object->type == Facture::TYPE_STANDARD || ($object->type == Facture::TYPE_DEPOSIT && empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS) ) || $object->type == Facture::TYPE_PROFORMA) && $object->statut > 0 && $usercancreate)
 			{
 				if (!$objectidnext)
 				{
