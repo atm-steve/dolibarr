@@ -137,7 +137,9 @@ if ($object->id)
                     $modName = substr($file, 0, dol_strlen($file) - 10);
 
                     if ($modName)
-                    {
+                   {
+	                if(strpos($dir.$file, '/htdocs/core/modules/modResource.class.php') !== false) continue; // Module std avec même nom que le module /htdocs/custom/resource/core/modules/mo$
+
                         include_once $dir."/".$file;
                         $objMod = new $modName($db);
                         // Load all lang files of module
