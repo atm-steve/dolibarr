@@ -62,7 +62,6 @@ $searchCategoryProductOperator = (GETPOST('search_category_product_operator', 'i
 $searchCategoryProductList = GETPOST('search_category_product_list', 'array');
 $search_tosell = GETPOST("search_tosell", 'int');
 $search_tobuy = GETPOST("search_tobuy", 'int');
-//$search_not_managed_in_stock = GETPOST("search_not_managed_in_stock", 'int');
 $fourn_id = GETPOST("fourn_id", 'int');
 $catid = GETPOST('catid', 'int');
 $search_tobatch = GETPOST("search_tobatch", 'int');
@@ -74,6 +73,7 @@ $search_accountancy_code_buy_intra = GETPOST("search_accountancy_code_buy_intra"
 $search_accountancy_code_buy_export = GETPOST("search_accountancy_code_buy_export", 'alpha');
 $optioncss = GETPOST('optioncss', 'alpha');
 $type = GETPOST("type", "int");
+$search_units = GETPOST('search_units', 'int');
 
 //Show/hide child products
 if (!empty($conf->variants->enabled) && !empty($conf->global->PRODUIT_ATTRIBUTES_HIDECHILD)) {
@@ -273,6 +273,7 @@ if (empty($reshook))
 		$search_accountancy_code_buy_intra = '';
 		$search_accountancy_code_buy_export = '';
 		$search_array_options = array();
+		$search_units = '';
 	}
 
 	// Mass actions
@@ -398,6 +399,7 @@ if ($search_accountancy_code_sell_export) $sql .= natural_search('p.accountancy_
 if ($search_accountancy_code_buy)         $sql .= natural_search('p.accountancy_code_buy', $search_accountancy_code_buy);
 if ($search_accountancy_code_buy_intra)   $sql .= natural_search('p.accountancy_code_buy_intra', $search_accountancy_code_buy_intra);
 if ($search_accountancy_code_buy_export)  $sql .= natural_search('p.accountancy_code_buy_export', $search_accountancy_code_buy_export);
+if(!empty($conf->global->PRODUCT_USE_UNITS) && $search_units) $sql .= natural_search('cu.rowid', $search_units);
 
 // Add where from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
@@ -737,6 +739,7 @@ if ($resql)
     if (!empty($arrayfields['cu.label']['checked']))
     {
         print '<td class="liste_titre">';
+        print $form->selectUnits($search_units, 'search_units', 1);
         print '</td>';
     }
 
@@ -903,9 +906,9 @@ if ($resql)
     if (!empty($arrayfields['p.pmp']['checked'])) {
         print_liste_field_titre($arrayfields['p.pmp']['label'], $_SERVER["PHP_SELF"], "", "", $param, '', $sortfield, $sortorder, 'right ');
     }
-	if (!empty($arrayfields['p.not_managed_in_stock']['checked'])) {
+    if (!empty($arrayfields['p.not_managed_in_stock']['checked'])) {
 		print_liste_field_titre($arrayfields['p.not_managed_in_stock']['label'], $_SERVER['PHP_SELF'], 'p.not_managed_in_stock', '', $param, '', $sortfield, $sortorder, 'center ');
-	}
+    }
     if (!empty($arrayfields['p.seuil_stock_alerte']['checked'])) {
         print_liste_field_titre($arrayfields['p.seuil_stock_alerte']['label'], $_SERVER["PHP_SELF"], "p.seuil_stock_alerte", "", $param, '', $sortfield, $sortorder, 'right ');
     }
