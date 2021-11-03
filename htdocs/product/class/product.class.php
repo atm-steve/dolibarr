@@ -406,7 +406,7 @@ class Product extends CommonObject
         'import_key'    		=>array('type'=>'varchar(14)', 'label'=>'ImportId', 'enabled'=>1, 'visible'=>-2, 'notnull'=>-1, 'index'=>0, 'position'=>1000),
         //'tosell'       		=>array('type'=>'integer',      'label'=>'Status',           'enabled'=>1, 'visible'=>1,  'notnull'=>1, 'default'=>0, 'index'=>1,  'position'=>1000, 'arrayofkeyval'=>array(0=>'Draft', 1=>'Active', -1=>'Cancel')),
         //'tobuy'        		=>array('type'=>'integer',      'label'=>'Status',           'enabled'=>1, 'visible'=>1,  'notnull'=>1, 'default'=>0, 'index'=>1,  'position'=>1000, 'arrayofkeyval'=>array(0=>'Draft', 1=>'Active', -1=>'Cancel')),
-		'not_managed_in_stock'	=>array('type'=>'integer', 'label'=>'not_managed_in_stock', 'enabled'=>1, 'visible'=>1, 'default'=>1, 'notnull'=>1, 'index'=>1, 'position'=>20),
+		'not_managed_in_stock'	=>array('type'=>'integer', 'label'=>'not_managed_in_stock', 'enabled'=>1, 'visible'=>1, 'default'=>1, 'notnull'=>1, 'index'=>1, 'position'=>502),
 
     );
 
@@ -427,6 +427,7 @@ class Product extends CommonObject
      */
     const TYPE_STOCKKIT = 3;
 
+	const NOT_MANAGED_IN_STOCK = 1;
 
     /**
      *  Constructor
