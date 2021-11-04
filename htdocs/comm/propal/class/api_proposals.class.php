@@ -385,39 +385,42 @@ class Proposals extends DolibarrApi
 		$this->db->begin();
 		foreach ($request_data as $lineData)
 		{
-			$lineData = (object) $lineData;
+			$line = (object) $lineData;
 
 			$updateRes = $this->propal->addline(
-				$lineData->desc,
-				$lineData->subprice,
-				$lineData->qty,
-				$lineData->tva_tx,
-				$lineData->localtax1_tx,
-				$lineData->localtax2_tx,
-				$lineData->fk_product,
-				$lineData->remise_percent,
+				$line->desc,
+				$line->subprice,
+				$line->qty,
+				$line->tva_tx,
+				$line->localtax1_tx,
+				$line->localtax2_tx,
+				$line->fk_product,
+				$line->remise_percent,
 				'HT',
 				0,
-				$lineData->info_bits,
-				$lineData->product_type,
-				$lineData->rang,
-				$lineData->special_code,
-				$lineData->fk_parent_line,
-				$lineData->fk_fournprice,
-				$lineData->pa_ht,
-				$lineData->label,
-				$lineData->date_start,
-				$lineData->date_end,
-				$lineData->array_options,
-				$lineData->fk_unit,
-				$lineData->origin,
-				$lineData->origin_id,
-				$lineData->multicurrency_subprice,
-				$lineData->fk_remise_except
+				$line->info_bits,
+				$line->product_type,
+				$line->rang,
+				$line->special_code,
+				$line->fk_parent_line,
+				$line->fk_fournprice,
+				$line->pa_ht,
+				$line->label,
+				$line->date_start,
+				$line->date_end,
+				$line->array_options,
+				$line->fk_unit,
+				$line->origin,
+				$line->origin_id,
+				$line->multicurrency_subprice,
+				$line->fk_remise_except
 			);
 
 			if ($updateRes < 0)
-				$errors[] = $this->propal->errors;
+			{
+				$errors['lineLabel'] = $line->label;
+				$errors['msg'] = $this->propal->errors;
+			}
 		}
 		if (empty($errors)) {
 			$this->db->commit();
