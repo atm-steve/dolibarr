@@ -298,7 +298,7 @@ class Proposals extends DolibarrApi
 	 * @param int   $id             Id of commercial proposal to update
 	 * @param array $request_data   Commercial proposal line data
 	 *
-	 * @url	POST {id}/lines
+	 * @url	POST {id}/line
 	 *
 	 * @return int
 	 */
@@ -354,6 +354,79 @@ class Proposals extends DolibarrApi
             throw new RestException(400, $this->propal->error);
         }
     }
+
+
+	/**
+	 * Add lines to given commercial proposal
+	 *
+	 * @param int   $id             Id of commercial proposal to update
+	 * @param array $request_data   Commercial proposal line data
+	 *
+	 * @url	POST {id}/lines
+	 *
+	 * @return int
+	 */
+	public function postLines($id, $request_data = null)
+	{
+		if (!DolibarrApiAccess::$user->rights->propal->creer) {
+		  	throw new RestException(401);
+		}
+
+		$result = $this->propal->fetch($id);
+		if (!$result) {
+		    throw new RestException(404, 'Commercial Proposal not found');
+		}
+
+		if (!DolibarrApi::_checkAccessToResource('propal', $this->propal->id)) {
+			throw new RestException(401, 'Access not allowed for login '.DolibarrApiAccess::$user->login);
+		}
+
+		$errors = [];
+		$this->db->begin();
+		foreach ($request_data as $lineData)
+		{
+			$lineData = (object) $lineData;
+
+			$updateRes = $this->propal->addline(
+				$lineData->desc,
+				$lineData->subprice,
+				$lineData->qty,
+				$lineData->tva_tx,
+				$lineData->localtax1_tx,
+				$lineData->localtax2_tx,
+				$lineData->fk_product,
+				$lineData->remise_percent,
+				'HT',
+				0,
+				$lineData->info_bits,
+				$lineData->product_type,
+				$lineData->rang,
+				$lineData->special_code,
+				$lineData->fk_parent_line,
+				$lineData->fk_fournprice,
+				$lineData->pa_ht,
+				$lineData->label,
+				$lineData->date_start,
+				$lineData->date_end,
+				$lineData->array_options,
+				$lineData->fk_unit,
+				$lineData->origin,
+				$lineData->origin_id,
+				$lineData->multicurrency_subprice,
+				$lineData->fk_remise_except
+			);
+
+			if ($updateRes < 0)
+				$errors[] = $this->propal->errors;
+		}
+		if (empty($errors)) {
+			$this->db->commit();
+			return count($request_data);
+		} else {
+			$this->db->rollback();
+			throw new RestException(400, implode(", ", $errors));
+		}
+	}
 
 	/**
 	 * Update a line of given commercial proposal
