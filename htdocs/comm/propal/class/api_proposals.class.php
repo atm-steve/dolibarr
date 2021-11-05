@@ -383,43 +383,48 @@ class Proposals extends DolibarrApi
 
 		$errors = [];
 		$this->db->begin();
-		foreach ($request_data as $lineData)
+
+		foreach ($request_data as $TData)
 		{
-			$line = (object) $lineData;
+			if(empty($TData[0])) $TData = array($TData);
 
-			$updateRes = $this->propal->addline(
-				$line->desc,
-				$line->subprice,
-				$line->qty,
-				$line->tva_tx,
-				$line->localtax1_tx,
-				$line->localtax2_tx,
-				$line->fk_product,
-				$line->remise_percent,
-				'HT',
-				0,
-				$line->info_bits,
-				$line->product_type,
-				$line->rang,
-				$line->special_code,
-				$line->fk_parent_line,
-				$line->fk_fournprice,
-				$line->pa_ht,
-				$line->label,
-				$line->date_start,
-				$line->date_end,
-				$line->array_options,
-				$line->fk_unit,
-				$line->origin,
-				$line->origin_id,
-				$line->multicurrency_subprice,
-				$line->fk_remise_except
-			);
+			foreach ($TData as $lineData) {
 
-			if ($updateRes < 0)
-			{
-				$errors['lineLabel'] = $line->label;
-				$errors['msg'] = $this->propal->errors;
+				$line = (object)$lineData;
+
+				$updateRes = $this->propal->addline(
+					$line->desc,
+					$line->subprice,
+					$line->qty,
+					$line->tva_tx,
+					$line->localtax1_tx,
+					$line->localtax2_tx,
+					$line->fk_product,
+					$line->remise_percent,
+					'HT',
+					0,
+					$line->info_bits,
+					$line->product_type,
+					$line->rang,
+					$line->special_code,
+					$line->fk_parent_line,
+					$line->fk_fournprice,
+					$line->pa_ht,
+					$line->label,
+					$line->date_start,
+					$line->date_end,
+					$line->array_options,
+					$line->fk_unit,
+					$line->origin,
+					$line->origin_id,
+					$line->multicurrency_subprice,
+					$line->fk_remise_except
+				);
+
+				if ($updateRes < 0) {
+					$errors['lineLabel'] = $line->label;
+					$errors['msg'] = $this->propal->errors;
+				}
 			}
 		}
 		if (empty($errors)) {
