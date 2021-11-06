@@ -327,22 +327,27 @@ if (empty($reshook))
             $object->finished           	 = GETPOST('finished', 'alpha');
             $object->fk_unit = GETPOST('units', 'alpha'); // This is the fk_unit of sale
 
-			//product
-			if ($type != 1 && !empty($conf->stock->enabled)){
-
-				if (!empty($conf->stock->enabled) ){
-					$not =  GETPOSTISSET('not_managed_in_stock');
-					$object->not_managed_in_stock = empty($not) ? 0 : 1;
+			// managed_in_stock
+			if (!empty($conf->stock->enabled)){
+				//product
+				if ($type != 1){
+					$not =  GETPOSTISSET('managed_in_stock');
+					$object->managed_in_stock = empty($not) ? 0 : 1;
+				}else{
+				//service
+					if (!empty($conf->global->STOCK_SUPPORTS_SERVICES)){
+						$not =  GETPOSTISSET('managed_in_stock');
+						$object->managed_in_stock = empty($not) ? 0 : 1;
+					}else{
+						// default behavior for a service
+						$object->managed_in_stock = 0;
+					}
 				}
 			}else{
-				//service
-				if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ){
-					$not =  GETPOSTISSET('not_managed_in_stock');
-					$object->not_managed_in_stock = empty($not) ? 0 : 1;
-				}
+				// default behavior for a product
+				// we prepare product to be managed in future if user activate the module stock
+				$object->managed_in_stock = 1;
 			}
-
-
 
 
 	        $accountancy_code_sell = GETPOST('accountancy_code_sell', 'alpha');
@@ -465,15 +470,24 @@ if (empty($reshook))
                 $object->volume_units           = GETPOST('volume_units'); // This is not the fk_unit but the power of unit
                 $object->finished               = GETPOST('finished', 'alpha');
 
-
+				// managed_in_stock
 				if (!empty($conf->stock->enabled)) {
-
-					$not_managed_in_stock = GETPOSTISSET('not_managed_in_stock');
-					$object->not_managed_in_stock =$not_managed_in_stock ? '1' : '0';
-
+					// product
+					if ($object->oldcopy->type != 1){
+						$managed_in_stock = GETPOSTISSET('managed_in_stock');
+						$object->managed_in_stock =$managed_in_stock ? '1' : '0';
+					}else{
+					// service
+						if (!empty($conf->global->STOCK_SUPPORTS_SERVICES)){
+							$not =  GETPOSTISSET('managed_in_stock');
+							$object->managed_in_stock = empty($not) ? 0 : 1;
+						}else{
+							// old copy status
+							$object->managed_in_stock = $object->oldcopy->managed_in_stock;
+						}
+					}
 				}else{
-
-					$object->not_managed_in_stock = $object->oldcopy->not_managed_in_stock;
+					$object->managed_in_stock = $object->oldcopy->managed_in_stock;
 				}
 
 
@@ -1122,21 +1136,16 @@ else
             print '<input name="desiredstock" class="maxwidth50" value="'.GETPOST('desiredstock').'">';
             print '</td></tr>';
 
-			// stock not managed
-			print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-			print '<td><input type="checkbox" id="not_managed_in_stock" name="not_managed_in_stock"/></td></tr>';
+			// stock managed
+			print '<tr><td valign="top">' . $langs->trans("managed_in_stock") . '</td>';
+			print '<td><input type="checkbox" id="managed_in_stock" name="managed_in_stock" checked/></td></tr>';
 
         }
         else
         {
             print '<input name="seuil_stock_alerte" type="hidden" value="0">';
             print '<input name="desiredstock" type="hidden" value="0">';
-			//service
-			if ( !empty($conf->global->STOCK_SUPPORTS_SERVICES) ){
-				// stock not managed
-				print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-				print '<td><input type="checkbox" id="not_managed_in_stock" name="not_managed_in_stock"/></td></tr>';
-			}
+
         }
 
         // Duration
@@ -1146,6 +1155,12 @@ else
             print '<input name="duration_value" size="4" value="'.GETPOST('duration_value', 'int').'">';
             print $formproduct->selectMeasuringUnits("duration_unit", "time", GETPOST('duration_value', 'alpha'), 0, 1);
             print '</td></tr>';
+			//service
+			if ( !empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ){
+				// stock managed
+				print '<tr><td valign="top">' . $langs->trans("managed_in_stock") . '</td>';
+				print '<td><input type="checkbox" id="managed_in_stock" name="managed_in_stock" checked/></td></tr>';
+			}
         }
 
         if ($type != 1)	// Nature, Weight and volume only applies to products and not to services
@@ -1569,9 +1584,9 @@ else
                 print '<input name="desiredstock" size="4" value="'.$object->desiredstock.'">';
                 print '</td></tr>';
                 */
-				print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-				$checked = $object->not_managed_in_stock == 1 ? "checked" : "";
-				print '<td><input type="checkbox" id="not_managed_in_stock" name="not_managed_in_stock" '. $checked . ' /></td></tr>';
+				print '<tr><td valign="top">' . $langs->trans("managed_in_stock") . '</td>';
+				$checked = $object->managed_in_stock == 1 ? "checked" : "";
+				print '<td><input type="checkbox" id="managed_in_stock" name="managed_in_stock" '. $checked . ' /></td></tr>';
 
             }
             /*
@@ -1590,9 +1605,9 @@ else
                 print '</td></tr>';
 
 				if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ) {
-					print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-					$checked = $object->not_managed_in_stock == 1 ? "checked" : "";
-					print '<td><input type="checkbox" id="not_managed_in_stock" name="not_managed_in_stock" ' . $checked . ' /></td></tr>';
+					print '<tr><td valign="top">' . $langs->trans("managed_in_stock") . '</td>';
+					$checked = $object->managed_in_stock == 1 ? "checked" : "";
+					print '<td><input type="checkbox" id="managed_in_stock" name="managed_in_stock" ' . $checked . ' /></td></tr>';
 				}
 
             }
@@ -2046,9 +2061,9 @@ else
                 print '</td>';
 
 
-				// view not_managed_in_stock
-				print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-				$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Yes') : $langs->trans('No');
+				// view managed_in_stock
+				print '<tr><td valign="top">' . $langs->trans("managed_in_stock") . '</td>';
+				$checked = $object->managed_in_stock == 1 ? $langs->trans('Yes') : $langs->trans('No');
 				print '<td>'. $checked .'</td></tr>';
 
             }
@@ -2092,10 +2107,10 @@ else
 
                 print '</td></tr>';
 
-				// view not_managed_in_stock
+				// view managed_in_stock
 				if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ) {
-					print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-					$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Yes') : $langs->trans('No');
+					print '<tr><td valign="top">' . $langs->trans("managed_in_stock") . '</td>';
+					$checked = $object->managed_in_stock == 1 ? $langs->trans('Yes') : $langs->trans('No');
 					print '<td>'. $checked .'</td></tr>';
 				}
 
