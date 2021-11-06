@@ -327,21 +327,6 @@ if (empty($reshook))
             $object->finished           	 = GETPOST('finished', 'alpha');
             $object->fk_unit = GETPOST('units', 'alpha'); // This is the fk_unit of sale
 
-			//product
-			/*if ($type != 1 && !empty($conf->stock->enabled)){
-
-				if (!empty($conf->stock->enabled) ){
-					$not =  GETPOSTISSET('not_managed_in_stock');
-					$object->not_managed_in_stock = empty($not) ? 0 : 1;
-				}
-			}else{
-				//service
-				if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ){
-					$not =  GETPOSTISSET('not_managed_in_stock');
-					$object->not_managed_in_stock = empty($not) ? 0 : 1;
-				}
-			}*/
-
 			// managed_in_stock
 			if (!empty($conf->stock->enabled)){
 				//product
@@ -487,16 +472,6 @@ if (empty($reshook))
                 $object->volume_units           = GETPOST('volume_units'); // This is not the fk_unit but the power of unit
                 $object->finished               = GETPOST('finished', 'alpha');
 
-
-				/*if (!empty($conf->stock->enabled)) {
-
-					$not_managed_in_stock = GETPOSTISSET('not_managed_in_stock');
-					$object->not_managed_in_stock =$not_managed_in_stock ? '1' : '0';
-
-				}else{
-
-					$object->not_managed_in_stock = $object->oldcopy->not_managed_in_stock;
-				}*/
 
 				// managed_in_stock
 				if (!empty($conf->stock->enabled)) {
