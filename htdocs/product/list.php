@@ -215,8 +215,20 @@ $arrayfields = array(
 	'p.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500),
 	'p.tosell'=>array('label'=>$langs->trans("Status").' ('.$langs->trans("Sell").')', 'checked'=>1, 'position'=>1000),
 	'p.tobuy'=>array('label'=>$langs->trans("Status").' ('.$langs->trans("Buy").')', 'checked'=>1, 'position'=>1000),
-	'p.not_managed_in_stock'=>array('label'=>$langs->trans("not_managed_in_stock"), 'checked'=>0, 'position'=>1001),
 );
+
+if (!empty($conf->stock->enabled)){
+	// service
+	if ($type == 1){
+		if (!empty($conf->global->STOCK_SUPPORTS_SERVICES)){
+			$arrayfields['p.not_managed_in_stock'] = array('label'=>$langs->trans("not_managed_in_stock"), 'checked'=>0, 'position'=>1001);
+		}
+	}else{
+		//product
+		$arrayfields['p.not_managed_in_stock'] = array('label'=>$langs->trans("not_managed_in_stock"), 'checked'=>0, 'position'=>1001);
+	}
+}
+
 // Extra fields
 if (is_array($extrafields->attributes[$object->table_element]['label']) && count($extrafields->attributes[$object->table_element]['label']))
 {
@@ -362,7 +374,7 @@ if ($search_label)   $sql .= natural_search('p.label', $search_label);
 if ($search_barcode) $sql .= natural_search('p.barcode', $search_barcode);
 if (isset($search_tosell) && dol_strlen($search_tosell) > 0 && $search_tosell != -1) $sql .= " AND p.tosell = ".((int) $search_tosell);
 if (isset($search_tobuy) && dol_strlen($search_tobuy) > 0 && $search_tobuy != -1)   $sql .= " AND p.tobuy = ".((int) $search_tobuy);
-//if (isset($search_not_managed_in_stock))  $sql .= " AND p.not_managed_in_stock = '". $search_not_managed_in_stock . "'";
+if (isset($search_not_managed_in_stock) && dol_strlen($search_not_managed_in_stock) > 0 && $search_not_managed_in_stock != -1) $sql .= " AND p.not_managed_in_stock = '". $search_not_managed_in_stock . "'";
 if (isset($search_tobatch) && dol_strlen($search_tobatch) > 0 && $search_tobatch != -1)   $sql .= " AND p.tobatch = ".((int) $search_tobatch);
 if ($search_vatrate) $sql .= natural_search('p.tva_tx', $search_vatrate, 1);
 if (dol_strlen($canvas) > 0)                    $sql .= " AND p.canvas = '".$db->escape($canvas)."'";
@@ -510,7 +522,7 @@ if ($resql)
 	if ($search_accountancy_code_buy) $param = "&search_accountancy_code_buy=".urlencode($search_accountancy_code_buy);
 	if ($search_accountancy_code_buy_intra) $param = "&search_accountancy_code_buy_intra=".urlencode($search_accountancy_code_buy_intra);
 	if ($search_accountancy_code_buy_export) $param = "&search_accountancy_code_buy_export=".urlencode($search_accountancy_code_buy_export);
-	//if ($search_not_managed_in_stock != '') $param .= "&search_not_managed_in_stock=".urlencode($search_not_managed_in_stock);
+	if ($search_not_managed_in_stock != '') $param .= "&search_not_managed_in_stock=".urlencode($search_not_managed_in_stock);
 	// Add $param from extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
@@ -777,13 +789,7 @@ if ($resql)
 		print '&nbsp;';
 		print '</td>';
 	}
-	// NOT MANAGED IN STOCK
-	if (!empty($arrayfields['p.not_managed_in_stock']['checked']))
-	{
-		print '<td class="liste_titre">';
-		print '&nbsp;';
-		print '</td>';
-	}
+
 	// Limit for alert
 	if (!empty($arrayfields['p.seuil_stock_alerte']['checked']))
 	{
@@ -812,7 +818,13 @@ if ($resql)
 	if (!empty($arrayfields['p.accountancy_code_buy']['checked']))		   print '<td class="liste_titre"><input class="flat maxwidth75" type="text" name="search_accountancy_code_buy" value="'.dol_escape_htmltag($search_accountancy_code_buy).'"></td>';
 	if (!empty($arrayfields['p.accountancy_code_buy_intra']['checked']))   print '<td class="liste_titre"><input class="flat maxwidth75" type="text" name="search_accountancy_code_buy_intra" value="'.dol_escape_htmltag($search_accountancy_code_buy_intra).'"></td>';
 	if (!empty($arrayfields['p.accountancy_code_buy_export']['checked']))  print '<td class="liste_titre"><input class="flat maxwidth75" type="text" name="search_accountancy_code_buy_export" value="'.dol_escape_htmltag($search_accountancy_code_buy_export).'"></td>';
-	if (!empty($arrayfields['p.not_managed_in_stock']['checked'])) print '<td class="liste_titre"></td>';
+
+
+	// Managed_in_stock
+	$array = array('-1'=>'&nbsp;', '0'=>$langs->trans('Not_Managed'), '1'=>$langs->trans('Managed'));
+	if (!empty($arrayfields['p.not_managed_in_stock']['checked'])){
+		print '<td class="liste_titre center">'.$form->selectarray('search_notmanaged_in_stock', $array, $search_not_managed_in_stock).'</td>';
+	}
 
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
@@ -845,7 +857,7 @@ if ($resql)
 		print '</td>';
 	}
 
-
+	print '<td class="liste_titre"></td>';
 	print '<td class="liste_titre center maxwidthsearch">';
 	$searchpicto = $form->showFilterButtons();
 	print $searchpicto;
@@ -1294,7 +1306,7 @@ if ($resql)
 		if (!empty($arrayfields['p.not_managed_in_stock']['checked']))
 		{
 			print '<td class="nowrap center">';
-			print ($product_static->not_managed_in_stock == "1" ) ? $langs->trans("Yes") : $langs->trans("No")  ;
+			print ($product_static->not_managed_in_stock == "1" ) ? $langs->trans("Not_Managed") : $langs->trans("Managed")  ;
 			print '</td>';
 		}
 
