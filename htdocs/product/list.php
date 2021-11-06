@@ -218,9 +218,17 @@ $arrayfields = array(
 	'p.tosell'=>array('label'=>$langs->trans("Status").' ('.$langs->trans("Sell").')', 'checked'=>1, 'position'=>1000),
 	'p.tobuy'=>array('label'=>$langs->trans("Status").' ('.$langs->trans("Buy").')', 'checked'=>1, 'position'=>1000),
 );
-
+// we want to access this field only in particular cases
 if (!empty($conf->stock->enabled)){
-	$arrayfields['p.managed_in_stock'] = array('label'=>$langs->trans("managed_in_stock"), 'checked'=>0, 'position'=>1001);
+	// service
+	if ($type == 1){
+		if (!empty($conf->global->STOCK_SUPPORTS_SERVICES)){
+			$arrayfields['p.managed_in_stock'] = array('label'=>$langs->trans("managed_in_stock"), 'checked'=>0, 'position'=>1001);
+		}
+	}else{
+		//product
+		$arrayfields['p.managed_in_stock'] = array('label'=>$langs->trans("managed_in_stock"), 'checked'=>0, 'position'=>1001);
+	}
 }
 
 // Extra fields
