@@ -2115,7 +2115,7 @@ else
 				// view not_managed_in_stock
 				if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ) {
 					print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-					$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Yes') : $langs->trans('No');
+					$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Not_Managed') : $langs->trans('Managed');
 					print '<td>'. $checked .'</td></tr>';
 				}
 
