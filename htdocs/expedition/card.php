@@ -1176,7 +1176,7 @@ if ($action == 'create')
 	                    $product_static->status_batch = $line->product_tobatch;
 	                    $text = $product_static->getNomUrl(1);
 	                    $text .= ' - '.(!empty($line->label) ? $line->label : $line->product_label);
-						$text .= $product->not_managed_in_stock ? ' - '.$langs->trans('stock_disabled') : ' - '.$langs->trans('stock_enabled') ;
+						$text .= $product->not_managed_in_stock  == Product::DISABLED_STOCK ? ' - '.$langs->trans('stock_disabled') : ' - '.$langs->trans('stock_enabled') ;
 	                    $description = ($conf->global->PRODUIT_DESC_IN_FORM ? '' : dol_htmlentitiesbr($line->desc));
 						$description .= $product->not_managed_in_stock ? $langs->trans('stock_disabled') : $langs->trans('stock_enabled') ;
 						print $form->textwithtooltip($text, $description, 3, '', '', $i);
@@ -1432,7 +1432,7 @@ if ($action == 'create')
 										print '<td class="left">';
 										if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES))
 										{
-											if ($product->not_managed_in_stock == 0){
+											if ($product->not_managed_in_stock == Product::ENABLED_STOCK){
 												print $tmpwarehouseObject->getNomUrl(0).' ';
 												print '<!-- Show details of stock -->';
 												print '('.$stock.')';
@@ -1560,8 +1560,8 @@ if ($action == 'create')
 							    if ($warehouse_selected_id <= 0 ) {
 							    	$disabled = 'disabled="disabled"';
 							    }
-								// finally we overwrite the input with the product status not_managed_in_stock
-								if ( $product->not_managed_in_stock == 1){
+								// finally we overwrite the input with the product status not_managed_in_stock if it's disabled
+								if ( $product->not_managed_in_stock == Product::DISABLED_STOCK){
 									$disabled = '';
 								}
 	    						print '<input name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0"'.($disabled ? ' '.$disabled : '').'> ';
@@ -1584,7 +1584,7 @@ if ($action == 'create')
 	    						else
 	    						{
 	    						    if ($line->fk_product){
-										if ($product->not_managed_in_stock == 0){
+										if ($product->not_managed_in_stock == Product::ENABLED_STOCK){
 
 											print img_warning().' '.$langs->trans("StockTooLow");
 										}else{
