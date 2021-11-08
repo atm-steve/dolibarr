@@ -382,7 +382,7 @@ class MouvementStock extends CommonObject
     		}
 		}
 
-		if ($movestock && $entrepot_id > 0)	// Change stock for current product, change for subproduct is done after
+		if ($movestock && $entrepot_id > 0 && $product->not_managed_in_stock != Product::NOT_MANAGED_IN_STOCK)	// Change stock for current product, change for subproduct is done after
 		{
 			// Set $origintype, fk_origin, fk_project
 			$fk_project = 0;
@@ -587,8 +587,10 @@ class MouvementStock extends CommonObject
 		if ($movestock && !$error)
 		{
             // Call trigger
-            $result = $this->call_trigger('STOCK_MOVEMENT', $user);
-            if ($result < 0) $error++;
+			if ($product->not_managed_in_stock != Product::NOT_MANAGED_IN_STOCK ) {
+				$result = $this->call_trigger('STOCK_MOVEMENT', $user);
+				if ($result < 0) $error++;
+			}
             // End call triggers
 		}
 
