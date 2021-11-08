@@ -328,34 +328,7 @@ if (empty($reshook))
             $object->fk_unit = GETPOST('units', 'alpha'); // This is the fk_unit of sale
 
 			// managed_in_stock
-			if (!empty($conf->stock->enabled)){
-				//product
-				if ($type != 1){
-					$not =  GETPOSTISSET('not_managed_in_stock');
-					$object->not_managed_in_stock = empty($not) ? 0 : 1;
-				}else{
-					//service
-					if (!empty($conf->global->STOCK_SUPPORTS_SERVICES)){
-						$not =  GETPOSTISSET('not_managed_in_stock');
-						$object->not_managed_in_stock = empty($not) ? 0 : 1;
-					}else{
-						// default behavior for a service
-						$object->not_managed_in_stock = 1;
-					}
-				}
-			}else{
-				// default behavior for a product
-				// we prepare product to be managed in future if user activate the module stock
-				if ($object->type != 1){
-					$object->not_managed_in_stock = 0;
-				}else{
-					// defualt service
-					$object->not_managed_in_stock = 1;
-				}
-
-			}
-
-
+			$object->not_managed_in_stock =   GETPOSTISSET('not_managed_in_stock');
 
 
 	        $accountancy_code_sell = GETPOST('accountancy_code_sell', 'alpha');
@@ -480,25 +453,7 @@ if (empty($reshook))
 
 
 				// managed_in_stock
-				if (!empty($conf->stock->enabled)) {
-					// product
-					if ($object->oldcopy->type != 1){
-						$not_managed_in_stock = GETPOSTISSET('not_managed_in_stock');
-						$object->not_managed_in_stock =$not_managed_in_stock ? '1' : '0';
-					}else{
-						// service
-						if (!empty($conf->global->STOCK_SUPPORTS_SERVICES)){
-							$not =  GETPOSTISSET('not_managed_in_stock');
-							$object->not_managed_in_stock = empty($not) ? 0 : 1;
-						}else{
-							// old copy status
-							$object->not_managed_in_stock = $object->oldcopy->not_managed_in_stock;
-						}
-					}
-				}else{
-					$object->not_managed_in_stock = $object->oldcopy->not_managed_in_stock;
-				}
-
+				$object->not_managed_in_stock = GETPOSTISSET('not_managed_in_stock');
 
 
 	            $units = GETPOST('units', 'int');
@@ -1167,7 +1122,7 @@ else
             print '</td></tr>';
 
 			//service
-			if ( !empty($conf->global->STOCK_SUPPORTS_SERVICES) ){
+			if ( !empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ){
 				// stock not managed
 				print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
 				print '<td><input type="checkbox" id="not_managed_in_stock" name="not_managed_in_stock"/></td></tr>';

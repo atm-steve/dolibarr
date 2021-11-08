@@ -1040,7 +1040,7 @@ if ($resql)
         }
 
 		// STOCK_DISABLE_OPTIM_LOAD can be set to force load_stock whatever is permissions on stock.
-		if ((!empty($conf->stock->enabled) && $user->rights->stock->lire && $search_type != 1) || !empty($conf->global->STOCK_DISABLE_OPTIM_LOAD))	// To optimize call of load_stock
+		if ((!empty($conf->stock->enabled) && $user->rights->stock->lire ) || !empty($conf->global->STOCK_DISABLE_OPTIM_LOAD))	// To optimize call of load_stock
 		{
 			if ($obj->fk_product_type != 1 || !empty($conf->global->STOCK_SUPPORTS_SERVICES))    // Not a service
 			{
@@ -1326,7 +1326,7 @@ if ($resql)
 		if (!empty($arrayfields['p.desiredstock']['checked']))
 		{
 			print '<td class="right">';
-			if ($obj->fk_product_type != 1)
+			if ($obj->fk_product_type != 1 || (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES)))
 			{
 				print $obj->desiredstock;
 			}
@@ -1337,10 +1337,13 @@ if ($resql)
 		if (!empty($arrayfields['p.stock']['checked']))
 		{
 			print '<td class="right">';
-			if ($obj->fk_product_type != 1)
+			if ($obj->fk_product_type != 1 || (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES)))
 			{
 				if ($obj->seuil_stock_alerte != '' && $product_static->stock_reel < (float) $obj->seuil_stock_alerte) print img_warning($langs->trans("StockLowerThanLimit", $obj->seuil_stock_alerte)).' ';
+				$test1= $product_static->stock_reel;
+				$test = price2num($product_static->stock_reel, 'MS');
 				print price2num($product_static->stock_reel, 'MS');
+
 			}
 			print '</td>';
 			if (!$i) $totalarray['nbfield']++;
@@ -1349,11 +1352,13 @@ if ($resql)
 		if (!empty($arrayfields['stock_virtual']['checked']))
 		{
 			print '<td class="right">';
-			if ($obj->fk_product_type != 1)
+			if ($obj->fk_product_type != 1 || (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES)))
 			{
 				if ($obj->seuil_stock_alerte != '' && $product_static->stock_theorique < (float) $obj->seuil_stock_alerte) print img_warning($langs->trans("StockLowerThanLimit", $obj->seuil_stock_alerte)).' ';
 				print price2num($product_static->stock_theorique, 'MS');
+
 			}
+
 			print '</td>';
 			if (!$i) $totalarray['nbfield']++;
 		}

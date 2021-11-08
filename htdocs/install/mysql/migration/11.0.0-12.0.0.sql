@@ -266,7 +266,7 @@ ALTER TABLE llx_accounting_account DROP COLUMN pcg_subtype;
 
 ALTER TABLE llx_product ADD COLUMN accountancy_code_buy_intra varchar(32) AFTER accountancy_code_buy;
 ALTER TABLE llx_product ADD COLUMN accountancy_code_buy_export varchar(32) AFTER accountancy_code_buy_intra;
-ALTER TABLE llx_product ADD COLUMN not_managed_in_stock tinyint DEFAULT 0 NOT NULL AFTER accountancy_code_buy_export;
+ALTER TABLE llx_product ADD COLUMN not_managed_in_stock tinyint DEFAULT NULL AFTER accountancy_code_buy_export;
 
 ALTER TABLE llx_entrepot ADD COLUMN fax varchar(20) DEFAULT NULL;
 ALTER TABLE llx_entrepot ADD COLUMN phone varchar(20) DEFAULT NULL;
@@ -356,4 +356,5 @@ INSERT INTO llx_c_shipment_mode (rowid,code,libelle,description,tracking,active)
 
 UPDATE llx_menu SET perms = '$user->rights->societe->creer' WHERE titre = 'MenuNewThirdParty' AND url = '/societe/card.php?mainmenu=companies&amp;action=create';
 UPDATE llx_menu SET url = '/societe/list.php?mainmenu=companies&amp;leftmenu=thirdparties' WHERE titre = 'List' AND url = '/societe/list.php?mainmenu=companies&amp;action=create';
+UPDATE llx_product set not_managed_in_stock = '0' WHERE not_managed_in_stock IS NULL
 

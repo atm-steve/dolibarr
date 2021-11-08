@@ -674,7 +674,7 @@ class Product extends CommonObject
                     $sql .= ", ".((!isset($this->finished) || $this->finished < 0 || $this->finished == '') ? 'null' : (int) $this->finished);
                     $sql .= ", ".((empty($this->status_batch) || $this->status_batch < 0) ? '0' : $this->status_batch);
                     $sql .= ", ".(!$this->fk_unit ? 'NULL' : $this->fk_unit) . ',';
-					$sql .= " " . (empty($this->not_managed_in_stock) ? 0 : $this->not_managed_in_stock)  ;
+					$sql .= " " . ( (int) $this->not_managed_in_stock)  ;
                     $sql .= ")";
 
                     dol_syslog(get_class($this)."::Create", LOG_DEBUG);
