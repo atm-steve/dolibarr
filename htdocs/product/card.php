@@ -346,7 +346,13 @@ if (empty($reshook))
 			}else{
 				// default behavior for a product
 				// we prepare product to be managed in future if user activate the module stock
-				$object->not_managed_in_stock = 0;
+				if ($object->type != 1){
+					$object->not_managed_in_stock = 0;
+				}else{
+					// defualt service
+					$object->not_managed_in_stock = 1;
+				}
+
 			}
 
 
@@ -2067,8 +2073,8 @@ else
 
 
 				// view not_managed_in_stock
-				print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-				$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Not_Managed') : $langs->trans('Managed');
+				print '<tr><td valign="top">' . $form->textwithpicto($langs->trans("not_managed_in_stock"), $langs->trans('not_managed_in_stock_description'))   . '</td>';
+				$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Yes') : $langs->trans('No');
 				print '<td>'. $checked .'</td></tr>';
 
             }
@@ -2114,8 +2120,8 @@ else
 
 				// view not_managed_in_stock
 				if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ) {
-					print '<tr><td valign="top">' . $langs->trans("not_managed_in_stock") . '</td>';
-					$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Not_Managed') : $langs->trans('Managed');
+					print '<tr><td valign="top">' . $form->textwithpicto($langs->trans("not_managed_in_stock"), $langs->trans('not_managed_in_stock_description')) . '</td>';
+					$checked = $object->not_managed_in_stock == 1 ? $langs->trans('Yes') : $langs->trans('No');
 					print '<td>'. $checked .'</td></tr>';
 				}
 

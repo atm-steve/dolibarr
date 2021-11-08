@@ -385,5 +385,4 @@ ProductsPricePerCustomer=Product prices per customers
 ProductSupplierExtraFields=Additional Attributes (Supplier Prices)
 DeleteLinkedProduct=Delete the child product linked to the combination
 not_managed_in_stock=not managed in stock
-Managed=managed
-Not_Managed=unmanaged
+

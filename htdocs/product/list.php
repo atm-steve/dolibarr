@@ -215,7 +215,7 @@ $arrayfields = array(
 	'p.tms'=>array('label'=>$langs->trans("DateModificationShort"), 'checked'=>0, 'position'=>500),
 	'p.tosell'=>array('label'=>$langs->trans("Status").' ('.$langs->trans("Sell").')', 'checked'=>1, 'position'=>1000),
 	'p.tobuy'=>array('label'=>$langs->trans("Status").' ('.$langs->trans("Buy").')', 'checked'=>1, 'position'=>1000),
-	
+
 );
 
 if (!empty($conf->stock->enabled)){
@@ -1307,7 +1307,7 @@ if ($resql)
 		if (!empty($arrayfields['p.not_managed_in_stock']['checked']))
 		{
 			print '<td class="nowrap center">';
-			print ($product_static->not_managed_in_stock == "1" ) ? $langs->trans("Not_Managed") : $langs->trans("Managed")  ;
+			print ($product_static->not_managed_in_stock == "1" ) ? $langs->trans("Yes") : $langs->trans("No")  ;
 			print '</td>';
 		}
 
