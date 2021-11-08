@@ -1176,8 +1176,10 @@ if ($action == 'create')
 	                    $product_static->status_batch = $line->product_tobatch;
 	                    $text = $product_static->getNomUrl(1);
 	                    $text .= ' - '.(!empty($line->label) ? $line->label : $line->product_label);
+						$text .= $product->not_managed_in_stock ? ' - '.$langs->trans('stock_disabled') : ' - '.$langs->trans('stock_enabled') ;
 	                    $description = ($conf->global->PRODUIT_DESC_IN_FORM ? '' : dol_htmlentitiesbr($line->desc));
-	                    print $form->textwithtooltip($text, $description, 3, '', '', $i);
+						$description .= $product->not_managed_in_stock ? $langs->trans('stock_disabled') : $langs->trans('stock_enabled') ;
+						print $form->textwithtooltip($text, $description, 3, '', '', $i);
 
 	                    // Show range
 	                    print_date_range($db->jdate($line->date_start), $db->jdate($line->date_end));
@@ -1430,10 +1432,14 @@ if ($action == 'create')
 										print '<td class="left">';
 										if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES))
 										{
-											print $tmpwarehouseObject->getNomUrl(0).' ';
+											if ($product->not_managed_in_stock == 0){
+												print $tmpwarehouseObject->getNomUrl(0).' ';
+												print '<!-- Show details of stock -->';
+												print '('.$stock.')';
+											}else{
+												print img_warning().' '.$langs->trans('stock_disabled') ;
+											}
 
-											print '<!-- Show details of stock -->';
-											print '('.$stock.')';
 										}
 										else
 										{
@@ -1541,17 +1547,23 @@ if ($action == 'create')
 
 							print '<!-- line not shown yet, we show it -->';
 							print '<tr class="oddeven"><td colspan="3"></td><td class="center">';
-
-							if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES))
+							// add test on conf->stock->enabled // when we disabled stock module the STOCK_SUPPORTS_SERVICES still here in $conf if not disabled !
+							if ($line->product_type == Product::TYPE_PRODUCT || (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES)))
 							{
 							    $disabled = '';
 						        if (!empty($conf->productbatch->enabled) && $product->hasbatch())
 						        {
 	                                $disabled = 'disabled="disabled"';
 							    }
-							    if ($warehouse_selected_id <= 0) {		// We did not force a given warehouse, so we won't have no warehouse to change qty.
+								// We did not force a given warehouse, so we won't have no warehouse to change qty.
+								// but we have to be sure the [product/service]  is not managed in stock too
+							    if ($warehouse_selected_id <= 0 ) {
 							    	$disabled = 'disabled="disabled"';
 							    }
+								// finally we overwrite the input with the product status not_managed_in_stock
+								if ( $product->not_managed_in_stock == 1){
+									$disabled = '';
+								}
 	    						print '<input name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="0"'.($disabled ? ' '.$disabled : '').'> ';
 							}
 							else
@@ -1561,7 +1573,7 @@ if ($action == 'create')
 							print '</td>';
 
 							print '<td class="left">';
-							if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES))
+							if ($line->product_type == Product::TYPE_PRODUCT || ( !empty($conf->stock->enabled) && !empty($conf->global->STOCK_SUPPORTS_SERVICES) ))
 							{
 	    						if ($warehouse_selected_id > 0)
 	    						{
@@ -1571,7 +1583,15 @@ if ($action == 'create')
 	    						}
 	    						else
 	    						{
-	    						    if ($line->fk_product) print img_warning().' '.$langs->trans("StockTooLow");
+	    						    if ($line->fk_product){
+										if ($product->not_managed_in_stock == 0){
+
+											print img_warning().' '.$langs->trans("StockTooLow");
+										}else{
+											print img_warning().' '.$langs->trans('stock_disabled') ;
+										}
+
+									}
 	    						    else print '';
 	    						}
 							}
