@@ -68,6 +68,7 @@ $search_tobatch = GETPOST("search_tobatch", 'int');
 $search_accountancy_code_sell = GETPOST("search_accountancy_code_sell", 'alpha');
 $search_accountancy_code_sell_intra = GETPOST("search_accountancy_code_sell_intra", 'alpha');
 $search_accountancy_code_sell_export = GETPOST("search_accountancy_code_sell_export", 'alpha');
+$search_not_managed_in_stock = GETPOST("search_not_managed_in_stock", 'int');
 $search_accountancy_code_buy = GETPOST("search_accountancy_code_buy", 'alpha');
 $search_accountancy_code_buy_intra = GETPOST("search_accountancy_code_buy_intra", 'alpha');
 $search_accountancy_code_buy_export = GETPOST("search_accountancy_code_buy_export", 'alpha');
@@ -798,6 +799,12 @@ if ($resql)
 		print '&nbsp;';
 		print '</td>';
 	}
+	// Managed_in_stock
+	$array = array('-1'=>'&nbsp;', '0'=>$langs->trans('No'), '1'=>$langs->trans('Yes'));
+	if (!empty($arrayfields['p.not_managed_in_stock']['checked'])){
+		print '<td class="liste_titre center">'.$form->selectarray('search_not_managed_in_stock', $array, $search_not_managed_in_stock).'</td>';
+	}
+
 	// Desired stock
 	if (!empty($arrayfields['p.desiredstock']['checked']))
 	{
@@ -819,13 +826,6 @@ if ($resql)
 	if (!empty($arrayfields['p.accountancy_code_buy']['checked']))		   print '<td class="liste_titre"><input class="flat maxwidth75" type="text" name="search_accountancy_code_buy" value="'.dol_escape_htmltag($search_accountancy_code_buy).'"></td>';
 	if (!empty($arrayfields['p.accountancy_code_buy_intra']['checked']))   print '<td class="liste_titre"><input class="flat maxwidth75" type="text" name="search_accountancy_code_buy_intra" value="'.dol_escape_htmltag($search_accountancy_code_buy_intra).'"></td>';
 	if (!empty($arrayfields['p.accountancy_code_buy_export']['checked']))  print '<td class="liste_titre"><input class="flat maxwidth75" type="text" name="search_accountancy_code_buy_export" value="'.dol_escape_htmltag($search_accountancy_code_buy_export).'"></td>';
-
-
-	// Managed_in_stock
-	$array = array('-1'=>'&nbsp;', '0'=>$langs->trans('Not_Managed'), '1'=>$langs->trans('Managed'));
-	if (!empty($arrayfields['p.not_managed_in_stock']['checked'])){
-		print '<td class="liste_titre center">'.$form->selectarray('search_notmanaged_in_stock', $array, $search_not_managed_in_stock).'</td>';
-	}
 
 	// Extra fields
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
