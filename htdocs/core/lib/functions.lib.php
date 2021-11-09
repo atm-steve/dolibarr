@@ -42,6 +42,30 @@ include_once DOL_DOCUMENT_ROOT.'/core/lib/json.lib.php';
 
 
 /**
+ * Return dolibarr global constant string value
+ * @param string $key key to return value, return '' if not set
+ * @return string
+ */
+function getDolGlobalString($key)
+{
+	global $conf;
+	// return $conf->global->$key ?? '';
+	return (string) (empty($conf->global->$key) ? '' : $conf->global->$key);
+}
+
+/**
+ * Return dolibarr global constant int value
+ * @param string $key key to return value, return 0 if not set
+ * @return int
+ */
+function getDolGlobalInt($key)
+{
+	global $conf;
+	// return $conf->global->$key ?? 0;
+	return (int) (empty($conf->global->$key) ? 0 : $conf->global->$key);
+}
+
+/**
  * Return a DoliDB instance (database handler).
  *
  * @param   string	$type		Type of database (mysql, pgsql...)
@@ -7754,11 +7778,12 @@ function complete_head_from_modules($conf, $langs, $object, &$head, &$h, $type, 
 	{
 		$parameters = array('object' => $object, 'mode' => $mode, 'head' => $head);
 		$reshook = $hookmanager->executeHooks('completeTabsHead', $parameters);
-		if ($reshook > 0)
-		{
+		if ($reshook > 0) {		// Hook ask to replace completely the array
 			$head = $hookmanager->resArray;
-			$h = count($head);
+		} else {				// Hook
+			$head = array_merge($head, $hookmanager->resArray);
 		}
+		$h = count($head);
 	}
 }
 
