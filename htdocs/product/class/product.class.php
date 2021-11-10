@@ -428,6 +428,8 @@ class Product extends CommonObject
     const TYPE_STOCKKIT = 3;
 
 	const NOT_MANAGED_IN_STOCK = 1;
+	const DISABLED_STOCK = 1;
+	const ENABLED_STOCK = 0;
 
     /**
      *  Constructor
