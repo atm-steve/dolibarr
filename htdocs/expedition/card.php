@@ -1215,7 +1215,6 @@ if ($action == 'create')
 	                    $product_static->status_batch = $line->product_tobatch;
 	                    $text = $product_static->getNomUrl(1);
 	                    $text .= ' - '.(!empty($line->label) ? $line->label : $line->product_label);
-						//$text .= $product->not_managed_in_stock  == Product::DISABLED_STOCK ? ' - '.$langs->trans('stock_disabled') : ' - '.$langs->trans('stock_enabled') ;
 	                    $description = ($conf->global->PRODUIT_DESC_IN_FORM ? '' : dol_htmlentitiesbr($line->desc));
 						$description .= $product->not_managed_in_stock ? $langs->trans('stock_disabled') : $langs->trans('stock_enabled') ;
 						print $form->textwithtooltip($text, $description, 3, '', '', $i);
