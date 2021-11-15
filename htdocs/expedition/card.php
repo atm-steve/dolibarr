@@ -1076,6 +1076,9 @@ if ($action == 'create')
 			// Load shipments already done for same order
 			$object->loadExpeditions();
 
+
+			$alreadyQtyBatchSetted = $alreadyQtySetted = array();
+
 			if ($numAsked)
 			{
 				print '<tr class="liste_titre">';
@@ -1382,11 +1385,36 @@ if ($action == 'create')
 									// Quantity to send
 									print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'>';
 									print '<td colspan="3" ></td><td class="center"><!-- qty to ship (no lot management for product line indiceAsked='.$indiceAsked.') -->';
-									if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES))
-									{
-										print '<input name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'" type="text" size="4" value="'.$deliverableQty.'">';
+									if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES)) {
+										if (isset($alreadyQtySetted[$line->fk_product][intval($warehouse_id)])) {
+											$deliverableQty = min($quantityToBeDelivered, $stock - $alreadyQtySetted[$line->fk_product][intval($warehouse_id)]);
+										} else {
+											if (!isset($alreadyQtySetted[$line->fk_product])) {
+												$alreadyQtySetted[$line->fk_product] = array();
+											}
+
+											$deliverableQty = min($quantityToBeDelivered, $stock);
+										}
+
+										if ($deliverableQty < 0) $deliverableQty = 0;
+
+										$tooltip = '';
+										if (!empty($alreadyQtySetted[$line->fk_product][intval($warehouse_id)])) {
+											$tooltip = ' class="classfortooltip" title="'.$langs->trans('StockQuantitiesAlreadyAllocatedOnPreviousLines').' : '.$alreadyQtySetted[$line->fk_product][intval($warehouse_id)].'" ';
+										}
+
+										$alreadyQtySetted[$line->fk_product][intval($warehouse_id)] = $deliverableQty + $alreadyQtySetted[$line->fk_product][intval($warehouse_id)];
+
+										$inputName = 'qtyl'.$indiceAsked.'_'.$subj;
+										if (GETPOSTISSET($inputName)) {
+											$deliverableQty = GETPOST($inputName, 'int');
+										}
+
+										print '<input '.$tooltip.' name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'" type="text" size="4" value="'.$deliverableQty.'">';
 										print '<input name="ent1'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$warehouse_id.'">';
-									} else print $langs->trans("NA");
+									} else {
+										print $langs->trans("NA");
+									}
 									print '</td>';
 
 									// Stock
@@ -1431,7 +1459,7 @@ if ($action == 'create')
 										print '<tr class"oddeven"><td>';
 										print "&nbsp; &nbsp; &nbsp; ->
 										<a href=\"".DOL_URL_ROOT."/product/card.php?id=".$value['id']."\">".$value['fullpath']."
-										</a> (".$value['nb'].")</td><td class=\"center\"> ".$value['nb_total']."</td><td>&nbsp</td><td>&nbsp</td>
+										</a> (".$value['nb'].")</td><td class=\"center\"> ".$value['nb_total']."</td><td>&nbsp;</td><td>&nbsp;</td>
 										<td class=\"center\">".$value['stock']." ".$img."</td>";
 										print "</tr>";
 									}
@@ -1451,24 +1479,45 @@ if ($action == 'create')
 							foreach ($product->stock_warehouse as $warehouse_id=>$stock_warehouse)
 							{
 								if (($stock_warehouse->real > 0) && (count($stock_warehouse->detail_batch))) {
-									foreach ($stock_warehouse->detail_batch as $dbatch)
-									{
-										$nbofsuggested++;
-									}
+									$nbofsuggested+=count($stock_warehouse->detail_batch);
 								}
 							}
-							foreach ($product->stock_warehouse as $warehouse_id=>$stock_warehouse)
-							{
+
+							foreach ($product->stock_warehouse as $warehouse_id => $stock_warehouse) {
 								$tmpwarehouseObject->fetch($warehouse_id);
 								if (($stock_warehouse->real > 0) && (count($stock_warehouse->detail_batch))) {
-									foreach ($stock_warehouse->detail_batch as $dbatch)
-									{
-										//var_dump($dbatch);
+									foreach ($stock_warehouse->detail_batch as $dbatch) {
 										$batchStock = + $dbatch->qty; // To get a numeric
-										$deliverableQty = min($quantityToBeDelivered, $batchStock);
+										if (isset($alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch][intval($warehouse_id)])) {
+											$deliverableQty = min($quantityToBeDelivered, $batchStock - $alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch][intval($warehouse_id)]);
+										} else {
+											if (!isset($alreadyQtyBatchSetted[$line->fk_product])) {
+												$alreadyQtyBatchSetted[$line->fk_product] = array();
+											}
+
+											if (!isset($alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch])) {
+												$alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch] = array();
+											}
+
+											$deliverableQty = min($quantityToBeDelivered, $batchStock);
+										}
+
 										if ($deliverableQty < 0) $deliverableQty = 0;
+
+										$inputName = 'qtyl'.$indiceAsked.'_'.$subj;
+										if (GETPOSTISSET($inputName)) {
+											$deliverableQty = GETPOST($inputName, 'int');
+										}
+
+										$tooltipClass = $tooltipTitle = '';
+										if (!empty($alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch][intval($warehouse_id)])) {
+											$tooltipClass = ' classfortooltip';
+											$tooltipTitle = $langs->trans('StockQuantitiesAlreadyAllocatedOnPreviousLines').' : '.$alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch][intval($warehouse_id)];
+										}
+										$alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch][intval($warehouse_id)] = $deliverableQty + $alreadyQtyBatchSetted[$line->fk_product][$dbatch->batch][intval($warehouse_id)];
+
 										print '<!-- subj='.$subj.'/'.$nbofsuggested.' --><tr '.((($subj + 1) == $nbofsuggested) ? $bc[$var] : '').'><td colspan="3"></td><td class="center">';
-										print '<input class="qtyl" name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'_'.$subj.'" type="text" size="4" value="'.$deliverableQty.'">';
+										print '<input class="qtyl '.$tooltipClass.'" title="'.$tooltipTitle.'" name="'.$inputName.'" id="'.$inputName.'" type="text" size="4" value="'.$deliverableQty.'">';
 										print '</td>';
 										print '<td class="left">';
 
@@ -1480,8 +1529,11 @@ if ($action == 'create')
 										//print '|'.$line->fk_product.'|'.$dbatch->batch.'|<br>';
 										print $langs->trans("Batch").': ';
 										$result = $productlotObject->fetch(0, $line->fk_product, $dbatch->batch);
-										if ($result > 0) print $productlotObject->getNomUrl(1);
-										else print 'TableLotIncompleteRunRepairWithParamStandardEqualConfirmed';
+										if ($result > 0) {
+											print $productlotObject->getNomUrl(1);
+										} else {
+											print 'TableLotIncompleteRunRepairWithParamStandardEqualConfirmed';
+										}
 										print ' ('.$dbatch->qty.')';
 										$quantityToBeDelivered -= $deliverableQty;
 										if ($quantityToBeDelivered < 0)
@@ -1495,8 +1547,7 @@ if ($action == 'create')
 								}
 							}
 						}
-						if ($subj == 0) // Line not shown yet, we show it
-						{
+						if ($subj == 0) { // Line not shown yet, we show it
 							$warehouse_selected_id = GETPOST('entrepot_id', 'int');
 
 							print '<!-- line not shown yet, we show it -->';
@@ -1527,8 +1578,11 @@ if ($action == 'create')
 									$warehouseObject->fetch($warehouse_selected_id);
 									print img_warning().' '.$langs->trans("NoProductToShipFoundIntoStock", $warehouseObject->label);
 								} else {
-									if ($line->fk_product) print img_warning().' '.$langs->trans("StockTooLow");
-									else print '';
+									if ($line->fk_product) {
+										print img_warning().' '.$langs->trans("StockTooLow");
+									} else {
+										print '';
+									}
 								}
 							} else {
 								print $langs->trans("Service");
@@ -1662,8 +1716,11 @@ if ($action == 'create')
 		// Call Hook formConfirm
 		$parameters = array('formConfirm' => $formconfirm);
 		$reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-		if (empty($reshook)) $formconfirm .= $hookmanager->resPrint;
-		elseif ($reshook > 0) $formconfirm = $hookmanager->resPrint;
+		if (empty($reshook)) {
+			$formconfirm .= $hookmanager->resPrint;
+		} elseif ($reshook > 0) {
+			$formconfirm = $hookmanager->resPrint;
+		}
 
 		// Print form confirm
 		print $formconfirm;
@@ -2358,6 +2415,7 @@ if ($action == 'create')
 						print '<!-- case edit 1 -->';
 						$line = new ExpeditionLigne($db);
 						$entrepot_id = 0;
+						$entrepotFilter = 0; //$entrepot_id;
 						foreach ($lines[$i]->detail_batch as $detail_batch)
 						{
 							print '<tr>';
@@ -2372,7 +2430,7 @@ if ($action == 'create')
 
 							$entrepot_id = !empty($detail_batch->entrepot_id)?$detail_batch->entrepot_id:$lines[$i]->entrepot_id;
 
-							print '<td>'.$formproduct->selectLotStock($detail_batch->fk_origin_stock, 'batchl'.$detail_batch->fk_expeditiondet.'_'.$detail_batch->fk_origin_stock, '', 1, 0, $lines[$i]->fk_product, $entrepot_id).'</td>';
+							print '<td>'.$formproduct->selectLotStock($detail_batch->fk_origin_stock, 'batchl'.$detail_batch->fk_expeditiondet.'_'.$detail_batch->fk_origin_stock, '', 1, 0, $lines[$i]->fk_product, $entrepotFilter).'</td>';
 							print '</tr>';
 						}
 						// add a 0 qty lot row to be able to add a lot
@@ -2380,7 +2438,7 @@ if ($action == 'create')
 						// Qty to ship or shipped
 						print '<td><input class="qtyl" name="qtyl'.$line_id.'_0[]" type="text" size="4" value="0"></td>';
 						// Batch number managment
-						print '<td>'.$speAmaFormProduct->selectLotStock('', 'batchl'.$line_id.'_0[]', '', 1, 0, $lines[$i]->fk_product, $entrepot_id, array(), '', 1).'</td>';
+						print '<td>'.$speAmaFormProduct->selectLotStock('', 'batchl'.$line_id.'_0[]', '', 1, 0, $lines[$i]->fk_product, $entrepotFilter, array(), '', 1).'</td>';
 
 						print '</tr>';
 					} elseif (!empty($conf->stock->enabled))
