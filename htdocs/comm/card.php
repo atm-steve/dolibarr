@@ -639,9 +639,9 @@ if ($object->id > 0) {
 
 	print "</table>";
 
-	// Prospection level and status
-	if ($object->client == 2 || $object->client == 3) {
-		print '<br>';
+	if ($object->client == 2 || $object->client == 3 || $object->client == 1)
+	{
+    	print '<br>';
 
 		print '<div class="underbanner clearboth"></div>';
 		print '<table class="border centpercent tableforfield">';

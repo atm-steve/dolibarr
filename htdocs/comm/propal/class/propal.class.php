@@ -354,7 +354,10 @@ class Propal extends CommonObject
 	 * Billed or processed quote
 	 */
 	const STATUS_BILLED = 4; // Todo rename into STATUS_CLOSE ?
-
+	/**
+	 * Not feasible
+	 */
+	const STATUS_NOTFEASIBLE = 5;
 
 	/**
 	 *	Constructor
@@ -371,7 +374,8 @@ class Propal extends CommonObject
 
 		$this->socid = $socid;
 		$this->id = $propalid;
-
+        	$this->labelstatut[5]=(! empty($conf->global->PROPAL_STATUS_NOTFEASIBLE_LABEL) ? $conf->global->PROPAL_STATUS_NOTFEASIBLE_LABEL : $langs->trans("PropalStatusNotFeasible"));
+        	$this->labelstatut_short[5]=(! empty($conf->global->PROPAL_STATUS_NOTFEASIBLESHORT_LABEL) ? $conf->global->PROPAL_STATUS_NOTFEASIBLESHORT_LABEL : $langs->trans("PropalStatusNotFeasibleShort"));
 		$this->duree_validite = ((int) $conf->global->PROPALE_VALIDITY_DURATION);
 	}
 
@@ -3252,12 +3256,15 @@ class Propal extends CommonObject
 			$this->labelStatus[2] = $langs->transnoentitiesnoconv("PropalStatusSigned");
 			$this->labelStatus[3] = $langs->transnoentitiesnoconv("PropalStatusNotSigned");
 			$this->labelStatus[4] = $langs->transnoentitiesnoconv("PropalStatusBilled");
+$this->labelStatus[5] = $langs->transnoentitiesnoconv("PropalStatusNotFeasible");
 			$this->labelStatusShort[0] = $langs->transnoentitiesnoconv("PropalStatusDraftShort");
 			$this->labelStatusShort[1] = $langs->transnoentitiesnoconv("PropalStatusValidatedShort");
 			$this->labelStatusShort[2] = $langs->transnoentitiesnoconv("PropalStatusSignedShort");
 			$this->labelStatusShort[3] = $langs->transnoentitiesnoconv("PropalStatusNotSignedShort");
 			$this->labelStatusShort[4] = $langs->transnoentitiesnoconv("PropalStatusBilledShort");
+$this->labelStatusShort[5] = $langs->transnoentitiesnoconv("PropalStatusNotFeasibleShort");
 		}
+
 
 		$statusType = '';
 		if ($status == self::STATUS_DRAFT) {
@@ -3271,6 +3278,7 @@ class Propal extends CommonObject
 		} elseif ($status == self::STATUS_BILLED) {
 			$statusType = 'status6';
 		}
+		if ($status==self::STATUS_NOTFEASIBLE) $statusType='statut5';
 
 		return dolGetStatus($this->labelStatus[$status], $this->labelStatusShort[$status], '', $statusType, $mode);
 	}

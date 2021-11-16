@@ -1492,6 +1492,7 @@ class Societe extends CommonObject
 					unset($this->state);
 				}
 
+				if(empty($this->cond_reglement_id)) $this->setPaymentTerms(2); //30 jours
 				$nbrowsaffected = $this->db->affected_rows($resql);
 
 				if (!$error && $nbrowsaffected) {
@@ -3212,7 +3213,7 @@ class Societe extends CommonObject
 	 */
 	public function check_codeclient()
 	{
-		// phpcs:enable
+		return 0;
 		global $conf;
 		if (!empty($conf->global->SOCIETE_CODECLIENT_ADDON)) {
 			$module = $conf->global->SOCIETE_CODECLIENT_ADDON;
@@ -3253,7 +3254,7 @@ class Societe extends CommonObject
 	 */
 	public function check_codefournisseur()
 	{
-		// phpcs:enable
+		return 0;
 		global $conf;
 		if (!empty($conf->global->SOCIETE_CODECLIENT_ADDON)) {
 			$module = $conf->global->SOCIETE_CODECLIENT_ADDON;

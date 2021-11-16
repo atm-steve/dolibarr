@@ -52,6 +52,7 @@ $langs->loadLangs(array('companies', 'propal', 'compta', 'bills', 'orders', 'pro
 if (!empty($conf->expedition->enabled)) {
 	$langs->loadLangs(array('sendings'));
 }
+$langs->load('cliceribois@cliceribois');
 
 $socid = GETPOST('socid', 'int');
 

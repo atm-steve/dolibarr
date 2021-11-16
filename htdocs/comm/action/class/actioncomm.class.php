@@ -442,6 +442,10 @@ class ActionComm extends CommonObject
 		if (!empty($this->datep) && !empty($this->datef) && $this->datep > $this->datef) {
 			$this->datef = $this->datep;
 		}
+
+		/** SPE CERIBOIS */
+		if ( !empty($this->datep) && empty($this->datef)) $this->datef=$this->datep;
+		/** FIN SPE */
 		//if (! empty($this->date)  && ! empty($this->dateend) && $this->date > $this->dateend) $this->dateend=$this->date;
 		if (!isset($this->fk_project) || $this->fk_project < 0) {
 			$this->fk_project = 0;

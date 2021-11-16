@@ -925,7 +925,7 @@ class Task extends CommonObject
 				$error = 0;
 
 				$obj = $this->db->fetch_object($resql);
-
+/**
 				if ((!$obj->public) && (is_object($userp))) {	// If not public project and we ask a filter on project owned by a user
 					if (!$this->getUserRolesForProjectsOrTasks($userp, 0, $obj->projectid, 0)) {
 						$error++;
@@ -935,7 +935,7 @@ class Task extends CommonObject
 					if (!$this->getUserRolesForProjectsOrTasks(0, $usert, $obj->projectid, $obj->taskid)) {
 						$error++;
 					}
-				}
+				}*/
 
 				if (!$error) {
 					$tasks[$i] = new Task($this->db);
