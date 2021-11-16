@@ -1433,6 +1433,21 @@ function pdf_getlinedesc($object, $i, $outputlangs, $hideref = 0, $hidedesc = 0,
 			if ($detail->sellby) $dte[] = $outputlangs->transnoentitiesnoconv('printSellby', dol_print_date($detail->sellby, $format, false, $outputlangs));
 			if ($detail->batch) $dte[] = $outputlangs->transnoentitiesnoconv('printBatch', $detail->batch);
 			$dte[] = $outputlangs->transnoentitiesnoconv('printQty', $detail->qty);
+
+			/** ***************************************************
+			 * ***********  SPE AMA *******************************
+			 * *************************************************** */
+			// Ajout des numéro d'inventaire AMA à la description de la ligne sur PDF
+			include_once dol_buildpath('cliama/lib/cliama.lib.php');
+			if (function_exists('getInventoryCodeForBatch')){
+				$outputlangs->load("cliama@cliama");
+				$inventoryCode = getInventoryCodeForBatch($object->lines[$i]->fk_product, $detail->batch);
+				if (!empty($inventoryCode)){ $dte[] = $outputlangs->transnoentitiesnoconv('InventoryNumber', $inventoryCode); }
+			}
+			/** ***************************************************
+			 * ***********  FIN SPE AMA ***************************
+			 * *************************************************** */
+
 			$libelleproduitservice .= "__N__  ".implode(" - ", $dte);
 		}
 	}
