@@ -117,7 +117,7 @@ $search_availability = GETPOST('search_availability', 'int');
 $search_categ_cus = GETPOST("search_categ_cus", 'int');
 $search_fk_cond_reglement = GETPOST("search_fk_cond_reglement", 'int');
 $search_fk_shipping_method = GETPOST("search_fk_shipping_method", 'int');
-$search_fk_input_reason = GETPOST("search_fk_input_reason", 'int');
+$search_input_reason = GETPOST("search_input_reason");
 $search_fk_mode_reglement = GETPOST("search_fk_mode_reglement", 'int');
 $search_btn = GETPOST('button_search', 'alpha');
 $search_remove_btn = GETPOST('button_removefilter', 'alpha');
@@ -207,7 +207,7 @@ $arrayfields = array(
 	'p.date_livraison'=>array('label'=>"DeliveryDate", 'checked'=>0),
 	'ava.rowid'=>array('label'=>"AvailabilityPeriod", 'checked'=>0),
 	'p.fk_shipping_method'=>array('label'=>"SendingMethod", 'checked'=>0, 'enabled'=>!empty($conf->expedition->enabled)),
-	'p.fk_input_reason'=>array('label'=>"Origin", 'checked'=>0, 'enabled'=>1),
+	'p.fk_input_reason'=>array('label'=>"Origin", 'checked'=>1, 'enabled'=>1),
 	'p.fk_cond_reglement'=>array('label'=>"PaymentConditionsShort", 'checked'=>0),
 	'p.fk_mode_reglement'=>array('label'=>"PaymentMode", 'checked'=>0),
 	'p.total_ht'=>array('label'=>"AmountHT", 'checked'=>1),
@@ -329,7 +329,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_categ_cus = 0;
 	$search_fk_cond_reglement = '';
 	$search_fk_shipping_method = '';
-	$search_fk_input_reason = '';
+	$search_input_reason = '';
 	$search_fk_mode_reglement = '';
 }
 if ($object_statut != '') {
@@ -643,8 +643,13 @@ if ($search_fk_cond_reglement > 0) {
 if ($search_fk_shipping_method > 0) {
 	$sql .= " AND p.fk_shipping_method = ".((int) $search_fk_shipping_method);
 }
-if ($search_fk_input_reason > 0) {
-	$sql .= " AND p.fk_input_reason = ".((int) $search_fk_input_reason);
+if (is_array($search_input_reason))
+{
+	$sql.= " AND p.fk_input_reason IN (".implode(', ', $search_input_reason).")";
+}
+elseif($search_input_reason)
+{
+	$sql.= " AND p.fk_input_reason = ".$search_input_reason;
 }
 if ($search_fk_mode_reglement > 0) {
 	$sql .= " AND p.fk_mode_reglement = ".((int) $search_fk_mode_reglement);
@@ -870,8 +875,14 @@ if ($resql) {
 	if ($search_fk_shipping_method > 0) {
 		$param .= '&search_fk_shipping_method='.urlencode($search_fk_shipping_method);
 	}
-	if ($search_fk_input_reason > 0) {
-		$param .= '&search_fk_input_reason='.urlencode($search_fk_input_reason);
+	if ($search_input_reason != '') {
+		if(is_array($search_input_reason)) {
+			foreach($search_input_reason as $reason) {
+				$param.='&search_input_reason[]='.urlencode($reason);
+			}
+		} else {
+			$param.='&search_input_reason='.urlencode($search_input_reason);
+		}
 	}
 	if ($search_fk_mode_reglement > 0) {
 		$param .= '&search_fk_mode_reglement='.urlencode($search_fk_mode_reglement);
@@ -1135,9 +1146,19 @@ if ($resql) {
 		print '</td>';
 	}
 	// Source - Input reason
-	if (!empty($arrayfields['p.fk_input_reason']['checked'])) {
-		print '<td class="liste_titre">';
-		$form->selectInputReason($search_fk_input_reason, 'search_fk_input_reason', '', 1, 'maxwidth125', 1);
+	if (! empty($arrayfields['p.fk_input_reason']['checked']))
+	{
+		$form->loadCacheInputReason();
+
+		$TOrigins = array();
+
+		foreach($form->cache_demand_reason as $origin) {
+			$TOrigins[$origin['id']] = $origin['label'];
+		}
+
+		// Proposal origin
+		print '<td class="liste_titre" align="right">';
+		print $form::multiselectarray('search_input_reason', $TOrigins, $search_input_reason);
 		print '</td>';
 	}
 	// Payment term
