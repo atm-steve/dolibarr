@@ -1056,6 +1056,7 @@ class Propal extends CommonObject
 		$sql .= ", datep";
 		$sql .= ", datec";
 		$sql .= ", ref";
+		$sql .= ", ref_ext";
 		$sql .= ", fk_user_author";
 		$sql .= ", note_private";
 		$sql .= ", note_public";
@@ -1088,6 +1089,7 @@ class Propal extends CommonObject
 		$sql .= ", '".$this->db->idate($this->date)."'";
 		$sql .= ", '".$this->db->idate($now)."'";
 		$sql .= ", '(PROV)'";
+		$sql .= ", '".$this->db->escape($this->ref_ext)."'";
 		$sql .= ", ".($user->id > 0 ? "'".$user->id."'" : "NULL");
 		$sql .= ", '".$this->db->escape($this->note_private)."'";
 		$sql .= ", '".$this->db->escape($this->note_public)."'";
@@ -1468,7 +1470,7 @@ class Propal extends CommonObject
 	 */
     public function fetch($rowid, $ref = '', $ref_ext = '')
 	{
-		$sql = "SELECT p.rowid, p.ref, p.entity, p.remise, p.remise_percent, p.remise_absolue, p.fk_soc";
+		$sql = "SELECT p.rowid, p.ref, p.ref_ext, p.entity, p.remise, p.remise_percent, p.remise_absolue, p.fk_soc";
 		$sql .= ", p.total, p.tva, p.localtax1, p.localtax2, p.total_ht";
 		$sql .= ", p.datec";
 		$sql .= ", p.date_valid as datev";
@@ -1507,6 +1509,11 @@ class Propal extends CommonObject
 			$sql .= " WHERE p.entity IN (".getEntity('propal').")"; // Dont't use entity if you use rowid
 			$sql .= " AND p.ref='".$this->db->escape($ref)."'";
 		}
+
+		elseif ($ref_ext){
+			$sql .= " WHERE p.entity IN (".getEntity('propal').")"; // Dont't use entity if you use rowid
+			$sql .= " AND p.ref_ext='".$this->db->escape($ref_ext)."'";
+		}
 		else $sql .= " WHERE p.rowid=".$rowid;
 
 		dol_syslog(get_class($this)."::fetch", LOG_DEBUG);
@@ -1521,6 +1528,7 @@ class Propal extends CommonObject
 				$this->entity               = $obj->entity;
 
 				$this->ref                  = $obj->ref;
+				$this->ref_ext              = $obj->ref_ext;
 				$this->ref_client           = $obj->ref_client;
 				$this->remise               = $obj->remise;
 				$this->remise_percent       = $obj->remise_percent;
