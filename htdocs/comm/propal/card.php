@@ -656,7 +656,7 @@ if (empty($reshook)) {
 		if (!(GETPOST('statut', 'int') > 0)) {
 			setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("CloseAs")), null, 'errors');
 			$action = 'closeas';
-		} elseif (GETPOST('statut', 'int') == $object::STATUS_SIGNED || GETPOST('statut', 'int') == $object::STATUS_NOTSIGNED) {
+		} elseif (GETPOST('statut', 'int') == $object::STATUS_SIGNED || GETPOST('statut', 'int') == $object::STATUS_NOTSIGNED || GETPOST('statut', 'int') == $object::STATUS_NOTFEASIBLE) {
 			// prevent browser refresh from closing proposal several times
 			if ($object->statut == $object::STATUS_VALIDATED) {
 				$db->begin();
