@@ -28,7 +28,7 @@
  *      \brief      Description and activation file for module Asset
  *		\version	$Id: modOdtdocs.class.php,v 1.67 2011/11/08 15:58:32 atm-maxime Exp $
  */
-include_once DOL_DOCUMENT_ROOT ."/core/modules/DolibarrModules.class.php";
+include_once(DOL_DOCUMENT_ROOT ."/core/modules/DolibarrModules.class.php");
 
 
 
@@ -53,17 +53,15 @@ class modExportCompta extends DolibarrModules
 		// Key text used to identify module (for permissions, menus, etc...)
 		$this->rights_class = 'exportcompta';
 
-		$this->editor_name = 'ATM Consulting';
-		$this->editor_url = 'https://www.atm-consulting.fr';
 		// Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
 		// It is used to group modules in module setup page
 		$this->family = "ATM";
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
-		$this->name = preg_replace('/^mod/i', '', get_class($this));
+		$this->name = preg_replace('/^mod/i','',get_class($this));
 		// Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
 		$this->description = "Export Comptabilité format propriétaires";
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
-		$this->version = '1.2.2';
+		$this->version = '1.2.1';
 		// Key used in llx_const table to save module status enabled/disabled (where MYMODULE is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		// Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
@@ -75,33 +73,33 @@ class modExportCompta extends DolibarrModules
 
 		// Defined if the directory /mymodule/includes/triggers/ contains triggers or not
 
-		$this->module_parts = array(
-					// Set this to 1 if module has its own trigger directory
-					'triggers' => 1,
-					// Set this to 1 if module has its own login method directory
-					//'login' => 0,
-					// Set this to 1 if module has its own substitution function file
-					//'substitutions' => 0,
-					// Set this to 1 if module has its own menus handler directory
-					//'menus' => 0,
-					// Set this to 1 if module has its own barcode directory
-					//'barcode' => 0,
-					// Set this to 1 if module has its own models directory
-					//'models' => 0,
-					// Set this to relative path of css if module has its own css file
-					//'css' => '/scrumboard/css/mycss.css.php',
-					// Set here all hooks context managed by module
-					'hooks' => array('invoicecard', 'invoicesuppliercard')
-					// Set here all workflow context managed by module
-					//'workflow' => array('order' => array('WORKFLOW_ORDER_AUTOCREATE_INVOICE'))
-		);
+        $this->module_parts = array(
+                    // Set this to 1 if module has its own trigger directory
+                    'triggers' => 1,
+                    // Set this to 1 if module has its own login method directory
+                    //'login' => 0,
+                    // Set this to 1 if module has its own substitution function file
+                    //'substitutions' => 0,
+                    // Set this to 1 if module has its own menus handler directory
+                    //'menus' => 0,
+                    // Set this to 1 if module has its own barcode directory
+                    //'barcode' => 0,
+                    // Set this to 1 if module has its own models directory
+                    //'models' => 0,
+                    // Set this to relative path of css if module has its own css file
+                    //'css' => '/scrumboard/css/mycss.css.php',
+                    // Set here all hooks context managed by module
+                    'hooks' => array('invoicecard', 'invoicesuppliercard')
+                    // Set here all workflow context managed by module
+                    //'workflow' => array('order' => array('WORKFLOW_ORDER_AUTOCREATE_INVOICE'))
+        );
 		// Data directories to create when module is enabled.
 		// Example: this->dirs = array("/mymodule/temp");
 		$this->dirs = array();
 		$r=0;
 
 		// Relative path to module style sheet if exists. Example: '/mymodule/css/mycss.css'.
-		//      $this->style_sheet = '/css/style.css';
+//		$this->style_sheet = '/css/style.css';
 
 		// Config pages. Put here list of php page names stored in admmin directory used to setup module.
 		$this->config_page_url = 'admin.php@exportcompta';
@@ -128,8 +126,8 @@ class modExportCompta extends DolibarrModules
 
 		// Array to add new pages in new tabs
 		// Example: $this->tabs = array('objecttype:+tabname1:Title1:@mymodule:$user->rights->mymodule->read:/mymodule/mynewtab1.php?id=__ID__',  // To add a new tab identified by code tabname1
-		//                              'objecttype:+tabname2:Title2:@mymodule:$user->rights->othermodule->read:/mymodule/mynewtab2.php?id=__ID__',  // To add another new tab identified by code tabname2
-		//                              'objecttype:-tabname');                                                     // To remove an existing tab identified by code tabname
+        //                              'objecttype:+tabname2:Title2:@mymodule:$user->rights->othermodule->read:/mymodule/mynewtab2.php?id=__ID__',  // To add another new tab identified by code tabname2
+        //                              'objecttype:-tabname');                                                     // To remove an existing tab identified by code tabname
 		// where objecttype can be
 		// 'thirdparty'       to add a tab in third party view
 		// 'intervention'     to add a tab in intervention view
@@ -146,32 +144,32 @@ class modExportCompta extends DolibarrModules
 		// 'group'            to add a tab in group view
 		// 'contact'          to add a tab in contact view
 		// 'categories_x'	  to add a tab in category view (replace 'x' by type of category (0=product, 1=supplier, 2=customer, 3=member)
-		$this->tabs = array(
+        $this->tabs = array(
 			'categories_2:+exportcompta:Comptabilité:exportcompta@exportcompta:$user->rights->exportcompta->linkcat:/exportcompta/linkcategory.php?id=__ID__&type=customer',
 			'categories_customer:+exportcompta:Comptabilité:exportcompta@exportcompta:$user->rights->exportcompta->linkcat:/exportcompta/linkcategory.php?id=__ID__&type=customer'
 		);
 
 
-		// Dictionnaries
-		$this->dictionnaries=array();
-		/*
-		$this->dictionnaries=array(
-			'langs'=>'cabinetmed@cabinetmed',
-			'tabname'=>array(MAIN_DB_PREFIX."cabinetmed_diaglec",MAIN_DB_PREFIX."cabinetmed_examenprescrit",MAIN_DB_PREFIX."cabinetmed_motifcons"),
-			'tablib'=>array("DiagnostiqueLesionnel","ExamenPrescrit","MotifConsultation"),
-			'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'cabinetmed_diaglec as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'cabinetmed_examenprescrit as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'cabinetmed_motifcons as f'),
-			'tabsqlsort'=>array("label ASC","label ASC","label ASC"),
-			'tabfield'=>array("code,label","code,label","code,label"),
-			'tabfieldvalue'=>array("code,label","code,label","code,label"),
-			'tabfieldinsert'=>array("code,label","code,label","code,label"),
-			'tabrowid'=>array("rowid","rowid","rowid"),
-			'tabcond'=>array($conf->cabinetmed->enabled,$conf->cabinetmed->enabled,$conf->cabinetmed->enabled)
-		);
-		*/
+        // Dictionnaries
+        $this->dictionnaries=array();
+        /*
+        $this->dictionnaries=array(
+            'langs'=>'cabinetmed@cabinetmed',
+            'tabname'=>array(MAIN_DB_PREFIX."cabinetmed_diaglec",MAIN_DB_PREFIX."cabinetmed_examenprescrit",MAIN_DB_PREFIX."cabinetmed_motifcons"),
+            'tablib'=>array("DiagnostiqueLesionnel","ExamenPrescrit","MotifConsultation"),
+            'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'cabinetmed_diaglec as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'cabinetmed_examenprescrit as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'cabinetmed_motifcons as f'),
+            'tabsqlsort'=>array("label ASC","label ASC","label ASC"),
+            'tabfield'=>array("code,label","code,label","code,label"),
+            'tabfieldvalue'=>array("code,label","code,label","code,label"),
+            'tabfieldinsert'=>array("code,label","code,label","code,label"),
+            'tabrowid'=>array("rowid","rowid","rowid"),
+            'tabcond'=>array($conf->cabinetmed->enabled,$conf->cabinetmed->enabled,$conf->cabinetmed->enabled)
+        );
+        */
 
-		// Boxes
+        // Boxes
 		// Add here list of php file(s) stored in includes/boxes that contains class to show a box.
-		$this->boxes = array();			// List of boxes
+        $this->boxes = array();			// List of boxes
 		$r=0;
 		// Example:
 		/*
@@ -222,7 +220,7 @@ class modExportCompta extends DolibarrModules
 		// Example:
 		// $this->export_code[$r]=$this->rights_class.'_'.$r;
 		// $this->export_label[$r]='CustomersInvoicesAndInvoiceLines';	// Translation key (used only if key ExportDataset_xxx_z not found)
-		// $this->export_enabled[$r]='1';                               // Condition to show export in list (ie: '$user->id==3'). Set to 1 to always show when module is enabled.
+        // $this->export_enabled[$r]='1';                               // Condition to show export in list (ie: '$user->id==3'). Set to 1 to always show when module is enabled.
 		// $this->export_permission[$r]=array(array("facture","facture","export"));
 		// $this->export_fields_array[$r]=array('s.rowid'=>"IdCompany",'s.nom'=>'CompanyName','s.address'=>'Address','s.cp'=>'Zip','s.ville'=>'Town','s.fk_pays'=>'Country','s.tel'=>'Phone','s.siren'=>'ProfId1','s.siret'=>'ProfId2','s.ape'=>'ProfId3','s.idprof4'=>'ProfId4','s.code_compta'=>'CustomerAccountancyCode','s.code_compta_fournisseur'=>'SupplierAccountancyCode','f.rowid'=>"InvoiceId",'f.facnumber'=>"InvoiceRef",'f.datec'=>"InvoiceDateCreation",'f.datef'=>"DateInvoice",'f.total'=>"TotalHT",'f.total_ttc'=>"TotalTTC",'f.tva'=>"TotalVAT",'f.paye'=>"InvoicePaid",'f.fk_statut'=>'InvoiceStatus','f.note'=>"InvoiceNote",'fd.rowid'=>'LineId','fd.description'=>"LineDescription",'fd.price'=>"LineUnitPrice",'fd.tva_tx'=>"LineVATRate",'fd.qty'=>"LineQty",'fd.total_ht'=>"LineTotalHT",'fd.total_tva'=>"LineTotalTVA",'fd.total_ttc'=>"LineTotalTTC",'fd.date_start'=>"DateStart",'fd.date_end'=>"DateEnd",'fd.fk_product'=>'ProductId','p.ref'=>'ProductRef');
 		// $this->export_entities_array[$r]=array('s.rowid'=>"company",'s.nom'=>'company','s.address'=>'company','s.cp'=>'company','s.ville'=>'company','s.fk_pays'=>'company','s.tel'=>'company','s.siren'=>'company','s.siret'=>'company','s.ape'=>'company','s.idprof4'=>'company','s.code_compta'=>'company','s.code_compta_fournisseur'=>'company','f.rowid'=>"invoice",'f.facnumber'=>"invoice",'f.datec'=>"invoice",'f.datef'=>"invoice",'f.total'=>"invoice",'f.total_ttc'=>"invoice",'f.tva'=>"invoice",'f.paye'=>"invoice",'f.fk_statut'=>'invoice','f.note'=>"invoice",'fd.rowid'=>'invoice_line','fd.description'=>"invoice_line",'fd.price'=>"invoice_line",'fd.total_ht'=>"invoice_line",'fd.total_tva'=>"invoice_line",'fd.total_ttc'=>"invoice_line",'fd.tva_tx'=>"invoice_line",'fd.qty'=>"invoice_line",'fd.date_start'=>"invoice_line",'fd.date_end'=>"invoice_line",'fd.fk_product'=>'product','p.ref'=>'product');
@@ -243,34 +241,34 @@ class modExportCompta extends DolibarrModules
 	{
 		$sql = array();
 
-		define('INC_FROM_DOLIBARR', true);
+		define('INC_FROM_DOLIBARR',true);
 		 dol_include_once('/exportcompta/config.php');
-		dol_include_once('/exportcompta/script/create-maj-base.php');
+        dol_include_once('/exportcompta/script/create-maj-base.php');
 
 		dol_include_once('/core/class/extrafields.class.php');
-		$extrafields=new ExtraFields($this->db);
+        $extrafields=new ExtraFields($this->db);
 		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture');
 
-		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture_fourn');
+        $res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'facture_fourn');
 
 		$res = $extrafields->addExtraField('date_compta', 'Comptabilisé le', 'datetime', 0, '', 'expensereport');
 
-		$res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'product', 0, 0, '');
-		$res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'product', 0, 0, '');
+        $res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'product',0,0,'');
+        $res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'product',0,0,'');
 
-		$res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'societe', 0, 0, '');
-		$res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'societe', 0, 0, '');
+        $res = $extrafields->addExtraField('code_tva_achat', 'Compte de TVA spécifique (achat)', 'varchar', 0, 30, 'societe',0,0,'');
+        $res = $extrafields->addExtraField('code_tva', 'Compte de TVA spécifique (vente)', 'varchar', 0, 30, 'societe',0,0,'');
 
-		$res = $extrafields->addExtraField('compte_collectif_client', 'Compte collectif client', 'varchar', 0, 30, 'societe', 0, 0, '');
-		$res = $extrafields->addExtraField('compte_collectif_fournisseur', 'Compte collectif fournisseur', 'varchar', 0, 30, 'societe', 0, 0, '');
+        $res = $extrafields->addExtraField('compte_collectif_client', 'Compte collectif client', 'varchar', 0, 30, 'societe',0,0,'');
+        $res = $extrafields->addExtraField('compte_collectif_fournisseur', 'Compte collectif fournisseur', 'varchar', 0, 30, 'societe',0,0,'');
 
-		$res = $extrafields->addExtraField('fk_soc_affacturage', 'Tiers pour  affacturage', 'sellist', 0, '', 'societe', 0, 0, '', serialize(array('options'=>array('societe:nom:rowid'=>null))));
+        $res = $extrafields->addExtraField('fk_soc_affacturage', 'Tiers pour  affacturage', 'sellist', 0, '', 'societe',0,0,'',serialize(array('options'=>array('societe:nom:rowid'=>null))));
 
 
-		$this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_sell_service varchar(32) NULL");
-		$this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_buy_service varchar(32) NULL");
+        $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_sell_service varchar(32) NULL");
+        $this->db->query("ALTER TABLE ".MAIN_DB_PREFIX."c_tva ADD accountancy_code_buy_service varchar(32) NULL");
 
-		$result=$this->load_tables();
+        $result=$this->load_tables();
 
 		return $this->_init($sql);
 	}
@@ -298,6 +296,10 @@ class modExportCompta extends DolibarrModules
 	 */
 	function load_tables()
 	{
-		return $this->_load_tables('/exportcompta/sql/');
+		return $this->_load_tables( '/exportcompta/sql/');
 	}
+
+
 }
+
+?>

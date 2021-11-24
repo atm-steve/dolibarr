@@ -1,8 +1,8 @@
 <?php
 
-require 'config.php';
+require('config.php');
 
-ini_set('memory_limit', '512M');
+ini_set('memory_limit','512M');
 set_time_limit(0);
 //error_reporting(E_ALL);
 
@@ -20,35 +20,31 @@ $type_export = 'ecritures_comptables_vente';
 
 dol_include_once('/exportcompta/class/export_'.$logiciel_export.'.class.php');
 $className = 'TExportCompta'.ucfirst($logiciel_export);
-
-/**
- * @var TExportCompta $exp
- */
 $exp=new $className($db);
 
-if (isset($_REQUEST['submitBtn']) || isset($_REQUEST['showMe'])) {
+if(isset($_REQUEST['submitBtn']) || isset($_REQUEST['showMe'])) {
 	$action = GETPOST('action');
 	$type_export = GETPOST('type_export');
-	$exp->set_date('dt_deb', $_REQUEST['dt_deb']);
-	$exp->set_date('dt_fin', $_REQUEST['dt_fin']);
-	$dt_deb = $exp->get_date('dt_deb', 'Y-m-d 00:00:00');
-	$dt_fin = $exp->get_date('dt_fin', 'Y-m-d 23:59:59');
+	$exp->set_date('dt_deb',$_REQUEST['dt_deb']);
+	$exp->set_date('dt_fin',$_REQUEST['dt_fin']);
+	$dt_deb = $exp->get_date('dt_deb','Y-m-d 00:00:00');
+	$dt_fin = $exp->get_date('dt_fin','Y-m-d 23:59:59');
 }
 
-if (!empty($action) && $action == 'export') {
-	if (!empty($logiciel_export)) {
-		/**
-		 * @var TExportCompta $export
-		 */
-		try {
-			$addExportTimeToBill = isset($_REQUEST['showMe']) ? 0 : (int) GETPOST('addExportTimeToBill');
+if(!empty($action) && $action == 'export') {
 
-			$export=new $className($db, (int) GETPOST('exportAllreadyExported'), $addExportTimeToBill);
-		} catch (Exception $e) {
+	if(!empty($logiciel_export)) {
+
+		try{
+		    $addExportTimeToBill = isset($_REQUEST['showMe']) ? 0 : (int)GETPOST('addExportTimeToBill');
+
+			$export=new $className($db, (int)GETPOST('exportAllreadyExported'), $addExportTimeToBill );
+		}
+		catch(Exception $e) {
 			$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportLogiciel'). ' : ' . $logiciel_export;
 		}
 
-		if (isset($export) && is_object($export)) {
+		if(isset($export) && is_object($export)) {
 			$formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
 			$formatvardefault = '_format_'.$type_export;
 			$format = (!empty($conf->global->{$formatvar})) ? unserialize($conf->global->{$formatvar}) : $export->{$formatvardefault};
@@ -64,9 +60,10 @@ if (!empty($action) && $action == 'export') {
 					$fileContent = $export->get_file_ecritures_comptables_ndf($format, $dt_deb, $dt_fin);
 					break;
 				case 'reglement_tiers':
-					if ($conf->global->EXPORTCOMPTA_EXPORT_REGLEMENT_SPECIFIQUE == 'Acticontrole')
+					if($conf->global->EXPORTCOMPTA_EXPORT_REGLEMENT_SPECIFIQUE == 'Acticontrole')
 						$fileContent = $export->get_file_reglement_tiers_acticontrole($format, $dt_deb, $dt_fin);
-					else $fileContent = $export->get_file_reglement_tiers($format, $dt_deb, $dt_fin);
+					else
+						$fileContent = $export->get_file_reglement_tiers($format, $dt_deb, $dt_fin);
 					break;
 				case 'ecritures_comptables_banque':
 					$fileContent = $export->get_file_ecritures_comptables_banque($format, $dt_deb, $dt_fin);
@@ -77,35 +74,38 @@ if (!empty($action) && $action == 'export') {
 				case 'produits':
 					$fileContent = $export->get_file_produits($format, $dt_deb, $dt_fin);
 					break;
-				case 'infos_paiement':
-					$fileContent = $export->get_file_infos_paiement($format, $dt_deb, $dt_fin);
-					break;
 				default:
 					$error = $langs->trans('Error'). ' : ' . $langs->trans('UnknownExportType'). ' : ' . $type_export;
 					break;
 			}
 		}
 
-		if (!empty($export->filename)) {
+		if(!empty($export->filename)) {
 			$fileName = $export->filename;
-		} else {
+		}
+		else{
 			$fileName = $logiciel_export.$type_export.date('YmdHis').".".$conf->global->EXPORT_COMPTA_EXTENSION;
 		}
+
+
 	} else {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('NoExportSelected');
 	}
-	/*echo '<font style="font-family: Courier;">';
-	print nl2br($fileContent);
-	exit();*/
-	if (isset($_REQUEST['showMe'])) {
-		$Tab = explode("\n", $fileContent);
+/*echo '<font style="font-family: Courier;">';
+print nl2br($fileContent);
+exit();*/
+    if(isset($_REQUEST['showMe'])) {
 
-		print '<pre>';
-		print $fileContent;
-		print '</pre>';
+        $Tab = explode("\n", $fileContent);
 
-		exit;
-	} elseif ($fileContent != '') {
+        print '<pre>';
+        print $fileContent;
+        print '</pre>';
+
+        exit;
+
+    }
+    else if($fileContent != '') {
 		$size = strlen($fileContent);
 
 		header("Content-Type: application/force-download; name=\"$fileName\"");
@@ -119,7 +119,7 @@ if (!empty($action) && $action == 'export') {
 		print $fileContent;
 
 		exit();
-	} elseif (empty($error)) {
+	} else if(empty($error)) {
 		$error = $langs->trans('Error'). ' : ' . $langs->trans('EmptyExport');
 	}
 }
@@ -130,9 +130,9 @@ if (!empty($action) && $action == 'export') {
 * Put here all code to build page
 ****************************************************/
 
-llxHeader('', $langs->trans('AccountancyExports'), '');
+llxHeader('',$langs->trans('AccountancyExports'),'');
 
-$form = new TFormCore($_SERVER['PHP_SELF'], 'exportCompta', 'get');
+$form = new TFormCore($_SERVER['PHP_SELF'], 'exportCompta','get');
 print $form->hidden('action', 'export');
 
 print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
@@ -153,8 +153,8 @@ print_fiche_titre($langs->trans('AccountancyExportsInFormattedFile'));
 				<?php echo $form->calendrier('', 'dt_deb', $exp->get_date('dt_deb'), 12) ?>
 			</td>
 			<td>
-				<input type="checkbox" name="exportAllreadyExported" value="1" /> <?php echo $langs->trans('exportAllreadyExported') ?>
-				<br /> <input type="checkbox" name="addExportTimeToBill" value="1" checked="checked" /> <?php echo $langs->trans('addExportTimeToBill') ?>
+                <input type="checkbox" name="exportAllreadyExported" value="1" /> <?php echo $langs->trans('exportAllreadyExported') ?>
+                <br /> <input type="checkbox" name="addExportTimeToBill" value="1" checked="checked" /> <?php echo $langs->trans('addExportTimeToBill') ?>
 
 			</td>
 		</tr>
