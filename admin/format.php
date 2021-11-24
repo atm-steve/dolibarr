@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-require('../config.php');
+require '../config.php';
 dol_include_once('/exportcompta/class/export.class.php');
 dol_include_once('/core/lib/admin.lib.php');
 dol_include_once('/exportcompta/lib/exportcompta.lib.php');
@@ -29,58 +29,54 @@ $langs->load('exportcompta@exportcompta');
 
 $exp = new TExportCompta($db);
 
-$action = GETPOST('action','alpha');
+$action = GETPOST('action', 'alpha');
 
 $logiciel_export = GETPOST('logiciel_export', 'alpha');
 $type_export = GETPOST('type_export', 'alpha');
 $formatvar = 'EXPORT_COMPTA_FORMAT_'.$type_export.'_'.$logiciel_export;
 
-if($action == 'saveformat') {
+if ($action == 'saveformat') {
 	$format = GETPOST('format');
-	foreach($format as $i => $ligne) {
-		if($ligne['name'] == '') unset($format[$i]);
+	foreach ($format as $i => $ligne) {
+		if ($ligne['name'] == '') unset($format[$i]);
 	}
 	$format = serialize($format);
-	dolibarr_set_const($db,$formatvar,$format,'array',0,'',$conf->entity);
+	dolibarr_set_const($db, $formatvar, $format, 'array', 0, '', $conf->entity);
 }
 
-if(!empty($conf->global->{$formatvar})) $format = unserialize($conf->global->{$formatvar});
-if(empty($logiciel_export)) $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
-if(empty($format)) {
-
+if (!empty($conf->global->{$formatvar})) $format = unserialize($conf->global->{$formatvar});
+if (empty($logiciel_export)) $logiciel_export = $conf->global->EXPORT_COMPTA_LOGICIEL_EXPORT;
+if (empty($format)) {
 	$format = array();
 
-	if(!empty($logiciel_export)) {
-		dol_include_once('/exportcompta/class/export_'.$logiciel_export.'.class.php');
-		
+	if (!empty($logiciel_export)) {
+		$path = '/exportcompta/class/export_'.$logiciel_export.'.class.php';
+		dol_include_once($path);
+
 		$className = 'TExportCompta'.ucfirst($logiciel_export);
 		$o=new $className($db);
 		//var_dump($o);
-		if(isset($o->{'_format_'.$type_export})) {
+		if (isset($o->{'_format_'.$type_export})) {
 			$format = $o->{'_format_'.$type_export};
 			//var_dump($format);
 		}
-		
 	}
-		
-	
-	
 }
 
 /**
  * View
  */
 $head = exportcompta_admin_prepare_head();
-llxHeader("",$langs->trans("ExportComptaSetup"));
+llxHeader("", $langs->trans("ExportComptaSetup"));
 
 $linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
-print_fiche_titre($langs->trans("ExportComptaSetup"),$linkback,'setup');
+print_fiche_titre($langs->trans("ExportComptaSetup"), $linkback, 'setup');
 
 dol_fiche_head($head, 'format', $langs->trans("ExportCompta"));
 
 $formDoli=new Form($db);
 
-$form = new TFormCore($_SERVER["PHP_SELF"],'export_format_choice');
+$form = new TFormCore($_SERVER["PHP_SELF"], 'export_format_choice');
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
 print '<td>'.$langs->trans("LogicielExport").'</td>';
@@ -96,12 +92,12 @@ print "</tr>\n";
 print '</table>';
 $form->end();
 
-if(!empty($logiciel_export) && !empty($type_export)) {
-	$form = new TFormCore($_SERVER["PHP_SELF"],'export_format_data');
-	print $form->hidden('action','saveformat');
-	print $form->hidden('type_export',$type_export);
-	print $form->hidden('logiciel_export',$logiciel_export);
-	
+if (!empty($logiciel_export) && !empty($type_export)) {
+	$form = new TFormCore($_SERVER["PHP_SELF"], 'export_format_data');
+	print $form->hidden('action', 'saveformat');
+	print $form->hidden('type_export', $type_export);
+	print $form->hidden('logiciel_export', $logiciel_export);
+
 	print '<table class="noborder" width="100%">';
 	print '<tr class="liste_titre">';
 	print '<td>'.$langs->trans("Name").'</td>';
@@ -115,9 +111,9 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 	print "</tr>\n";
 	$var=true;
 	$i = 0;
-	
-	
-	foreach($format as $colonne) {
+
+
+	foreach ($format as $colonne) {
 		$var=! $var;
 		print '<tr '.$bc[$var].'>';
 		print '<td><input type="text" name="format['.$i.'][name]" class="flat" value="'.$colonne['name'].'" /></td>';
@@ -142,10 +138,10 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 		print '</select>';
 		print '</td>';
 		print '</tr>';
-		
+
 		$i++;
 	}
-	
+
 	$var=! $var;
 	print '<tr '.$bc[$var].'>';
 	print '<td><input type="text" name="format['.$i.'][name]" class="flat" /></td>';
@@ -167,13 +163,11 @@ if(!empty($logiciel_export) && !empty($type_export)) {
 	print '</select>';
 	print '</td>';
 	print '</tr>';
-	
+
 	print '</table>';
-	
+
 	print '<div class="tabsAction"><input type="submit" class="button" value="'.$langs->trans("Save").'" /></div>';
 	$form->end();
 }
 
 llxFooter();
-
-?>
