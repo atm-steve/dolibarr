@@ -49,6 +49,9 @@ if ($user->socid) $socid = $user->socid;
 $result = restrictedArea($user, 'facture', $id);
 
 $object = new Facture($db);
+if ($id > 0 || !empty($ref)) {
+ $ret = $object->fetch($id, $ref, '', '', $conf->global->INVOICE_USE_SITUATION);
+}
 
 
 /*
