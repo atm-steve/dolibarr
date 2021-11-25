@@ -146,7 +146,6 @@ $objimport = new Import($db);
 $objimport->load_arrays($user, ($step == 1 ? '' : $datatoimport));
 
 $objmodelimport = new ModeleImports();
-
 $form = new Form($db);
 $htmlother = new FormOther($db);
 $formfile = new FormFile($db);
@@ -155,6 +154,7 @@ $formfile = new FormFile($db);
 $serialized_array_match_file_to_database = isset($_SESSION["dol_array_match_file_to_database"]) ? $_SESSION["dol_array_match_file_to_database"] : '';
 $array_match_file_to_database = array();
 $fieldsarray = explode(',', $serialized_array_match_file_to_database);
+
 foreach ($fieldsarray as $elem)
 {
 	$tabelem = explode('=', $elem, 2);
@@ -354,7 +354,7 @@ if ($action == 'saveorder')
 				continue;
 			}
 			// We found the key of targets that is at position pos
-			$namefield = $key;
+			$namefield = $key;$activation = false;
 			//dol_syslog('AjaxImport Field name found for file field nb '.$fieldnb.'='.$namefield);
 
 			break;
@@ -1450,6 +1450,7 @@ if ($step == 5 && $datatoimport)
 			print '<span class="opacitymedium">'.$langs->trans("UpdateNotYetSupportedForThisImport").'</span>';
 		}
 	}
+
 	/*echo '<pre>';
 	print_r($objimport->array_import_updatekeys);
 	echo '</pre>';*/
@@ -1543,6 +1544,7 @@ if ($step == 5 && $datatoimport)
         print '<div class="center">';
         if ($user->rights->import->run)
         {
+
             print '<input type="submit" class="butAction" value="'.$langs->trans("RunSimulateImportFile").'">';
         }
         else
@@ -2032,8 +2034,6 @@ print '<br>';
 // End of page
 llxFooter();
 $db->close();
-
-
 /**
  * Function to put the movable box of a source field
  *

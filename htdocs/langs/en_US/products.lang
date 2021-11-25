@@ -384,3 +384,7 @@ ActionAvailableOnVariantProductOnly=Action only available on the variant of prod
 ProductsPricePerCustomer=Product prices per customers
 ProductSupplierExtraFields=Additional Attributes (Supplier Prices)
 DeleteLinkedProduct=Delete the child product linked to the combination
+not_managed_in_stock=not managed in stock
+stock_disabled=Stock disabled
+stock_enabled=Stock enabled
+NoWarehouseInBase= No warehouse in database
