@@ -1074,3 +1074,4 @@ AmountMustBePositive=Amount must be positive
 ByStatus=By status
 InformationMessage=Information
 Used=Used
+AddLineOnPosition=Add line on position (at the end if empty)
