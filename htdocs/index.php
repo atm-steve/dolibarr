@@ -112,8 +112,7 @@ $boxstat='';
 // Load translation files required by page
 $langs->loadLangs(array('commercial', 'bills', 'orders', 'contracts'));
 
-if (empty($user->societe_id))
-{
+if (empty($user->societe_id) && /* SPÉ CPRO: ne pas afficher les statistiques de base */ false) {
     $boxstat.='<div class="box">';
     $boxstat.='<table summary="'.dol_escape_htmltag($langs->trans("DolibarrStateBoard")).'" class="noborder boxtable boxtablenobottom nohover" width="100%">';
     $boxstat.='<tr class="liste_titre">';
