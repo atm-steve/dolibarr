@@ -356,6 +356,8 @@ Modelcsv_Gestinumv3=Export vers Gestinum (v3)
 Modelcsv_Gestinumv5=Export vers Gestinum (v5)
 Modelcsv_charlemagne=Export pour Aplin Charlemagne
 ChartofaccountsId=Id plan comptable
+SupplierPaymentMethod=Mode de règlement fournisseur
+SupplierDueDate=Date de l'échéance fournisseur
 
 ## Tools - Init accounting account on product / service
 InitAccountancy=Initialisation comptabilité
