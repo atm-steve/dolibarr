@@ -164,7 +164,12 @@ class Products extends DolibarrApi
             {
                 $obj = $db->fetch_object($result);
                 $product_static = new Product($db);
+
                 if($product_static->fetch($obj->rowid)) {
+			$categories = new Categorie($this->db);
+
+	                $product_static->cats = $categories->getListForItem($obj->rowid, 'product', '', '', 10, 1);
+//			$product_static->cats = array('test'=>1);
                     $obj_ret[] = $this->_cleanObjectDatas($product_static);
                 }
                 $i++;
