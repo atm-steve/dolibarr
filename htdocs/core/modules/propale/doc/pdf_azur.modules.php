@@ -593,10 +593,11 @@ class pdf_azur extends ModelePDFPropales
 					$pdf->MultiCell($this->posxqty - $this->posxup - 0.8, 3, $up_excl_tax, 0, 'R', 0);
 
 					// Quantity
-					$qty = pdf_getlineqty($object, $i, $outputlangs, $hidedetails);
-					$pdf->SetXY($this->posxqty, $curY);
-					$pdf->MultiCell($this->posxunit - $this->posxqty - 0.8, 4, $qty, 0, 'R'); // Enough for 6 chars
-
+					if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_QTY) && empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_QTY_COLUMN)) {
+						$qty = pdf_getlineqty($object, $i, $outputlangs, $hidedetails);
+						$pdf->SetXY($this->posxqty, $curY);
+						$pdf->MultiCell($this->posxunit - $this->posxqty - 0.8, 4, $qty, 0, 'R'); // Enough for 6 chars
+					}
 					// Unit
 					if ($conf->global->PRODUCT_USE_UNITS)
 					{
@@ -1404,13 +1405,13 @@ class pdf_azur extends ModelePDFPropales
 			$pdf->MultiCell($this->posxqty - $this->posxup - 1, 2, $outputlangs->transnoentities("PriceUHT"), '', 'C');
 		}
 
-		$pdf->line($this->posxqty - 1, $tab_top, $this->posxqty - 1, $tab_top + $tab_height);
-		if (empty($hidetop))
-		{
-			$pdf->SetXY($this->posxqty - 1, $tab_top + 1);
-			$pdf->MultiCell($this->posxunit - $this->posxqty - 1, 2, $outputlangs->transnoentities("Qty"), '', 'C');
+		if (empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_QTY) && empty($conf->global->MAIN_GENERATE_DOCUMENTS_WITHOUT_QTY_COLUMN)) {
+			$pdf->line($this->posxqty - 1, $tab_top, $this->posxqty - 1, $tab_top + $tab_height);
+			if (empty($hidetop)) {
+				$pdf->SetXY($this->posxqty - 1, $tab_top + 1);
+				$pdf->MultiCell($this->posxunit - $this->posxqty - 1, 2, $outputlangs->transnoentities("Qty"), '', 'C');
+			}
 		}
-
 		if ($conf->global->PRODUCT_USE_UNITS) {
 			$pdf->line($this->posxunit - 1, $tab_top, $this->posxunit - 1, $tab_top + $tab_height);
 			if (empty($hidetop)) {
