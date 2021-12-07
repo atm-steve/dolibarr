@@ -139,7 +139,7 @@ class InterfaceTicketEmail extends DolibarrTriggers
 							$message .= '<li>'.$langs->trans('Type').' : '.$object->type_label.'</li>';
 							$message .= '<li>'.$langs->trans('Category').' : '.$object->category_label.'</li>';
 							$message .= '<li>'.$langs->trans('Severity').' : '.$object->severity_label.'</li>';
-							// Extrafieldsassign_user
+							// Extrafields
 							if (is_array($object->array_options) && count($object->array_options) > 0) {
 								foreach ($object->array_options as $key => $value) {
 									$message .= '<li>'.$langs->trans($key).' : '.$value.'</li>';
