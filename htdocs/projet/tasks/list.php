@@ -402,6 +402,7 @@ if ($search_public != '') 		$param .= '&search_public='.urlencode($search_public
 if ($search_project_user != '')   $param .= '&search_project_user='.urlencode($search_project_user);
 if ($search_task_user > 0)    	$param .= '&search_task_user='.urlencode($search_task_user);
 if ($optioncss != '')           $param .= '&optioncss='.urlencode($optioncss);
+if ($search_categ != '')           $param .= '&search_categ='.urlencode($search_categ);
 // Add $param from extra fields
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 

@@ -174,6 +174,7 @@ class DolEditor
                                     skin: \''.$skin.'\',
                                     language: \''.$langs->defaultlang.'\',
                                     textDirection: \''.$langs->trans("DIRECTION").'\',
+					scayt_autoStartup: true,
                                     on :
                                             {
                                                 instanceReady : function( ev )
