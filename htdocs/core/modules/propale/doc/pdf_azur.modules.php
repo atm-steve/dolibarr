@@ -1406,7 +1406,8 @@ class pdf_azur extends ModelePDFPropales
 
 
 		$pdf->line($this->posxqty - 1, $tab_top, $this->posxqty - 1, $tab_top + $tab_height);
-		if (empty($hidetop)) {
+		if (empty($hidetop))
+		{
 			$pdf->SetXY($this->posxqty - 1, $tab_top + 1);
 			$pdf->MultiCell($this->posxunit - $this->posxqty - 1, 2, $outputlangs->transnoentities("Qty"), '', 'C');
 		}
