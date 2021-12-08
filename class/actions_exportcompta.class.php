@@ -61,7 +61,7 @@ class ActionsExportCompta
 	 */
 	function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager) {
 	    
-        if (in_array('invoicecard', explode(':', $parameters['context'])))
+        if (in_array('invoicecard', explode(':', $parameters['context'])) || in_array('invoicesuppliercard', explode(':', $parameters['context'])))
         {
           global $conf;
 		  $object->fetch_optionals($object->id);
