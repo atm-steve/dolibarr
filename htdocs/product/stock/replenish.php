@@ -492,6 +492,14 @@ $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters); // Note that $action and $object may have been modified by hook
 $sql .= $hookmanager->resPrint;
 
+/******************** START SPÉ AMA ***********************/
+// pourquoi ce hook et pas printFieldListWhere?? Parce que printFieldListWhere va être déplacé
+// prochainement et ne conviendra plus pour remplacer l'intégralité de cette requête (ce que fait
+// actuellement [2021-12-09] le hook du cliama)
+$parameters = array('usevirtualstock' => $usevirtualstock, 'alertchecked' => &$alertchecked);
+$reshook = $hookmanager->executeHooks('cliamaReplaceSQL', $parameters, $sql); // Note that $action and $object may have been modified by hook
+/******************** END   SPÉ AMA ***********************/
+
 $nbtotalofrecords = '';
 if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST)) {
 	$result = $db->query($sql);
@@ -788,6 +796,13 @@ while ($i < ($limit ? min($num, $limit) : $num))
 		$alertstock = $objp->seuil_stock_alerte;
 		$desiredstockwarehouse = ($objp->desiredstockpse ? $objp->desiredstockpse : 0);
 		$alertstockwarehouse = ($objp->seuil_stock_alertepse ? $objp->seuil_stock_alertepse : 0);
+
+		/******************** START SPÉ AMA ***********************/
+		if ($fk_entrepot > 0 || !empty(GETPOST('multiwarehouse'))) {
+			$desiredstock = $desiredstockwarehouse;
+			$alertstock = $alertstockwarehouse;
+		}
+		/******************** END   SPÉ AMA ***********************/
 
 		$warning = '';
 		if ($alertstock && ($stock < $alertstock))
