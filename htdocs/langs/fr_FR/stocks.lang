@@ -235,3 +235,4 @@ AlwaysShowFullArbo=Afficher l'arborescence complète de l'entrepôt sur la popup
 StockAtDatePastDesc=Vous pouvez voir ici le stock (stock réel) à une date donnée dans le passé
 StockAtDateFutureDesc=Vous pouvez voir ici le stock (stock virtuel) à une date donnée dans le futur
 CurrentStock=Stock actuel
+ErrorWorkflowSignFromUser=Vous tentez, probablement, d'inserer des valeurs négatives.

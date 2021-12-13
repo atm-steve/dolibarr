@@ -208,6 +208,15 @@ if ($action == "correct_stock" && !$cancel)
 		$action = 'correction';
 	}
 
+	$nbpiece = GETPOST("nbpiece","alpha");
+	$firstCharacter = $nbpiece[0];
+	if (!is_numeric($firstCharacter))
+	{
+		setEventMessages($langs->trans("ErrorWorkflowSignFromUser", $langs->transnoentitiesnoconv("NumberOfUnit")), null, 'errors');
+		$error++;
+		$action = 'correction';
+	}
+
 	if (!empty($conf->productbatch->enabled))
 	{
 		$object = new Product($db);
