@@ -80,11 +80,23 @@ if (!empty($canvas))
 	$objcanvas->getCanvas('product', 'list', $canvas);
 }
 
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+dol_include_once('clifirstatlantique/lib/clifirstatlantique.lib.php');
+$langs->load('clifirstatlantique@clifirstatlantique');
+/** @var HookManager $hookmanager */
+$hookmanager->initHooks(array('reassortlot'));
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
 
 
 /*
  * Actions
  */
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+$parameters = array();
+$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
 
 if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha')) // All tests are required to be compatible with all browsers
 {
@@ -123,11 +135,34 @@ $sql .= ' e.ref as warehouse_ref, e.lieu as warehouse_lieu, e.fk_parent as wareh
 $sql .= ' pb.batch, pb.eatby as oldeatby, pb.sellby as oldsellby,';
 $sql .= ' pl.rowid as lotid, pl.eatby, pl.sellby,';
 $sql .= ' SUM(pb.qty) as stock_physique, COUNT(pb.rowid) as nbinbatchtable';
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+
+//$sql .= ', (SELECT SUM(pb.qty) - SUM(cdet.qty)) AS stock_dispo';
+
+// Add fields from hooks
+$parameters = array();
+$reshook = $hookmanager->executeHooks('printFieldListSelect', $parameters); // Note that $action and $object may have been modified by hook
+$sql .= $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
+
 $sql .= ' FROM '.MAIN_DB_PREFIX.'product as p';
 $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_stock as ps on p.rowid = ps.fk_product'; // Detail for each warehouse
 $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'entrepot as e on ps.fk_entrepot = e.rowid'; // Link on unique key
 $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_batch as pb on pb.fk_product_stock = ps.rowid'; // Detail for each lot on each warehouse
 $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_lot as pl on pl.fk_product = p.rowid AND pl.batch = pb.batch'; // Link on unique key
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+//$sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'commandedet AS cdet ON cdet.fk_product = p.rowid';
+//$sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'commande AS c ON cdet.fk_commande = c.rowid';
+//$sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'commandedet_extrafields AS cdet_ef ON cdet_ef.fk_object = cdet.rowid';
+// Add tables from hooks
+$parameters = array();
+$reshook = $hookmanager->executeHooks('printFieldListJoin', $parameters); // Note that $action and $object may have been modified by hook
+$sql .= $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
 // We'll need this table joined to the select in order to filter by categ
 if ($search_categ) $sql .= ", ".MAIN_DB_PREFIX."categorie_product as cp";
 $sql .= " WHERE p.entity IN (".getEntity('product').")";
@@ -157,6 +192,15 @@ if ($fourn_id > 0) $sql .= " AND p.rowid = pf.fk_product AND pf.fk_soc = ".$four
 if ($search_categ) $sql .= " AND cp.fk_categorie = ".$db->escape($search_categ);
 if ($search_warehouse) $sql .= natural_search("e.ref", $search_warehouse);
 if ($search_batch) $sql .= natural_search("pb.batch", $search_batch);
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+//$sql .= ' AND (cdet_ef.fk_product_lot IS NULL OR (cdet_ef.fk_product_lot = pl.rowid AND c.fk_statut IN (1,2)))';
+// Add filters from hooks
+$parameters = array();
+$reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters); // Note that $action and $object may have been modified by hook
+$sql .= $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
 $sql .= " GROUP BY p.rowid, p.ref, p.label, p.barcode, p.price, p.price_ttc, p.price_base_type, p.entity,";
 $sql .= " p.fk_product_type, p.tms,";
 $sql .= " p.duration, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock, p.stock, p.tosell, p.tobuy, p.tobatch,";
@@ -164,7 +208,23 @@ $sql .= " ps.fk_entrepot,";
 $sql .= " e.ref, e.lieu, e.fk_parent,";
 $sql .= " pb.batch, pb.eatby, pb.sellby,";
 $sql .= " pl.rowid, pl.eatby, pl.sellby";
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+// Add filters from hooks
+$parameters = array();
+$reshook = $hookmanager->executeHooks('printFieldListGroupBy', $parameters); // Note that $action and $object may have been modified by hook
+$sql .= $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
 if ($toolowstock) $sql .= " HAVING SUM(".$db->ifsql('ps.reel IS NULL', '0', 'ps.reel').") < p.seuil_stock_alerte"; // Not used yet
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+// Add filters from hooks
+$parameters = array();
+$reshook = $hookmanager->executeHooks('printFieldListHaving', $parameters); // Note that $action and $object may have been modified by hook
+$sql .= $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
 $sql .= $db->order($sortfield, $sortorder);
 
 $nbtotalofrecords = '';
@@ -295,6 +355,14 @@ if ($resql)
     $searchpicto = $form->showFilterAndCheckAddButtons(0);
     print $searchpicto;
     print '</td>';
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+	print '<td class="stock-dispo"></td>';
+	$parameters = array();
+	$reshook = $hookmanager->executeHooks('printFieldListOption', $parameters); // Note that $action and $object may have been modified by hook
+	print $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
 	print '</tr>';
 
 	//Line for column titles
@@ -314,6 +382,14 @@ if ($resql)
 	print_liste_field_titre("ProductStatusOnSell", $_SERVER["PHP_SELF"], "p.tosell", "", $param, '', $sortfield, $sortorder, 'right ');
 	print_liste_field_titre("ProductStatusOnBuy", $_SERVER["PHP_SELF"], "p.tobuy", "", $param, '', $sortfield, $sortorder, 'right ');
 	print_liste_field_titre('');
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+	print '<td class="stock-dispo">' . $langs->trans('FIRSTATLANTIQUE_StockDispo') . img_help(1, $langs->trans('FIRSTATLANTIQUE_StockDispo_Help')) . '</td>';
+	$parameters = array();
+	$reshook = $hookmanager->executeHooks('printFieldListSelect', $parameters); // Note that $action and $object may have been modified by hook
+	print $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
 	print "</tr>\n";
 
 	$product_static = new Product($db);
@@ -323,6 +399,11 @@ if ($resql)
 	while ($i < min($num, $limit))
 	{
 		$objp = $db->fetch_object($resql);
+		$TUtilisationLot = checkLotUse($objp->lotid);
+
+		// quantité déjà "réservée" (= sur une commande ou facture dont le statut est < 3)
+		$qty_used = array_sum(array_column($TUtilisationLot, 'qty_objectdet'));
+		$qty_dispo = $objp->stock_physique - $qty_used;
 
 		// Multilangs
 		if (!empty($conf->global->MAIN_MULTILANGS)) // si l'option est active
@@ -413,6 +494,14 @@ if ($resql)
 		print '<td class="right nowrap">'.$product_static->LibStatut($objp->statut, 5, 0).'</td>';
         print '<td class="right nowrap">'.$product_static->LibStatut($objp->tobuy, 5, 1).'</td>';
         print '<td></td>';
+
+/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+		print '<td class="stock-dispo">' . $qty_dispo . '</td>';
+		$parameters = array();
+		$reshook = $hookmanager->executeHooks('printFieldListValue', $parameters); // Note that $action and $object may have been modified by hook
+		print $hookmanager->resPrint;
+/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
+
 		print "</tr>\n";
 		$i++;
 	}
