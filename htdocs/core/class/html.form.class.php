@@ -6786,6 +6786,7 @@ class Form
 		$reshook = $hookmanager->executeHooks('selectForFormsListWhere', $parameters); // Note that $action and $object may have been modified by hook
 		if (!empty($hookmanager->resPrint)) {
 			$sql .= $hookmanager->resPrint;
+		    $hookmanager->resPrint = '';
 		} else {
 			$sql .= " WHERE 1=1";
 			if (isset($objecttmp->ismultientitymanaged)) {
