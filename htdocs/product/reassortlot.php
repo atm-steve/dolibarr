@@ -348,16 +348,18 @@ if ($resql)
 	print '<td class="liste_titre right">&nbsp;</td>';
 	print '<td class="liste_titre">&nbsp;</td>';
 	print '<td class="liste_titre">&nbsp;</td>';
+	/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+	print '<td class="liste_titre stock-dispo"></td>';
+	/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
 	print '<td class="liste_titre">&nbsp;</td>';
 	print '<td class="liste_titre">&nbsp;</td>';
-    print '<td class="liste_titre">&nbsp;</td>';
-    print '<td class="liste_titre maxwidthsearch">';
-    $searchpicto = $form->showFilterAndCheckAddButtons(0);
-    print $searchpicto;
-    print '</td>';
+	print '<td class="liste_titre">&nbsp;</td>';
+	print '<td class="liste_titre maxwidthsearch">';
+	$searchpicto = $form->showFilterAndCheckAddButtons(0);
+	print $searchpicto;
+	print '</td>';
 
-/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
-	print '<td class="stock-dispo"></td>';
+	/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
 	$parameters = array();
 	$reshook = $hookmanager->executeHooks('printFieldListOption', $parameters); // Note that $action and $object may have been modified by hook
 	print $hookmanager->resPrint;
@@ -376,6 +378,9 @@ if ($resql)
 	print_liste_field_titre("EatByDate", $_SERVER["PHP_SELF"], "pb.eatby", $param, "", '', $sortfield, $sortorder, 'center ');
 	print_liste_field_titre("SellByDate", $_SERVER["PHP_SELF"], "pb.sellby", $param, "", '', $sortfield, $sortorder, 'center ');
 	print_liste_field_titre("PhysicalStock", $_SERVER["PHP_SELF"], "stock_physique", $param, "", '', $sortfield, $sortorder, 'right ');
+	/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+	print '<td class="liste_titre stock-dispo">' . $langs->trans('FIRSTATLANTIQUE_StockDispo') . img_help(1, $langs->trans('FIRSTATLANTIQUE_StockDispo_Help')) . '</td>';
+	/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
 	// TODO Add info of running suppliers/customers orders
 	//print_liste_field_titre("TheoreticalStock",$_SERVER["PHP_SELF"], "stock_theorique",$param,"",'',$sortfield,$sortorder, 'right ');
 	print_liste_field_titre('');
@@ -383,8 +388,7 @@ if ($resql)
 	print_liste_field_titre("ProductStatusOnBuy", $_SERVER["PHP_SELF"], "p.tobuy", "", $param, '', $sortfield, $sortorder, 'right ');
 	print_liste_field_titre('');
 
-/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
-	print '<td class="stock-dispo">' . $langs->trans('FIRSTATLANTIQUE_StockDispo') . img_help(1, $langs->trans('FIRSTATLANTIQUE_StockDispo_Help')) . '</td>';
+	/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
 	$parameters = array();
 	$reshook = $hookmanager->executeHooks('printFieldListSelect', $parameters); // Note that $action and $object may have been modified by hook
 	print $hookmanager->resPrint;
@@ -490,13 +494,15 @@ if ($resql)
         //if ($objp->seuil_stock_alerte && ($objp->stock_physique < $objp->seuil_stock_alerte)) print img_warning($langs->trans("StockTooLow")).' ';
 		print $objp->stock_physique;
 		print '</td>';
+		/* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
+		print '<td class="right stock-dispo">' . $qty_dispo . '</td>';
+		/* ------------------ SPÉ FIRST ATLANTIQUE: END -------------------- */
 		print '<td class="right"><a href="'.DOL_URL_ROOT.'/product/stock/movement_list.php?idproduct='.$product_static->id.'&search_warehouse='.$objp->fk_entrepot.'&search_batch='.($objp->batch != 'Undefined' ? $objp->batch : 'Undefined').'">'.$langs->trans("Movements").'</a></td>';
 		print '<td class="right nowrap">'.$product_static->LibStatut($objp->statut, 5, 0).'</td>';
         print '<td class="right nowrap">'.$product_static->LibStatut($objp->tobuy, 5, 1).'</td>';
         print '<td></td>';
 
 /* ------------------ SPÉ FIRST ATLANTIQUE: START ------------------ */
-		print '<td class="stock-dispo">' . $qty_dispo . '</td>';
 		$parameters = array();
 		$reshook = $hookmanager->executeHooks('printFieldListValue', $parameters); // Note that $action and $object may have been modified by hook
 		print $hookmanager->resPrint;
