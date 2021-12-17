@@ -699,7 +699,7 @@ class Expedition extends CommonObject
 		if (!$error && (preg_match('/^[\(]?PROV/i', $this->ref) || empty($this->ref))) { // empty should not happened, but when it occurs, the test save life
 			$numref = $this->getNextNumRef($soc);
 		} else {
-			$numref = "EXP".$this->id;
+			$numref = $this->ref; //SPE DAUPHIN lié au dev gen ref auto sur exped
 		}
 		$this->newref = dol_sanitizeFileName($numref);
 
