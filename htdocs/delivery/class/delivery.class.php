@@ -815,6 +815,13 @@ class Delivery extends CommonObject
 				$line->product_desc		= $obj->product_desc; // Product description
 				$line->product_type		= $obj->fk_product_type;
 				$line->fk_origin_line = $obj->fk_origin_line;
+				/** ***************************************************
+				 * ***********  SPE AMA *******************************
+				 * *************************************************** */
+				$line->product_tobatch = $obj->product_tobatch;
+				/** ***************************************************
+				 * *********** FIN SPE AMA *******************************
+				 * *************************************************** */
 
 				$line->price = $obj->price;
 				$line->total_ht = $obj->total_ht;
@@ -837,6 +844,60 @@ class Delivery extends CommonObject
 				$line->fetch_optionals();
 
 				$this->lines[$i] = $line;
+				/** ***************************************************
+				 * ***********  SPE AMA *******************************
+				 * *************************************************** */
+
+				if ($obj->fk_origin_line)
+				{
+					$sql = /* @lang SQL */
+						'SELECT expdetbatch.rowid AS id,'
+						. '     expdetbatch.rowid, '
+						. '     expdetbatch.fk_expeditiondet, '
+						. '     expdetbatch.batch, '
+						. '     expdetbatch.qty, '
+						. '     expdetbatch.fk_origin_stock, '
+						. '     lot.sellby, '
+						. '     lot.eatby '
+						. ' FROM '.MAIN_DB_PREFIX.'expeditiondet_batch AS expdetbatch'
+						. ' LEFT JOIN '.MAIN_DB_PREFIX.'expeditiondet AS expdet ON expdetbatch.fk_expeditiondet = expdet.rowid'
+						. ' LEFT JOIN '.MAIN_DB_PREFIX.'product_lot AS lot'
+						. '     ON expdetbatch.batch = lot.batch AND lot.fk_product = ' . intval($line->fk_product)
+						. ' WHERE '
+						. '     expdet.fk_origin_line = ' . intval($obj->fk_origin_line)
+					;
+					;
+					$TObj = $this->db->getRows($sql);
+					if ($TObj !== false) {
+						$line->detail_batch = array_map(
+							function ($obj) use ($line) {
+								$obj->sellby = $this->db->jdate($obj->sellby);
+								$obj->eatby = $this->db->jdate($obj->eatby);
+								return $obj;
+							}, $TObj
+						);
+					}
+				}
+
+				// Detail of batch
+				if (!empty($conf->productbatch->enabled) && $obj->line_id > 0 && $obj->product_tobatch > 0)
+				{
+					require_once DOL_DOCUMENT_ROOT.'/expedition/class/expeditionbatch.class.php';
+
+					$newdetailbatch = ExpeditionLineBatch::fetchAll($this->db, $obj->line_id, $obj->fk_product);
+					if (is_array($newdetailbatch))
+					{
+						if ($originline != $obj->fk_origin_line)
+						{
+							$line->detail_batch = $newdetailbatch;
+						} else {
+							$line->detail_batch = array_merge($line->detail_batch, $newdetailbatch);
+						}
+					}
+				}
+				/** ***************************************************
+				 * *********** FIN SPE AMA *******************************
+				 * *************************************************** */
 
 				$i++;
 			}

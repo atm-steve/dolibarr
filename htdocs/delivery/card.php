@@ -45,6 +45,11 @@ if (!empty($conf->projet->enabled)) {
 	require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 }
 
+/**************************    SPÉ AMA   ********************************/
+require_once DOL_DOCUMENT_ROOT.'/product/stock/class/productlot.class.php';
+$langs->load('productbatch');
+/*************************   FIN SPÉ AMA   *********************************/
+
 // Load translation files required by the page
 $langs->loadLangs(array("sendings", "bills", 'deliveries', 'orders'));
 
