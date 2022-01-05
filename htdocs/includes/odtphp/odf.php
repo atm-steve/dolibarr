@@ -158,6 +158,10 @@ class Odf
 	{
 		$value = $encode ? htmlspecialchars($value) : $value;
 		$value = ($charset == 'ISO-8859') ? utf8_encode($value) : $value;
+
+		//return : on évite la fonction _replaceHtmlWithOdtTag qui est bugué => en attente du correctif qui est prévu en R&D (Flo a les infos)
+		return $value;
+
 		$convertedValue = $value;
 
 		// Check if the value includes html tags
