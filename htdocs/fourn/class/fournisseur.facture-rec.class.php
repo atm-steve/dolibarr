@@ -22,6 +22,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+/*
+* BACKPORT - 10/01/2022
+* Template supplier invoces
+*/
+
 /**
  *	\file       htdocs/fourn/facture/class/fournisseur.facture-rec.class.php
  *	\ingroup    facture
@@ -2190,3 +2195,6 @@ class FactureFournisseurLigneRec extends CommonObjectLine
         }
     }
 }
+/*
+* FIN BACKPORT - 10/01/2022
+*/
