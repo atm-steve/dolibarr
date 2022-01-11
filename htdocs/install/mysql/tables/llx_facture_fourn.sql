@@ -58,6 +58,8 @@ create table llx_facture_fourn
   fk_user_modif         integer,                       -- user making last change
   fk_user_valid			integer,                       -- user validating
 
+  -- BACKPORT - 10/01/2022 - Template supplier invoice
+  fk_fac_rec_source		integer,					   -- facture rec source
   fk_facture_source		integer,                       -- facture origine si facture avoir
   fk_projet				integer,                       -- projet auquel est associee la facture
 
