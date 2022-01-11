@@ -36,6 +36,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/modules/supplier_invoice/modules_facturefournisseur.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
+require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture-rec.class.php';  //q - 10/01/2022 - Template supplier invoice
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/paiementfourn.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/discount.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/fourn.lib.php';
@@ -781,8 +782,55 @@ if (empty($reshook))
 			}
 		}
 
+        //BACKPORT - 10/01/2022 - Template supplier invoice
+        // Standard invoice or Deposit invoice, created from a Predefined template invoice
+        if((GETPOST('type') == FactureFournisseur::TYPE_STANDARD || GETPOST('type') == FactureFournisseur::TYPE_DEPOSIT) && GETPOST('fac_rec', 'int') > 0) {
+            if(empty($dateinvoice)) {
+                $error++;
+                setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Date")), null, 'errors');
+                $action = 'create';
+            }
+            else if($dateinvoice > (dol_get_last_hour(dol_now('tzuserrel')) + (empty($conf->global->INVOICE_MAX_FUTURE_DELAY) ? 0 : $conf->global->INVOICE_MAX_FUTURE_DELAY))) {
+                $error++;
+                setEventMessages($langs->trans("ErrorDateIsInFuture"), null, 'errors');
+                $action = 'create';
+            }
+
+            if(! $error) {
+                $object->socid = GETPOST('socid', 'int');
+                $object->type = GETPOST('type');
+                $object->ref = GETPOST('ref');
+                $object->date = $dateinvoice;
+                $object->note_public = trim(GETPOST('note_public', 'restricthtml'));
+                $object->note_private = trim(GETPOST('note_private', 'restricthtml'));
+                $object->ref_client = GETPOST('ref_client');
+                $object->model_pdf = GETPOST('model');
+                $object->fk_project = GETPOST('projectid', 'int');
+                $object->cond_reglement_id = (GETPOST('type') == 3 ? 1 : GETPOST('cond_reglement_id'));
+                $object->mode_reglement_id = GETPOST('mode_reglement_id', 'int');
+                $object->fk_account = GETPOST('fk_account', 'int');
+                $object->amount = price2num(GETPOST('amount'));
+                $object->remise_absolue = price2num(GETPOST('remise_absolue'), 'MU');
+                $object->remise_percent = price2num(GETPOST('remise_percent'), '', 2);
+                $object->fk_incoterms = GETPOST('incoterm_id', 'int');
+                $object->location_incoterms = GETPOST('location_incoterms', 'alpha');
+                $object->multicurrency_code = GETPOST('multicurrency_code', 'alpha');
+                $object->multicurrency_tx = GETPOST('originmulticurrency_tx', 'int');
+
+                // Source facture
+                $object->fac_rec = GETPOST('fac_rec', 'int');
+                $fac_rec = new FactureFournisseurRec($db);
+                $fac_rec->fetch($object->fac_rec);
+                $fac_rec->fetch_lines();
+                $object->lines = $fac_rec->lines;
+
+                $id = $object->create($user); // This include recopy of links from recurring invoice and recurring invoice lines
+            }
+        }
+        // FIN BACKPORT - 10/01/2022
+
 		// Standard or deposit
-		if ($_POST['type'] == FactureFournisseur::TYPE_STANDARD || $_POST['type'] == FactureFournisseur::TYPE_DEPOSIT)
+		if ($_POST['type'] == FactureFournisseur::TYPE_STANDARD || $_POST['type'] == FactureFournisseur::TYPE_DEPOSIT  && GETPOST('fac_rec') <= 0)
 		{
 			if (GETPOST('socid', 'int')<1)
 			{
@@ -1734,11 +1782,19 @@ if ($action == 'create')
 	// Ref
 	print '<tr><td class="titlefieldcreate">'.$langs->trans('Ref').'</td><td>'.$langs->trans('Draft').'</td></tr>';
 
+    //BACKPORT - 10/01/2022 - Template supplier invoice
+    $exampletemplateinvoice = new FactureFournisseurRec($db);
+    $invoice_predefined = new FactureFournisseurRec($db);
+    if (empty($origin) && empty($originid) && GETPOST('fac_rec', 'int') > 0) {
+        $invoice_predefined->fetch(GETPOST('fac_rec', 'int'));
+    }
+    // FIN BACKPORT - 10/01/2022
+
 	// Third party
 	print '<tr><td class="fieldrequired">'.$langs->trans('Supplier').'</td>';
 	print '<td>';
 
-	if ($societe->id > 0)
+	if ($societe->id > 0 && (!GETPOST('fac_rec', 'int') || !empty($invoice_predefined->frequency))) //BACKPORT - 10/01/2022 - Template supplier invoice
 	{
 		$absolute_discount = $societe->getAvailableDiscounts('', '', 0, 1);
 		print $societe->getNomUrl(1);
@@ -1754,15 +1810,90 @@ if ($action == 'create')
 			$(document).ready(function() {
 				$("#socid").change(function() {
 					var socid = $(this).val();
+                    var fac_rec = $(\'#fac_rec\').val();  //BACKPORT - 10/01/2022 - Template supplier invoice
 					// reload page
-					window.location.href = "'.$_SERVER["PHP_SELF"].'?action=create&socid="+socid;
+					window.location.href = "'.$_SERVER["PHP_SELF"].'?action=create&socid="+socid+"&fac_rec="+fac_rec;  //BACKPORT - 10/01/2022 - Template supplier invoice
 				});
 			});
 			</script>';
 		}
-		print ' <a href="'.DOL_URL_ROOT.'/societe/card.php?action=create&client=0&fournisseur=1&backtopage='.urlencode($_SERVER["PHP_SELF"].'?action=create').'"><span class="valignmiddle text-plus-circle">'.$langs->trans("AddThirdParty").'</span><span class="fa fa-plus-circle valignmiddle paddingleft"></span></a>';
-	}
+        //BACKPORT - 10/01/2022 - Template supplier invoice
+        if (!GETPOST('fac_rec', 'int')) {
+            print ' <a href="'.DOL_URL_ROOT.'/societe/card.php?action=create&client=0&fournisseur=1&backtopage='.urlencode($_SERVER["PHP_SELF"].'?action=create').'"><span class="fa fa-plus-circle valignmiddle paddingleft" title="'.$langs->trans("AddThirdParty").'"></span></a>';
+        }
+        // FIN BACKPORT - 10/01/2022
+    }
 	print '</td></tr>';
+
+    //BACKPORT - 10/01/2022 - Template supplier invoice
+    // Overwrite some values if creation of invoice is from a predefined invoice
+    if (empty($origin) && empty($originid) && GETPOST('fac_rec', 'int') > 0) {
+        $invoice_predefined->fetch(GETPOST('fac_rec', 'int'));
+
+        $dateinvoice = $invoice_predefined->date_when; // To use next gen date by default later
+        if (empty($projectid)) {
+            $projectid = $invoice_predefined->fk_project;
+        }
+        $cond_reglement_id = $invoice_predefined->cond_reglement_id;
+        $mode_reglement_id = $invoice_predefined->mode_reglement_id;
+        $fk_account = $invoice_predefined->fk_account;
+        $note_public = $invoice_predefined->note_public;
+        $note_private = $invoice_predefined->note_private;
+
+        if (!empty($invoice_predefined->multicurrency_code)) {
+            $currency_code = $invoice_predefined->multicurrency_code;
+        }
+        if (!empty($invoice_predefined->multicurrency_tx)) {
+            $currency_tx = $invoice_predefined->multicurrency_tx;
+        }
+
+        $sql = 'SELECT r.rowid, r.titre as title, r.total_ttc';
+        $sql .= ' FROM '.MAIN_DB_PREFIX.'facture_fourn_rec as r';
+        $sql .= ' WHERE r.fk_soc = '. (int) $invoice_predefined->socid;
+
+        $resql = $db->query($sql);
+        if ($resql) {
+            $num = $db->num_rows($resql);
+            $i = 0;
+
+            if ($num > 0) {
+                print '<tr><td>'.$langs->trans('CreateFromRepeatableInvoice').'</td><td>';
+                //print '<input type="hidden" name="fac_rec" id="fac_rec" value="'.GETPOST('fac_rec', 'int').'">';
+                print '<select class="flat" id="fac_rec" name="fac_rec">'; // We may want to change the template to use
+                print '<option value="0" selected></option>';
+                while ($i < $num) {
+                    $objp = $db->fetch_object($resql);
+                    print '<option value="'.$objp->rowid.'"';
+                    if (GETPOST('fac_rec', 'int') == $objp->rowid) {
+                        print ' selected';
+                        $exampletemplateinvoice->fetch(GETPOST('fac_rec', 'int'));
+                    }
+                    print '>'.$objp->title.' ('.price($objp->total_ttc).' '.$langs->trans("TTC").')</option>';
+                    $i++;
+                }
+                print '</select>';
+                // Option to reload page to retrieve customer informations. Note, this clear other input
+                if (empty($conf->global->RELOAD_PAGE_ON_TEMPLATE_CHANGE_DISABLED)) {
+                    print '<script type="text/javascript">
+        			$(document).ready(function() {
+        				$("#fac_rec").change(function() {
+							console.log("We have changed the template invoice - Reload page");
+        					var fac_rec = $(this).val();
+        			        var socid = $(\'#socid\').val();
+        					// For template invoice change, we must reuse data of template, not input already done, so we call a GET with action=create, not a POST submit.
+        					window.location.href = "'.$_SERVER["PHP_SELF"].'?action=create&socid="+socid+"&fac_rec="+fac_rec;
+        				});
+        			});
+        			</script>';
+                }
+                print '</td></tr>';
+            }
+            $db->free($resql);
+        } else {
+            dol_print_error($db);
+        }
+    }
+    // FIN BACKPORT - 10/01/2022
 
 	// Ref supplier
     print '<tr><td class="fieldrequired">'.$langs->trans('RefSupplier').'</td><td><input name="ref_supplier" value="'.(isset($_POST['ref_supplier'])?$_POST['ref_supplier']:$objectsrc->ref_supplier).'" type="text"></td>';
@@ -2043,6 +2174,36 @@ if ($action == 'create')
 		print $form->select_incoterms((!empty($objectsrc->fk_incoterms) ? $objectsrc->fk_incoterms : ''), (!empty($objectsrc->location_incoterms)?$objectsrc->location_incoterms:''));
 		print '</td></tr>';
 	}
+
+    //BACKPORT - 10/01/2022 - Template supplier invoice
+    // Help of substitution key
+    $htmltext = '';
+    if (GETPOST('fac_rec', 'int') > 0) {
+        $dateexample = $newdateinvoice ? $newdateinvoice : $dateinvoice;
+        if (empty($dateexample)) {
+            $dateexample = dol_now();
+        }
+        $substitutionarray = array(
+            '__TOTAL_HT__' => $langs->trans("AmountHT").' ('.$langs->trans("Example").': '.price($exampletemplateinvoice->total_ht).')',
+            '__TOTAL_TTC__' =>  $langs->trans("AmountTTC").' ('.$langs->trans("Example").': '.price($exampletemplateinvoice->total_ttc).')',
+            '__INVOICE_PREVIOUS_MONTH__' => $langs->trans("PreviousMonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, -1, 'm'), '%m').')',
+            '__INVOICE_MONTH__' =>  $langs->trans("MonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date($dateexample, '%m').')',
+            '__INVOICE_NEXT_MONTH__' => $langs->trans("NextMonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, 1, 'm'), '%m').')',
+            '__INVOICE_PREVIOUS_MONTH_TEXT__' => $langs->trans("TextPreviousMonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, -1, 'm'), '%B').')',
+            '__INVOICE_MONTH_TEXT__' =>  $langs->trans("TextMonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date($dateexample, '%B').')',
+            '__INVOICE_NEXT_MONTH_TEXT__' => $langs->trans("TextNextMonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, 1, 'm'), '%B').')',
+            '__INVOICE_PREVIOUS_YEAR__' => $langs->trans("PreviousYearOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, -1, 'y'), '%Y').')',
+            '__INVOICE_YEAR__' =>  $langs->trans("YearOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date($dateexample, '%Y').')',
+            '__INVOICE_NEXT_YEAR__' => $langs->trans("NextYearOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, 1, 'y'), '%Y').')'
+        );
+
+        $htmltext = '<i>'.$langs->trans("FollowingConstantsWillBeSubstituted").':<br>';
+        foreach ($substitutionarray as $key => $val) {
+            $htmltext .= $key.' = '.$langs->trans($val).'<br>';
+        }
+        $htmltext .= '</i>';
+    }
+    // FIN BACKPORT - 10/01/2022
 
 	// Public note
 	print '<tr><td>'.$langs->trans('NotePublic').'</td>';
@@ -3171,6 +3332,15 @@ else
 						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?socid=' . $object->socid .'&amp;fac_avoir=' . $object->id . '&amp;action=create&amp;type=2'.($object->fk_project > 0 ? '&amp;projectid='.$object->fk_project : '').'">' . $langs->trans("CreateCreditNote") . '</a></div>';
 					}
 				}
+
+                //BACKPORT - 10/01/2022 - Template supplier invoice
+                // Clone as predefined / Create template
+                if (($object->type ==  FactureFournisseur::TYPE_STANDARD || $object->type == FactureFournisseur::TYPE_DEPOSIT) && $object->statut == 0 && $usercancreate) {
+                    if (!$objectidnext && count($object->lines) > 0) {
+                        print '<a class="butAction" href="'.DOL_URL_ROOT.'/fourn/facture/card-rec.php?facid='.$object->id.'&amp;action=create">'.$langs->trans("ChangeIntoRepeatableInvoice").'</a>';
+                    }
+                }
+                // FIN BACKPORT - 10/01/2022
 
 	            // Delete
 				$isErasable=$object->is_erasable();
