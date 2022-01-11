@@ -57,7 +57,15 @@ if (empty($inputalsopricewithtax)) $inputalsopricewithtax=0;
 // Define colspan for the button 'Add'
 $colspan = 3;	// Columns: total ht + col edit + col delete
 if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) $colspan++;//Add column for Total (currency) if required
-if (in_array($object->element, array('propal','commande','order','facture','facturerec','invoice','supplier_proposal','order_supplier','invoice_supplier'))) $colspan++;	// With this, there is a column move button
+/*
+* BACKPORT - 10/01/2022
+* Template supplier invoces
+*/
+if (in_array($object->element, array('propal','commande','order','facture','facturerec','invoice','supplier_proposal','order_supplier','invoice_supplier', 'invoice_supplier_rec'))) $colspan++;	// With this, there is a column move button
+/*
+* BACKPORT - 10/01/2022
+*/
+
 //print $object->element;
 
 // Lines for extrafield
@@ -85,9 +93,19 @@ if (!empty($extrafieldsline))
 	elseif ($this->table_element_line=='facture_fourn_det') {
 		$objectline = new SupplierInvoiceLine($this->db);
 	}
-	elseif ($this->table_element_line=='facturedet_rec') {
-		$objectline = new FactureLigneRec($this->db);
-	}
+    else if($this->table_element_line == 'facturedet_rec') {
+        $objectline = new FactureLigneRec($this->db);
+    }
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+    else if($this->table_element_line == 'facture_fourn_det_rec') {
+        $objectline = new FactureFournisseurLigneRec($this->db);
+    }
+    /*
+    * FIN BACKPORT - 10/01/2022
+    */
 }
 
 ?>
@@ -105,7 +123,11 @@ if ($nolinesbefore) {
 	<div id="add"></div><span class="hideonsmartphone"><?php echo $langs->trans('AddNewLine'); ?></span><?php // echo $langs->trans("FreeZone"); ?>
 	</td>
 	<?php
-	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier')	// We must have same test in printObjectLines
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier' || $object->element == 'invoice_supplier_rec')	// We must have same test in printObjectLines
 	{
 	?>
 		<td class="linecolrefsupplier"><span id="title_fourn_ref"><?php echo $langs->trans('SupplierRef'); ?></span></td>
@@ -357,7 +379,11 @@ if ($nolinesbefore) {
 	$doleditor->Create();
 
 	// Show autofill date for recurring invoices
-	if (! empty($conf->service->enabled) && $object->element == 'facturerec')
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+	if (! empty($conf->service->enabled) && ($object->element == 'facturerec' || $object->element == 'invoice_supplier_rec'))
 	{
 		echo '<div class="divlinefordates"><br>';
 		echo $langs->trans('AutoFillDateFrom').' ';
@@ -369,7 +395,11 @@ if ($nolinesbefore) {
 	}
 	echo '</td>';
 
-	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier')	// We must have same test in printObjectLines
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier' || $object->element == 'invoice_supplier_rec')	// We must have same test in printObjectLines
 	{
 		$coldisplay++;
         ?>

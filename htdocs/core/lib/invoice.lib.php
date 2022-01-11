@@ -182,18 +182,40 @@ function invoice_rec_prepare_head($object)
 	$h = 0;
 	$head = array();
 
-	$head[$h][0] = DOL_URL_ROOT.'/compta/facture/fiche-rec.php?id='.$object->id;
-	$head[$h][1] = $langs->trans("CardBill");
-	$head[$h][2] = 'card';
-	$h++;
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+    if($object->element == 'facturerec') {
+        $head[$h][0] = DOL_URL_ROOT.'/compta/facture/card-rec.php?id='.$object->id;
+        $head[$h][1] = $langs->trans('RepeatableInvoice');
+        $head[$h][2] = 'card';
+        $h++;
 
-    // Show more tabs from modules
-    // Entries must be declared in modules descriptor with line
-    // $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
-    // $this->tabs = array('entity:-tabname);   												to remove a tab
-    complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice-rec');
+        // Show more tabs from modules
+        // Entries must be declared in modules descriptor with line
+        // $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
+        // $this->tabs = array('entity:-tabname);   												to remove a tab
+        complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice-rec');
 
-	complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice-rec', 'remove');
+        complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice-rec', 'remove');
+    }
+    else if($object->element == 'invoice_supplier_rec') {
+        $head[$h][0] = DOL_URL_ROOT.'/fourn/facture/card-rec.php?id='.$object->id;
+        $head[$h][1] = $langs->trans('RepeatableSupplierInvoice');
+        $head[$h][2] = 'card';
+        $h++;
 
+        // Show more tabs from modules
+        // Entries must be declared in modules descriptor with line
+        // $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
+        // $this->tabs = array('entity:-tabname);   												to remove a tab
+        complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice_supplier_rec');
+
+        complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice_supplier_rec', 'remove');
+    }
+    /*
+    * FIN BACKPORT - 10/01/2022
+    */
 	return $head;
 }
