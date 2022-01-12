@@ -381,7 +381,6 @@ class FactureFournisseurRec extends CommonInvoice
                         $error++;
                     } else {
                         $objectline = new FactureFournisseurLigneRec($this->db);
-
                         $result2 = $objectline->fetch($result_insert);
                         if ($result2 > 0) {
                             // Extrafields
@@ -763,6 +762,7 @@ class FactureFournisseurRec extends CommonInvoice
                 $line->multicurrency_total_ht   = $objp->multicurrency_total_ht;
                 $line->multicurrency_total_tva  = $objp->multicurrency_total_tva;
                 $line->multicurrency_total_ttc  = $objp->multicurrency_total_ttc;
+                $line->db                       = $this->db;
 
                 $line->fetch_optionals();
 
@@ -1002,16 +1002,16 @@ class FactureFournisseurRec extends CommonInvoice
             $sql .= ', ' . (int) $user;
             $sql .= ', ' . (int) $this->fk_multicurrency;
             $sql .= ", '" . $this->db->escape($this->multicurrency_code) . "'";
-            $sql .= ', ' . price2num($pu_ht_devise, 'CU');
-            $sql .= ', ' . price2num($multicurrency_total_ht, 'CT');
-            $sql .= ', ' . price2num($multicurrency_total_tva, 'CT');
-            $sql .= ', ' . price2num($multicurrency_total_ttc, 'CT');
+            $sql .= ', ' . (price2num($pu_ht_devise, 'CU') == 'ErrorBadParameterProvidedToFunction' ? 0 : price2num($pu_ht_devise, 'CU'));
+            $sql .= ', ' . (price2num($multicurrency_total_ht, 'CT') == 'ErrorBadParameterProvidedToFunction' ? 0 : price2num($multicurrency_total_ht, 'CT'));
+            $sql .= ', ' . (price2num($multicurrency_total_tva, 'CT') == 'ErrorBadParameterProvidedToFunction' ? 0 : price2num($multicurrency_total_tva, 'CT'));
+            $sql .= ', ' . (price2num($multicurrency_total_ttc, 'CT') == 'ErrorBadParameterProvidedToFunction' ? 0 : price2num($multicurrency_total_ttc, 'CT'));
             $sql .= ')';
 
             dol_syslog(get_class($this). '::addline', LOG_DEBUG);
             if ($this->db->query($sql)) {
                 $lineId = $this->db->last_insert_id(MAIN_DB_PREFIX. 'facture_fourn_det_rec');
-                $this->update_price();
+                $res = $this->update_price();
                 $this->id = $facid;
                 $this->db->commit();
                 return $lineId;
@@ -1164,7 +1164,7 @@ class FactureFournisseurRec extends CommonInvoice
             dol_syslog(get_class($this). '::updateline', LOG_DEBUG);
             if ($this->db->query($sql)) {
                 $this->id = $facid;
-                $this->update_price();
+                $res = $this->update_price();
                 return 1;
             } else {
                 $this->error = $this->db->lasterror();
@@ -1317,9 +1317,10 @@ class FactureFournisseurRec extends CommonInvoice
                         }
                     }
 
-                    if (!$error && $facturerec->generate_pdf) {
+                    if (!$error && $facturerec->generate_pdf && $facturerec->model_pdf) {
                         // We refresh the object in order to have all necessary data (like date_lim_reglement)
                         $new_fac_fourn->fetch($new_fac_fourn->id);
+
                         $result = $new_fac_fourn->generateDocument($facturerec->model_pdf, $langs);
                         if ($result <= 0) {
                             $this->errors = $new_fac_fourn->errors;
@@ -1981,6 +1982,15 @@ class FactureFournisseurLigneRec extends CommonObjectLine
     public $multicurrency_total_ttc;
     */
 
+    /**
+     *	Constructor
+     *
+     * 	@param		DoliDB		$db		Database handler
+     */
+    public function __construct($db)
+    {
+        $this->db = $db;
+    }
 
     /**
      *    Delete supplier order template line in database
@@ -2013,7 +2023,6 @@ class FactureFournisseurLigneRec extends CommonObjectLine
 
         if (! $error) {
             $sql = 'DELETE FROM ' . MAIN_DB_PREFIX . $this->table_element . ' WHERE rowid=' . $this->id;
-
             $res = $this->db->query($sql);
             if ($res === false) {
                 $error++;

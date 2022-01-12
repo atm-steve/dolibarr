@@ -2831,7 +2831,6 @@ abstract class CommonObject
 			if ($product_field) $sql.= ' AND '.$product_field.' <> 9';
 		}
 		$sql.= ' ORDER by rowid';	// We want to be sure to always use same order of line to not change lines differently when option MAIN_ROUNDOFTOTAL_NOT_TOTALOFROUND is used
-
 		dol_syslog(get_class($this)."::update_price", LOG_DEBUG);
 		$resql = $this->db->query($sql);
 		if ($resql)
@@ -2944,7 +2943,7 @@ abstract class CommonObject
 			$fieldttc='total_ttc';
 			// Specific code for backward compatibility with old field names
 			if ($this->element == 'facture' || $this->element == 'facturerec')             $fieldht='total';
-			if ($this->element == 'facture_fourn' || $this->element == 'invoice_supplier') $fieldtva='total_tva';
+			if ($this->element == 'facture_fourn' || $this->element == 'invoice_supplier' || $this->element == 'invoice_supplier_rec') $fieldtva='total_tva';
 			if ($this->element == 'propal')                                                $fieldttc='total';
 			if ($this->element == 'expensereport')                                         $fieldtva='total_tva';
 			if ($this->element == 'supplier_proposal')                                     $fieldttc='total';
@@ -2961,7 +2960,6 @@ abstract class CommonObject
 						$sql .= ", multicurrency_total_tva='".price2num($this->multicurrency_total_tva, 'MT', 1)."'";
 						$sql .= ", multicurrency_total_ttc='".price2num($this->multicurrency_total_ttc, 'MT', 1)."'";
 				$sql .= ' WHERE rowid = '.$this->id;
-
 
 				dol_syslog(get_class($this)."::update_price", LOG_DEBUG);
 				$resql=$this->db->query($sql);

@@ -103,7 +103,7 @@ $permissionnote=$user->rights->fournisseur->facture->creer;	// Used by the inclu
 $permissiondellink=$user->rights->fournisseur->facture->creer;	// Used by the include of actions_dellink.inc.php
 $permissionedit=$user->rights->fournisseur->facture->creer; // Used by the include of actions_lineupdown.inc.php
 $permissiontoadd=$user->rights->fournisseur->facture->creer; // Used by the include of actions_addupdatedelete.inc.php
-
+$usercancreate=$user->rights->fournisseur->facture->creer;
 
 /*
  * Actions
@@ -626,7 +626,7 @@ if (empty($reshook))
 				$error++;
 			}
 			if (! ($_POST['fac_replacement'] > 0)) {
-				$error ++;
+                $error ++;
 				setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("ReplaceInvoice")), null, 'errors');
 			}
 
@@ -785,12 +785,12 @@ if (empty($reshook))
         //BACKPORT - 10/01/2022 - Template supplier invoice
         // Standard invoice or Deposit invoice, created from a Predefined template invoice
         if((GETPOST('type') == FactureFournisseur::TYPE_STANDARD || GETPOST('type') == FactureFournisseur::TYPE_DEPOSIT) && GETPOST('fac_rec', 'int') > 0) {
-            if(empty($dateinvoice)) {
+            if(empty($datefacture)) {
                 $error++;
                 setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Date")), null, 'errors');
                 $action = 'create';
             }
-            else if($dateinvoice > (dol_get_last_hour(dol_now('tzuserrel')) + (empty($conf->global->INVOICE_MAX_FUTURE_DELAY) ? 0 : $conf->global->INVOICE_MAX_FUTURE_DELAY))) {
+            else if($datefacture > dol_now()) {
                 $error++;
                 setEventMessages($langs->trans("ErrorDateIsInFuture"), null, 'errors');
                 $action = 'create';
@@ -801,6 +801,7 @@ if (empty($reshook))
                 $object->type = GETPOST('type');
                 $object->ref = GETPOST('ref');
                 $object->date = $dateinvoice;
+                $object->label = GETPOST('label');
                 $object->note_public = trim(GETPOST('note_public', 'restricthtml'));
                 $object->note_private = trim(GETPOST('note_private', 'restricthtml'));
                 $object->ref_client = GETPOST('ref_client');
@@ -2208,7 +2209,7 @@ if ($action == 'create')
 	// Public note
 	print '<tr><td>'.$langs->trans('NotePublic').'</td>';
 	print '<td>';
-	$note_public = $object->getDefaultCreateValueFor('note_public');
+	$note_public = empty($note_public) ? $object->getDefaultCreateValueFor('note_public') : $note_public;
 	if(empty($note_public))$note_public = $objectsrc->note_public;
 	$doleditor = new DolEditor('note_public', $note_public, '', 80, 'dolibarr_notes', 'In', 0, false, true, ROWS_3, '90%');
 	print $doleditor->Create(1);
@@ -2219,7 +2220,7 @@ if ($action == 'create')
 	// Private note
 	print '<tr><td>'.$langs->trans('NotePrivate').'</td>';
 	print '<td>';
-	$note_private = $object->getDefaultCreateValueFor('note_private');
+	$note_private = empty($note_private) ? $object->getDefaultCreateValueFor('note_private'): $note_private;
 	if(empty($note_private))$note_private = $objectsrc->note_private;
 
 	$doleditor = new DolEditor('note_private', $note_private, '', 80, 'dolibarr_notes', 'In', 0, false, true, ROWS_3, '90%');

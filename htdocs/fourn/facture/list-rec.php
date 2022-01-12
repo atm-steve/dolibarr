@@ -159,7 +159,13 @@ $arrayfields = array(
     'suspended '=>array('label'=>'Status', 'checked'=>1, 'position'=>1000),
 );
 // Extra fields
-include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_array_fields.tpl.php';
+if (is_array($extrafields->attribute_label) && count($extrafields->attribute_label))
+{
+    foreach($extrafields->attribute_label as $key => $val)
+    {
+        if (! empty($extrafields->attribute_list[$key])) $arrayfields["ef.".$key]=array('label'=>$extrafields->attribute_label[$key], 'checked'=>(($extrafields->attribute_list[$key]<0)?0:1), 'position'=>$extrafields->attribute_pos[$key], 'enabled'=>(abs($extrafields->attribute_list[$key])!=3 && $extrafields->attribute_perms[$key]));
+    }
+}
 
 $object->fields = dol_sort_array($object->fields, 'position');
 $arrayfields = dol_sort_array($arrayfields, 'position');
@@ -472,7 +478,6 @@ if ($resql) {
     if ($optioncss != '') {
         print '<input type="hidden" name="optioncss" value="'.$optioncss.'">';
     }
-    print '<input type="hidden" name="token" value="'.newToken().'">';
     print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
     print '<input type="hidden" name="action" value="list">';
     print '<input type="hidden" name="sortfield" value="'.$sortfield.'">';
@@ -910,7 +915,26 @@ if ($resql) {
     }
 
     // Show total line
-    include DOL_DOCUMENT_ROOT.'/core/tpl/list_print_total.tpl.php';
+    if (isset($totalarray['pos']))
+    {
+        print '<tr class="liste_total">';
+        $i=0;
+        while ($i < $totalarray['nbfield'])
+        {
+            $i++;
+            if (! empty($totalarray['pos'][$i]))  print '<td class="right">'.price($totalarray['val'][$totalarray['pos'][$i]]).'</td>';
+            else
+            {
+                if ($i == 1)
+                {
+                    if ($num < $limit) print '<td class="left">'.$langs->trans("Total").'</td>';
+                    else print '<td class="left">'.$langs->trans("Totalforthispage").'</td>';
+                }
+                else print '<td></td>';
+            }
+        }
+        print '</tr>';
+    }
 
 
     print "</table>";
