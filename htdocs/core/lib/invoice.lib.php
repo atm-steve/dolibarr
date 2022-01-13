@@ -168,24 +168,18 @@ function invoice_admin_prepare_head()
 	return $head;
 }
 
-
 /**
  * Return array head with list of tabs to view object informations.
  *
- * @param   Facture     $object     Invoice object
+ * @param Facture $object Invoice object
  * @return array                    head array with tabs
  */
-function invoice_rec_prepare_head($object)
-{
-	global $db, $langs, $conf;
+function invoice_rec_prepare_head($object) {
+    global $db, $langs, $conf;
 
-	$h = 0;
-	$head = array();
+    $h = 0;
+    $head = [];
 
-    /*
-    * BACKPORT - 10/01/2022
-    * Template supplier invoces
-    */
     if($object->element == 'facturerec') {
         $head[$h][0] = DOL_URL_ROOT.'/compta/facture/card-rec.php?id='.$object->id;
         $head[$h][1] = $langs->trans('RepeatableInvoice');
@@ -200,22 +194,31 @@ function invoice_rec_prepare_head($object)
 
         complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice-rec', 'remove');
     }
-    else if($object->element == 'invoice_supplier_rec') {
+    return $head;
+}
+
+/**
+ * Return array head with list of tabs to view object informations.
+ *
+ * @param FactureFournisseurRec $object Template supplier invoice object
+ * @return array                    head array with tabs
+ */
+function supplier_invoice_rec_prepare_head($object) {
+    global $db, $langs, $conf;
+
+    $h = 0;
+    $head = [];
+    if ($object->element == 'invoice_supplier_rec') {
         $head[$h][0] = DOL_URL_ROOT.'/fourn/facture/card-rec.php?id='.$object->id;
         $head[$h][1] = $langs->trans('RepeatableSupplierInvoice');
         $head[$h][2] = 'card';
         $h++;
 
-        // Show more tabs from modules
-        // Entries must be declared in modules descriptor with line
         // $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
         // $this->tabs = array('entity:-tabname);   												to remove a tab
         complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice_supplier_rec');
 
         complete_head_from_modules($conf, $langs, $object, $head, $h, 'invoice_supplier_rec', 'remove');
     }
-    /*
-    * FIN BACKPORT - 10/01/2022
-    */
-	return $head;
+    return $head;
 }

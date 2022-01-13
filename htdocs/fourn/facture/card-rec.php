@@ -110,8 +110,8 @@ $extrafields->fetch_name_optionals_label($object->table_element);
 $search_array_options = $extrafields->getOptionalsFromPost($object->table_element, '', 'search_');
 
 $permissionnote = $user->rights->fournisseur->facture->creer || $user->rights->supplier_invoice->creer; // Used by the include of actions_setnotes.inc.php
-$permissiondellink = $user->rights->fournisseur->facture->creer || $user->rights->supplier_invoice->creer;; // Used by the include of actions_dellink.inc.php
-$permissiontoedit = $user->rights->fournisseur->facture->creer || $user->rights->supplier_invoice->creer;; // Used by the include of actions_lineupdonw.inc.php
+$permissiondellink = $user->rights->fournisseur->facture->creer || $user->rights->supplier_invoice->creer; // Used by the include of actions_dellink.inc.php
+$permissiontoedit = $user->rights->fournisseur->facture->creer || $user->rights->supplier_invoice->creer; // Used by the include of actions_lineupdonw.inc.php
 
 $usercanread = $user->rights->fournisseur->facture->lire || $user->rights->supplier_invoice->lire;
 $usercancreate =  $user->rights->fournisseur->facture->creer || $user->rights->supplier_invoice->creer;
@@ -177,7 +177,6 @@ if (empty($reshook)) {
         $rehour = GETPOST('rehour', 'int');
         $remin = GETPOST('remin', 'int');
         $nb_gen_max = GETPOST('nb_gen_max', 'int');
-        //if (empty($nb_gen_max)) $nb_gen_max =0;
 
         if (GETPOST('frequency', 'int')) {
             if (empty($reyear) || empty($remonth) || empty($reday)) {
@@ -249,8 +248,7 @@ if (empty($reshook)) {
     }
 
     // Delete
-    //TODO : Droits
-    if ($action == 'confirm_deleteinvoice' && $confirm == 'yes' && ($user->rights->fournisseur->facture->supprimer || $user->rights->supplier_invoice->supprimer)) {
+    if ($action == 'confirm_deleteinvoice' && $confirm == 'yes' && $usercandelete) {
         $object->delete($user);
 
         header('Location: ' .DOL_URL_ROOT.'/fourn/facture/list-rec.php');
@@ -521,7 +519,6 @@ if (empty($reshook)) {
 
             // Define special_code for special lines
             $special_code = 0;
-            // if (empty($_POST['qty'])) $special_code=3; // Options should not exists on invoices
 
             // Ecrase $pu par celui du produit
             // Ecrase $desc par celui du produit
@@ -587,7 +584,7 @@ if (empty($reshook)) {
                         $outputlangs->setDefaultLang($newlang);
                     }
 
-                    $desc = (!empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["description"] : $prod->description;
+                    $desc = (! empty($prod->multilangs[$outputlangs->defaultlang]["description"])) ? $prod->multilangs[$outputlangs->defaultlang]["description"] : $prod->description;
                 } else {
                     $desc = $prod->description;
                 }
@@ -798,7 +795,7 @@ if (empty($reshook)) {
             $label = $product->label;
 
             // Check price is not lower than minimum (check is done only for standard or replacement invoices)
-            if (((!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->produit->ignore_price_min_advance)) || empty($conf->global->MAIN_USE_ADVANCED_PERMS))  && $price_min && (price2num($pu_ht) * (1 - $remise_percent / 100) < price2num($price_min))) {
+            if ($usercanproductignorepricemin  && $price_min && (price2num($pu_ht) * (1 - $remise_percent / 100) < price2num($price_min))) {
                 setEventMessages($langs->trans("CantBeLessThanMinPrice", price(price2num($price_min, 'MU'), 0, $langs, 0, 0, - 1, $conf->currency)), null, 'errors');
                 $error++;
             }
@@ -1012,7 +1009,7 @@ if ($action == 'create') {
         print "<tr><td>".$langs->trans('Model')."</td><td>";
         include_once DOL_DOCUMENT_ROOT.'/core/modules/supplier_invoice/modules_facturefournisseur.php';
         $list = ModelePDFSuppliersInvoices::liste_modeles($db);
-        print $form->selectarray('modelpdf', $list, $conf->global->INVOICE_SUPPLIER_ADDON_PDF);
+        print Form::selectarray('modelpdf', $list, $conf->global->INVOICE_SUPPLIER_ADDON_PDF);
         print "</td></tr>";
 
         print "</table>";
@@ -1030,7 +1027,7 @@ if ($action == 'create') {
 
         // Frequency + unit
         print '<tr><td class="titlefieldcreate">'.$form->textwithpicto($langs->trans("Frequency"), $langs->transnoentitiesnoconv('toolTipFrequency'))."</td><td>";
-        print "<input type='text' name='frequency' value='".GETPOST('frequency', 'int')."' size='4' />&nbsp;".$form->selectarray('unit_frequency', array('d'=>$langs->trans('Day'), 'm'=>$langs->trans('Month'), 'y'=>$langs->trans('Year')), (GETPOST('unit_frequency') ?GETPOST('unit_frequency') : 'm'));
+        print "<input type='text' name='frequency' value='".GETPOST('frequency', 'int')."' size='4' />&nbsp;".Form::selectarray('unit_frequency', array('d'=>$langs->trans('Day'), 'm'=>$langs->trans('Month'), 'y'=>$langs->trans('Year')), (GETPOST('unit_frequency') ?GETPOST('unit_frequency') : 'm'));
         print "</td></tr>";
 
         // Date next run
@@ -1047,14 +1044,14 @@ if ($action == 'create') {
         // Auto validate the invoice
         print "<tr><td>".$langs->trans("StatusOfGeneratedInvoices")."</td><td>";
         $select = array('0'=>$langs->trans('BillStatusDraft'), '1'=>$langs->trans('BillStatusValidated'));
-        print $form->selectarray('auto_validate', $select, GETPOST('auto_validate'));
+        print Form::selectarray('auto_validate', $select, GETPOST('auto_validate'));
         print "</td></tr>";
 
         // Auto generate document
         if (!empty($conf->global->INVOICE_REC_CAN_DISABLE_DOCUMENT_FILE_GENERATION)) {
             print "<tr><td>".$langs->trans("StatusOfGeneratedDocuments")."</td><td>";
             $select = array('0'=>$langs->trans('DoNotGenerateDoc'), '1'=>$langs->trans('AutoGenerateDoc'));
-            print $form->selectarray('generate_pdf', $select, GETPOST('generate_pdf'));
+            print Form::selectarray('generate_pdf', $select, GETPOST('generate_pdf'));
             print "</td></tr>";
         } else {
             print '<input type="hidden" name="generate_pdf" value="1">';
@@ -1123,7 +1120,7 @@ if ($action == 'create') {
         $author = new User($db);
         $author->fetch($object->user_author);
 
-        $head = invoice_rec_prepare_head($object);
+        $head = supplier_invoice_rec_prepare_head($object);
 
         print dol_get_fiche_head($head, 'card', $langs->trans('RepeatableInvoice'), -1, 'bill'); // Add a div
 
@@ -1381,7 +1378,6 @@ if ($action == 'create') {
                 $list[] = str_replace(':', '|', $k).':'.$model;
             }
             $select = 'select;'.implode(',', $list);
-            //TODO : Droits
             print $form->editfieldval($langs->trans('Model'), 'modelpdf', $object->model_pdf, $object, $usercancreate, $select);
         } else {
             print $object->model_pdf;
@@ -1404,7 +1400,6 @@ if ($action == 'create') {
          * Recurrence
          */
         $title = $langs->trans("Recurrence");
-        //print load_fiche_titre($title, '', 'calendar');
 
         print '<table class="border centpercent tableforfield">';
 
@@ -1425,7 +1420,7 @@ if ($action == 'create') {
             print '<input type="hidden" name="action" value="setfrequency">';
             print '<table class="nobordernopadding">';
             print '<tr><td>';
-            print "<input type='text' name='frequency' value='".$object->frequency."' size='5' />&nbsp;".$form->selectarray('unit_frequency', array('d'=>$langs->trans('Day'), 'm'=>$langs->trans('Month'), 'y'=>$langs->trans('Year')), ($object->unit_frequency ? $object->unit_frequency : 'm'));
+            print "<input type='text' name='frequency' value='".$object->frequency."' size='5' />&nbsp;".Form::selectarray('unit_frequency', array('d'=>$langs->trans('Day'), 'm'=>$langs->trans('Month'), 'y'=>$langs->trans('Year')), ($object->unit_frequency ? $object->unit_frequency : 'm'));
             print '</td>';
             print '<td class="left"><input type="submit" class="button button-edit" value="'.$langs->trans("Modify").'"></td>';
             print '</tr></table></form>';
@@ -1449,7 +1444,6 @@ if ($action == 'create') {
         if ($action == 'date_when' || $object->frequency > 0) {
             print $form->editfieldval($langs->trans("NextDateToExecution"), 'date_when', $object->date_when, $object, $usercancreate, 'day', $object->date_when, null, '', '', 0, 'strikeIfMaxNbGenReached');
         }
-        //var_dump(dol_print_date($object->date_when+60, 'dayhour').' - '.dol_print_date($now, 'dayhour'));
         if (!$object->isMaxNbGenReached()) {
             if (!$object->suspended && $action != 'editdate_when' && $object->frequency > 0 && $object->date_when && $object->date_when < $now) {
                 print img_warning($langs->trans("Late"));
@@ -1581,7 +1575,6 @@ if ($action == 'create') {
         }
 
         // Form to add new line
-        //TODO : Droits
         if ($object->statut == $object::STATUS_DRAFT && $usercancreate && $action != 'valid' && $action != 'editline') {
             if ($action != 'editline') {
                 // Add free products/services
@@ -1633,8 +1626,7 @@ if ($action == 'create') {
             }
         }
 
-        //if ($object->statut == Facture::STATUS_DRAFT && ($user->rights->fournisseur->facture->supprimer || $user->rights->supplier_invoice->supprimer))
-        if (($user->rights->fournisseur->facture->supprimer || $user->rights->supplier_invoice->supprimer)) {
+        if ($usercandelete) {
             print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER['PHP_SELF'].'?action=ask_deleteinvoice&id='.$object->id.'">'.$langs->trans('Delete').'</a></div>';
         }
 

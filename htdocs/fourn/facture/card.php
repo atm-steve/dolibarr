@@ -36,7 +36,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/modules/supplier_invoice/modules_facturefournisseur.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
-require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture-rec.class.php';  //q - 10/01/2022 - Template supplier invoice
+require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture-rec.class.php';  //BACKPORT - 10/01/2022 - Template supplier invoice
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/paiementfourn.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/discount.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/fourn.lib.php';
@@ -1784,7 +1784,6 @@ if ($action == 'create')
 	print '<tr><td class="titlefieldcreate">'.$langs->trans('Ref').'</td><td>'.$langs->trans('Draft').'</td></tr>';
 
     //BACKPORT - 10/01/2022 - Template supplier invoice
-    $exampletemplateinvoice = new FactureFournisseurRec($db);
     $invoice_predefined = new FactureFournisseurRec($db);
     if (empty($origin) && empty($originid) && GETPOST('fac_rec', 'int') > 0) {
         $invoice_predefined->fetch(GETPOST('fac_rec', 'int'));
@@ -1859,7 +1858,6 @@ if ($action == 'create')
 
             if ($num > 0) {
                 print '<tr><td>'.$langs->trans('CreateFromRepeatableInvoice').'</td><td>';
-                //print '<input type="hidden" name="fac_rec" id="fac_rec" value="'.GETPOST('fac_rec', 'int').'">';
                 print '<select class="flat" id="fac_rec" name="fac_rec">'; // We may want to change the template to use
                 print '<option value="0" selected></option>';
                 while ($i < $num) {
@@ -1867,7 +1865,7 @@ if ($action == 'create')
                     print '<option value="'.$objp->rowid.'"';
                     if (GETPOST('fac_rec', 'int') == $objp->rowid) {
                         print ' selected';
-                        $exampletemplateinvoice->fetch(GETPOST('fac_rec', 'int'));
+                        $invoice_predefined->fetch(GETPOST('fac_rec', 'int'));
                     }
                     print '>'.$objp->title.' ('.price($objp->total_ttc).' '.$langs->trans("TTC").')</option>';
                     $i++;
@@ -2185,8 +2183,8 @@ if ($action == 'create')
             $dateexample = dol_now();
         }
         $substitutionarray = array(
-            '__TOTAL_HT__' => $langs->trans("AmountHT").' ('.$langs->trans("Example").': '.price($exampletemplateinvoice->total_ht).')',
-            '__TOTAL_TTC__' =>  $langs->trans("AmountTTC").' ('.$langs->trans("Example").': '.price($exampletemplateinvoice->total_ttc).')',
+            '__TOTAL_HT__' => $langs->trans("AmountHT").' ('.$langs->trans("Example").': '.price($invoice_predefined->total_ht).')',
+            '__TOTAL_TTC__' =>  $langs->trans("AmountTTC").' ('.$langs->trans("Example").': '.price($invoice_predefined->total_ttc).')',
             '__INVOICE_PREVIOUS_MONTH__' => $langs->trans("PreviousMonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, -1, 'm'), '%m').')',
             '__INVOICE_MONTH__' =>  $langs->trans("MonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date($dateexample, '%m').')',
             '__INVOICE_NEXT_MONTH__' => $langs->trans("NextMonthOfInvoice").' ('.$langs->trans("Example").': '.dol_print_date(dol_time_plus_duree($dateexample, 1, 'm'), '%m').')',

@@ -219,6 +219,9 @@ class FactureFournisseur extends CommonInvoice
     * Template supplier invoces
     */
     public $fac_rec;
+
+    /** @var int $fk_fac_rec_source */
+    public $fk_fac_rec_source;
     /*
     * FIN BACKPORT - 10/01/2022
     */
@@ -661,9 +664,9 @@ class FactureFournisseur extends CommonInvoice
             //Insert lines of template invoices
             if (!$error && $this->fac_rec > 0) {
                 foreach ($_facrec->lines as $i => $val) {
-                    if ($_facrec->lines[$i]->fk_product) {
+                    if ($val->fk_product) {
                         $prod = new Product($this->db);
-                        $res = $prod->fetch($_facrec->lines[$i]->fk_product);
+                        $res = $prod->fetch($val->fk_product);
                     }
 
                     // For line from template invoice, we use data from template invoice
@@ -674,22 +677,22 @@ class FactureFournisseur extends CommonInvoice
                     $localtax1_tx=get_localtax($tva_tx,1,$soc,$mysoc,$tva_npr);
                     $localtax2_tx=get_localtax($tva_tx,2,$soc,$mysoc,$tva_npr);
                     */
-                    $tva_tx = $_facrec->lines[$i]->tva_tx.($_facrec->lines[$i]->vat_src_code ? '('.$_facrec->lines[$i]->vat_src_code.')' : '');
-                    $tva_npr = $_facrec->lines[$i]->info_bits;
+                    $tva_tx = $val->tva_tx.($val->vat_src_code ? '('.$val->vat_src_code.')' : '');
+                    $tva_npr = $val->info_bits;
                     if (empty($tva_tx)) {
                         $tva_npr = 0;
                     }
-                    $localtax1_tx = $_facrec->lines[$i]->localtax1_tx;
-                    $localtax2_tx = $_facrec->lines[$i]->localtax2_tx;
+                    $localtax1_tx = $val->localtax1_tx;
+                    $localtax2_tx = $val->localtax2_tx;
 
-                    $fk_product_fournisseur_price = empty($_facrec->lines[$i]->fk_product_fournisseur_price) ? null : $_facrec->lines[$i]->fk_product_fournisseur_price;
-                    $buyprice = empty($_facrec->lines[$i]->buyprice) ? 0 : $_facrec->lines[$i]->buyprice;
+                    $fk_product_fournisseur_price = empty($val->fk_product_fournisseur_price) ? null : $val->fk_product_fournisseur_price;
+                    $buyprice = empty($val->buyprice) ? 0 : $val->buyprice;
 
                     // If buyprice not defined from template invoice, we try to guess the best value
-                    if (!$buyprice && $_facrec->lines[$i]->fk_product > 0) {
+                    if (!$buyprice && $val->fk_product > 0) {
                         require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
                         $producttmp = new ProductFournisseur($this->db);
-                        $producttmp->fetch($_facrec->lines[$i]->fk_product);
+                        $producttmp->fetch($val->fk_product);
 
                         // If margin module defined on costprice, we try the costprice
                         // If not defined or if module margin defined and pmp and stock module enabled, we try pmp price
@@ -699,7 +702,7 @@ class FactureFournisseur extends CommonInvoice
                         } elseif (!empty($conf->stock->enabled) && ($conf->global->MARGIN_TYPE == 'costprice' || $conf->global->MARGIN_TYPE == 'pmp') && !empty($producttmp->pmp)) {
                             $buyprice = $producttmp->pmp;
                         } else {
-                            if ($producttmp->find_min_price_product_fournisseur($_facrec->lines[$i]->fk_product) > 0) {
+                            if ($producttmp->find_min_price_product_fournisseur($val->fk_product) > 0) {
                                 if ($producttmp->product_fourn_price_id > 0) {
                                     $buyprice = price2num($producttmp->fourn_unitprice * (1 - $producttmp->fourn_remise_percent / 100) + $producttmp->fourn_remise, 'MU');
                                 }
@@ -708,28 +711,28 @@ class FactureFournisseur extends CommonInvoice
                     }
 
                     $result_insert = $this->addline(
-                        $_facrec->lines[$i]->description,
-                        $_facrec->lines[$i]->pu_ht,
+                        $val->description,
+                        $val->pu_ht,
                         $tva_tx,
                         $localtax1_tx,
                         $localtax2_tx,
-                        $_facrec->lines[$i]->qty,
-                        $_facrec->lines[$i]->fk_product,
-                        $_facrec->lines[$i]->remise_percent,
-                        ($_facrec->lines[$i]->date_start == 1 && $this->date) ? $this->date : '',
-                        ($_facrec->lines[$i]->date_end == 1 && $previousdaynextdatewhen) ? $previousdaynextdatewhen : '',
+                        $val->qty,
+                        $val->fk_product,
+                        $val->remise_percent,
+                        ($val->date_start == 1 && $this->date) ? $this->date : '',
+                        ($val->date_end == 1 && $previousdaynextdatewhen) ? $previousdaynextdatewhen : '',
                         0,
-                        $_facrec->lines[$i]->info_bits,
+                        $val->info_bits,
                         'HT',
                         0,
-                        $_facrec->lines[$i]->rang,
+                        $val->rang,
                         false,
-                        $_facrec->lines[$i]->array_options,
-                        $_facrec->lines[$i]->fk_unit,
+                        $val->array_options,
+                        $val->fk_unit,
                         0,
                         0,
-                        $_facrec->lines[$i]->ref_supplier,
-                        $_facrec->lines[$i]->special_code
+                        $val->ref_supplier,
+                        $val->special_code
                     );
                     if ($result_insert < 0) {
                         $error++;

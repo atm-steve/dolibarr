@@ -215,8 +215,8 @@ class FactureFournisseurRec extends CommonInvoice
     );
     // END MODULEBUILDER PROPERTIES
 
-    const STATUS_NOTSUSPENDED = 0;
-    const STATUS_SUSPENDED = 1;
+    public const STATUS_NOTSUSPENDED = 0;
+    public const STATUS_SUSPENDED = 1;
 
 
 
@@ -577,8 +577,6 @@ class FactureFournisseurRec extends CommonInvoice
             $sql .= ' AND f.rowid='. (int) $rowid;
         } elseif ($ref) {
             $sql .= " AND f.titre='".$this->db->escape($ref)."'";
-        } else {
-            $sql .= ' AND f.rowid = 0';
         }
 
         $result = $this->db->query($sql);
@@ -657,7 +655,7 @@ class FactureFournisseurRec extends CommonInvoice
                 return 1;
             } else {
                 $this->error = 'Bill with id '.$rowid.' or ref '.$ref.' not found';
-                dol_syslog('Facture::Fetch Error '.$this->error, LOG_ERR);
+                dol_syslog(__METHOD__.' Error '.$this->error, LOG_ERR);
                 return -2;
             }
         } else {
@@ -1204,11 +1202,10 @@ class FactureFournisseurRec extends CommonInvoice
     /**
      * Format string to output with by striking the string if max number of generation was reached
      *
-     * @param	string		$ret	Default value to output
-     * @return	boolean				False by default, True if maximum number of generation is reached
+     * @param string $ret Default value to output
+     * @return    string                False by default, True if maximum number of generation is reached
      */
-    public function strikeIfMaxNbGenReached($ret)
-    {
+    public function strikeIfMaxNbGenReached($ret) {
         // Special case to strike the date
         return ($this->isMaxNbGenReached() ? '<strike>' : '').$ret.($this->isMaxNbGenReached() ? '</strike>' : '');
     }
@@ -1225,7 +1222,7 @@ class FactureFournisseurRec extends CommonInvoice
      */
     public function createRecurringInvoices($restrictioninvoiceid = 0, $forcevalidation = 0)
     {
-        global $conf, $langs, $db, $user, $hookmanager;
+        global $conf, $langs, $user, $hookmanager;
 
         $error = 0;
         $nb_create = 0;
@@ -1237,7 +1234,7 @@ class FactureFournisseurRec extends CommonInvoice
         $tmparray = dol_getdate($now);
         $today = dol_mktime(23, 59, 59, $tmparray['mon'], $tmparray['mday'], $tmparray['year']); // Today is last second of current day
 
-        dol_syslog('createRecurringInvoices restrictioninvoiceid=' .$restrictioninvoiceid. ' forcevalidation=' .$forcevalidation);
+        dol_syslog(__METHOD__.' restrictioninvoiceid=' .$restrictioninvoiceid. ' forcevalidation=' .$forcevalidation);
 
         $sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.'facture_fourn_rec';
         $sql .= ' WHERE frequency > 0'; // A recurring supplier invoice is an invoice with a frequency
@@ -1249,7 +1246,6 @@ class FactureFournisseurRec extends CommonInvoice
             $sql .= ' AND rowid = '.((int) $restrictioninvoiceid);
         }
         $sql .= $this->db->order('entity', 'ASC');
-        //print $sql;exit;
         $parameters = array(
             'restrictioninvoiceid' => $restrictioninvoiceid,
             'forcevalidation' => $forcevalidation,
@@ -1284,7 +1280,7 @@ class FactureFournisseurRec extends CommonInvoice
                     // Set entity context
                     $conf->entity = $facturerec->entity;
 
-                    dol_syslog('createRecurringInvoices Process invoice template id=' .$facturerec->id. ', ref=' .$facturerec->ref. ', entity=' .$facturerec->entity);
+                    dol_syslog(__METHOD__.' Process invoice template id=' .$facturerec->id. ', ref=' .$facturerec->ref. ', entity=' .$facturerec->entity);
 
                     $new_fac_fourn = new FactureFournisseur($this->db);
                     $new_fac_fourn->fac_rec = $facturerec->id; // We will create $facture from this recurring invoice
@@ -1332,7 +1328,7 @@ class FactureFournisseurRec extends CommonInvoice
                     $error++;
                     $this->error = 'Failed to load invoice template with id=' .$line->rowid. ', entity=' .$conf->entity."\n";
                     $this->errors[] = 'Failed to load invoice template with id=' .$line->rowid. ', entity=' .$conf->entity;
-                    dol_syslog('createRecurringInvoices Failed to load invoice template with id=' .$line->rowid. ', entity=' .$conf->entity);
+                    dol_syslog(__METHOD__.' Failed to load invoice template with id=' .$line->rowid. ', entity=' .$conf->entity);
                 }
 
                 if (!$error && $invoiceidgenerated >= 0) {
@@ -1341,7 +1337,7 @@ class FactureFournisseurRec extends CommonInvoice
                     $facturerec->date_when= $facturerec->getNextDate();
                     $facturerec->update($user);
                     $this->db->commit('createRecurringInvoices Process invoice template id=' .$facturerec->id. ', title=' .$facturerec->titre);
-                    dol_syslog('createRecurringInvoices Process invoice template ' .$facturerec->titre. ' is finished with a success generation');
+                    dol_syslog(__METHOD__.' Process invoice template ' .$facturerec->titre. ' is finished with a success generation');
                     $nb_create++;
                     $this->output .= $langs->trans('InvoiceGeneratedFromTemplate', $new_fac_fourn->ref, $facturerec->titre)."\n";
                 } else {
@@ -1454,15 +1450,16 @@ class FactureFournisseurRec extends CommonInvoice
     }
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+
     /**
-     *	Return label of a status
+     *    Return label of a status
      *
-     *	@param    	int  	$recur         	Is it a recurring invoice ?
-     *	@param      int		$status        	Id status (suspended or not)
-     *	@param      int		$mode          	0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=short label + picto, 6=long label + picto
-     *	@param		integer	$alreadypaid	Not used for recurring invoices
-     *	@param		int		$type			Type invoice
-     *	@return     string        			Label of status
+     * @param int $recur       Is it a recurring invoice ?
+     * @param int $status      Id status (suspended or not)
+     * @param int $mode        0=long label, 1=short label, 2=Picto + short label, 3=Picto, 4=Picto + long label, 5=short label + picto, 6=long label + picto
+     * @param int $alreadypaid Not used for recurring invoices
+     * @param int $type        Type invoice
+     * @return     string                    Label of status
      */
     public function LibStatut($recur, $status, $mode = 0, $alreadypaid = -1, $type = 0)
     {
@@ -1473,7 +1470,6 @@ class FactureFournisseurRec extends CommonInvoice
         $labelStatus = $langs->transnoentitiesnoconv('Active');
         $statusType = 'status0';
 
-        //print "$recur,$status,$mode,$alreadypaid,$type";
         if ($mode == 0) {
             if ($recur) {
                 if ($status == self::STATUS_SUSPENDED) {
@@ -1589,135 +1585,6 @@ class FactureFournisseurRec extends CommonInvoice
     }
 
     /**
-     *  Initialise an instance with random values.
-     *  Used to build previews or test instances.
-     *	id must be 0 if object instance is a specimen.
-     *
-     *	@param	string		$option		''=Create a specimen invoice with lines, 'nolines'=No lines
-     *  @return	void
-     */
-    public function initAsSpecimen($option = '')
-    {
-        global $user, $langs, $conf;
-
-        $now = dol_now();
-        $arraynow = dol_getdate($now);
-        $nownotime = dol_mktime(0, 0, 0, $arraynow['mon'], $arraynow['mday'], $arraynow['year']);
-
-        // Load array of products prodids
-        $num_prods = 0;
-        $prodids = array();
-
-        $sql = 'SELECT rowid';
-        $sql .= ' FROM ' .MAIN_DB_PREFIX. 'product';
-        $sql .= ' WHERE entity IN (' .getEntity('product'). ')';
-        $sql .= $this->db->plimit(100);
-
-        $resql = $this->db->query($sql);
-        if ($resql) {
-            $num_prods = $this->db->num_rows($resql);
-            $i = 0;
-            while ($i < $num_prods) {
-                $i++;
-                $row = $this->db->fetch_row($resql);
-                $prodids[$i] = $row[0];
-            }
-        }
-
-        // Initialize parameters
-        $this->id = 0;
-        $this->ref = 'SPECIMEN';
-        $this->title = 'SPECIMEN';
-        $this->specimen = 1;
-        $this->socid = 1;
-        $this->date = $nownotime;
-        $this->date_lim_reglement = $nownotime + 3600 * 24 * 30;
-        $this->cond_reglement_id   = 1;
-        $this->cond_reglement_code = 'RECEP';
-        $this->date_lim_reglement = $this->calculate_date_lim_reglement();
-        $this->mode_reglement_id   = 0; // Not forced to show payment mode CHQ + VIR
-        $this->mode_reglement_code = ''; // Not forced to show payment mode CHQ + VIR
-        $this->note_public = 'This is a comment (public)';
-        $this->note_private = 'This is a comment (private)';
-        $this->note = 'This is a comment (private)';
-        $this->fk_incoterms = 0;
-        $this->location_incoterms = '';
-
-        if (empty($option) || $option != 'nolines') {
-            // Lines
-            $nbp = 5;
-            $xnbp = 0;
-            while ($xnbp < $nbp) {
-                $line = new FactureLigne($this->db);
-                $line->desc = $langs->trans('Description'). ' ' .$xnbp;
-                $line->qty = 1;
-                $line->subprice = 100;
-                $line->tva_tx = 19.6;
-                $line->localtax1_tx = 0;
-                $line->localtax2_tx = 0;
-                $line->remise_percent = 0;
-                if ($xnbp == 1) {        // Qty is negative (product line)
-                    $prodid = mt_rand(1, $num_prods);
-                    $line->fk_product = $prodids[$prodid];
-                    $line->qty = -1;
-                    $line->total_ht = -100;
-                    $line->total_ttc = -119.6;
-                    $line->total_tva = -19.6;
-                } elseif ($xnbp == 2) {    // UP is negative (free line)
-                    $line->subprice = -100;
-                    $line->total_ht = -100;
-                    $line->total_ttc = -119.6;
-                    $line->total_tva = -19.6;
-                    $line->remise_percent = 0;
-                } elseif ($xnbp == 3) {    // Discount is 50% (product line)
-                    $prodid = mt_rand(1, $num_prods);
-                    $line->fk_product = $prodids[$prodid];
-                    $line->total_ht = 50;
-                    $line->total_ttc = 59.8;
-                    $line->total_tva = 9.8;
-                    $line->remise_percent = 50;
-                } else // (product line)
-                {
-                    $prodid = mt_rand(1, $num_prods);
-                    $line->fk_product = $prodids[$prodid];
-                    $line->total_ht = 100;
-                    $line->total_ttc = 119.6;
-                    $line->total_tva = 19.6;
-                    $line->remise_percent = 00;
-                }
-
-                $this->lines[$xnbp] = $line;
-                $xnbp++;
-
-                $this->total_ht       += $line->total_ht;
-                $this->total_tva      += $line->total_tva;
-                $this->total_ttc      += $line->total_ttc;
-            }
-            $this->revenuestamp = 0;
-
-            // Add a line "offered"
-            $line = new FactureLigne($this->db);
-            $line->desc = $langs->trans('Description'). ' (offered line)';
-            $line->qty = 1;
-            $line->subprice = 100;
-            $line->tva_tx = 19.6;
-            $line->localtax1_tx = 0;
-            $line->localtax2_tx = 0;
-            $line->remise_percent = 100;
-            $line->total_ht = 0;
-            $line->total_ttc = 0; // 90 * 1.196
-            $line->total_tva = 0;
-            $prodid = mt_rand(1, $num_prods);
-            $line->fk_product = $prodids[$prodid];
-
-            $this->lines[$xnbp] = $line;
-            $xnbp++;
-        }
-
-        $this->usenewprice = 0;
-    }
-
-    /**
      * Function used to replace a thirdparty id with another one.
      *
      * @param DoliDB $db Database handler
@@ -1769,7 +1636,7 @@ class FactureFournisseurRec extends CommonInvoice
             return 1;
         } else {
             dol_print_error($this->db);
-            return -1;
+            return -3;
         }
     }
 
@@ -1802,7 +1669,7 @@ class FactureFournisseurRec extends CommonInvoice
             return 1;
         } else {
             dol_print_error($this->db);
-            return -1;
+            return -2;
         }
     }
 
@@ -1833,7 +1700,7 @@ class FactureFournisseurRec extends CommonInvoice
             return 1;
         } else {
             dol_print_error($this->db);
-            return -1;
+            return -2;
         }
     }
 
@@ -1860,7 +1727,7 @@ class FactureFournisseurRec extends CommonInvoice
             return 1;
         } else {
             dol_print_error($this->db);
-            return -1;
+            return -2;
         }
     }
 
@@ -1887,7 +1754,7 @@ class FactureFournisseurRec extends CommonInvoice
             return 1;
         } else {
             dol_print_error($this->db);
-            return -1;
+            return -2;
         }
     }
 
@@ -1914,7 +1781,7 @@ class FactureFournisseurRec extends CommonInvoice
             return 1;
         } else {
             dol_print_error($this->db);
-            return -1;
+            return -2;
         }
     }
 }
@@ -2064,7 +1931,7 @@ class FactureFournisseurLigneRec extends CommonObjectLine
         $sql .= ' WHERE l.rowid = '. (int) $rowid;
         $sql .= ' ORDER BY l.rang';
 
-        dol_syslog('FactureRec::fetch', LOG_DEBUG);
+        dol_syslog('__METHOD__::fetch', LOG_DEBUG);
         $result = $this->db->query($sql);
         if ($result) {
             $objp = $this->db->fetch_object($result);
@@ -2113,7 +1980,7 @@ class FactureFournisseurLigneRec extends CommonObjectLine
             return 1;
         } else {
             $this->error = $this->db->lasterror();
-            return -3;
+            return -1;
         }
     }
 
@@ -2171,7 +2038,7 @@ class FactureFournisseurLigneRec extends CommonObjectLine
 
         $this->db->begin();
 
-        dol_syslog(get_class($this). '::updateline', LOG_DEBUG);
+        dol_syslog(__METHOD__, LOG_DEBUG);
         $resql = $this->db->query($sql);
         if ($resql) {
             if (!$error) {
@@ -2192,7 +2059,7 @@ class FactureFournisseurLigneRec extends CommonObjectLine
 
             if ($error) {
                 $this->db->rollback();
-                return -2;
+                return -1;
             } else {
                 $this->db->commit();
                 return 1;
