@@ -339,7 +339,7 @@ class FactureFournisseurRec extends CommonInvoice
             $sql .= ')';
 
             if ($this->db->query($sql)) {
-                $this->id = $this->db->last_insert_id(MAIN_DB_PREFIX. 'facture_fourn_rec');
+                $this->id = $this->db->last_insert_id(MAIN_DB_PREFIX.$this->table_element);
 
                 // Fields used into addline later
                 $this->fk_multicurrency = $facfourn_src->fk_multicurrency;
