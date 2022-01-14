@@ -127,7 +127,7 @@ class modFournisseur extends DolibarrModules
         */
         $arraydate = dol_getdate(dol_now());
         $datestart = dol_mktime(23, 0, 0, $arraydate['mon'], $arraydate['mday'], $arraydate['year']);
-        include DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture-rec.class.php';
+        include_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture-rec.class.php';
         $this->cronjobs = [
             0 => [
                 'label' => 'RecurringSupplierInvoices',
