@@ -107,6 +107,7 @@ $search_accept_booth_suggestions = GETPOST('search_accept_booth_suggestions', 'i
 $search_price_registration = GETPOST("search_price_registration", 'alpha');
 $search_price_booth = GETPOST("search_price_booth", 'alpha');
 $optioncss = GETPOST('optioncss', 'alpha');
+$search_entity=GETPOST('search_entity','int');
 
 $mine = $_REQUEST['mode'] == 'mine' ? 1 : 0;
 if ($mine) {
@@ -343,7 +344,7 @@ if (count($listofprojectcontacttype) == 0) {
 
 $distinct = 'DISTINCT'; // We add distinct until we are added a protection to be sure a contact of a project and task is only once.
 $sql = "SELECT ".$distinct." p.rowid as id, p.ref, p.title, p.fk_statut as status, p.fk_opp_status, p.public, p.fk_user_creat,";
-$sql .= " p.datec as date_creation, p.dateo as date_start, p.datee as date_end, p.opp_amount, p.opp_percent, (p.opp_amount*p.opp_percent/100) as opp_weighted_amount, p.tms as date_update, p.budget_amount,";
+$sql .= " p.datec as date_creation, p.dateo as date_start, p.datee as date_end, p.opp_amount, p.opp_percent, (p.opp_amount*p.opp_percent/100) as opp_weighted_amount, p.tms as date_update, p.budget_amount, p.entity,";
 $sql .= " p.usage_opportunity, p.usage_task, p.usage_bill_time, p.usage_organize_event,";
 $sql .= " p.email_msgid,";
 $sql .= " accept_conference_suggestions, accept_booth_suggestions, price_registration, price_booth,";
@@ -391,6 +392,8 @@ if (!$user->rights->projet->all->lire) {
 if ($socid > 0) {
 	$sql .= " AND (p.fk_soc = ".((int) $socid).")"; // This filter if when we use a hard coded filter on company on url (not related to filter for external users)
 }
+if ($search_entity) $sql .= natural_search('p.entity', $search_entity);
+
 if ($search_ref) {
 	$sql .= natural_search('p.ref', $search_ref);
 }
@@ -786,6 +789,21 @@ if (!empty($arrayfields['p.datee']['checked'])) {
 	$formother->select_year($search_eyear ? $search_eyear : -1, 'search_eyear', 1, 20, 5, 0, 0, '', 'widthauto valignmiddle');
 	print '</td>';
 }
+print '<td class="liste_titre">';
+if(!empty($conf->multicompany->enabled)) {
+	//$mc->getInstanceDao();
+	$mc->dao->getEntities();
+	$TEntity=array(''=>'');
+	foreach ($mc->dao->entities as $entity)
+	{
+		if ($entity->active == 1)
+		{
+			$TEntity[$entity->id] = $entity->label; 
+		}
+	}
+	
+    print $form->selectarray('search_entity',$TEntity,$search_entity);
+}
 if (!empty($arrayfields['p.public']['checked'])) {
 	print '<td class="liste_titre">';
 	$array = array(''=>'', 0 => $langs->trans("PrivateProject"), 1 => $langs->trans("SharedProject"));
@@ -1112,6 +1130,10 @@ while ($i < min($num, $limit)) {
 				$totalarray['nbfield']++;
 			}
 		}
+		print '<td align="left">';
+		echo empty($TEntity[$obj->entity])? '' : $TEntity[$obj->entity];
+		print '</td>';
+		if (! $i) $totalarray['nbfield']++;
 		// Visibility
 		if (!empty($arrayfields['p.public']['checked'])) {
 			print '<td class="left">';

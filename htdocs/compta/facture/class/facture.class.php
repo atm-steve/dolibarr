@@ -2081,7 +2081,7 @@ class Facture extends CommonInvoice
 			$facligne->fk_product = 0; // Id produit predefini
 			$facligne->qty = 1;
 			$facligne->remise_percent = 0;
-			$facligne->rang = -1;
+			$facligne->rang = $this->line_max();
 			$facligne->info_bits = 2;
 
 			// Get buy/cost price of invoice that is source of discount

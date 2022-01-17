@@ -105,6 +105,12 @@ $month_end = $tmpe['mon'];
 $year_end = $tmpe['year'];
 $nbofyear = ($year_end - $year_start) + 1;
 
+$tmps=dol_getdate($date_start);
+$year_start = $tmps['year'];
+$tmpe=dol_getdate($date_end);
+$year_end = $tmpe['year'];
+$nbofyear = ($year_end - $year_start) + 1;
+
 // Define modecompta ('CREANCES-DETTES' or 'RECETTES-DEPENSES' or 'BOOKKEEPING')
 $modecompta = $conf->global->ACCOUNTING_MODE;
 if (!empty($conf->accounting->enabled)) {

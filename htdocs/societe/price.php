@@ -499,7 +499,7 @@ if (!empty($conf->global->PRODUIT_CUSTOMER_PRICES)) {
 
 				print '<tr class="oddeven">';
 
-				print "<td>".$staticprod->getNomUrl(1)."</td>";
+				print "<td>".$staticprod->getNomUrl(1). " - ". $staticprod->label ."</td>""</td>";
 				print '<td>'.$line->ref_customer.'</td>';
 				print "<td>".dol_print_date($line->datec, "dayhour")."</td>";
 

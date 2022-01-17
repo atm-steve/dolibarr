@@ -1162,22 +1162,24 @@ class Task extends CommonObject
 		$this->db->begin();
 
 		$sql = "INSERT INTO ".MAIN_DB_PREFIX."projet_task_time (";
-		$sql .= "fk_task";
-		$sql .= ", task_date";
-		$sql .= ", task_datehour";
-		$sql .= ", task_date_withhour";
-		$sql .= ", task_duration";
-		$sql .= ", fk_user";
-		$sql .= ", note";
-		$sql .= ") VALUES (";
-		$sql .= $this->id;
-		$sql .= ", '".$this->db->idate($this->timespent_date)."'";
-		$sql .= ", '".$this->db->idate($this->timespent_datehour)."'";
-		$sql .= ", ".(empty($this->timespent_withhour) ? 0 : 1);
-		$sql .= ", ".$this->timespent_duration;
-		$sql .= ", ".$this->timespent_fk_user;
-		$sql .= ", ".(isset($this->timespent_note) ? "'".$this->db->escape($this->timespent_note)."'" : "null");
-		$sql .= ")";
+		$sql.= "fk_task";
+		$sql.= ", task_date";
+		$sql.= ", task_datehour";
+		$sql.= ", task_date_withhour";
+		$sql.= ", task_duration";
+		$sql.= ", fk_user";
+		$sql.= ", note";
+		$sql.= ", entity";
+		$sql.= ") VALUES (";
+		$sql.= $this->id;
+		$sql.= ", '".$this->db->idate($this->timespent_date)."'";
+		$sql.= ", '".$this->db->idate($this->timespent_datehour)."'";
+		$sql.= ", ".(empty($this->timespent_withhour)?0:1);
+		$sql.= ", ".$this->timespent_duration;
+		$sql.= ", ".$this->timespent_fk_user;
+		$sql.= ", ".(isset($this->timespent_note)?"'".$this->db->escape($this->timespent_note)."'":"null");
+		$sql.= ", ".$conf->entity;
+		$sql.= ")";
 
 		$resql = $this->db->query($sql);
 		if ($resql) {

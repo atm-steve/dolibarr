@@ -181,6 +181,9 @@ $result = restrictedArea($user, 'projet', $object->id, 'projet&project');
 
 $hookmanager->initHooks(array('projectOverview'));
 
+$parameters=array('context'=>'projectOverview');
+$reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
+if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
 /*
  *	View
@@ -790,7 +793,9 @@ foreach ($listofreferent as $key => $value) {
 				$idofelement = $tmp[0];
 				$idofelementuser = $tmp[1];
 
-				$element->fetch($idofelement);
+				if($element->fetch($idofelement) <= 0) {
+					_getElementFromOtherEntity($idofelement, $element);
+				}
 				if ($idofelementuser) {
 					$elementuser->fetch($idofelementuser);
 				}
@@ -1137,7 +1142,9 @@ foreach ($listofreferent as $key => $value) {
 				$idofelement = $tmp[0];
 				$idofelementuser = $tmp[1];
 
-				$element->fetch($idofelement);
+				if($element->fetch($idofelement)<=0) {
+					_getElementFromOtherEntity($idofelement, $element);
+				}
 				if ($idofelementuser) {
 					$elementuser->fetch($idofelementuser);
 				}
@@ -1170,6 +1177,10 @@ foreach ($listofreferent as $key => $value) {
 					if (!empty($element->close_code) && $element->close_code == 'replaced') {
 						$qualifiedfortotal = false; // Replacement invoice, do not include into total
 					}
+				}
+				if ($key == 'propal')
+				{
+					if($element->statut == 3) $qualifiedfortotal=false;
 				}
 
 				print '<tr class="oddeven">';
@@ -1591,3 +1602,33 @@ function sortElementsByClientName($elementarray)
 
 	return $elementarray;
 }
+function _getElementFromOtherEntity($id, &$element) {
+	
+	global $db, $conf,$user,$langs;
+	
+	$sql = "SELECT entity FROM ".MAIN_DB_PREFIX.$element->table_element." WHERE rowid = ".$id;
+	//var_dump($sql);exit;
+	$res = $db->query($sql);
+	if($obj = $db->fetch_object($res)) {
+		
+		$conf_backup = clone $conf;
+		
+		$conf->entity = $obj->entity;
+		
+		$element->fetch($id);
+		
+		// Fait pour le ticket #4980, à défaire à la demande du client ticket #8401
+		//$element->total_ht = null;
+		//$element->total = null;
+		//$element->total_ttc = null;
+
+		$conf = clone $conf_backup;
+		
+	}
+	else{
+		$element->ref = 'ImpossibleToLoadEntity';
+	}
+	
+	
+}
+

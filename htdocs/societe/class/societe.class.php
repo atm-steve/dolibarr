@@ -2300,10 +2300,10 @@ class Societe extends CommonObject
 		if (!empty($conf->multicompany->enabled) && !empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE)) {
 			$sql .= ", ".MAIN_DB_PREFIX."usergroup_user as ug";
 			$sql .= " WHERE ((ug.fk_user = sc.fk_user";
-			$sql .= " AND ug.entity = ".$conf->entity.")";
-			$sql .= " OR u.admin = 1)";
+			//$sql .= " AND ug.entity = ".$conf->entity.")";
+			$sql .= " ) OR u.admin = 1)";
 		} else {
-			$sql .= " WHERE entity in (0, ".$conf->entity.")";
+			$sql .= " WHERE 1 "; //entity in (0, ".$conf->entity.")";
 		}
 
 		$sql .= " AND u.rowid = sc.fk_user AND sc.fk_soc = ".((int) $this->id);
