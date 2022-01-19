@@ -120,6 +120,14 @@ if ($object->id > 0) {
 	}
 }
 
+$candelete = 0;
+if (!empty($user->rights->expensereport->supprimer)) {
+	$candelete = 1;
+}
+if ($object->statut == ExpenseReport::STATUS_DRAFT && $user->rights->expensereport->write && in_array($object->fk_user_author, $childids)) {
+	$candelete = 1;
+}
+
 // Security check
 if ($user->socid) {
 	$socid = $user->socid;
@@ -195,7 +203,7 @@ if (empty($reshook)) {
 		}
 	}
 
-	if ($action == 'confirm_delete' && GETPOST("confirm", 'alpha') == "yes" && $id > 0 && $user->rights->expensereport->supprimer) {
+	if ($action == 'confirm_delete' && GETPOST("confirm", 'alpha') == "yes" && $id > 0 && $candelete) {
 		$object = new ExpenseReport($db);
 		$result = $object->fetch($id);
 		$result = $object->delete($user);
@@ -228,7 +236,8 @@ if (empty($reshook)) {
 		}
 		if (!$error) {
 			if (empty($conf->global->MAIN_USE_ADVANCED_PERMS) || empty($user->rights->expensereport->writeall_advance)) {
-				if (!in_array($object->fk_user_author, $childids)) {
+				if (!in_array($object->fk_user_author, $childids)
+					&& !(!empty($user->rights->expensereport->readall) && !empty($user->rights->expensereport->approve) && !empty($user->admin))) {
 					$error++;
 					setEventMessages($langs->trans("UserNotInHierachy"), null, 'errors');
 				}
@@ -1356,7 +1365,8 @@ if ($action == 'create') {
 		$defaultselectuser = GETPOST('fk_user_author', 'int');
 	}
 	$include_users = 'hierarchyme';
-	if (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expensereport->writeall_advance)) {
+	if ((!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->expensereport->writeall_advance))
+	|| (!empty($user->rights->expensereport->readall) && !empty($user->rights->expensereport->approve) && !empty($user->admin))) {
 		$include_users = array();
 	}
 	$s = $form->select_dolusers($defaultselectuser, "fk_user_author", 0, "", 0, $include_users, '', '0,'.$conf->entity);
@@ -2657,7 +2667,7 @@ if ($action != 'create' && $action != 'edit' && $action != 'editline') {
 	if ($user->rights->expensereport->creer && $user->id == $object->fk_user_author && $object->status < ExpenseReport::STATUS_APPROVED) {
 		// Delete
 		print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?action=delete&token='.newToken().'&id='.$object->id.'">'.$langs->trans('Delete').'</a></div>';
-	} elseif ($user->rights->expensereport->supprimer && $object->status != ExpenseReport::STATUS_CLOSED) {
+	} elseif ($candelete && $object->status != ExpenseReport::STATUS_CLOSED) {
 		// Delete
 		print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?action=delete&token='.newToken().'&id='.$object->id.'">'.$langs->trans('Delete').'</a></div>';
 	}
