@@ -263,7 +263,6 @@ class ProductFournisseur extends Product
 		// phpcs:enable
 		global $conf, $langs;
 		//global $mysoc;
-
 		// Clean parameter
 		if (empty($qty)) {
 			$qty = 0;
@@ -299,7 +298,8 @@ class ProductFournisseur extends Product
 				$multicurrency_tx = 1;
 			}
 			if (empty($multicurrency_buyprice)) {
-				$multicurrency_buyprice = 0;
+				if(empty($buyprice)) $multicurrency_buyprice = 0;
+				else   $multicurrency_buyprice = $buyprice;
 			}
 			if ($multicurrency_price_base_type == 'TTC') {
 				$ttx = $tva_tx;
