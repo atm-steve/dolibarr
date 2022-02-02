@@ -7977,6 +7977,10 @@ function natural_search($fields, $value, $mode = 0, $nofirstand = 0)
 			        {
 			            if ($val)
 			            {
+							/*
+							* SPE SGP
+							* Gestion de la recherche multiple sur les extrafields multiselect
+							*/
                             $fieldWithoutAlias = str_replace('ef.', '', $field);
                             $behaviour = GETPOST('search_options_'.$fieldWithoutAlias.'_AND', 'bool') ? 'AND' : 'OR';
 
