@@ -43,8 +43,21 @@ if (!empty($extrafieldsobjectkey))	// $extrafieldsobject is the $object->table_e
                 {
                     // for the type as 'checkbox', 'chkbxlst', 'sellist' we should use code instead of id (example: I declare a 'chkbxlst' to have a link with dictionnairy, I have to extend it with the 'code' instead 'rowid')
                     $morecss = '';
+                    $infos = img_picto(addslashes($langs->trans('UseANDHelp')), 'info_black');
+                    $checkbox_title = dol_htmlentities($langs->trans('UseANDHelp'), ENT_QUOTES);
+
                     if (in_array($typeofextrafield, array('link', 'sellist', 'text', 'html'))) $morecss = 'maxwidth200';
                     echo $extrafields->showInputField($key, $search_array_options[$search_options_pattern.$tmpkey], '', '', $search_options_pattern, $morecss, 0, $extrafieldsobjectkey, 1);
+                    if(in_array($typeofextrafield, array('checkbox', 'chkbxlst'))) {
+                        $behaviour = GETPOST($search_options_pattern.$tmpkey.'_AND', 'bool') ? 'checked' : '';
+                        print '<input type="checkbox" name="'.$search_options_pattern.$tmpkey.'_AND" ';
+                        // La case reste cochée si la croix (suppression des filtres) n'a pas été activée
+                        if (! (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha'))){
+                            print $behaviour;
+                        }
+                        print ' title="' . $checkbox_title . '"/>';
+                        print $infos;
+                    }
                 }
                 print '</td>';
             }
