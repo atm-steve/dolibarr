@@ -16,6 +16,10 @@ if (!empty($search_array_options) && is_array($search_array_options))	// $extraf
     {
         $crit = $val;
         $tmpkey = preg_replace('/'.$search_options_pattern.'/', '', $key);
+        $behaviour = GETPOST($search_options_pattern.$tmpkey.'_AND', 'bool');
         if ($val != '') $param .= '&'.$search_options_pattern.$tmpkey.'='.urlencode($val);
+        if (! empty($behaviour)) {
+            $param .= '&'.$search_options_pattern.$tmpkey.'_AND='.urlencode($behaviour);
+        }
     }
 }
