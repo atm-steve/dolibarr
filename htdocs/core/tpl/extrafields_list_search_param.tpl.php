@@ -16,6 +16,10 @@ if (!empty($search_array_options) && is_array($search_array_options))	// $extraf
     {
         $crit = $val;
         $tmpkey = preg_replace('/'.$search_options_pattern.'/', '', $key);
+		/*
+		* SPE SGP
+		* Gestion de la recherche multiple sur les extrafields multiselect
+		*/
         $behaviour = GETPOST($search_options_pattern.$tmpkey.'_AND', 'bool');
         if ($val != '') $param .= '&'.$search_options_pattern.$tmpkey.'='.urlencode($val);
         if (! empty($behaviour)) {
