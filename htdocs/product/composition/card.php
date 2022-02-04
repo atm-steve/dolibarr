@@ -441,10 +441,9 @@ if ($id > 0 || !empty($ref)) {
 		if (count($prods_arbo))	{
 			foreach ($prods_arbo as $value)	{
 				$productstatic->fetch($value['id']);
-
 				if ($value['level'] <= 1)
 				{
-					print '<tr id="'.$object->sousprods[$parent_label][$value['id']][5].'" class="drag drop oddeven level1">';
+					print '<tr id="'.$object->sousprods[$parent_label][$value['id']][6].'" class="drag drop oddeven level1">';
 
 					print '<td>'.$object->sousprods[$parent_label][$value['id']][6].'</td>';
 

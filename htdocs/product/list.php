@@ -188,6 +188,7 @@ if (!empty($conf->global->PRODUCT_QUICKSEARCH_ON_FIELDS)) {
 }
 
 //global search on extrafields
+$extralabels = $extrafields->attribute_label;
 if(!empty($conf->global->PRODUIT_GLOBAL_SEARCH_ON_EXTRAFIELD) && !empty($extralabels)) {
     foreach($extralabels as $codeExtra => $labelExtra) {
         $TExtraTypeNotHandled=array(
@@ -201,7 +202,7 @@ if(!empty($conf->global->PRODUIT_GLOBAL_SEARCH_ON_EXTRAFIELD) && !empty($extrala
             'separate',
         );
         if(!in_array($extrafields->attribute_type[$codeExtra], $TExtraTypeNotHandled)) $fieldstosearchall['ef.' . $codeExtra] = $labelExtra;
-    }
+	}
 }
 
 if (empty($conf->global->PRODUIT_MULTIPRICES)) {
