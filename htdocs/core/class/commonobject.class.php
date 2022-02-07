@@ -3041,18 +3041,19 @@ abstract class CommonObject
 
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element_line.' SET '.$fieldposition.' = '.((int) $rang);
 		$sql .= ' WHERE rowid = '.((int) $rowid);
-
 		$parameters=array('rowid'=>$rowid, 'rang'=>$rang, 'fieldposition' => $fieldposition);
-	    $action='';
-	    $reshook = $hookmanager->executeHooks('afterRankUpdate', $parameters, $this, $action);
-		dol_syslog(get_class($this)."::updateRangOfLine", LOG_DEBUG);
-		if (!$this->db->query($sql)) {
+		if(! $this->db->query($sql)) {
 			dol_print_error($this->db);
+
 			return -1;
-		} else {
+		}
+		else {
+			$action = '';
+			$reshook = $hookmanager->executeHooks('afterRankUpdate', $parameters, $this, $action);
+			dol_syslog(get_class($this)."::updateRangOfLine", LOG_DEBUG);
+
 			return 1;
 		}
-
 	}
 
 	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
@@ -3068,7 +3069,7 @@ abstract class CommonObject
 		$num = count($rows);
 		for ($i = 0; $i < $num; $i++) {
 			$this->updateRangOfLine($rows[$i], ($i + 1));
-		}
+		}exit;
 	}
 
 	/**
