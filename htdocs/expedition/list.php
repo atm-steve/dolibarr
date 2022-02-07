@@ -116,7 +116,7 @@ $fieldstosearchall = array(
 	'e.ref'=>"Ref",
 	's.nom'=>"ThirdParty",
 	'e.note_public'=>'NotePublic',
-	'e.shipping_method_id'=>'SendingMethod',
+	'e.fk_shipping_method'=>'SendingMethod',
 	'e.tracking_number'=>"TrackingNumber",
 );
 if (empty($user->socid)) {
