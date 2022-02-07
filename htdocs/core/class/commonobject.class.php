@@ -3069,7 +3069,7 @@ abstract class CommonObject
 		$num = count($rows);
 		for ($i = 0; $i < $num; $i++) {
 			$this->updateRangOfLine($rows[$i], ($i + 1));
-		}exit;
+		}
 	}
 
 	/**
