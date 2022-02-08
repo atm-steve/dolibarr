@@ -1082,12 +1082,8 @@ class FactureRec extends CommonInvoice
 
         /* -- [SPE KOESIO] -- */
         // On désactive cette conf pour pas qu'elle force la date de facturation à la date de validation, on la bypass pendant notre cron
-        $count = 0;
-        $isConfActivated = $conf->global->FAC_FORCE_DATE_VALIDATION;
-        if($isConfActivated == 1) {
-            $isConfActivated = 0;
-            $count++;
-        }
+        $oldConf = $conf->global->FAC_FORCE_DATE_VALIDATION;
+        $conf->global->FAC_FORCE_DATE_VALIDATION = 0;
         /* -- [FIN SPE KOESIO] -- */
 
 
@@ -1099,14 +1095,14 @@ class FactureRec extends CommonInvoice
 
 		$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.'facture_rec';
 		$sql.= ' WHERE frequency > 0';      // A recurring invoice is an invoice with a frequency
-		$sql.= " AND (date_when IS NULL OR date_when <= '".$db->idate($today)-/* SPE KOESIO*/ $conf->global->GENERATE_INVOICE_AHEAD_OF_TIME /*FIN SPE KOESIO*/."')";
+		$sql.= " AND (date_when IS NULL OR date_when <= '".$db->idate(strtotime('+'.$conf->global->GENERATE_INVOICE_AHEAD_OF_TIME.' days', $today))."')"; /* SPE KOESIO*/
 		$sql.= ' AND (nb_gen_done < nb_gen_max OR nb_gen_max = 0)';
 		$sql.= ' AND suspended = 0';
 		$sql.= ' AND entity = '.$conf->entity;	// MUST STAY = $conf->entity here
 		if ($restrictioninvoiceid > 0)
 			$sql.=' AND rowid = '.$restrictioninvoiceid;
 		$sql.= $db->order('entity', 'ASC');
-		//print $sql;exit;
+//		print $sql;exit;
 		$parameters = array(
 			'restrictioninvoiceid' => $restrictioninvoiceid,
 			'forcevalidation' => $forcevalidation,
@@ -1219,9 +1215,7 @@ class FactureRec extends CommonInvoice
 
             /* -- [SPE KOESIO] -- */
             // On réactive la conf puisque une fois notre traitement terminé
-            if($count != 0) {
-                $conf->global->FAC_FORCE_DATE_VALIDATION = 1;
-            }
+            $conf->global->FAC_FORCE_DATE_VALIDATION = $oldConf;
             /* -- [FIN SPE KOESIO] -- */
 
 			$conf->entity = $saventity;      // Restore entity context
