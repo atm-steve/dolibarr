@@ -294,6 +294,42 @@ if (empty($reshook))
 			//print "old status = ".$object->statut.' new status = '.$newstatus;
 			$db->begin();
 
+			/*
+			* Spécifique client : Ticket DA021494
+			* Traitement de la conf : "Incrémenter les stocks physiques sur approbation des commandes fournisseurs"
+			*/
+			$qualified_for_stock_change = 0;
+			if (empty($conf->global->STOCK_SUPPORTS_SERVICES))
+			{
+				$qualified_for_stock_change = $object->hasProductsOrServices(2);
+			}
+			else
+			{
+				$qualified_for_stock_change = $object->hasProductsOrServices(1);
+			}
+
+			$text = $langs->trans('ConfirmUnvalidateOrder', $object->ref);
+			$formquestion = array();
+			if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_VALIDATE_ORDER) && $qualified_for_stock_change)
+			{
+				$langs->load("stocks");
+				require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
+				$formproduct = new FormProduct($db);
+				$forcecombo = 0;
+				if ($conf->browser->name == 'ie') $forcecombo = 1; // There is a bug in IE10 that make combo inside popup crazy
+				$formquestion = array(
+					// 'text' => $langs->trans("ConfirmClone"),
+					// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value' => 1),
+					// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value' => 1),
+					array('type' => 'other', 'name' => 'idwarehouse', 'label' => $langs->trans("SelectWarehouseForStockIncrease"), 'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse') ?GETPOST('idwarehouse') : 'ifone', 'idwarehouse', '', 1, 0, 0, '', 0, $forcecombo))
+				);
+			}
+			$form = new Form($db);
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('UnvalidateOrder'), $text, 'confirm_modif', $formquestion, "yes", 1, 220);
+
+			/*
+			 * Fin spécifique
+			 */
 			$result = $object->setStatus($user, $newstatus);
 			if ($result > 0)
 			{
@@ -1053,6 +1089,61 @@ if (empty($reshook))
 			setEventMessages($object->error, $object->errors, 'errors');
 		}
 	}
+	/*
+	 * Spécifique client : Ticket DA021494
+	 * Traitement de la conf : "Incrémenter les stocks physiques sur approbation des commandes fournisseurs"
+	 */
+	// Go back to draft status
+	elseif ($action == 'confirm_disapprove' && $user->rights->fournisseur->commande->commander) {
+		$idwarehouse = GETPOST('idwarehouse');
+
+		$qualified_for_stock_change = 0;
+		if (empty($conf->global->STOCK_SUPPORTS_SERVICES))
+		{
+			$qualified_for_stock_change = $object->hasProductsOrServices(2);
+		}
+		else
+		{
+			$qualified_for_stock_change = $object->hasProductsOrServices(1);
+		}
+
+		// Check parameters
+		if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_VALIDATE_ORDER) && $qualified_for_stock_change)
+		{
+			if (!$idwarehouse || $idwarehouse == -1)
+			{
+				$error++;
+				setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv("Warehouse")), null, 'errors');
+				$action = '';
+			}
+		}
+
+		if (!$error) {
+			$result = $object->setDraft($user, $idwarehouse);
+			if ($result >= 0)
+			{
+				// Define output language
+				if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE))
+				{
+					$outputlangs = $langs;
+					$newlang = '';
+					if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) $newlang = GETPOST('lang_id', 'aZ09');
+					if ($conf->global->MAIN_MULTILANGS && empty($newlang))	$newlang = $object->thirdparty->default_lang;
+					if (!empty($newlang)) {
+						$outputlangs = new Translate("", $conf);
+						$outputlangs->setDefaultLang($newlang);
+					}
+					$model = $object->modelpdf;
+					$ret = $object->fetch($id); // Reload to get new records
+
+					$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+				}
+			}
+		}
+	}
+	/*
+	* Fin spécifique
+	 */
 
 	// Actions when printing a doc from card
 	include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
@@ -1922,6 +2013,43 @@ elseif (!empty($object->id))
 	{
 		 $formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 0, 1);
 	}
+    /*
+     * Spécifique client : Ticket DA021494
+     * Traitement de la conf : "Incrémenter les stocks physiques sur approbation des commandes fournisseurs"
+     */
+	if($action == 'disapprove'){
+		$qualified_for_stock_change = 0;
+		if (empty($conf->global->STOCK_SUPPORTS_SERVICES))
+		{
+			$qualified_for_stock_change = $object->hasProductsOrServices(2);
+		}
+		else
+		{
+			$qualified_for_stock_change = $object->hasProductsOrServices(1);
+		}
+
+		$text = $langs->trans('ConfirmUnvalidateOrder', $object->ref);
+		$formquestion = array();
+		if (!empty($conf->stock->enabled) && !empty($conf->global->STOCK_CALCULATE_ON_SUPPLIER_VALIDATE_ORDER) && $qualified_for_stock_change)
+		{
+			$langs->load("stocks");
+			require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
+			$formproduct = new FormProduct($db);
+			$forcecombo = 0;
+			if ($conf->browser->name == 'ie') $forcecombo = 1; // There is a bug in IE10 that make combo inside popup crazy
+			$formquestion = array(
+				// 'text' => $langs->trans("ConfirmClone"),
+				// array('type' => 'checkbox', 'name' => 'clone_content', 'label' => $langs->trans("CloneMainAttributes"), 'value' => 1),
+				// array('type' => 'checkbox', 'name' => 'update_prices', 'label' => $langs->trans("PuttingPricesUpToDate"), 'value' => 1),
+				array('type' => 'other', 'name' => 'idwarehouse', 'label' => $langs->trans("SelectWarehouseForStockDecrease"), 'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse') ?GETPOST('idwarehouse') : 'ifone', 'idwarehouse', '', 1, 0, 0, '', 0, $forcecombo))
+			);
+		}
+		$form = new Form($db);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('UnvalidateOrder'), $text, 'confirm_disapprove', $formquestion, "yes", 1, 220);
+	}
+	/*
+	 * Fin spécifique q
+	 */
 
 	$parameters = array('formConfirm' => $formconfirm, 'lineid'=>$lineid);
 	$reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
@@ -2477,7 +2605,14 @@ elseif (!empty($object->id))
 					if (empty($conf->global->SUPPLIER_ORDER_REOPEN_BY_APPROVER_ONLY)
 						|| (!empty($conf->global->SUPPLIER_ORDER_REOPEN_BY_APPROVER_ONLY) && $user->id == $object->user_approve_id))
 					{
-						print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans("Disapprove").'</a>';
+						/*
+ 						* Spécifique client : Ticket DA021494
+ 						* Traitement de la conf : "Incrémenter les stocks physiques sur approbation des commandes fournisseurs"
+ 						*/
+						print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=disapprove">'.$langs->trans("Disapprove").'</a>';
+						/*
+						 * Fin spécifique
+						 */
 						$buttonshown++;
 					}
 				}

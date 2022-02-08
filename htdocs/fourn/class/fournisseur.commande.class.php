@@ -669,6 +669,94 @@ class CommandeFournisseur extends CommonOrder
         }
     }
 
+	/*
+	 * Spécifique client : Ticket DA021494
+	 * Traitement de la conf : "Incrémenter les stocks physiques sur approbation des commandes fournisseurs"
+	 */
+	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+	/**
+	 *	Set draft status
+	 *
+	 *	@param	User	$user			Object user that modify
+	 *	@param	int		$idwarehouse	Warehouse ID to use for stock change (Used only if option STOCK_CALCULATE_ON_VALIDATE_ORDER is on)
+	 *	@return	int						<0 if KO, >0 if OK
+	 */
+	public function setDraft($user, $idwarehouse = -1)
+	{
+		//phpcs:enable
+		global $conf, $langs;
+
+		$error = 0;
+
+		// Protection
+		if ($this->statut <= self::STATUS_DRAFT)
+		{
+			return 0;
+		}
+
+		dol_syslog(__METHOD__, LOG_DEBUG);
+
+		$this->db->begin();
+
+		$sql = "UPDATE ".MAIN_DB_PREFIX."commande_fournisseur";
+		$sql .= " SET fk_statut = ".self::STATUS_DRAFT;
+		$sql .= " WHERE rowid = ".$this->id;
+
+		if ($this->db->query($sql))
+		{
+			if (!$error)
+			{
+				$this->oldcopy = clone $this;
+			}
+
+			// If stock is decremented on validate order, we must reincrement it
+			if (!empty($conf->stock->enabled) && $conf->global->STOCK_CALCULATE_ON_VALIDATE_ORDER == 1)
+			{
+				$result = 0;
+
+				require_once DOL_DOCUMENT_ROOT.'/product/stock/class/mouvementstock.class.php';
+				$langs->load("agenda");
+
+				$num = count($this->lines);
+				for ($i = 0; $i < $num; $i++)
+				{
+					if ($this->lines[$i]->fk_product > 0)
+					{
+						$mouvP = new MouvementStock($this->db);
+						$mouvP->origin = &$this;
+						// We increment stock of product (and sub-products)
+						$result = $mouvP->livraison($user, $this->lines[$i]->fk_product, $idwarehouse, $this->lines[$i]->qty, 0, $langs->trans("SupplierOrderBackToDraftInDolibarr", $this->ref));
+						if ($result < 0) { $error++; $this->error = $mouvP->error; break; }
+					}
+				}
+			}
+
+			if (!$error) {
+				// Call trigger
+				$result = $this->call_trigger('ORDER_UNVALIDATE', $user);
+				if ($result < 0) $error++;
+			}
+
+			if (!$error) {
+				$this->statut = self::STATUS_DRAFT;
+				$this->db->commit();
+				return 1;
+			} else {
+				$this->db->rollback();
+				return -1;
+			}
+		}
+		else
+		{
+			$this->error = $this->db->error();
+			$this->db->rollback();
+			return -1;
+		}
+	}
+	/*
+	 * Fin spécifique
+	 */
+
     /**
      *  Return label of the status of object
      *
