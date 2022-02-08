@@ -1080,6 +1080,17 @@ class FactureRec extends CommonInvoice
 		// Load translation files required by the page
 		$langs->loadLangs(array("main","bills"));
 
+        /* -- [SPE KOESIO] -- */
+        // On désactive cette conf pour pas qu'elle force la date de facturation à la date de validation, on la bypass pendant notre cron
+        $count = 0;
+        $isConfActivated = $conf->global->FAC_FORCE_DATE_VALIDATION;
+        if($isConfActivated == 1) {
+            $isConfActivated = 0;
+            $count++;
+        }
+        /* -- [FIN SPE KOESIO] -- */
+
+
 		$now = dol_now();
 		$tmparray=dol_getdate($now);
 		$today = dol_mktime(23, 59, 59, $tmparray['mon'], $tmparray['mday'], $tmparray['year']);   // Today is last second of current day
@@ -1088,7 +1099,7 @@ class FactureRec extends CommonInvoice
 
 		$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.'facture_rec';
 		$sql.= ' WHERE frequency > 0';      // A recurring invoice is an invoice with a frequency
-		$sql.= " AND (date_when IS NULL OR date_when <= '".$db->idate($today)."')";
+		$sql.= " AND (date_when IS NULL OR date_when <= '".$db->idate($today)-/* SPE KOESIO*/ $conf->global->GENERATE_INVOICE_AHEAD_OF_TIME /*FIN SPE KOESIO*/."')";
 		$sql.= ' AND (nb_gen_done < nb_gen_max OR nb_gen_max = 0)';
 		$sql.= ' AND suspended = 0';
 		$sql.= ' AND entity = '.$conf->entity;	// MUST STAY = $conf->entity here
@@ -1205,6 +1216,13 @@ class FactureRec extends CommonInvoice
 
 				$i++;
 			}
+
+            /* -- [SPE KOESIO] -- */
+            // On réactive la conf puisque une fois notre traitement terminé
+            if($count != 0) {
+                $conf->global->FAC_FORCE_DATE_VALIDATION = 1;
+            }
+            /* -- [FIN SPE KOESIO] -- */
 
 			$conf->entity = $saventity;      // Restore entity context
 		}
