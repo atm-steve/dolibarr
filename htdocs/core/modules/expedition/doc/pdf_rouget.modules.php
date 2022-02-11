@@ -897,6 +897,16 @@ class pdf_rouget extends ModelePdfExpedition
 		$origin_id 	= $object->origin_id;
 
 	    // TODO move to external function
+		$object->fetch_projet();
+		if (! empty($object->project->ref))
+		{
+			$posy+=4;
+			$pdf->SetXY($posx+10,$posy);
+			$pdf->SetFont('','', $default_font_size - 2);
+			$langs->load("projects");
+			$pdf->SetTextColor(0,0,60);
+			$pdf->MultiCell(100, 3, $outputlangs->transnoentities("Project")." : " . (empty($object->project->ref)?'':$object->projet->ref), '', 'R');
+		}
 		if (! empty($conf->$origin->enabled))     // commonly $origin='commande'
 		{
 			$outputlangs->load('orders');
