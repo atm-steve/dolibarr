@@ -927,6 +927,15 @@ class pdf_squille extends ModelePdfReception
 				$Yoff = $Yoff+3;
 				$pdf->SetXY($this->page_largeur - $this->marge_droite - $w,$Yoff);
 				$pdf->MultiCell($w, 2, $outputlangs->transnoentities("OrderDate")." : ".dol_print_date($linkedobject->date,"day",false,$outputlangs,true), 0, 'R');
+				$linkedobject->fetch_projet();
+			if (! empty($linkedobject->project->ref))
+			{
+        		$posy+=4;
+				$pdf->SetXY($posx+10,$posy);
+        		$langs->load("projects");
+				$pdf->SetTextColor(0,0,60);
+				$pdf->MultiCell(100, 3, $outputlangs->transnoentities("Project")." : " . (empty($linkedobject->project->ref)?'':$linkedobject->projet->ref), '', 'R');
+			}
 			}
 		}
 
