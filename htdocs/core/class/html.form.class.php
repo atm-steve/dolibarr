@@ -1118,6 +1118,7 @@ class Form
 
 		if (!empty($conf->use_javascript_ajax) && !empty($conf->global->COMPANY_USE_SEARCH_TO_SELECT) && !$forcecombo)
 		{
+			require_once DOL_DOCUMENT_ROOT . '/core/lib/ajax.lib.php';
 			// No immediate load of all database
 			$placeholder = '';
 			if ($selected && empty($selected_input_value))
@@ -1131,7 +1132,7 @@ class Form
 			// mode 1
 			$urloption = 'htmlname='.urlencode($htmlname).'&outjson=1&filter='.urlencode($filter).($showtype ? '&showtype='.urlencode($showtype) : '');
 			$out .= ajax_autocompleter($selected, $htmlname, DOL_URL_ROOT.'/societe/ajax/company.php', $urloption, $conf->global->COMPANY_USE_SEARCH_TO_SELECT, 0, $ajaxoptions);
-			$out .= '<style type="text/css">.ui-autocomplete { z-index: 250; }</style>';
+			$out .= '<style type="text/css">.ui-autocomplete { z-index: 1003; }</style>';
 			if (empty($hidelabel)) print $langs->trans("RefOrLabel").' : ';
 			elseif ($hidelabel > 1) {
 				$placeholder = ' placeholder="'.$langs->trans("RefOrLabel").'"';
@@ -4438,7 +4439,7 @@ class Form
                          			var more = "";
 									var inputvalue;
                          			if ($("input[name=\'" + inputname + "\']").attr("type") == "radio") {
-										inputvalue = $("input[name=\'" + inputname + "\']").val();
+										inputvalue = $("input[name=\'" + inputname + "\']:checked").val();
 									} else {
                          		    	if ($("#" + inputname).attr("type") == "checkbox") { more = ":checked"; }
                          				inputvalue = $("#" + inputname + more).val();
@@ -6167,7 +6168,7 @@ class Form
 			$urloption = 'htmlname='.$htmlname.'&outjson=1&objectdesc='.$objectdesc.'&filter='.urlencode($objecttmp->filter);
 			// Activate the auto complete using ajax call.
 			$out .= ajax_autocompleter($preselectedvalue, $htmlname, $urlforajaxcall, $urloption, $conf->global->$confkeyforautocompletemode, 0, array());
-			$out .= '<style type="text/css">.ui-autocomplete { z-index: 250; }</style>';
+			$out .= '<style type="text/css">.ui-autocomplete { z-index: 1003; }</style>';
 			if ($placeholder) $placeholder = ' placeholder="'.$placeholder.'"';
 			$out .= '<input type="text" class="'.$morecss.'"'.($disabled ? ' disabled="disabled"' : '').' name="search_'.$htmlname.'" id="search_'.$htmlname.'" value="'.$selected_input_value.'"'.$placeholder.' />';
 		} else {
@@ -8123,8 +8124,8 @@ class Form
 		}
 
 		// Search all projects
-		$sql = 'SELECT f.rowid, f.ref as fref, "nolabel" as flabel, p.rowid as pid, f.ref,
-            p.title, p.fk_soc, p.fk_statut, p.public,';
+		$sql = "SELECT f.rowid, f.ref as fref, 'nolabel' as flabel, p.rowid as pid, f.ref,
+            p.title, p.fk_soc, p.fk_statut, p.public,";
 		$sql .= ' s.nom as name';
 		$sql .= ' FROM '.MAIN_DB_PREFIX.'projet as p';
 		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'societe as s ON s.rowid = p.fk_soc,';
@@ -8134,7 +8135,7 @@ class Form
 		//if ($projectsListId) $sql.= " AND p.rowid IN (".$projectsListId.")";
 		//if ($socid == 0) $sql.= " AND (p.fk_soc=0 OR p.fk_soc IS NULL)";
 		//if ($socid > 0)  $sql.= " AND (p.fk_soc=".$socid." OR p.fk_soc IS NULL)";
-		$sql .= " GROUP BY f.ref ORDER BY p.ref, f.ref ASC";
+		$sql .= " ORDER BY p.ref, f.ref ASC";
 
 		$resql = $this->db->query($sql);
 		if ($resql)

@@ -787,8 +787,7 @@ if (empty($reshook))
 		} else {
 			$db->rollback();
 
-			dol_print_error($db, $object->error);
-			exit;
+			setEventMessages($object->error, $object->errors, 'errors');
 		}
 	}
 
@@ -800,6 +799,8 @@ if (empty($reshook))
 		$result = $object->deleteline($lineid);
 		if ($result > 0)
 		{
+			// reorder lines
+			$object->line_order(true);
 			// Define output language
 			$outputlangs = $langs;
 			$newlang = '';
@@ -1259,6 +1260,8 @@ if (empty($reshook))
 									$soc->fetch($socid);
 									$tva_tx = get_default_tva($soc, $mysoc, $lines[$i]->fk_product, $product_fourn_price_id);
 								}
+
+								$object->special_code = $lines[$i]->special_code;
 
 								$result = $object->addline(
 									$desc,

@@ -1191,12 +1191,17 @@ if ($action == 'create')
 						{
 							// Quantity to send
 							print '<td class="center">';
-							if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES))
-							{
+							if ($line->product_type == Product::TYPE_PRODUCT || !empty($conf->global->STOCK_SUPPORTS_SERVICES)) {
 								if (GETPOST('qtyl'.$indiceAsked, 'int')) $deliverableQty = GETPOST('qtyl'.$indiceAsked, 'int');
 								print '<input name="idl'.$indiceAsked.'" type="hidden" value="'.$line->id.'">';
 								print '<input name="qtyl'.$indiceAsked.'" id="qtyl'.$indiceAsked.'" type="text" size="4" value="'.$deliverableQty.'">';
-							} else print $langs->trans("NA");
+							} else {
+								if (! empty($conf->global->SHIPMENT_GETS_ALL_ORDER_PRODUCTS)) {
+									print '<input name="qtyl'.$indiceAsked.'" id="qtyl'.$indiceAsked.'" type="hidden" value="0">';
+								}
+
+								print $langs->trans("NA");
+							}
 							print '</td>';
 
 							// Stock
@@ -1361,7 +1366,13 @@ if ($action == 'create')
 									{
 										print '<input name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'" type="text" size="4" value="'.$deliverableQty.'">';
 										print '<input name="ent1'.$indiceAsked.'_'.$subj.'" type="hidden" value="'.$warehouse_id.'">';
-									} else print $langs->trans("NA");
+									} else {
+										if (! empty($conf->global->SHIPMENT_GETS_ALL_ORDER_PRODUCTS)) {
+											print '<input name="qtyl'.$indiceAsked.'_'.$subj.'" id="qtyl'.$indiceAsked.'" type="hidden" value="0">';
+										}
+
+										print $langs->trans("NA");
+									}
 									print '</td>';
 
 									// Stock
@@ -2211,7 +2222,8 @@ if ($action == 'create')
 								// only show lot numbers from src warehouse when shipping from multiple warehouses
 								$line->fetch($detail_batch->fk_expeditiondet);
 							}
-							print '<td>'.$formproduct->selectLotStock($detail_batch->fk_origin_stock, 'batchl'.$detail_batch->fk_expeditiondet.'_'.$detail_batch->fk_origin_stock, '', 1, 0, $lines[$i]->fk_product, $line->entrepot_id).'</td>';
+							$entrepot_id = !empty($detail_batch->entrepot_id)?$detail_batch->entrepot_id:$lines[$i]->entrepot_id;
+							print '<td>'.$formproduct->selectLotStock($detail_batch->fk_origin_stock, 'batchl'.$detail_batch->fk_expeditiondet.'_'.$detail_batch->fk_origin_stock, '', 1, 0, $lines[$i]->fk_product, $entrepot_id).'</td>';
 							print '</tr>';
 						}
 						// add a 0 qty lot row to be able to add a lot
