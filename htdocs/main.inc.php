@@ -58,14 +58,27 @@ if (!empty($_SERVER['MAIN_SHOW_TUNING_INFO']))
  * @param		string		$type		1=GET, 0=POST, 2=PHP_SELF, 3=GET without sql reserved keywords (the less tolerant test)
  * @return		int						>0 if there is an injection, 0 if none
  */
+
+/******************************************************************************************************
+
+	INFORMATION : j'ai (Gauthier), pour le ticket DA021382 remplacé toute la fonction testSqlAndScriptInject par la version disponible en develop et en 14.0 qui fonctionne visiblement mieux.
+	J'ai ouvert une issue https://github.com/Dolibarr/dolibarr/issues/19869 pour demander à laurent s'il serait intéressant de la backporter pour éviter ce bout de code dégueu non committé
+
+******************************************************************************************************/
+
 function testSqlAndScriptInject($val, $type)
 {
-	// Decode string first
+	// Decode string first because a lot of things are obfuscated by encoding or multiple encoding.
 	// So <svg o&#110;load='console.log(&quot;123&quot;)' become <svg onload='console.log(&quot;123&quot;)'
 	// So "&colon;&apos;" become ":'" (due to ENT_HTML5)
-	$val = html_entity_decode($val, ENT_QUOTES | ENT_HTML5);
-
-	// TODO loop to decode until no more thing to decode ?
+	// Loop to decode until no more thing to decode.
+	//print "before decoding $val\n";
+	do {
+		$oldval = $val;
+		$val = html_entity_decode($val, ENT_QUOTES | ENT_HTML5);
+		$val = preg_replace_callback('/&#(x?[0-9][0-9a-f]+)/i', 'realCharForNumericEntities', $val); // Sometimes we have entities without the ; at end so html_entity_decode does not work but entities is still interpreted by browser.
+	} while ($oldval != $val);
+	//print "after  decoding $val\n";
 
 	// We clean string because some hacks try to obfuscate evil strings by inserting non printable chars. Example: 'java(ascci09)scr(ascii00)ipt' is processed like 'javascript' (whatever is place of evil ascii char)
 	// We should use dol_string_nounprintableascii but function is not yet loaded/available
@@ -74,28 +87,26 @@ function testSqlAndScriptInject($val, $type)
 	$val = preg_replace('/<!--[^>]*-->/', '', $val);
 
 	$inj = 0;
-	// For SQL Injection (only GET are used to be included into bad escaped SQL requests)
-	if ($type == 1 || $type == 3)
-	{
+	// For SQL Injection (only GET are used to scan for such injection strings)
+	if ($type == 1 || $type == 3) {
 		$inj += preg_match('/delete\s+from/i', $val);
 		$inj += preg_match('/create\s+table/i', $val);
 		$inj += preg_match('/insert\s+into/i', $val);
 		$inj += preg_match('/select\s+from/i', $val);
 		$inj += preg_match('/into\s+(outfile|dumpfile)/i', $val);
-		$inj += preg_match('/user\s*\(/i', $val); // avoid to use function user() that return current database login
+		$inj += preg_match('/user\s*\(/i', $val); // avoid to use function user() or mysql_user() that return current database login
 		$inj += preg_match('/information_schema/i', $val); // avoid to use request that read information_schema database
 		$inj += preg_match('/<svg/i', $val); // <svg can be allowed in POST
-	}
-	if ($type == 3)
-	{
-		$inj += preg_match('/select|update|delete|truncate|replace|group\s+by|concat|count|from|union/i', $val);
-	}
-	if ($type != 2)	// Not common key strings, so we can check them both on GET and POST
-	{
-		$inj += preg_match('/updatexml\(/i', $val);
 		$inj += preg_match('/update.+set.+=/i', $val);
 		$inj += preg_match('/union.+select/i', $val);
+	}
+	if ($type == 3) {
+		$inj += preg_match('/select|update|delete|truncate|replace|group\s+by|concat|count|from|union/i', $val);
+	}
+	if ($type != 2) {	// Not common key strings, so we can check them both on GET and POST
+		$inj += preg_match('/updatexml\(/i', $val);
 		$inj += preg_match('/(\.\.%2f)+/i', $val);
+		$inj += preg_match('/\s@@/', $val);
 	}
 	// For XSS Injection done by closing textarea to execute content into a textarea field
 	$inj += preg_match('/<\/textarea/i', $val);
@@ -110,44 +121,45 @@ function testSqlAndScriptInject($val, $type)
 	$inj += preg_match('/<object/i', $val);
 	$inj += preg_match('/<script/i', $val);
 	$inj += preg_match('/Set\.constructor/i', $val); // ECMA script 6
-	if (!defined('NOSTYLECHECK')) $inj += preg_match('/<style/i', $val);
+	if (!defined('NOSTYLECHECK')) {
+		$inj += preg_match('/<style/i', $val);
+	}
 	$inj += preg_match('/base\s+href/si', $val);
 	$inj += preg_match('/=data:/si', $val);
-	// List of dom events is on https://www.w3schools.com/jsref/dom_obj_event.asp
-	$inj += preg_match('/onmouse([a-z]*)\s*=/i', $val); // onmousexxx can be set on img or any html tag like <img title='...' onmouseover=alert(1)>
-	$inj += preg_match('/ondrag([a-z]*)\s*=/i', $val); //
-	$inj += preg_match('/ontouch([a-z]*)\s*=/i', $val); //
-	$inj += preg_match('/on(abort|afterprint|beforeprint|beforeunload|blur|canplay|canplaythrough|change|click|contextmenu|copy|cut)\s*=/i', $val);
-	$inj += preg_match('/on(dblclick|drop|durationchange|ended|error|focus|focusin|focusout|hashchange|input|invalid)\s*=/i', $val);
-	$inj += preg_match('/on(keydown|keypress|keyup|load|loadeddata|loadedmetadata|loadstart|offline|online|pagehide|pageshow)\s*=/i', $val);
-	$inj += preg_match('/on(paste|pause|play|playing|progress|ratechange|resize|reset|scroll|search|seeking|select|show|stalled|start|submit|suspend)\s*=/i', $val);
-	$inj += preg_match('/on(timeupdate|toggle|unload|volumechange|waiting)\s*=/i', $val);
+	// List of dom events is on https://www.w3schools.com/jsref/dom_obj_event.asp and https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers
+	$inj += preg_match('/on(mouse|drag|key|load|touch|pointer|select|transition)([a-z]*)\s*=/i', $val); // onmousexxx can be set on img or any html tag like <img title='...' onmouseover=alert(1)>
+	$inj += preg_match('/on(abort|afterprint|animation|auxclick|beforecopy|beforecut|beforeprint|beforeunload|blur|cancel|canplay|canplaythrough|change|click|close|contextmenu|cuechange|copy|cut)\s*=/i', $val);
+	$inj += preg_match('/on(dblclick|drop|durationchange|emptied|ended|error|focus|focusin|focusout|formdata|gotpointercapture|hashchange|input|invalid)\s*=/i', $val);
+	$inj += preg_match('/on(lostpointercapture|offline|online|pagehide|pageshow)\s*=/i', $val);
+	$inj += preg_match('/on(paste|pause|play|playing|progress|ratechange|reset|resize|scroll|search|seeked|seeking|show|stalled|start|submit|suspend)\s*=/i', $val);
+	$inj += preg_match('/on(timeupdate|toggle|unload|volumechange|waiting|wheel)\s*=/i', $val);
 
 	// We refuse html into html because some hacks try to obfuscate evil strings by inserting HTML into HTML. Example: <img on<a>error=alert(1) to bypass test on onerror
 	$tmpval = preg_replace('/<[^<]+>/', '', $val);
-	// List of dom events is on https://www.w3schools.com/jsref/dom_obj_event.asp
-	$inj += preg_match('/onmouse([a-z]*)\s*=/i', $tmpval); // onmousexxx can be set on img or any html tag like <img title='...' onmouseover=alert(1)>
-	$inj += preg_match('/ondrag([a-z]*)\s*=/i', $tmpval); //
-	$inj += preg_match('/ontouch([a-z]*)\s*=/i', $tmpval); //
-	$inj += preg_match('/on(abort|afterprint|beforeprint|beforeunload|blur|canplay|canplaythrough|change|click|contextmenu|copy|cut)\s*=/i', $tmpval);
-	$inj += preg_match('/on(dblclick|drop|durationchange|ended|error|focus|focusin|focusout|hashchange|input|invalid)\s*=/i', $tmpval);
-	$inj += preg_match('/on(keydown|keypress|keyup|load|loadeddata|loadedmetadata|loadstart|offline|online|pagehide|pageshow)\s*=/i', $tmpval);
-	$inj += preg_match('/on(paste|pause|play|playing|progress|ratechange|resize|reset|scroll|search|seeking|select|show|stalled|start|submit|suspend)\s*=/i', $tmpval);
-	$inj += preg_match('/on(timeupdate|toggle|unload|volumechange|waiting)\s*=/i', $tmpval);
+	// List of dom events is on https://www.w3schools.com/jsref/dom_obj_event.asp and https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers
+	$inj += preg_match('/on(mouse|drag|key|load|touch|pointer|select|transition)([a-z]*)\s*=/i', $val); // onmousexxx can be set on img or any html tag like <img title='...' onmouseover=alert(1)>
+	$inj += preg_match('/on(abort|afterprint|animation|auxclick|beforeprint|beforeunload|blur|cancel|canplay|canplaythrough|change|click|close|contextmenu|cuechange|copy|cut)\s*=/i', $tmpval);
+	$inj += preg_match('/on(dblclick|drop|durationchange|emptied|ended|error|focus|focusin|focusout|formdata|gotpointercapture|hashchange|input|invalid)\s*=/i', $tmpval);
+	$inj += preg_match('/on(lostpointercapture|offline|online|pagehide|pageshow)\s*=/i', $tmpval);
+	$inj += preg_match('/on(paste|pause|play|playing|progress|ratechange|reset|resize|scroll|search|seeked|seeking|show|stalled|start|submit|suspend)\s*=/i', $tmpval);
+	$inj += preg_match('/on(timeupdate|toggle|unload|volumechange|waiting|wheel)\s*=/i', $tmpval);
 
 	//$inj += preg_match('/on[A-Z][a-z]+\*=/', $val);   // To lock event handlers onAbort(), ...
 	$inj += preg_match('/&#58;|&#0000058|&#x3A/i', $val); // refused string ':' encoded (no reason to have it encoded) to lock 'javascript:...'
+
 	$inj += preg_match('/javascript\s*:/i', $val);
 	$inj += preg_match('/vbscript\s*:/i', $val);
 	// For XSS Injection done by adding javascript closing html tags like with onmousemove, etc... (closing a src or href tag with not cleaned param)
 	if ($type == 1) {
-		$val = str_replace('enclosure="', 'enclosure=X', $val); // We accept enclosure="
+		$val = str_replace('enclosure="', 'enclosure=X', $val); // We accept enclosure=" for the export/import module
 		$inj += preg_match('/"/i', $val); // We refused " in GET parameters value.
 	}
-	if ($type == 2) $inj += preg_match('/[;"]/', $val); // PHP_SELF is a file system path. It can contains spaces.
+	if ($type == 2) {
+		$inj += preg_match('/[:;"\'<>\?\(\){}\$%]/', $val); // PHP_SELF is a file system (or url path without parameters). It can contains spaces.
+	}
+
 	return $inj;
 }
-
 /**
  * Return true if security check on parameters are OK, false otherwise.
  *
