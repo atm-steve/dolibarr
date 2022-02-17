@@ -1814,7 +1814,7 @@ class TExportCompta extends TObjetStd {
             if(is_null($progress)) $progress = $Tab['progress'];
             else $progress = abs($progress - $Tab['progress']);
 
-            if($Tab['progress'] > 0) $res += $Tab['amount'] * $progress / 100;    // Invoice
+            if($Tab['progress'] >= 0) $res += $Tab['amount'] * $progress / 100;    // Invoice
             else $res -= abs($Tab['amount']);    // Credit note
         }
 
