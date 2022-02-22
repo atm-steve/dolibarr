@@ -10,13 +10,14 @@ class TExportComptaInextenso extends TExportCompta {
 		parent::__construct($db, $exportAllreadyExported, $addExportTimeToBill);
 		
 		$this->_format_ecritures_comptables_vente = array(
-			array('name' => 'date_ecriture',		'length' => 10,	'default' => '',	'type' => 'date',	'format' => 'd/m/Y'),
-			array('name' => 'code_journal',			'length' => 6,	'default' => 'VT',	'type' => 'text'),
-			array('name' => 'numero_compte',		'length' => 9,	'default' => '0',	'type' => 'text'),
-			array('name' => 'montant_debit',		'length' => 13,	'default' => '0',	'type' => 'text',),
-			array('name' => 'montant_credit',		'length' => 13,	'default' => '0',	'type' => 'text',),
-			array('name' => 'libelle',				'length' => 30,	'default' => '',	'type' => 'text'),
-			array('name' => 'numero_piece',			'length' => 12,	'default' => '',	'type' => 'text'),
+			array('name' => 'date_ecriture',           'length' => 10, 'default' => '',   'type' => 'date',	'format' => 'd/m/Y'),
+			array('name' => 'code_journal',            'length' =>  6, 'default' => 'VT', 'type' => 'text'),
+			array('name' => 'numero_compte',           'length' =>  9, 'default' => '0',  'type' => 'text'),
+			array('name' => 'montant_debit',           'length' => 13, 'default' => '0',  'type' => 'text'),
+			array('name' => 'montant_credit',          'length' => 13, 'default' => '0',  'type' => 'text'),
+			array('name' => 'libelle',                 'length' => 30, 'default' => '',   'type' => 'text'),
+			array('name' => 'numero_piece',            'length' => 12, 'default' => '',   'type' => 'text'),
+			array('name' => 'compte_collectif_client', 'length' =>  9, 'default' => '',   'type' => 'text'),
 		);
 				
 		$this->_format_ecritures_comptables_achat = $this->_format_ecritures_comptables_vente;
@@ -62,6 +63,13 @@ class TExportComptaInextenso extends TExportCompta {
 			$tiers = &$infosFacture['tiers'];
 			$facture = &$infosFacture['facture'];
 
+            // tiers France
+            if ($tiers['country_code'] === 'FR') $compteCollectifClient = '411000';
+            // tiers CEE hors France
+            elseif (isInEEC((object)$tiers))     $compteCollectifClient = '411001';
+            // tiers hors CEE
+            else                                 $compteCollectifClient = '411002';
+
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 				$ligneFichier = array(
@@ -71,6 +79,7 @@ class TExportComptaInextenso extends TExportCompta {
 					'libelle'						=> $tiers['nom'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
+					'compte_collectif_client'		=> $compteCollectifClient,
 				);
 				
 				// Ecriture générale
@@ -87,6 +96,7 @@ class TExportComptaInextenso extends TExportCompta {
 					'libelle'						=> $tiers['nom'],
 					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
 					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
+					'compte_collectif_client'		=> $compteCollectifClient,
 				);
 				
 				// Ecriture générale
@@ -105,6 +115,7 @@ class TExportComptaInextenso extends TExportCompta {
 						'libelle'						=> $tiers['nom'],
 						'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? number_format(abs($montant),2,',','') : 0,
 						'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : number_format(abs($montant),2,',',''),
+					    'compte_collectif_client'		=> $compteCollectifClient,
 					);
 					
 					// Ecriture générale
