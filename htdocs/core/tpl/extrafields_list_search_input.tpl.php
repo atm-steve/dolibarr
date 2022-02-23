@@ -50,22 +50,25 @@ if (!empty($extrafieldsobjectkey))	// $extrafieldsobject is the $object->table_e
                     $infos = img_picto(addslashes($langs->trans('UseANDHelp')), 'info_black');
                     $checkbox_title = dol_htmlentities($langs->trans('UseANDHelp'), ENT_QUOTES);
 
-                    if (in_array($typeofextrafield, array('link', 'sellist', 'text', 'html'))) $morecss = 'maxwidth200';
-                    echo $extrafields->showInputField($key, $search_array_options[$search_options_pattern.$tmpkey], '', '', $search_options_pattern, $morecss, 0, $extrafieldsobjectkey, 1);
-                    /*
+					/*
 					* SPE SGP
 					* Gestion de la recherche multiple sur les extrafields multiselect
 					*/
 					if(in_array($typeofextrafield, array('checkbox', 'chkbxlst'))) {
-                        $behaviour = GETPOST($search_options_pattern.$tmpkey.'_AND', 'bool') ? 'checked' : '';
-                        print '<input type="checkbox" name="'.$search_options_pattern.$tmpkey.'_AND" ';
-                        // La case reste cochée si la croix (suppression des filtres) n'a pas été activée
-                        if (! (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha'))){
-                            print $behaviour;
-                        }
-                        print ' title="' . $checkbox_title . '"/>';
-                        print $infos;
-                    }
+						$behaviour = GETPOST($search_options_pattern.$tmpkey.'_AND', 'bool') ? 'checked' : '';
+
+						print '<span id="toIncludeCheckbox_'.$tmpkey.'" style="color: white">'.$langs->trans('ToInclude').'&nbsp;<input type="checkbox" name="'.$search_options_pattern.$tmpkey.'_AND" ';
+						// La case reste cochée si la croix (suppression des filtres) n'a pas été activée
+						if (! (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha'))){
+							print $behaviour;
+						}
+						print ' title="' . $checkbox_title . '"/>';
+						print $infos.'</span>';
+					}
+
+                    if (in_array($typeofextrafield, array('link', 'sellist', 'text', 'html'))) $morecss = 'maxwidth200';
+                    echo $extrafields->showInputField($key, $search_array_options[$search_options_pattern.$tmpkey], '', '', $search_options_pattern, $morecss, 0, $extrafieldsobjectkey, 1);
+
                 }
                 print '</td>';
             }
