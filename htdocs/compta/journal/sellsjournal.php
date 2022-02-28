@@ -36,6 +36,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 
+/** @var DoliDB $db */
+/** @var Translate $langs */
+
 // Load translation files required by the page
 $langs->loadLangs(array('companies', 'other', 'bills', 'compta'));
 
@@ -45,38 +48,20 @@ $date_startyear=GETPOST('date_startyear');
 $date_endmonth=GETPOST('date_endmonth');
 $date_endday=GETPOST('date_endday');
 $date_endyear=GETPOST('date_endyear');
+$action = GETPOST('action', 'alphanohtml');
 
 // Security check
 if ($user->societe_id > 0) $socid = $user->societe_id;
 if (! empty($conf->comptabilite->enabled)) $result=restrictedArea($user, 'compta', '', '', 'resultat');
 if (! empty($conf->accounting->enabled)) $result=restrictedArea($user, 'accounting', '', '', 'comptarapport');
 
-/*
- * Actions
- */
-
-// None
-
-
-
-/*
- * View
- */
-
-$form=new Form($db);
-
-$morequery='&date_startyear='.$date_startyear.'&date_startmonth='.$date_startmonth.'&date_startday='.$date_startday.'&date_endyear='.$date_endyear.'&date_endmonth='.$date_endmonth.'&date_endday='.$date_endday;
-
-llxHeader('', $langs->trans("SellsJournal"), '', '', 0, 0, '', '', $morequery);
-
-
 $year_current = strftime("%Y", dol_now());
 $pastmonth = strftime("%m", dol_now()) - 1;
 $pastmonthyear = $year_current;
 if ($pastmonth == 0)
 {
-	$pastmonth = 12;
-	$pastmonthyear--;
+    $pastmonth = 12;
+    $pastmonthyear--;
 }
 
 $date_start=dol_mktime(0, 0, 0, $date_startmonth, $date_startday, $date_startyear);
@@ -84,18 +69,8 @@ $date_end=dol_mktime(23, 59, 59, $date_endmonth, $date_endday, $date_endyear);
 
 if (empty($date_start) || empty($date_end)) // We define date_start and date_end
 {
-	$date_start=dol_get_first_day($pastmonthyear, $pastmonth, false); $date_end=dol_get_last_day($pastmonthyear, $pastmonth, false);
+    $date_start=dol_get_first_day($pastmonthyear, $pastmonth, false); $date_end=dol_get_last_day($pastmonthyear, $pastmonth, false);
 }
-
-$name=$langs->trans("SellsJournal");
-$periodlink='';
-$exportlink='';
-$builddate=dol_now();
-$description=$langs->trans("DescSellsJournal").'<br>';
-if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $description.= $langs->trans("DepositsAreNotIncluded");
-else  $description.= $langs->trans("DepositsAreIncluded");
-$period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
-report_header($name, '', $period, $periodlink, $description, $builddate, $exportlink);
 
 $p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 $idpays = $p[0];
@@ -113,15 +88,16 @@ $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_tva ct ON fd.tva_tx = ct.taux AND fd.info
 $sql.= " WHERE f.entity IN (".getEntity('invoice').")";
 $sql.= " AND f.fk_statut > 0";
 if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
-	$sql.= " AND f.type IN (".Facture::TYPE_STANDARD.",".Facture::TYPE_REPLACEMENT.",".Facture::TYPE_CREDIT_NOTE.",".Facture::TYPE_SITUATION.")";
+    $sql.= " AND f.type IN (".Facture::TYPE_STANDARD.",".Facture::TYPE_REPLACEMENT.",".Facture::TYPE_CREDIT_NOTE.",".Facture::TYPE_SITUATION.")";
 }
 else {
-	$sql.= " AND f.type IN (".Facture::TYPE_STANDARD.",".Facture::TYPE_STANDARD.",".Facture::TYPE_CREDIT_NOTE.",".Facture::TYPE_DEPOSIT.",".Facture::TYPE_SITUATION.")";
+    $sql.= " AND f.type IN (".Facture::TYPE_STANDARD.",".Facture::TYPE_STANDARD.",".Facture::TYPE_CREDIT_NOTE.",".Facture::TYPE_DEPOSIT.",".Facture::TYPE_SITUATION.")";
 }
 
 $sql.= " AND fd.product_type IN (0,1)";
 if ($date_start && $date_end) $sql .= " AND f.datef >= '".$db->idate($date_start)."' AND f.datef <= '".$db->idate($date_end)."'";
 $sql.= " ORDER BY f.rowid";
+
 
 // TODO Find a better trick to avoid problem with some mysql installations
 if (in_array($db->type, array('mysql', 'mysqli'))) $db->query('SET SQL_BIG_SELECTS=1');
@@ -129,90 +105,245 @@ if (in_array($db->type, array('mysql', 'mysqli'))) $db->query('SET SQL_BIG_SELEC
 $result = $db->query($sql);
 if ($result)
 {
-	$tabfac = array();
-	$tabht = array();
-	$tabtva = array();
-	$tablocaltax1 = array();
-	$tablocaltax2 = array();
-	$tabttc = array();
-	$tabcompany = array();
-	$account_localtax1=0;
-	$account_localtax2=0;
+    $tabfac = array();
+    $tabht = array();
+    $tabtva = array();
+    $tablocaltax1 = array();
+    $tablocaltax2 = array();
+    $tabttc = array();
+    $tabcompany = array();
+    $account_localtax1=0;
+    $account_localtax2=0;
 
-	$num = $db->num_rows($result);
-   	$i=0;
-   	$resligne=array();
-   	while ($i < $num)
-   	{
-   	    $obj = $db->fetch_object($result);
-   	    // les variables
-   	    $cptcli = (($conf->global->ACCOUNTING_ACCOUNT_CUSTOMER != "")?$conf->global->ACCOUNTING_ACCOUNT_CUSTOMER:$langs->trans("CodeNotDef"));
-   	    $compta_soc = (! empty($obj->code_compta)?$obj->code_compta:$cptcli);
-		$compta_prod = $obj->accountancy_code_sell;
-		if (empty($compta_prod))
-		{
-			if($obj->product_type == 0) $compta_prod = (! empty($conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT)?$conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT:$langs->trans("CodeNotDef"));
-			else $compta_prod = (! empty($conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT)?$conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT:$langs->trans("CodeNotDef"));
-		}
-		$cpttva = (! empty($conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT)?$conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT:$langs->trans("CodeNotDef"));
-		$compta_tva = (! empty($obj->account_tva)?$obj->account_tva:$cpttva);
+    $num = $db->num_rows($result);
+    $i=0;
+    $resligne=array();
+    while ($i < $num)
+    {
+        $obj = $db->fetch_object($result);
+        // les variables
+        $cptcli = (($conf->global->ACCOUNTING_ACCOUNT_CUSTOMER != "")?$conf->global->ACCOUNTING_ACCOUNT_CUSTOMER:$langs->trans("CodeNotDef"));
+        $compta_soc = (! empty($obj->code_compta)?$obj->code_compta:$cptcli);
+        $compta_prod = $obj->accountancy_code_sell;
+        if (empty($compta_prod))
+        {
+            if($obj->product_type == 0) $compta_prod = (! empty($conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT)?$conf->global->ACCOUNTING_PRODUCT_SOLD_ACCOUNT:$langs->trans("CodeNotDef"));
+            else $compta_prod = (! empty($conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT)?$conf->global->ACCOUNTING_SERVICE_SOLD_ACCOUNT:$langs->trans("CodeNotDef"));
+        }
+        $cpttva = (! empty($conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT)?$conf->global->ACCOUNTING_VAT_SOLD_ACCOUNT:$langs->trans("CodeNotDef"));
+        $compta_tva = (! empty($obj->account_tva)?$obj->account_tva:$cpttva);
 
-		$account_localtax1=getLocalTaxesFromRate($obj->tva_tx, 1, $obj->thirdparty, $mysoc);
-		$compta_localtax1= (! empty($account_localtax1[3])?$account_localtax1[3]:$langs->trans("CodeNotDef"));
-		$account_localtax2=getLocalTaxesFromRate($obj->tva_tx, 2, $obj->thirdparty, $mysoc);
-		$compta_localtax2= (! empty($account_localtax2[3])?$account_localtax2[3]:$langs->trans("CodeNotDef"));
+        $account_localtax1=getLocalTaxesFromRate($obj->tva_tx, 1, $obj->thirdparty, $mysoc);
+        $compta_localtax1= (! empty($account_localtax1[3])?$account_localtax1[3]:$langs->trans("CodeNotDef"));
+        $account_localtax2=getLocalTaxesFromRate($obj->tva_tx, 2, $obj->thirdparty, $mysoc);
+        $compta_localtax2= (! empty($account_localtax2[3])?$account_localtax2[3]:$langs->trans("CodeNotDef"));
 
-		// Situation invoices handling
-		$line = new FactureLigne($db);
-		$line->fetch($obj->id);   // id of line
-		$prev_progress = 0;
-		if ($obj->type==Facture::TYPE_SITUATION) {
-			// Avoid divide by 0
-			if ($obj->situation_percent == 0) {
-				$situation_ratio = 0;
-			} else {
-		        $prev_progress = $line->get_prev_progress($obj->rowid);   // id on invoice
-			    $situation_ratio = ($obj->situation_percent - $prev_progress) / $obj->situation_percent;
-			}
-		} else {
-			$situation_ratio = 1;
-		}
+        // Situation invoices handling
+        $line = new FactureLigne($db);
+        $line->fetch($obj->id);   // id of line
+        $prev_progress = 0;
+        if ($obj->type==Facture::TYPE_SITUATION) {
+            // Avoid divide by 0
+            if ($obj->situation_percent == 0) {
+                $situation_ratio = 0;
+            } else {
+                $prev_progress = $line->get_prev_progress($obj->rowid);   // id on invoice
+                $situation_ratio = ($obj->situation_percent - $prev_progress) / $obj->situation_percent;
+            }
+        } else {
+            $situation_ratio = 1;
+        }
 
-    	//la ligne facture
-   		$tabfac[$obj->rowid]["date"] = $obj->datef;
-   		$tabfac[$obj->rowid]["ref"] = $obj->ref;
-   		$tabfac[$obj->rowid]["type"] = $obj->type;
-   		if (! isset($tabttc[$obj->rowid][$compta_soc])) $tabttc[$obj->rowid][$compta_soc]=0;
-   		if (! isset($tabht[$obj->rowid][$compta_prod])) $tabht[$obj->rowid][$compta_prod]=0;
-   		if (! isset($tabtva[$obj->rowid][$compta_tva])) $tabtva[$obj->rowid][$compta_tva]=0;
-   		if (! isset($tablocaltax1[$obj->rowid][$compta_localtax1])) $tablocaltax1[$obj->rowid][$compta_localtax1]=0;
-   		if (! isset($tablocaltax2[$obj->rowid][$compta_localtax2])) $tablocaltax2[$obj->rowid][$compta_localtax2]=0;
-		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc * $situation_ratio;
-		$tabht[$obj->rowid][$compta_prod] += $obj->total_ht * $situation_ratio;
-		if($obj->recuperableonly != 1) $tabtva[$obj->rowid][$compta_tva] += $obj->total_tva * $situation_ratio;
-   		$tablocaltax1[$obj->rowid][$compta_localtax1] += $obj->total_localtax1;
-   		$tablocaltax2[$obj->rowid][$compta_localtax2] += $obj->total_localtax2;
-   		$tabcompany[$obj->rowid]=array('id'=>$obj->socid, 'name'=>$obj->name, 'client'=>$obj->client);
-   		$i++;
-   	}
+        //la ligne facture
+        $tabfac[$obj->rowid]["date"] = $obj->datef;
+        $tabfac[$obj->rowid]["ref"] = $obj->ref;
+        $tabfac[$obj->rowid]["type"] = $obj->type;
+        if (! isset($tabttc[$obj->rowid][$compta_soc])) $tabttc[$obj->rowid][$compta_soc]=0;
+        if (! isset($tabht[$obj->rowid][$compta_prod])) $tabht[$obj->rowid][$compta_prod]=0;
+        if (! isset($tabtva[$obj->rowid][$compta_tva])) $tabtva[$obj->rowid][$compta_tva]=0;
+        if (! isset($tablocaltax1[$obj->rowid][$compta_localtax1])) $tablocaltax1[$obj->rowid][$compta_localtax1]=0;
+        if (! isset($tablocaltax2[$obj->rowid][$compta_localtax2])) $tablocaltax2[$obj->rowid][$compta_localtax2]=0;
+        $tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc * $situation_ratio;
+        $tabht[$obj->rowid][$compta_prod] += $obj->total_ht * $situation_ratio;
+        if($obj->recuperableonly != 1) $tabtva[$obj->rowid][$compta_tva] += $obj->total_tva * $situation_ratio;
+        $tablocaltax1[$obj->rowid][$compta_localtax1] += $obj->total_localtax1;
+        $tablocaltax2[$obj->rowid][$compta_localtax2] += $obj->total_localtax2;
+        $tabcompany[$obj->rowid]=array('id'=>$obj->socid, 'name'=>$obj->name, 'client'=>$obj->client);
+        $i++;
+    }
 }
 else {
     dol_print_error($db);
 }
 
+/*
+ * Actions
+ */
+
+if ($action === 'export') {
+    $fileName = str_replace(' ', '-', $langs->transnoentitiesnoconv('SellsJournal')) . '.csv';
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . str_replace('"', '', $fileName) . '"');
+    $separator = ',';
+    $enclosure = '"';
+    $escape = '"';
+//    $TabExport = array();
+
+    // Header row
+    $exportRow = array(
+        $langs->transnoentitiesnoconv('Date'),
+        $langs->transnoentitiesnoconv('Piece').' ('.$langs->transnoentitiesnoconv('InvoiceRef').')',
+        $langs->transnoentitiesnoconv('Account'),
+        $langs->transnoentitiesnoconv('Type'),
+        $langs->transnoentitiesnoconv('Debit'),
+        $langs->transnoentitiesnoconv('Credit'),
+    );
+    $stdout = fopen('php://output', 'w');
+    fputcsv($stdout, $exportRow, $separator, $enclosure, $escape);
+
+
+    $invoicestatic=new Facture($db);
+    $companystatic=new Client($db);
+
+    foreach ($tabfac as $key => $val)
+    {
+        $invoicestatic->id=$key;
+        $invoicestatic->ref=$val["ref"];
+        $invoicestatic->type=$val["type"];
+
+        $companystatic->id=$tabcompany[$key]['id'];
+        $companystatic->name=$tabcompany[$key]['name'];
+        $companystatic->client=$tabcompany[$key]['client'];
+
+        $lines = array(
+            array(
+                'var' => $tabttc[$key],
+                'label' => $langs->transnoentitiesnoconv('ThirdParty') . ' (' . strip_tags($companystatic->getNomUrl(0, 'customer', 16)) . ')',
+                'nomtcheck' => true,
+                'inv' => true
+            ),
+            array(
+                'var' => $tabht[$key],
+                'label' => $langs->transnoentitiesnoconv('Products'),
+            ),
+            array(
+                'var' => $tabtva[$key],
+                'label' => $langs->transnoentitiesnoconv('VAT')
+            ),
+            array(
+                'var' => $tablocaltax1[$key],
+                'label' => $langs->transcountrynoentities('LT1', $mysoc->country_code)
+            ),
+            array(
+                'var' => $tablocaltax2[$key],
+                'label' => $langs->transcountrynoentities('LT2', $mysoc->country_code)
+            )
+        );
+
+        foreach ($lines as $line)
+        {
+            foreach ($line['var'] as $k => $mt)
+            {
+                if (isset($line['nomtcheck']) || $mt)
+                {
+                    if ($line['inv']) $mt = -$mt;
+                    $exportRow = array(
+                        dol_print_date($db->jdate($val["date"])),
+                        $invoicestatic->ref,
+                        $k,
+                        strip_tags($line['label']),
+                        ($mt < 0  ? str_replace(' ', '', price(-$mt)) : ''),
+                        ($mt >= 0 ? str_replace(' ', '', price( $mt)) : ''),
+                    );
+                    fputcsv($stdout, $exportRow, $separator, $enclosure, $escape);
+                }
+            }
+        }
+    }
+    exit;
+}
+
+
+
+/*
+ * View
+ */
+
+$form=new Form($db);
+
+$morequery='&date_startyear='.$date_startyear.'&date_startmonth='.$date_startmonth.'&date_startday='.$date_startday.'&date_endyear='.$date_endyear.'&date_endmonth='.$date_endmonth.'&date_endday='.$date_endday;
+
+llxHeader('', $langs->trans("SellsJournal"), '', '', 0, 0, '', '', $morequery);
+
+$name=$langs->trans("SellsJournal");
+$periodlink='';
+//$exportlink = dolGetButtonAction('CSV', '', 'default', $_SERVER['PHP_SELF'] . '?' . http_build_query(array('action' => 'export')) . $morequery, $user->rights->comptarapport->lire);
+$exportlink = 'CSV&emsp;<input type="checkbox" name="action" value="export" />';
+$builddate=dol_now();
+$description=$langs->trans("DescSellsJournal").'<br>';
+if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $description.= $langs->trans("DepositsAreNotIncluded");
+else  $description.= $langs->trans("DepositsAreIncluded");
+$period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
+report_header($name, '', $period, $periodlink, $description, $builddate, $exportlink);
+
+
+/*
+ * Compute total (debit / credit)
+ */
+$totalDebit = $totalCredit = 0;
+/**
+ * @param $amountByAccount
+ * @param $reverse
+ * @return void
+ */
+$addToTotal = function ($amountByAccount, $reverse = false) use (&$totalDebit, &$totalCredit) {
+    foreach ($amountByAccount as $compte => $montant) {
+        if ($reverse) $montant = -$montant;
+        if ($montant >= 0) $totalCredit += $montant;
+        else               $totalDebit  -= $montant;
+    }
+};
+foreach ($tabfac as $facId => $val)
+{
+    $addToTotal($tabttc[$facId], true);
+    $addToTotal($tabht[$facId], false);
+    $addToTotal($tabtva[$facId], false);
+    $addToTotal($tablocaltax1[$facId], false);
+    $addToTotal($tablocaltax2[$facId], false);
+}
 
 /*
  * Show result array
  */
 
-
 print '<table class="noborder" width="100%">';
-print '<tr class="liste_titre">';
-//print "<td>".$langs->trans("JournalNum")."</td>";
-print '<td>'.$langs->trans('Date').'</td><td>'.$langs->trans('Piece').' ('.$langs->trans('InvoiceRef').')</td>';
-print '<td>'.$langs->trans('Account').'</td>';
-print '<td>'.$langs->trans('Type').'</td><td class="right">'.$langs->trans('Debit').'</td><td class="right">'.$langs->trans('Credit').'</td>';
-print "</tr>\n";
+
+?>
+<style type="text/css">
+    .debit, .credit {
+        text-align: right;
+    }
+    .date_piece_compte_type {
+        text-align: left;
+    }
+</style>
+<thead>
+    <tr class="liste_titre">
+        <?php
+        //print "<td>".$langs->trans("JournalNum")."</td>";
+        print '<td>'.$langs->trans('Date').'</td><td>'.$langs->trans('Piece').' ('.$langs->trans('InvoiceRef').')</td>';
+        print '<td>'.$langs->trans('Account').'</td>';
+        print '<td>'.$langs->trans('Type').'</td><td class="right">'.$langs->trans('Debit').'</td><td class="right">'.$langs->trans('Credit').'</td>';
+        ?>
+    </tr>
+    <tr class="liste_total">
+        <th class="date_piece_compte_type" colspan="4"><?php echo $langs->trans('Total'); ?></th>
+        <th class="debit"><?php  echo $totalDebit; ?></th>
+        <th class="credit"><?php echo $totalCredit; ?></th>
+    </tr>
+</thead>
+
+<?php
 
 
 $invoicestatic=new Facture($db);
@@ -280,7 +411,23 @@ foreach ($tabfac as $key => $val)
 		}
 	}
 }
-
+?>
+<thead>
+    <tr class="liste_titre">
+        <?php
+        //print "<td>".$langs->trans("JournalNum")."</td>";
+        print '<td>'.$langs->trans('Date').'</td><td>'.$langs->trans('Piece').' ('.$langs->trans('InvoiceRef').')</td>';
+        print '<td>'.$langs->trans('Account').'</td>';
+        print '<td>'.$langs->trans('Type').'</td><td class="right">'.$langs->trans('Debit').'</td><td class="right">'.$langs->trans('Credit').'</td>';
+        ?>
+    </tr>
+    <tr class="liste_total">
+        <th class="date_piece_compte_type" colspan="4"><?php echo $langs->trans('Total'); ?></th>
+        <th class="debit"><?php  echo $totalDebit; ?></th>
+        <th class="credit"><?php echo $totalCredit; ?></th>
+    </tr>
+</thead>
+<?php
 print "</table>";
 
 // End of page
