@@ -1,4 +1,5 @@
 <?php
+set_time_limit(0); // Ticket ATM 12138
 /* Copyright (C) 2014 Florian Henry        <florian.henry@open-concept.pro>
  * Copyright (C) 2016 Laurent Destailleur  <eldy@uers.sourceforge.net>
  *
