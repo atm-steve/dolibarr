@@ -3402,6 +3402,7 @@ class Societe extends CommonObject
 		$this->twitter=$member->twitter;
 		$this->facebook=$member->facebook;
 		$this->linkedin=$member->linkedin;
+		$this->entity=$member->entity;
 
 		$this->client = 1;				// A member is a customer by default
 		$this->code_client = ($customercode?$customercode:-1);
@@ -4132,9 +4133,10 @@ class Societe extends CommonObject
 	 * Sets sales representatives of the thirdparty
 	 *
 	 * @param 	int[]|int 	$salesrep	 	User ID or array of user IDs
+	 * @param   bool        $onlyAdd        Only add (no delete before)
 	 * @return	int							<0 if KO, >0 if OK
 	 */
-	public function setSalesRep($salesrep)
+	public function setSalesRep($salesrep, $onlyAdd = false)
 	{
 		global $user;
 
@@ -4143,16 +4145,18 @@ class Societe extends CommonObject
 			$salesrep = array($salesrep);
 		}
 
-		// Get current users
-		$existing = $this->getSalesRepresentatives($user, 1);
 
-		// Diff
-		if (is_array($existing)) {
-			$to_del = array_diff($existing, $salesrep);
-			$to_add = array_diff($salesrep, $existing);
-		} else {
-			$to_del = array(); // Nothing to delete
-			$to_add = $salesrep;
+		$to_del = array(); // Nothing to delete
+		$to_add = $salesrep;
+		if ($onlyAdd === false) {
+			// Get current users
+			$existing = $this->getSalesRepresentatives($user, 1);
+
+			// Diff
+			if (is_array($existing)) {
+				$to_del = array_diff($existing, $salesrep);
+				$to_add = array_diff($salesrep, $existing);
+			}
 		}
 
 		$error = 0;

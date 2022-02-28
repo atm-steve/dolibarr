@@ -755,7 +755,8 @@ class Categorie extends CommonObject
 	{
 		$objs = array();
 
-		$obj = new $this->MAP_OBJ_CLASS[$type]( $this->db );
+		$classnameforobj = $this->MAP_OBJ_CLASS[$type];
+		$obj = new $classnameforobj($this->db);
 
 		$sql = "SELECT c.fk_" . $this->MAP_CAT_FK[$type];
 		$sql .= " FROM " . MAIN_DB_PREFIX . "categorie_" . $this->MAP_CAT_TABLE[$type] . " as c";
@@ -776,7 +777,9 @@ class Categorie extends CommonObject
 			    }
 			    else
 			    {
-				    $obj = new $this->MAP_OBJ_CLASS[$type]( $this->db );
+			        $classnameforobj = $this->MAP_OBJ_CLASS[$type];
+
+			        $obj = new $classnameforobj($this->db);
 				    $obj->fetch($rec['fk_' . $this->MAP_CAT_FK[$type]]);
 				    $objs[] = $obj;
 			    }
@@ -930,7 +933,8 @@ class Categorie extends CommonObject
 	{
         // phpcs:enable
 		$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."categorie";
-		$sql.= " WHERE fk_parent = ".$this->id;
+		$sql .= " WHERE fk_parent = ".$this->id;
+		$sql .= " AND entity IN (".getEntity('category').")";
 
 		$res  = $this->db->query($sql);
 		if ($res)
