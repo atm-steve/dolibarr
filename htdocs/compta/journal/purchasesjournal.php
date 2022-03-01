@@ -30,9 +30,15 @@ global $mysoc;
 
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/report.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.class.php';
+
+/** @var DoliDB $db */
+/** @var Translate $langs */
+/** @var User $user */
+/** @var Conf $conf */
 
 // Load translation files required by the page
 $langs->loadlangs(array('companies', 'other', 'bills', 'compta'));
@@ -43,37 +49,22 @@ $date_startyear=GETPOST('date_startyear');
 $date_endmonth=GETPOST('date_endmonth');
 $date_endday=GETPOST('date_endday');
 $date_endyear=GETPOST('date_endyear');
+$action = GETPOST('action', 'alphanohtml');
+$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
+$idpays = $p[0];
 
 // Security check
 if ($user->societe_id > 0) $socid = $user->societe_id;
 if (! empty($conf->comptabilite->enabled)) $result=restrictedArea($user, 'compta', '', '', 'resultat');
 if (! empty($conf->accounting->enabled)) $result=restrictedArea($user, 'accounting', '', '', 'comptarapport');
 
-
-/*
- * Actions
- */
-
-// None
-
-
-/*
- * View
- */
-
-$morequery='&date_startyear='.$date_startyear.'&date_startmonth='.$date_startmonth.'&date_startday='.$date_startday.'&date_endyear='.$date_endyear.'&date_endmonth='.$date_endmonth.'&date_endday='.$date_endday;
-
-llxHeader('', $langs->trans("PurchasesJournal"), '', '', 0, 0, '', '', $morequery);
-
-$form=new Form($db);
-
 $year_current = strftime("%Y", dol_now());
 $pastmonth = strftime("%m", dol_now()) - 1;
 $pastmonthyear = $year_current;
 if ($pastmonth == 0)
 {
-	$pastmonth = 12;
-	$pastmonthyear--;
+    $pastmonth = 12;
+    $pastmonthyear--;
 }
 
 $date_start=dol_mktime(0, 0, 0, $date_startmonth, $date_startday, $date_startyear);
@@ -84,21 +75,6 @@ if (empty($date_start) || empty($date_end)) // We define date_start and date_end
     $date_start=dol_get_first_day($pastmonthyear, $pastmonth, false);
     $date_end=dol_get_last_day($pastmonthyear, $pastmonth, false);
 }
-
-$name=$langs->trans("PurchasesJournal");
-$periodlink='';
-$exportlink='';
-$builddate=dol_now();
-$description=$langs->trans("DescPurchasesJournal").'<br>';
-if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $description.= $langs->trans("DepositsAreNotIncluded");
-else  $description.= $langs->trans("DepositsAreIncluded");
-$period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
-
-report_header($name, '', $period, $periodlink, $description, $builddate, $exportlink);
-
-$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
-$idpays = $p[0];
-
 
 $sql = "SELECT f.rowid, f.ref_supplier, f.type, f.datef, f.libelle,";
 $sql.= " fd.total_ttc, fd.tva_tx, fd.total_ht, fd.tva as total_tva, fd.product_type, fd.localtax1_tx, fd.localtax2_tx, fd.total_localtax1, fd.total_localtax2,";
@@ -121,70 +97,215 @@ if (in_array($db->type, array('mysql', 'mysqli'))) $db->query('SET SQL_BIG_SELEC
 $result = $db->query($sql);
 if ($result)
 {
-	$num = $db->num_rows($result);
-	// les variables
-	$cptfour = (($conf->global->ACCOUNTING_ACCOUNT_SUPPLIER != "")?$conf->global->ACCOUNTING_ACCOUNT_SUPPLIER:$langs->trans("CodeNotDef"));
-	$cpttva = (! empty($conf->global->ACCOUNTING_VAT_BUY_ACCOUNT)?$conf->global->ACCOUNTING_VAT_BUY_ACCOUNT:$langs->trans("CodeNotDef"));
+    $num = $db->num_rows($result);
+    // les variables
+    $cptfour = (($conf->global->ACCOUNTING_ACCOUNT_SUPPLIER != "")?$conf->global->ACCOUNTING_ACCOUNT_SUPPLIER:$langs->trans("CodeNotDef"));
+    $cpttva = (! empty($conf->global->ACCOUNTING_VAT_BUY_ACCOUNT)?$conf->global->ACCOUNTING_VAT_BUY_ACCOUNT:$langs->trans("CodeNotDef"));
 
-	$tabfac = array();
-	$tabht = array();
-	$tabtva = array();
-	$tabttc = array();
-	$tablocaltax1 = array();
-	$tablocaltax2 = array();
-	$tabcompany = array();
+    $tabfac = array();
+    $tabht = array();
+    $tabtva = array();
+    $tabttc = array();
+    $tablocaltax1 = array();
+    $tablocaltax2 = array();
+    $tabcompany = array();
 
-	$i=0;
-	while ($i < $num)
-	{
-		$obj = $db->fetch_object($result);
-		// contrôles
-		$compta_soc = (($obj->code_compta_fournisseur != "")?$obj->code_compta_fournisseur:$cptfour);
-		$compta_prod = $obj->accountancy_code_buy;
-		if (empty($compta_prod))
-		{
-			if($obj->product_type == 0) $compta_prod = (! empty($conf->global->ACCOUNTING_PRODUCT_BUY_ACCOUNT)?$conf->global->ACCOUNTING_PRODUCT_BUY_ACCOUNT:$langs->trans("CodeNotDef"));
-			else $compta_prod = (! empty($conf->global->ACCOUNTING_SERVICE_BUY_ACCOUNT)?$conf->global->ACCOUNTING_SERVICE_BUY_ACCOUNT:$langs->trans("CodeNotDef"));
-		}
-		$compta_tva = (! empty($obj->account_tva)?$obj->account_tva:$cpttva);
-		$compta_localtax1 = (! empty($obj->account_localtax1)?$obj->account_localtax1:$langs->trans("CodeNotDef"));
-		$compta_localtax2 = (! empty($obj->account_localtax2)?$obj->account_localtax2:$langs->trans("CodeNotDef"));
+    $i=0;
+    while ($i < $num)
+    {
+        $obj = $db->fetch_object($result);
+        // contrôles
+        $compta_soc = (($obj->code_compta_fournisseur != "")?$obj->code_compta_fournisseur:$cptfour);
+        $compta_prod = $obj->accountancy_code_buy;
+        if (empty($compta_prod))
+        {
+            if($obj->product_type == 0) $compta_prod = (! empty($conf->global->ACCOUNTING_PRODUCT_BUY_ACCOUNT)?$conf->global->ACCOUNTING_PRODUCT_BUY_ACCOUNT:$langs->trans("CodeNotDef"));
+            else $compta_prod = (! empty($conf->global->ACCOUNTING_SERVICE_BUY_ACCOUNT)?$conf->global->ACCOUNTING_SERVICE_BUY_ACCOUNT:$langs->trans("CodeNotDef"));
+        }
+        $compta_tva = (! empty($obj->account_tva)?$obj->account_tva:$cpttva);
+        $compta_localtax1 = (! empty($obj->account_localtax1)?$obj->account_localtax1:$langs->trans("CodeNotDef"));
+        $compta_localtax2 = (! empty($obj->account_localtax2)?$obj->account_localtax2:$langs->trans("CodeNotDef"));
 
-		$account_localtax1=getLocalTaxesFromRate($obj->tva_tx, 1, $mysoc, $obj->thirdparty);
-		$compta_localtax1= (! empty($account_localtax1[2])?$account_localtax1[2]:$langs->trans("CodeNotDef"));
-		$account_localtax2=getLocalTaxesFromRate($obj->tva_tx, 2, $mysoc, $obj->thirdparty);
-		$compta_localtax2= (! empty($account_localtax2[2])?$account_localtax2[2]:$langs->trans("CodeNotDef"));
+        $account_localtax1=getLocalTaxesFromRate($obj->tva_tx, 1, $mysoc, $obj->thirdparty);
+        $compta_localtax1= (! empty($account_localtax1[2])?$account_localtax1[2]:$langs->trans("CodeNotDef"));
+        $account_localtax2=getLocalTaxesFromRate($obj->tva_tx, 2, $mysoc, $obj->thirdparty);
+        $compta_localtax2= (! empty($account_localtax2[2])?$account_localtax2[2]:$langs->trans("CodeNotDef"));
 
-		$tabfac[$obj->rowid]["date"] = $obj->datef;
-		$tabfac[$obj->rowid]["ref"] = $obj->ref_supplier;
-		$tabfac[$obj->rowid]["type"] = $obj->type;
-		$tabfac[$obj->rowid]["lib"] = $obj->libelle;
-		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc;
-		$tabht[$obj->rowid][$compta_prod] += $obj->total_ht;
-		if ($obj->recuperableonly != 1) $tabtva[$obj->rowid][$compta_tva] += $obj->total_tva;
-		$tablocaltax1[$obj->rowid][$compta_localtax1] += $obj->total_localtax1;
-   		$tablocaltax2[$obj->rowid][$compta_localtax2] += $obj->total_localtax2;
-		$tabcompany[$obj->rowid]=array('id'=>$obj->socid,'name'=>$obj->name);
+        $tabfac[$obj->rowid]["date"] = $obj->datef;
+        $tabfac[$obj->rowid]["ref"] = $obj->ref_supplier;
+        $tabfac[$obj->rowid]["type"] = $obj->type;
+        $tabfac[$obj->rowid]["lib"] = $obj->libelle;
+        $tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc;
+        $tabht[$obj->rowid][$compta_prod] += $obj->total_ht;
+        if ($obj->recuperableonly != 1) $tabtva[$obj->rowid][$compta_tva] += $obj->total_tva;
+        $tablocaltax1[$obj->rowid][$compta_localtax1] += $obj->total_localtax1;
+        $tablocaltax2[$obj->rowid][$compta_localtax2] += $obj->total_localtax2;
+        $tabcompany[$obj->rowid]=array('id'=>$obj->socid,'name'=>$obj->name);
 
-		$i++;
-	}
+        $i++;
+    }
 }
 else {
-	dol_print_error($db);
+    dol_print_error($db);
+}
+
+/*
+ * Actions
+ */
+
+if ($action === 'export') {
+    $fileName = str_replace(' ', '-', $langs->transnoentitiesnoconv('SellsJournal')) . '.csv';
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . str_replace('"', '', $fileName) . '"');
+    $separator = ',';
+    $enclosure = '"';
+    $escape = '"';
+//    $TabExport = array();
+
+    // Header row
+    $exportRow = array(
+        $langs->transnoentitiesnoconv('Date'),
+        $langs->transnoentitiesnoconv('Piece').' ('.$langs->transnoentitiesnoconv('InvoiceRef').')',
+        $langs->transnoentitiesnoconv('Account'),
+        $langs->transnoentitiesnoconv('Type'),
+        $langs->transnoentitiesnoconv('Debit'),
+        $langs->transnoentitiesnoconv('Credit'),
+    );
+    $stdout = fopen('php://output', 'w');
+    fputcsv($stdout, $exportRow, $separator, $enclosure, $escape);
+
+
+    $invoicestatic=new FactureFournisseur($db);
+    $companystatic=new Fournisseur($db);
+
+    foreach ($tabfac as $key => $val)
+    {
+        $invoicestatic->id=$key;
+        $invoicestatic->ref=$val["ref"];
+        $invoicestatic->type=$val["type"];
+
+        $companystatic->id=$tabcompany[$key]['id'];
+        $companystatic->name=$tabcompany[$key]['name'];
+        $companystatic->client=$tabcompany[$key]['client'];
+
+        $lines = array(
+            array(
+                'var' => $tabht[$key],
+                'label' => $langs->transnoentitiesnoconv('Products'),
+            ),
+            array(
+                'var' => $tabtva[$key],
+                'label' => $langs->transnoentitiesnoconv('VAT')
+            ),
+            array(
+                'var' => $tabttc[$key],
+                'label' => $langs->transnoentitiesnoconv('ThirdParty') . ' (' . strip_tags($companystatic->getNomUrl(0, 'customer', 16)) . ')',
+                'nomtcheck' => true,
+                'inv' => true
+            ),
+            array(
+                'var' => $tablocaltax1[$key],
+                'label' => $langs->transcountrynoentities('LT1', $mysoc->country_code)
+            ),
+            array(
+                'var' => $tablocaltax2[$key],
+                'label' => $langs->transcountrynoentities('LT2', $mysoc->country_code)
+            )
+        );
+
+        foreach ($lines as $line)
+        {
+            foreach ($line['var'] as $k => $mt)
+            {
+                if (isset($line['nomtcheck']) || $mt)
+                {
+                    if ($line['inv']) $mt = -$mt;
+                    $exportRow = array(
+                        dol_print_date($db->jdate($val["date"])),
+                        $invoicestatic->ref,
+                        $k,
+                        strip_tags($line['label']),
+                        ($mt >= 0 ? str_replace(' ', '', price( $mt)) : ''),
+                        ($mt < 0  ? str_replace(' ', '', price(-$mt)) : ''),
+                    );
+                    fputcsv($stdout, $exportRow, $separator, $enclosure, $escape);
+                }
+            }
+        }
+    }
+    exit;
+}
+
+/*
+ * View
+ */
+$form=new Form($db);
+
+$morequery='&date_startyear='.$date_startyear.'&date_startmonth='.$date_startmonth.'&date_startday='.$date_startday.'&date_endyear='.$date_endyear.'&date_endmonth='.$date_endmonth.'&date_endday='.$date_endday;
+
+llxHeader('', $langs->trans("PurchasesJournal"), '', '', 0, 0, '', '', $morequery);
+
+$name=$langs->trans("PurchasesJournal");
+$periodlink='';
+$exportlink = 'CSV&emsp;<input type="checkbox" name="action" value="export" />';
+$builddate=dol_now();
+$description=$langs->trans("DescPurchasesJournal").'<br>';
+if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $description.= $langs->trans("DepositsAreNotIncluded");
+else  $description.= $langs->trans("DepositsAreIncluded");
+$period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
+report_header($name, '', $period, $periodlink, $description, $builddate, $exportlink);
+
+/*
+ * Compute total (debit / credit)
+ */
+$totalDebit = $totalCredit = 0;
+$totalDebitCredit = array();
+
+foreach ($tabfac as $facId => $val)
+{
+    $totalDebitCredit['TTC'] = totalDebitCredit($tabttc[$facId], true);
+    $totalDebitCredit['HT'] = totalDebitCredit($tabht[$facId], false);
+    $totalDebitCredit['TVA'] = totalDebitCredit($tabtva[$facId], false);
+    $totalDebitCredit['LocalTax1'] = totalDebitCredit($tablocaltax1[$facId], false);
+    $totalDebitCredit['LocalTax2'] = totalDebitCredit($tablocaltax2[$facId], false);
+
+    $totalDebit += array_sum(array_column($totalDebitCredit, 0));
+    $totalCredit += array_sum(array_column($totalDebitCredit, 1));
 }
 
 /*
  * Show result array
  */
-print "<table class=\"noborder\" width=\"100%\">";
-print "<tr class=\"liste_titre\">";
-///print "<td>".$langs->trans("JournalNum")."</td>";
-print "<td>".$langs->trans("Date")."</td>";
-print "<td>".$langs->trans("Piece").' ('.$langs->trans("InvoiceRef").")</td>";
-print "<td>".$langs->trans("Account")."</td>";
-print "<td>".$langs->trans("Type")."</td><td class='right'>".$langs->trans("Debit")."</td><td class='right'>".$langs->trans("Credit")."</td>";
-print "</tr>\n";
 
+print '<table class="noborder" width="100%">';
+
+?>
+<style type="text/css">
+    .debit, .credit {
+        text-align: right;
+    }
+    .date_piece_compte_type {
+        text-align: left;
+    }
+</style>
+<thead>
+    <tr class="liste_titre">
+        <?php
+        //print "<td>".$langs->trans("JournalNum")."</td>";
+        print '<td>'.$langs->trans('Date').'</td>';
+        print '<td>'.$langs->trans('Piece').' ('.$langs->trans('InvoiceRef').')</td>';
+        print '<td>'.$langs->trans('Account').'</td>';
+        print '<td>'.$langs->trans('Type').'</td><td class="right">'.$langs->trans('Debit').'</td><td class="right">'.$langs->trans('Credit').'</td>';
+        ?>
+    </tr>
+    <tr class="liste_total">
+        <th class="date_piece_compte_type" colspan="4"><?php echo $langs->trans('Total'); ?></th>
+        <th class="debit"><?php  echo $totalDebit; ?></th>
+        <th class="credit"><?php echo $totalCredit; ?></th>
+    </tr>
+</thead>
+
+<?php
 
 $invoicestatic=new FactureFournisseur($db);
 $companystatic=new Fournisseur($db);
@@ -250,6 +371,15 @@ foreach ($tabfac as $key => $val)
 		}
 	}
 }
+?>
+    <thead>
+    <tr class="liste_total">
+        <th class="date_piece_compte_type" colspan="4"><?php echo $langs->trans('Total'); ?></th>
+        <th class="debit"><?php  echo $totalDebit; ?></th>
+        <th class="credit"><?php echo $totalCredit; ?></th>
+    </tr>
+    </thead>
+<?php
 
 print "</table>";
 

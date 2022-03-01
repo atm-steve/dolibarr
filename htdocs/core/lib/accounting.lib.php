@@ -243,3 +243,23 @@ function journalHead($nom, $variante, $period, $periodlink, $description, $build
 
     print "\n<!-- end banner journal -->\n\n";
 }
+
+/**
+ * Returns an array with the total Debit and Credit values from an associative array such as is used in simplified
+ * accounting sales / purchases journals.
+ *
+ * @param array $amountByAccount
+ * @param bool $reverse
+ * @return float[]  Array with 2 indices: 0 => total Debit, 1 = total Credit
+ */
+function totalDebitCredit ($amountByAccount, $reverse = false)
+{
+    $totalDebit = 0;
+    $totalCredit = 0;
+    foreach ($amountByAccount as $compte => $montant) {
+        if ($reverse) $montant = -$montant;
+        if ($montant >= 0) $totalCredit += $montant;
+        else               $totalDebit  -= $montant;
+    }
+    return array($totalDebit, $totalCredit);
+}

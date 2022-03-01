@@ -32,12 +32,15 @@ global $mysoc;
 
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/report.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 
 /** @var DoliDB $db */
 /** @var Translate $langs */
+/** @var User $user */
+/** @var Conf $conf */
 
 // Load translation files required by the page
 $langs->loadLangs(array('companies', 'other', 'bills', 'compta'));
@@ -69,7 +72,8 @@ $date_end=dol_mktime(23, 59, 59, $date_endmonth, $date_endday, $date_endyear);
 
 if (empty($date_start) || empty($date_end)) // We define date_start and date_end
 {
-    $date_start=dol_get_first_day($pastmonthyear, $pastmonth, false); $date_end=dol_get_last_day($pastmonthyear, $pastmonth, false);
+    $date_start=dol_get_first_day($pastmonthyear, $pastmonth, false);
+    $date_end=dol_get_last_day($pastmonthyear, $pastmonth, false);
 }
 
 $p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
@@ -263,8 +267,6 @@ if ($action === 'export') {
     exit;
 }
 
-
-
 /*
  * View
  */
@@ -286,30 +288,22 @@ else  $description.= $langs->trans("DepositsAreIncluded");
 $period=$form->selectDate($date_start, 'date_start', 0, 0, 0, '', 1, 0).' - '.$form->selectDate($date_end, 'date_end', 0, 0, 0, '', 1, 0);
 report_header($name, '', $period, $periodlink, $description, $builddate, $exportlink);
 
-
 /*
  * Compute total (debit / credit)
  */
 $totalDebit = $totalCredit = 0;
-/**
- * @param $amountByAccount
- * @param $reverse
- * @return void
- */
-$addToTotal = function ($amountByAccount, $reverse = false) use (&$totalDebit, &$totalCredit) {
-    foreach ($amountByAccount as $compte => $montant) {
-        if ($reverse) $montant = -$montant;
-        if ($montant >= 0) $totalCredit += $montant;
-        else               $totalDebit  -= $montant;
-    }
-};
+$totalDebitCredit = array();
+
 foreach ($tabfac as $facId => $val)
 {
-    $addToTotal($tabttc[$facId], true);
-    $addToTotal($tabht[$facId], false);
-    $addToTotal($tabtva[$facId], false);
-    $addToTotal($tablocaltax1[$facId], false);
-    $addToTotal($tablocaltax2[$facId], false);
+    $totalDebitCredit['TTC'] = totalDebitCredit($tabttc[$facId], true);
+    $totalDebitCredit['HT'] = totalDebitCredit($tabht[$facId], false);
+    $totalDebitCredit['TVA'] = totalDebitCredit($tabtva[$facId], false);
+    $totalDebitCredit['LocalTax1'] = totalDebitCredit($tablocaltax1[$facId], false);
+    $totalDebitCredit['LocalTax2'] = totalDebitCredit($tablocaltax2[$facId], false);
+
+    $totalDebit += array_sum(array_column($totalDebitCredit, 0));
+    $totalCredit += array_sum(array_column($totalDebitCredit, 1));
 }
 
 /*
@@ -344,7 +338,6 @@ print '<table class="noborder" width="100%">';
 </thead>
 
 <?php
-
 
 $invoicestatic=new Facture($db);
 $companystatic=new Client($db);
@@ -413,14 +406,6 @@ foreach ($tabfac as $key => $val)
 }
 ?>
 <thead>
-    <tr class="liste_titre">
-        <?php
-        //print "<td>".$langs->trans("JournalNum")."</td>";
-        print '<td>'.$langs->trans('Date').'</td><td>'.$langs->trans('Piece').' ('.$langs->trans('InvoiceRef').')</td>';
-        print '<td>'.$langs->trans('Account').'</td>';
-        print '<td>'.$langs->trans('Type').'</td><td class="right">'.$langs->trans('Debit').'</td><td class="right">'.$langs->trans('Credit').'</td>';
-        ?>
-    </tr>
     <tr class="liste_total">
         <th class="date_piece_compte_type" colspan="4"><?php echo $langs->trans('Total'); ?></th>
         <th class="debit"><?php  echo $totalDebit; ?></th>
