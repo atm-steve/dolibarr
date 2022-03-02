@@ -2761,7 +2761,11 @@ abstract class CommonObject
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_ORDER";
 		elseif ($this->element == 'facture')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_INVOICE";
-		elseif ($this->element == 'facture_fourn')
+        /*
+         * BACKPORT - 10/01/2022
+         * Template supplier invoices
+         */
+		elseif ($this->element == 'facture_fourn' || $this->element == 'invoice_supplier_rec')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_SUPPLIER_INVOICE";
 		elseif ($this->element == 'order_supplier')
 			$MODULE = "MODULE_DISALLOW_UPDATE_PRICE_SUPPLIER_ORDER";
@@ -2800,10 +2804,19 @@ abstract class CommonObject
 			$fieldtva='tva';
 			$fieldup='pu_ht';
 		}
-		if ($this->element == 'expensereport')
-		{
-			$fieldup='value_unit';
-		}
+        /*
+         * BACKPORT - 10/01/2022
+         * Template supplier invoces
+         */
+        if($this->element == 'invoice_supplier_rec') {
+            $fieldup = 'pu_ht';
+        }
+        /*
+        * FIN BACKPORT - 10/01/2022
+        */
+        if($this->element == 'expensereport') {
+            $fieldup = 'value_unit';
+        }
 
 		$sql = 'SELECT rowid, qty, '.$fieldup.' as up, remise_percent, total_ht, '.$fieldtva.' as total_tva, total_ttc, '.$fieldlocaltax1.' as total_localtax1, '.$fieldlocaltax2.' as total_localtax2,';
 		$sql.= ' tva_tx as vatrate, localtax1_tx, localtax2_tx, localtax1_type, localtax2_type, info_bits, product_type';
@@ -2818,7 +2831,6 @@ abstract class CommonObject
 			if ($product_field) $sql.= ' AND '.$product_field.' <> 9';
 		}
 		$sql.= ' ORDER by rowid';	// We want to be sure to always use same order of line to not change lines differently when option MAIN_ROUNDOFTOTAL_NOT_TOTALOFROUND is used
-
 		dol_syslog(get_class($this)."::update_price", LOG_DEBUG);
 		$resql = $this->db->query($sql);
 		if ($resql)
@@ -2931,7 +2943,7 @@ abstract class CommonObject
 			$fieldttc='total_ttc';
 			// Specific code for backward compatibility with old field names
 			if ($this->element == 'facture' || $this->element == 'facturerec')             $fieldht='total';
-			if ($this->element == 'facture_fourn' || $this->element == 'invoice_supplier') $fieldtva='total_tva';
+			if ($this->element == 'facture_fourn' || $this->element == 'invoice_supplier' || $this->element == 'invoice_supplier_rec') $fieldtva='total_tva';
 			if ($this->element == 'propal')                                                $fieldttc='total';
 			if ($this->element == 'expensereport')                                         $fieldtva='total_tva';
 			if ($this->element == 'supplier_proposal')                                     $fieldttc='total';
@@ -2948,7 +2960,6 @@ abstract class CommonObject
 						$sql .= ", multicurrency_total_tva='".price2num($this->multicurrency_total_tva, 'MT', 1)."'";
 						$sql .= ", multicurrency_total_ttc='".price2num($this->multicurrency_total_ttc, 'MT', 1)."'";
 				$sql .= ' WHERE rowid = '.$this->id;
-
 
 				dol_syslog(get_class($this)."::update_price", LOG_DEBUG);
 				$resql=$this->db->query($sql);
@@ -6588,9 +6599,22 @@ abstract class CommonObject
 		global $user;
 
 		$element = $this->element;
-		if ($element == 'facturerec') $element='facture';
 
-		return $user->rights->{$element};
+        /*
+        * BACKPORT - 10/01/2022
+        * Template supplier invoces
+        */
+        if($element == 'facturerec') {
+            $element = 'facture';
+        }
+        else if($element == 'invoice_supplier_rec') {
+            return $user->rights->fournisseur->facture;
+        }
+        /*
+        * FIN BACKPORT - 10/01/2022
+        */
+
+        return $user->rights->{$element};
 	}
 
 	/**

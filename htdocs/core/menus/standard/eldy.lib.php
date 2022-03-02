@@ -1008,7 +1008,14 @@ function print_left_eldy_menu($db, $menu_array_before, $menu_array_after, &$tabM
 					$newmenu->add("/fourn/facture/list.php?leftmenu=suppliers_bills_notpaid&amp;search_status=1", $langs->trans("BillShortStatusNotPaid"), 2, $user->rights->fournisseur->facture->lire, '', $mainmenu, 'suppliers_bills_notpaid');
 					$newmenu->add("/fourn/facture/list.php?leftmenu=suppliers_bills_paid&amp;search_status=2", $langs->trans("BillShortStatusPaid"), 2, $user->rights->fournisseur->facture->lire, '', $mainmenu, 'suppliers_bills_paid');
 				}
-
+                /*
+                * BACKPORT - 10/01/2022
+                * Template supplier invoces
+                */
+                $newmenu->add('/fourn/facture/list-rec.php?leftmenu=supplierinvoicestemplate_list', $langs->trans('ListOfTemplates'), 1, $user->rights->fournisseur->facture->lire, '', $mainmenu, 'supplierinvoicestemplate_list');
+                /*
+                * FIN BACKPORT - 10/01/2022
+                */
 				$newmenu->add("/fourn/facture/paiement.php?leftmenu=suppliers_bills_payment", $langs->trans("Payments"), 1, $user->rights->fournisseur->facture->lire, '', $mainmenu, 'suppliers_bills_payment');
 
 				$newmenu->add("/fourn/facture/rapport.php?leftmenu=suppliers_bills_report", $langs->trans("Reportings"), 2, $user->rights->fournisseur->facture->lire, '', $mainmenu, 'suppliers_bills_report');
