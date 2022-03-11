@@ -332,8 +332,8 @@ print '<table class="noborder" width="100%">';
     </tr>
     <tr class="liste_total">
         <th class="date_piece_compte_type" colspan="4"><?php echo $langs->trans('Total'); ?></th>
-        <th class="debit"><?php  echo $totalDebit; ?></th>
-        <th class="credit"><?php echo $totalCredit; ?></th>
+        <th class="debit"><?php  echo price($totalDebit); ?></th>
+        <th class="credit"><?php echo price($totalCredit); ?></th>
     </tr>
 </thead>
 
