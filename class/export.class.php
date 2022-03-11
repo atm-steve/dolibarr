@@ -345,7 +345,7 @@ class TExportCompta extends TObjetStd {
                         else {
                             $previousSituationAmount = self::getPreviousSituationAmount($ligneSituation);
                             $lineTotalHT = $ligneSituation->total_ht - $previousSituationAmount;
-                            $lineTotalTVA = $lineTotalHT * ($ligneSituation->tva_tx/100);
+                            $lineTotalTVA =$ligneSituation->total_ttc - $lineTotalHT;
 
                             $TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $lineTotalHT;
                             $TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $lineTotalHT + $lineTotalTVA;
