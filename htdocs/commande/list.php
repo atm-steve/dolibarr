@@ -1463,23 +1463,22 @@ if ($resql) {
 			$TCommandQtyProducts = array(); //compteur total quantité de chaque produit dans la commande client
 
 			//compteurs commandes fournisseurs
-			foreach($generic_commande->linkedObjects['order_supplier'] as $supplierorder){
+			if(!empty($generic_commande->linkedObjects['order_supplier'])) {
+				foreach($generic_commande->linkedObjects['order_supplier'] as $supplierorder) {
+					//calcul du total ht de toutes les commandes fournisseur
+					$total_HT_supplierOrder += $supplierorder->total_ht;
 
-				//calcul du total ht de toutes les commandes fournisseur
-				$total_HT_supplierOrder += $supplierorder->total_ht;
+					//si produit lié à la ligne et pas exclu alors on ajoute sa quantité dans le compteur
+					foreach($supplierorder->lines as $line) {
+						if(! empty($line->fk_product)) {
+							$product = new Product($db);
+							$res = $product->fetch($line->fk_product);
+							$product->fetch_optionals();
 
-				//si produit lié à la ligne et pas exclu alors on ajoute sa quantité dans le compteur
-				foreach($supplierorder->lines as $line){
-
-					if(!empty($line->fk_product)) {
-
-						$product = new Product($db);
-						$res = $product->fetch($line->fk_product);
-						$product->fetch_optionals();
-
-						if($res && empty($product->array_options['options_exclude_alert'])) {
-							if (empty($TSupplierCommandQtyProducts[$line->fk_product])) $TSupplierCommandQtyProducts[$line->fk_product] = $line->qty;
-							else $TSupplierCommandQtyProducts[$line->fk_product] += $line->qty;
+							if($res && empty($product->array_options['options_exclude_alert'])) {
+								if(empty($TSupplierCommandQtyProducts[$line->fk_product])) $TSupplierCommandQtyProducts[$line->fk_product] = $line->qty;
+								else $TSupplierCommandQtyProducts[$line->fk_product] += $line->qty;
+							}
 						}
 					}
 				}
@@ -1964,17 +1963,17 @@ if ($resql) {
 							$ratioDelay = $delay * $percent/100;
 
 							if($curentDelay<0 || $curentDelay < $ratioDelay ){
-								$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #800000;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
+								$text_icon = '<span class="fas fa-dolly paddingleft" style=" color: #800000;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
 								$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
 							}
 							else{
-								$text_icon = '<span class="fas fa-dolly green paddingleft" style=" color: #bdbdbd;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
+								$text_icon = '<span class="fas fa-dolly paddingleft" style=" color: #bdbdbd;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
 								$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
 							}
 						}
 						else{
 							// si pas de date de livraison on part du principe que la demande est ASAP c'est le comportement std de Dolibarr
-							$text_icon ='<span class="fas fa-dolly green paddingleft" style=" color: #a69944;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
+							$text_icon ='<span class="fas fa-dolly paddingleft" style=" color: #a69944;"></span>'; // TODO on MEP V12 : replace this line with dolibarr v12 picto dolly
 							$text_info = $langs->trans('NonShippable').'<br>'.$text_info;
 						}
 					}
