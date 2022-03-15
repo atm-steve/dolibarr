@@ -66,9 +66,9 @@ class TExportComptaInextenso extends TExportCompta {
             // tiers France
             if ($tiers['country_code'] === 'FR') $compteCollectifClient = '411000';
             // tiers CEE hors France
-            elseif (isInEEC((object)$tiers))     $compteCollectifClient = '411001';
+            elseif (isInEEC((object)$tiers))     $compteCollectifClient = '411002';
             // tiers hors CEE
-            else                                 $compteCollectifClient = '411002';
+            else                                 $compteCollectifClient = '411001';
 
 			// Lignes client
 			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
