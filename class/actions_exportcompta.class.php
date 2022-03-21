@@ -66,14 +66,9 @@ class ActionsExportCompta
           global $conf;
 		  $object->fetch_optionals($object->id);
 		  if(!empty($conf->global->EXPORT_COMPTA_HIDE_GENERATE_FACTURE) && !empty($object->array_options['options_date_compta'])  ) {
-          ?>
-          <script language="javascript">
-            $(document).ready(function() {
-                $('table[summary=listofdocumentstable] tr.liste_titre').remove();
-                $('table[summary=listofdocumentstable] tr td:last').remove();
-            }  );
-          </script>
-          <?php
+              ?>
+              <script>$(() => {$('input#builddoc_generatebutton').parent().hide();});</script>
+              <?php
           }
 
  		  if(!empty($conf->global->EXPORT_COMPTA_HIDE_REOPEN_INVOICE) && !empty($object->array_options['options_date_compta'])) {
