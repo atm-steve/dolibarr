@@ -7977,7 +7977,14 @@ function natural_search($fields, $value, $mode = 0, $nofirstand = 0)
 			        {
 			            if ($val)
 			            {
-			                $newres .= ($i2 > 0 ? ' OR (' : '(').$field.' LIKE \''.$db->escape(trim($val)).',%\'';
+							/*
+							* SPE SGP
+							* Gestion de la recherche multiple sur les extrafields multiselect
+							*/
+                            $fieldWithoutAlias = str_replace('ef.', '', $field);
+                            $behaviour = GETPOST('search_options_'.$fieldWithoutAlias.'_AND', 'bool') ? 'AND' : 'OR';
+
+			                $newres .= ($i2 > 0 ? ' '.$behaviour.' (' : '(').$field.' LIKE \''.$db->escape(trim($val)).',%\'';
 			                $newres .= ' OR '.$field.' = \''.$db->escape(trim($val)).'\'';
 			                $newres .= ' OR '.$field.' LIKE \'%,'.$db->escape(trim($val)).'\'';
 			                $newres .= ' OR '.$field.' LIKE \'%,'.$db->escape(trim($val)).',%\'';
@@ -8003,11 +8010,18 @@ function natural_search($fields, $value, $mode = 0, $nofirstand = 0)
 					}
 					else
 					{
-						$newres .= $field." LIKE '";
 
 						$tmpcrit = trim($tmpcrit);
 						$tmpcrit2 = $tmpcrit;
 						$tmpbefore = '%'; $tmpafter = '%';
+
+						if(preg_match('/^!/', $tmpcrit)) {
+							$newres .= $field." NOT LIKE '"; // ! as exclude character
+							$tmpcrit2 = preg_replace('/^!/', '', $tmpcrit2);
+						}
+						else $newres .= $field." LIKE '";
+
+
 						if (preg_match('/^[\^\$]/', $tmpcrit))
 						{
 							$tmpbefore = '';

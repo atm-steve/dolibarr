@@ -101,6 +101,7 @@ class Mailing extends CommonObject
 		$this->statut_dest[1] = 'MailingStatusSent';
 		$this->statut_dest[2] = 'MailingStatusRead';
 		$this->statut_dest[3] = 'MailingStatusReadAndUnsubscribe'; // Read but ask to not be contacted anymore
+		$this->statut_dest[4] = 'MailingStatusReadAndClicked';
     }
 
 	/**
@@ -723,11 +724,13 @@ class Mailing extends CommonObject
 		$labelStatus[1] = $langs->trans('MailingStatusSent');
 		$labelStatus[2] = $langs->trans('MailingStatusRead');
 		$labelStatus[3] = $langs->trans('MailingStatusNotContact');
+		$labelStatus[4] = $langs->trans('MailingStatusReadAndClicked');
 		$labelStatusShort[-1] = $langs->trans('MailingStatusError');
 		$labelStatusShort[0] = $langs->trans('MailingStatusNotSent');
 		$labelStatusShort[1] = $langs->trans('MailingStatusSent');
 		$labelStatusShort[2] = $langs->trans('MailingStatusRead');
 		$labelStatusShort[3] = $langs->trans('MailingStatusNotContact');
+		$labelStatusShort[4] = $langs->trans('MailingStatusReadAndClicked');
 
 		$statusType = 'status'.$status;
 		if ($status == -1) $statusType = 'status8';
