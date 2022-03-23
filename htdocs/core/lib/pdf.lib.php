@@ -1429,8 +1429,19 @@ function pdf_getlinedesc($object, $i, $outputlangs, $hideref = 0, $hidedesc = 0,
 		foreach ($dbatch as $detail)
 		{
 			$dte = array();
-			if ($detail->eatby) $dte[] = $outputlangs->transnoentitiesnoconv('printEatby', dol_print_date($detail->eatby, $format, false, $outputlangs));
-			if ($detail->sellby) $dte[] = $outputlangs->transnoentitiesnoconv('printSellby', dol_print_date($detail->sellby, $format, false, $outputlangs));
+			/** ***************************************************
+			 * ***********  SPE AMA *******************************
+			 * ***************************************************
+			 * Voir ticket DA021660
+			 * Nous nous sommes aperçu que les bons de livraisons faisait état de date de fin de garantie. Exemple sur la commande CO2203-3875 / BL2203-3561 on voit la date "sell-by 07/30/2022".
+			 * Nous aimerions que cette date n'apparaissent jamais sur les BL. Pouvez vous modifier les modeles en foncitons s'il vous plait ?
+			 */
+			//          if ($detail->eatby) $dte[] = $outputlangs->transnoentitiesnoconv('printEatby', dol_print_date($detail->eatby, $format, false, $outputlangs));
+			//          if ($detail->sellby) $dte[] = $outputlangs->transnoentitiesnoconv('printSellby', dol_print_date($detail->sellby, $format, false, $outputlangs));
+			/** ***************************************************
+			 * ***********  FIN SPE AMA ***************************
+			 * *************************************************** */
+
 			if ($detail->batch) $dte[] = $outputlangs->transnoentitiesnoconv('printBatch', $detail->batch);
 			$dte[] = $outputlangs->transnoentitiesnoconv('printQty', $detail->qty);
 
