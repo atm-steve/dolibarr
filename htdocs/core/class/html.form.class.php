@@ -3114,7 +3114,9 @@ class Form
 		$maxlengtharticle = (empty($conf->global->PRODUCT_MAX_LENGTH_COMBO) ? 48 : $conf->global->PRODUCT_MAX_LENGTH_COMBO);
 
 		$langs->load('stocks');
-		// Units
+        $langs->load('suppliers');
+
+        // Units
 		if (!empty($conf->global->PRODUCT_USE_UNITS)) {
 			$langs->load('other');
 		}
@@ -3122,7 +3124,7 @@ class Form
 		$sql = "SELECT p.rowid, p.ref, p.label, p.price, p.duration, p.fk_product_type, p.stock,";
 		$sql .= " pfp.ref_fourn, pfp.rowid as idprodfournprice, pfp.price as fprice, pfp.quantity, pfp.remise_percent, pfp.remise, pfp.unitprice,";
 		$sql .= " pfp.fk_supplier_price_expression, pfp.fk_product, pfp.tva_tx, pfp.default_vat_code, pfp.fk_soc, s.nom as name,";
-		$sql .= " pfp.supplier_reputation";
+        $sql .= " pfp.supplier_reputation,pfp.conditionnement";
 		// if we use supplier description of the products
 		if (!empty($conf->global->PRODUIT_FOURN_TEXTS)) {
 			$sql .= " ,pfp.desc_fourn as description";
@@ -3297,7 +3299,7 @@ class Form
 				$outvallabel .= $outvalUnits;
 
 				if (!empty($objp->idprodfournprice)) {
-					$outqty = $objp->quantity;
+                    $outqty=$objp->quantity * $objp->conditionnement;
 					$outdiscount = $objp->remise_percent;
 					if (!empty($conf->dynamicprices->enabled) && !empty($objp->fk_supplier_price_expression)) {
 						$prod_supplier = new ProductFournisseur($this->db);
@@ -3331,6 +3333,10 @@ class Form
 						$optlabel .= " (".price($objp->unitprice * (!empty($conf->global->DISPLAY_DISCOUNTED_SUPPLIER_PRICE) ? (1 - $objp->remise_percent / 100) : 1), 1, $langs, 0, 0, -1, $conf->currency)."/".$langs->trans("Unit").")"; // Do not use strtolower because it breaks utf8 encoding
 						$outvallabel .= " (".price($objp->unitprice * (!empty($conf->global->DISPLAY_DISCOUNTED_SUPPLIER_PRICE) ? (1 - $objp->remise_percent / 100) : 1), 0, $langs, 0, 0, -1, $conf->currency)."/".$langs->transnoentities("Unit").")"; // Do not use strtolower because it breaks utf8 encoding
 					}
+
+                    $optlabel.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+                    $outvallabel.= ' / '.$objp->conditionnement.' ('.price($product_fourn->unitprice / $objp->conditionnement).')';
+
 					if ($objp->remise_percent >= 1) {
 						$optlabel .= " - ".$langs->trans("Discount")." : ".vatrate($objp->remise_percent).' %';
 						$outvallabel .= " - ".$langs->transnoentities("Discount")." : ".vatrate($objp->remise_percent).' %';

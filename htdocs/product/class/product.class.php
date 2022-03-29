@@ -1915,7 +1915,7 @@ class Product extends CommonObject
 		$sql .= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price as pfp";
 		$sql .= " WHERE pfp.rowid = ".((int) $prodfournprice);
 		if ($qty > 0) {
-			$sql .= " AND pfp.quantity <= ".((float) $qty);
+            if ($qty > 0) { $sql .= " AND pfp.quantity <= ".$qty." / IFNULL(pfp.conditionnement,1)";
 		}
 		$sql .= " ORDER BY pfp.quantity DESC";
 

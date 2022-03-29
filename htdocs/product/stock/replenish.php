@@ -223,13 +223,13 @@ if ($action == 'order' && GETPOST('valid')) {
 		$fail = 0;
 		$orders = array();
 		$suppliersid = array_keys($suppliers);
-		foreach ($suppliers as $supplier) {
+        foreach ($suppliers as $id_fourn => $supplier)
 			$order = new CommandeFournisseur($db);
 
 			// Check if an order for the supplier exists
 			$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."commande_fournisseur";
-			$sql .= " WHERE fk_soc = ".((int) $suppliersid[$i]);
-			$sql .= " AND source = ".((int) $order::SOURCE_ID_REPLENISHMENT)." AND fk_statut = ".((int) $order::STATUS_DRAFT);
+            $sql .= " WHERE fk_soc = ".$id_fourn;
+            $sql .= " AND source = 42 AND fk_statut = 0";
 			$sql .= " AND entity IN (".getEntity('commande_fournisseur').")";
 			$sql .= " ORDER BY date_creation DESC";
 			$resql = $db->query($sql);
@@ -274,11 +274,11 @@ if ($action == 'order' && GETPOST('valid')) {
 					$id = $result;
 				}
 			} else {
-				$order->socid = $suppliersid[$i];
+                $order->socid = $id_fourn;
 				$order->fetch_thirdparty();
 
-				// Trick to know which orders have been generated using the replenishment feature
-				$order->source = $order::SOURCE_ID_REPLENISHMENT;
+                //trick to know which orders have been generated this way
+                $order->source = 42;
 
 				foreach ($supplier['lines'] as $line) {
 					if (empty($line->remise_percent)) {

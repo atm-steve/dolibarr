@@ -397,7 +397,7 @@ $sql = 'SELECT DISTINCT p.rowid, p.ref, p.label, p.fk_product_type, p.barcode, p
 $sql .= ' p.fk_product_type, p.duration, p.finished, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,';
 $sql .= ' p.tobatch,';
 if (empty($conf->global->MAIN_PRODUCT_PERENTITY_SHARED)) {
-	$sql .= " p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, p.accountancy_code_buy, p.accountancy_code_buy_intra, p.accountancy_code_buy_export,";
+	$sql .= " p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, pfp.supplier_reputation, p.accountancy_code_buy, p.accountancy_code_buy_intra, p.accountancy_code_buy_export,";
 } else {
 	$sql .= " ppe.accountancy_code_sell, ppe.accountancy_code_sell_intra, ppe.accountancy_code_sell_export, ppe.accountancy_code_buy, ppe.accountancy_code_buy_intra, ppe.accountancy_code_buy_export,";
 }
@@ -559,7 +559,7 @@ $sql .= " GROUP BY p.rowid, p.ref, p.label, p.barcode, p.price, p.tva_tx, p.pric
 $sql .= " p.fk_product_type, p.duration, p.finished, p.tosell, p.tobuy, p.seuil_stock_alerte, p.desiredstock,";
 $sql .= ' p.datec, p.tms, p.entity, p.tobatch, p.pmp, p.cost_price, p.stock,';
 if (empty($conf->global->MAIN_PRODUCT_PERENTITY_SHARED)) {
-	$sql .= " p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, p.accountancy_code_buy, p.accountancy_code_buy_intra, p.accountancy_code_buy_export,";
+	$sql .= " p.accountancy_code_sell, p.accountancy_code_sell_intra, p.accountancy_code_sell_export, pfp.supplier_reputation, p.accountancy_code_buy, p.accountancy_code_buy_intra, p.accountancy_code_buy_export,";
 } else {
 	$sql .= " ppe.accountancy_code_sell, ppe.accountancy_code_sell_intra, ppe.accountancy_code_sell_export, ppe.accountancy_code_buy, ppe.accountancy_code_buy_intra, ppe.accountancy_code_buy_export,";
 }
@@ -986,6 +986,11 @@ if ($resql) {
 		print '&nbsp;';
 		print '</td>';
 	}
+
+    print '<td class="liste_titre">';
+    print '&nbsp;';
+    print '</td>';
+
 	// Number buying Price
 	if (!empty($arrayfields['p.numbuyprice']['checked'])) {
 		print '<td class="liste_titre">';
@@ -1191,7 +1196,10 @@ if ($resql) {
 	if (!empty($arrayfields['p.numbuyprice']['checked'])) {
 		print_liste_field_titre($arrayfields['p.numbuyprice']['label'], $_SERVER["PHP_SELF"], "", "", $param, '', $sortfield, $sortorder, 'right ');
 	}
-	if (!empty($arrayfields['p.tva_tx']['checked'])) {
+
+    print_liste_field_titre($langs->trans("Fournisseur Préféré"), $_SERVER["PHP_SELF"],"","",$param,'align="right"',$sortfield,$sortorder);
+
+    if (!empty($arrayfields['p.tva_tx']['checked'])) {
 		print_liste_field_titre($arrayfields['p.tva_tx']['label'], $_SERVER["PHP_SELF"], 'p.tva_tx', "", $param, '', $sortfield, $sortorder, 'right ');
 	}
 	if (!empty($arrayfields['p.pmp']['checked'])) {
@@ -1645,8 +1653,20 @@ if ($resql) {
 					if ($product_fourn->product_fourn_price_id > 0) {
 						if ((!empty($conf->fournisseur->enabled) && !empty($user->rights->fournisseur->lire) && empty($conf->global->MAIN_USE_NEW_SUPPLIERMOD)) || (!empty($conf->supplier_order->enabled) && !empty($user->rights->supplier_order->lire)) || (!empty($conf->supplier_invoice->enabled) && !empty($user->rights->supplier_invoice->lire))) {
 							$htmltext = $product_fourn->display_price_product_fournisseur(1, 1, 0, 1);
-							print '<span class="amount">'.$form->textwithpicto(price($product_fourn->fourn_unitprice * (1 - $product_fourn->fourn_remise_percent / 100) - $product_fourn->fourn_remise).' '.$langs->trans("HT"), $htmltext).'</span>';
-						} else {
+                            print $form->textwithpicto(price($product_fourn->fourn_unitprice).' '.$langs->trans("HT"),$htmltext);
+
+                            $sql = '
+								SELECT conditionnement 
+								FROM ' . MAIN_DB_PREFIX . 'product_fournisseur_price 
+								WHERE rowid = ' . $product_fourn->product_fourn_price_id . '
+							';
+
+                            $statement = $db->query($sql);
+                            $objCond = $db->fetch_object($statement);
+
+                            print ' / '.$objCond->conditionnement;
+                            print ' ('.price($product_fourn->fourn_unitprice / $objCond->conditionnement).')';
+                            print img_help(1, " / conditionnement (PU) ");						} else {
 							print '<span class="amount">'.price($product_fourn->fourn_unitprice).' '.$langs->trans("HT").'</span>';
 						}
 					}
@@ -1705,6 +1725,20 @@ if ($resql) {
 				$totalarray['nbfield']++;
 			}
 		}
+
+        $resReput = $db->query("SELECT fk_soc FROM ".MAIN_DB_PREFIX."product_fournisseur_price WHERE fk_product=".$obj->rowid." AND supplier_reputation='FAVORITE'");
+        $TSupplierFavorite = array();
+        if ($resReput){
+            while($objreput = $db->fetch_object($resReput)) {
+                $ff=new Societe($db);
+                if($ff->fetch($objreput->fk_soc)>0) {
+                    $TSupplierFavorite[] = $ff->getNomUrl(0);
+                }
+            }
+        }
+        echo '<td align="center">'. implode(', ', $TSupplierFavorite) .'</td>';
+        if (! $i) $totalarray['nbfield']++;
+
 		// Desired stock
 		if (!empty($arrayfields['p.desiredstock']['checked'])) {
 			print '<td class="right">';

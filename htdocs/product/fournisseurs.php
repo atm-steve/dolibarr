@@ -362,6 +362,21 @@ if (empty($reshook)) {
 			if (!$error) {
 				$db->commit();
 				$action = '';
+
+                if (!empty($conf->climetiffiot->enabled)) {
+                    $conditionnement = GETPOST('conditionnement');
+
+                    if (!empty($conditionnement) && $conditionnement > 0) {
+                        $sql = '
+							UPDATE ' . MAIN_DB_PREFIX . 'product_fournisseur_price
+							SET conditionnement = ' . $conditionnement . '
+							WHERE rowid = ' . $object->product_fourn_price_id . ';
+						';
+
+                        $result = $db->query($sql);
+                    }
+                }
+
 			} else {
 				$db->rollback();
 			}
@@ -795,7 +810,29 @@ END;
 					}
 				}
 
-				// Product description of the supplier
+                // Metiffiot : Conditionnement
+                if (!empty($conf->climetiffiot->enabled)) {
+                    $objet = null;
+                    if ($rowid) {
+                        $sql = '
+							SELECT conditionnement
+							FROM ' . MAIN_DB_PREFIX . 'product_fournisseur_price
+							WHERE rowid = ' . $rowid . ';
+						';
+
+                        $statement = $db->query($sql);
+                        $objet = $db->fetch_object($statement);
+                    }
+
+                    print '<tr>';
+                    print '<td>Conditionnement</td>';
+                    print '<td><input class="flat" name="conditionnement" size="6" value="'.(!empty($objet) ? $objet->conditionnement : 1) . '">';
+                    print '</td>';
+                    print '</tr>';
+                }
+
+
+                // Product description of the supplier
 				if (!empty($conf->global->PRODUIT_FOURN_TEXTS)) {
 					//WYSIWYG Editor
 					require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
@@ -1055,40 +1092,51 @@ END;
 					$parameters = array('id_fourn'=>(!empty($id_fourn)?$id_fourn:''), 'prod_id'=>$object->id);
 					$reshook = $hookmanager->executeHooks('printFieldListTitle', $parameters, $object, $action);
 				}
+                // Metiffiot
+                if (!empty($conf->climetiffiot->enabled))  print '<td align="right">Conditionnement</td>';
+
 				print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 				print "</tr>\n";
 
 				if (is_array($product_fourn_list)) {
 					foreach ($product_fourn_list as $productfourn) {
+
+                        if($productfourn->supplier_reputation == 'FAVORITE') {
+                            $style = ' style="background-color:#eeffee;" ';
+                        }
+                        else if($productfourn->supplier_reputation=='DONOTORDER'){
+                            $style = ' style="background-color:#ffdddd;" ';
+                        } else $style =  '';
+
 						print '<tr class="oddeven">';
 
 						// Date from
 						if (!empty($arrayfields['pfp.datec']['checked'])) {
-							print '<td>'.dol_print_date(($productfourn->fourn_date_creation ? $productfourn->fourn_date_creation : $productfourn->date_creation), 'dayhour').'</td>';
+                            print '<td '.$style.'>'.dol_print_date(($productfourn->fourn_date_creation ? $productfourn->fourn_date_creation : $productfourn->date_creation), 'dayhour').'</td>';
 						}
 
 						// Supplier
 						if (!empty($arrayfields['s.nom']['checked'])) {
-							print '<td class="tdoverflowmax150">'.$productfourn->getSocNomUrl(1, 'supplier').'</td>';
+                            print '<td '.$style.' class="tdoverflowmax200">'.$productfourn->getSocNomUrl(1, 'supplier').'</td>';
 						}
 
 						// Supplier ref
 						if ($usercancreate) { // change required right here
-							print '<td>'.$productfourn->getNomUrl().'</td>';
+                            print '<td '.$style.' class="left">'.$productfourn->getNomUrl().'</td>';
 						} else {
-							print '<td>'.$productfourn->fourn_ref.'</td>';
+                            print '<td '.$style.' class="left">'.$productfourn->fourn_ref.'</td>';
 						}
 
 						// Availability
 						if (!empty($arrayfields['pfp.fk_availability']['checked'])) {
 							$form->load_cache_availability();
 							$availability = $form->cache_availability[$productfourn->fk_availability]['label'];
-							print '<td class="left">'.$availability.'</td>';
+                            print '<td '.$style.' class="left">'.$availability.'</td>';
 						}
 
 						// Quantity
 						if (!empty($arrayfields['pfp.quantity']['checked'])) {
-							print '<td class="right">';
+                            print '<td '.$style.' class="right">';
 							print $productfourn->fourn_qty;
 							// Units
 							if (!empty($conf->global->PRODUCT_USE_UNITS)) {
@@ -1101,25 +1149,25 @@ END;
 						}
 
 						// VAT rate
-						print '<td class="right">';
+                        print '<td '.$style.' class="right">';
 						print vatrate($productfourn->fourn_tva_tx, true);
 						print '</td>';
 
 						// Price for the quantity
-						print '<td class="right">';
+                        print '<td '.$style.' class="right">';
 						print $productfourn->fourn_price ?price($productfourn->fourn_price) : "";
 						print '</td>';
 
 						if (!empty($conf->multicurrency->enabled)) {
 							// Price for the quantity in currency
-							print '<td class="right">';
+                            print '<td '.$style.' class="right">';
 							print $productfourn->fourn_multicurrency_price ? price($productfourn->fourn_multicurrency_price) : "";
 							print '</td>';
 						}
 
 						// Unit price
 						if (!empty($arrayfields['pfp.unitprice']['checked'])) {
-							print '<td class="right">';
+                            print '<td '.$style.' class="right">';
 							print price($productfourn->fourn_unitprice);
 							//print $objp->unitprice? price($objp->unitprice) : ($objp->quantity?price($objp->price/$objp->quantity):"&nbsp;");
 							print '</td>';
@@ -1127,33 +1175,33 @@ END;
 
 						// Unit price in currency
 						if (!empty($arrayfields['pfp.multicurrency_unitprice']['checked'])) {
-							print '<td class="right">';
+                            print '<td '.$style.' class="right">';
 							print price($productfourn->fourn_multicurrency_unitprice);
 							print '</td>';
 						}
 
 						// Currency
 						if (!empty($conf->multicurrency->enabled)) {
-							print '<td class="right nowraponall">';
+                            print '<td '.$style.' class="right">';
 							print $productfourn->fourn_multicurrency_code ? currency_name($productfourn->fourn_multicurrency_code) : '';
 							print '</td>';
 						}
 
 						// Discount
-						print '<td class="right">';
+                        print '<td '.$style.' class="right">';
 						print price2num($productfourn->fourn_remise_percent).'%';
 						print '</td>';
 
 						// Delivery delay
 						if (!empty($arrayfields['pfp.delivery_time_days']['checked'])) {
-							print '<td class="right">';
+                            print '<td '.$style.' class="right">';
 							print $productfourn->delivery_time_days;
 							print '</td>';
 						}
 
 						// Reputation
 						if (!empty($arrayfields['pfp.supplier_reputation']['checked'])) {
-							print '<td class="center">';
+                            print '<td '.$style.' class="center">';
 							if (!empty($productfourn->supplier_reputation) && !empty($object->reputations[$productfourn->supplier_reputation])) {
 								print $object->reputations[$productfourn->supplier_reputation];
 							}
@@ -1162,7 +1210,7 @@ END;
 
 						// Barcode type
 						if (!empty($arrayfields['pfp.fk_barcode_type']['checked'])) {
-							print '<td class="center">';
+                            print '<td '.$style.' class="center">';
 							$productfourn->barcode_type = !empty($productfourn->supplier_fk_barcode_type) ? $productfourn->supplier_fk_barcode_type : 0;
 							$productfourn->fetch_barcode();
 							print $productfourn->barcode_type_label ? $productfourn->barcode_type_label : ($productfourn->supplier_barcode ? '<div class="warning">'.$langs->trans("SetDefaultBarcodeType").'<div>' : '');
@@ -1171,21 +1219,21 @@ END;
 
 						// Barcode
 						if (!empty($arrayfields['pfp.barcode']['checked'])) {
-							print '<td align="right">';
+                            print '<td '.$style.' align="right">';
 							print $productfourn->supplier_barcode;
 							print '</td>';
 						}
 
 						// Packaging
 						if (!empty($arrayfields['pfp.packaging']['checked'])) {
-							print '<td align="center">';
+                            print '<td '.$style.' align="center">';
 							print price2num($productfourn->packaging);
 							print '</td>';
 						}
 
 						// Date modification
 						if (!empty($arrayfields['pfp.tms']['checked'])) {
-							print '<td class="right nowraponall">';
+                            print '<td '.$style.' align="right">';
 							print dol_print_date(($productfourn->fourn_date_modification ? $productfourn->fourn_date_modification : $productfourn->date_modification), "dayhour");
 							print '</td>';
 						}
@@ -1211,7 +1259,7 @@ END;
 									$obj = $db->fetch_object($resql);
 									foreach ($extralabels as $key => $value) {
 										if (!empty($arrayfields['ef.'.$key]['checked']) && !empty($extrafields->attributes["product_fournisseur_price"]['list'][$key]) && $extrafields->attributes["product_fournisseur_price"]['list'][$key] != 3) {
-											print '<td align="right">'.$extrafields->showOutputField($key, $obj->{$key}, '', 'product_fournisseur_price')."</td>";
+                                            print '<td '.$style.' align="right">'.$extrafields->showOutputField($key, $obj->{$key})."</td>";
 										}
 									}
 								}
@@ -1219,13 +1267,32 @@ END;
 							}
 						}
 
+                        // Metiffiot : Conditionnement
+                        if (!empty($conf->climetiffiot->enabled)) {
+                            // Récupération du conditionnement
+                            $sql = '
+								SELECT conditionnement 
+								FROM ' . MAIN_DB_PREFIX . 'product_fournisseur_price 
+								WHERE rowid = ' . $productfourn->product_fourn_price_id . '
+							';
+
+                            $statement = $db->query($sql);
+                            $obj = $db->fetch_object($statement);
+
+                            print '<td align="right" '.$style.'>';
+                            print $obj->conditionnement;
+                            print ' ('.price($productfourn->fourn_unitprice / $obj->conditionnement).')';
+                            print '</td>';
+                        }
+
+
 						if (is_object($hookmanager)) {
 							$parameters = array('id_pfp'=>$productfourn->product_fourn_price_id, 'id_fourn'=>(!empty($id_fourn)?$id_fourn:''), 'prod_id'=>$object->id);
 							$reshook = $hookmanager->executeHooks('printFieldListValue', $parameters, $object, $action);
 						}
 
 						// Modify-Remove
-						print '<td class="center nowraponall">';
+                        print '<td '.$style.' class="center nowraponall">';
 
 						if ($usercancreate) {
 							print '<a class="editfielda" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&amp;socid='.$productfourn->fourn_id.'&amp;action=update_price&amp;rowid='.$productfourn->product_fourn_price_id.'">'.img_edit()."</a>";
