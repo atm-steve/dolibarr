@@ -247,6 +247,7 @@ class FactureFournisseurRec extends CommonInvoice
 
         // Clean parameters
         $this->titre = empty($this->titre) ? '' : $this->titre;
+        $this->ref = $this->{$this->table_ref_field};
         $this->ref_supplier = empty($this->ref_supplier) ? '' : $this->ref_supplier;
         $this->usenewprice = empty($this->usenewprice) ? 0 : $this->usenewprice;
         $this->suspended = empty($this->suspended) ? 0 : $this->suspended;
@@ -586,6 +587,7 @@ class FactureFournisseurRec extends CommonInvoice
 
                 $this->id                       = $obj->rowid;
                 $this->titre                    = $obj->titre;
+                $this->ref                      = $obj->{$this->table_ref_field};
                 $this->ref_supplier             = $obj->ref_supplier;
                 $this->entity                   = $obj->entity;
                 $this->socid                    = $obj->fk_soc;
@@ -1382,13 +1384,12 @@ class FactureFournisseurRec extends CommonInvoice
     public function getNomUrl($withpicto = 0, $option = '', $max = 0, $short = 0, $moretitle = '', $notooltip = '', $save_lastsearch_value = -1)
     {
         global $langs;
-        $langs->load('bills');
 
         $result = '';
 
         $label = '<u>'.$langs->trans('RepeatableInvoice').'</u>';
-        if (!empty($this->titre)) {
-            $label .= '<br><b>'.$langs->trans('Title').':</b> '.$this->titre;
+        if (!empty($this->ref)) {
+            $label .= '<br><b>'.$langs->trans('Title').':</b> '.$this->ref;
         }
         if ($this->frequency > 0) {
             $label .= '<br><b>'.$langs->trans('Frequency').':</b> '.$langs->trans('FrequencyPer_'.$this->unit_frequency, $this->frequency);
@@ -1431,7 +1432,7 @@ class FactureFournisseurRec extends CommonInvoice
             $result .= img_object(($notooltip ? '' : $label), ($this->picto ? $this->picto : 'generic'), ($notooltip ? (($withpicto != 2) ? 'class="paddingright"' : '') : 'class="'.(($withpicto != 2) ? 'paddingright ' : '').'classfortooltip"'), 0, 0, $notooltip ? 0 : 1);
         }
         if ($withpicto != 2) {
-            $result .= $this->titre;
+            $result .= $this->ref;
         }
         $result .= $linkend;
 
