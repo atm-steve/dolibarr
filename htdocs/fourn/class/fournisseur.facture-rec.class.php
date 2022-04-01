@@ -1382,12 +1382,13 @@ class FactureFournisseurRec extends CommonInvoice
     public function getNomUrl($withpicto = 0, $option = '', $max = 0, $short = 0, $moretitle = '', $notooltip = '', $save_lastsearch_value = -1)
     {
         global $langs;
+        $langs->load('bills');
 
         $result = '';
 
         $label = '<u>'.$langs->trans('RepeatableInvoice').'</u>';
-        if (!empty($this->ref)) {
-            $label .= '<br><b>'.$langs->trans('Ref').':</b> '.$this->ref;
+        if (!empty($this->titre)) {
+            $label .= '<br><b>'.$langs->trans('Title').':</b> '.$this->titre;
         }
         if ($this->frequency > 0) {
             $label .= '<br><b>'.$langs->trans('Frequency').':</b> '.$langs->trans('FrequencyPer_'.$this->unit_frequency, $this->frequency);
@@ -1430,7 +1431,7 @@ class FactureFournisseurRec extends CommonInvoice
             $result .= img_object(($notooltip ? '' : $label), ($this->picto ? $this->picto : 'generic'), ($notooltip ? (($withpicto != 2) ? 'class="paddingright"' : '') : 'class="'.(($withpicto != 2) ? 'paddingright ' : '').'classfortooltip"'), 0, 0, $notooltip ? 0 : 1);
         }
         if ($withpicto != 2) {
-            $result .= $this->ref;
+            $result .= $this->titre;
         }
         $result .= $linkend;
 
