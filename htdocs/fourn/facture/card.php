@@ -804,7 +804,7 @@ if (empty($reshook))
                 $object->label = GETPOST('label');
                 $object->note_public = trim(GETPOST('note_public', 'restricthtml'));
                 $object->note_private = trim(GETPOST('note_private', 'restricthtml'));
-                $object->ref_supplier = GETPOST('ref_suplier', 'alphanohtml');
+                $object->ref_supplier = GETPOST('ref_supplier', 'alphanohtml');
                 $object->model_pdf = GETPOST('model');
                 $object->fk_project = GETPOST('projectid', 'int');
                 $object->cond_reglement_id = (GETPOST('type') == 3 ? 1 : GETPOST('cond_reglement_id'));
