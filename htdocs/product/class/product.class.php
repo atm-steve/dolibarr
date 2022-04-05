@@ -64,13 +64,13 @@ class Product extends CommonObject
 	 * @var array	List of child tables. To test if we can delete object.
 	 */
 	protected $childtables = array(
-		'supplier_proposaldet',
-		'propaldet',
-		'commandedet',
-		'facturedet',
-		'contratdet',
-		'facture_fourn_det',
-		'commande_fournisseurdet'
+		'supplier_proposaldet' => array('name' => 'SupplierProposal', 'parent' => 'supplier_proposal', 'parentkey' => 'fk_supplier_proposal'),
+		'propaldet' => array('name' => 'Proposal', 'parent' => 'propal', 'parentkey' => 'fk_propal'),
+		'commandedet' => array('name' => 'Order', 'parent' => 'commande', 'parentkey' => 'fk_commande'),
+		'facturedet' => array('name' => 'Invoice', 'parent' => 'facture', 'parentkey' => 'fk_facture'),
+		'contratdet' => array('name' => 'Contract', 'parent' => 'contrat', 'parentkey' => 'fk_contrat'),
+		'facture_fourn_det' => array('name' => 'SupplierInvoice', 'parent' => 'facture_fourn', 'parentkey' => 'fk_facture_fourn'),
+		'commande_fournisseurdet' => array('name' => 'SupplierOrder', 'parent' => 'commande_fournisseur', 'parentkey' => 'fk_commande')
 	);
 
 	/**
@@ -5608,7 +5608,7 @@ class Product extends CommonObject
 		// Add where from hooks
 		if (is_object($hookmanager)) {
 			$parameters = array();
-			$reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters); // Note that $action and $object may have been modified by hook
+			$reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters, $this); // Note that $action and $object may have been modified by hook
 			$sql .= $hookmanager->resPrint;
 		}
 		$sql .= ' GROUP BY fk_product_type';
