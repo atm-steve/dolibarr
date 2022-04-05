@@ -1174,6 +1174,14 @@ class FactureFournisseur extends CommonInvoice
             }
         }
 
+		if (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED)) // For avoid conflicts if trigger used
+		{
+			$result = $this->insertExtraFields();
+			if ($result < 0) {
+				$error++;
+			}
+		}
+
         if (! $error)
         {
             if (! $notrigger)
