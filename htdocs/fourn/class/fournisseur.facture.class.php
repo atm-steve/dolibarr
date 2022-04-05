@@ -883,7 +883,7 @@ class FactureFournisseur extends CommonInvoice
                 $this->ref_supplier			= $obj->ref_supplier;
                 $this->entity				= $obj->entity;
                 $this->type					= empty($obj->type)? self::TYPE_STANDARD:$obj->type;
-                $this->fk_soc				= $obj->fk_soc;
+                $this->socid				= $obj->fk_soc;
                 $this->datec				= $this->db->jdate($obj->datec);
                 $this->date					= $this->db->jdate($obj->datef);
                 $this->datep				= $this->db->jdate($obj->datef);
@@ -1092,7 +1092,7 @@ class FactureFournisseur extends CommonInvoice
         if (isset($this->ref_supplier)) $this->ref_supplier=trim($this->ref_supplier);
         if (isset($this->entity)) $this->entity=trim($this->entity);
         if (isset($this->type)) $this->type=trim($this->type);
-        if (isset($this->fk_soc)) $this->fk_soc=trim($this->fk_soc);
+        if (isset($this->socid)) $this->socid=trim($this->socid);
         if (isset($this->label)) $this->label=trim($this->label);
         if (isset($this->libelle)) $this->libelle=trim($this->libelle);	// deprecated
         if (isset($this->paye)) $this->paye=trim($this->paye);
@@ -1129,7 +1129,7 @@ class FactureFournisseur extends CommonInvoice
         $sql.= " ref_supplier=".(isset($this->ref_supplier)?"'".$this->db->escape($this->ref_supplier)."'":"null").",";
         $sql.= " entity=".(isset($this->entity)?$this->entity:"null").",";
         $sql.= " type=".(isset($this->type)?$this->type:"null").",";
-        $sql.= " fk_soc=".(isset($this->fk_soc)?$this->fk_soc:"null").",";
+        $sql.= " fk_soc=".(isset($this->socid)?$this->socid:"null").",";
         $sql.= " datec=".(dol_strlen($this->datec)!=0 ? "'".$this->db->idate($this->datec)."'" : 'null').",";
         $sql.= " datef=".(dol_strlen($this->date)!=0 ? "'".$this->db->idate($this->date)."'" : 'null').",";
         if (dol_strlen($this->tms) != 0) $sql.= " tms=".(dol_strlen($this->tms)!=0 ? "'".$this->db->idate($this->tms)."'" : 'null').",";
