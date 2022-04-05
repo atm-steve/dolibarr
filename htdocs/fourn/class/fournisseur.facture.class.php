@@ -93,11 +93,28 @@ class FactureFournisseur extends CommonInvoice
 	public $ref;
 
 	public $label;
-	public $libelle;		// @deprecated
+
+	/**
+	 * @deprecated
+	 * @var string $libelle
+	 */
+	public $libelle;
 
     public $product_ref;
     public $ref_supplier;
+
+	/**
+	 * @deprecated Use `socid` instead
+	 * @var int $fk_soc
+	 */
+	public $fk_soc;
+
+	/**
+	 * @var int $socid
+	 */
     public $socid;
+
+
     //Check constants for types
     public $type = self::TYPE_STANDARD;
 
