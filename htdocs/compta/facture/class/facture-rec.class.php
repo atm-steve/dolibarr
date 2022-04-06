@@ -1080,13 +1080,6 @@ class FactureRec extends CommonInvoice
 		// Load translation files required by the page
 		$langs->loadLangs(array("main","bills"));
 
-        /* -- [SPE KOESIO] -- */
-        // On désactive cette conf pour pas qu'elle force la date de facturation à la date de validation, on la bypass pendant notre cron
-        $oldConf = $conf->global->FAC_FORCE_DATE_VALIDATION;
-        $conf->global->FAC_FORCE_DATE_VALIDATION = 0;
-        /* -- [FIN SPE KOESIO] -- */
-
-
 		$now = dol_now();
 		$tmparray=dol_getdate($now);
 		$today = dol_mktime(23, 59, 59, $tmparray['mon'], $tmparray['mday'], $tmparray['year']);   // Today is last second of current day
@@ -1212,11 +1205,6 @@ class FactureRec extends CommonInvoice
 
 				$i++;
 			}
-
-            /* -- [SPE KOESIO] -- */
-            // On réactive la conf puisque une fois notre traitement terminé
-            $conf->global->FAC_FORCE_DATE_VALIDATION = $oldConf;
-            /* -- [FIN SPE KOESIO] -- */
 
 			$conf->entity = $saventity;      // Restore entity context
 		}
