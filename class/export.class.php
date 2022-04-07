@@ -9,7 +9,7 @@
  *  - EXPORT DES TIERS
  *  - EXPORT DES PRODUITS
  *************************************************************************************************************************************************/
-
+include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 dol_include_once('/compta/facture/class/facture.class.php');
 dol_include_once('/comm/propal/class/propal.class.php');
 dol_include_once('/compta/paiement/cheque/class/remisecheque.class.php');
@@ -345,8 +345,8 @@ class TExportCompta extends TObjetStd {
                         else {
                             $previousSituationAmount = self::getPreviousSituationAmount($ligneSituation);
                             $lineTotalHT = $ligneSituation->total_ht - $previousSituationAmount;
-                            $lineTotalTVA =$ligneSituation->total_ttc - $lineTotalHT;
-
+                            if(!$facture->is_last_in_cycle()) $lineTotalTVA =$ligneSituation->total_ttc - $lineTotalHT; // il y a des soucis d'arrondis si on fait le calcul en dessous
+							else $lineTotalTVA = $lineTotalHT * ($ligneSituation->tva_tx/100); // Dans le cas où la facture est la dernière situation, le total_ttc ne tiens plus compte du prev_id, donc obliger de recalculer :D
                             $TotalTHSituationPrev[$facture->id][$codeComptableProduit] += $lineTotalHT;
                             $TotalTTCSituationPrev[$facture->id][$codeComptableClient] += $lineTotalHT + $lineTotalTVA;
                             $TotalTVASituationPrev[$facture->id][$codeComptableTVA] += $lineTotalTVA;
@@ -1810,13 +1810,14 @@ class TExportCompta extends TObjetStd {
         // Traitement
         $TData = array_reverse($TData);
         $res = 0;
-        foreach($TData as $Tab) {
-            if(is_null($progress)) $progress = $Tab['progress'];
-            else $progress = abs($progress - $Tab['progress']);
 
-            if($Tab['progress'] >= 0) $res += $Tab['amount'] * $progress / 100;    // Invoice
-            else $res -= abs($Tab['amount']);    // Credit note
-        }
+		foreach($TData as $Tab) {
+			if(is_null($progress)) $progress = $Tab['progress']; //Le 1er passage on passe forcement ici
+			else $progress = abs($prevProgress - $Tab['progress']);
+			if($Tab['progress'] >= 0) $res += $Tab['amount'] * $progress / 100;    // Invoice
+			else $res -= abs($Tab['amount']);    // Credit note
+			$prevProgress = $Tab['progress'];
+		}
 
         return $res;
     }
