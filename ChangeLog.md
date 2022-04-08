@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ## Version 1.3
+- FIX : Wrong calc for situation *07/04/2022* - 1.3.1 
 - NEW : Colonne "compte collectif client" pour l'export InExtenso. - *17/02/2022* - 1.3.0  
   Note: pour les instances où le format a été personnalisé, il faudra ajouter la colonne
   "compte_collectif_client" dans le paramétrage du module (onglet "Formats" > afficher
