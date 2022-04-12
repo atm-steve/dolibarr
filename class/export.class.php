@@ -1043,6 +1043,8 @@ class TExportCompta extends TObjetStd {
 					$codeComptableProduit = $conf->global->COMPTA_EXP_ACCOUNT;
 				}
 
+				$codeComptableProduit = trim($codeComptableProduit);
+
 				// Code compta TVA
 				$codeComptableTVA = !empty($this->TTVAbyId[$idpays][$ligne->fk_tva]['buy']) ? $this->TTVAbyId[$idpays][$ligne->fk_tva]['buy'] : $conf->global->{ $defaultVATBuyConfKey };
 
@@ -1052,6 +1054,16 @@ class TExportCompta extends TObjetStd {
 				$TNDF[$ndfp->id]['ligne_tiers'][$codeCompta] += $ligne->total_ttc;
 				$TNDF[$ndfp->id]['ligne_produit'][$codeComptableProduit] += $ligne->total_ht;
 				if($ligne->total_tva != 0) $TNDF[$ndfp->id]['ligne_tva'][$codeComptableTVA] += $ligne->total_tva;
+
+				// Ticket 3313 : TVA spécifique pour 2 types de frais
+				if($codeComptableProduit == '60709000') {
+					$TNDF[$ndfp->id]['ligne_tva']['44526900'] += round($ligne->total_ht * .2,2);
+					$TNDF[$ndfp->id]['ligne_tva']['44527900'] -= round($ligne->total_ht * .2,2);
+				}
+				if($codeComptableProduit == '60400000') {
+					$TNDF[$ndfp->id]['ligne_tva']['44562200'] += round($ligne->total_ht * .2,2);
+					$TNDF[$ndfp->id]['ligne_tva']['44571070'] -= round($ligne->total_ht * .2,2);
+				}
 			}
 
 			$i++;
@@ -1351,6 +1363,7 @@ class TExportCompta extends TObjetStd {
 			$TIdBank[] = array(
 				'rowid' => $obj->rowid
 				,'entity' => $obj->entity
+				,'id_paiement' => $obj->id_paiement
 			);
 		}
 
@@ -1512,8 +1525,9 @@ class TExportCompta extends TObjetStd {
 
 		}
 
-		/*
+
 		// Requête de récupération des écritures bancaires (CHQ)
+		// Spécifique Arcoop, on va chercher les remises de chèques et pour chacune la liste des chèques
 		$sql = "SELECT bc.rowid";
 		$sql.= " FROM ".MAIN_DB_PREFIX."bordereau_cheque bc";
 		$sql.= " WHERE bc.date_bordereau BETWEEN '$dt_deb' AND '$dt_fin'";
@@ -1597,7 +1611,7 @@ class TExportCompta extends TObjetStd {
 			$TBank['RC'.$bordereau->id]['ligne_banque'][$codeComptableBank] = $bordereau->amount;
 			$TBank['RC'.$bordereau->id]['ligne_tiers'] = array();
 		}
-		*/
+
 		return $TBank;
 	}
 
