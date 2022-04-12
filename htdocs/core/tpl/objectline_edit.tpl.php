@@ -52,7 +52,11 @@ if (empty($inputalsopricewithtax)) $inputalsopricewithtax=0;
 // Define colspan for the button 'Add'
 $colspan = 3;	// Col total ht + col edit + col delete
 if (! empty($inputalsopricewithtax)) $colspan++;	// We add 1 if col total ttc
-if (in_array($object->element, array('propal','supplier_proposal','facture','facturerec','invoice','commande','order','order_supplier','invoice_supplier'))) $colspan++;	// With this, there is a column move button
+/*
+* BACKPORT - 10/01/2022
+* Template supplier invoces
+*/
+if (in_array($object->element, array('propal','supplier_proposal','facture','facturerec','invoice','commande','order','order_supplier','invoice_supplier', 'invoice_supplier_rec'))) $colspan++;	// With this, there is a column move button
 if (!empty($conf->multicurrency->enabled) && $this->multicurrency_code != $conf->currency) $colspan+=2;
 ?>
 
@@ -122,8 +126,19 @@ $coldisplay=0;
 	}
 
 	// Show autofill date for recuring invoices
-	if (! empty($conf->service->enabled) && $line->product_type == 1 && $line->element == 'facturedetrec')
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+	if (! empty($conf->service->enabled) && $line->product_type == 1 && ($line->element == 'facturedetrec' || $line->element == 'invoice_supplier_det_rec'))
 	{
+        if ($line->element == 'invoice_supplier_det_rec'){
+            $line->date_start_fill = $line->date_start;
+            $line->date_end_fill = $line->date_end;
+        }
+        /*
+        * FIN BACKPORT - 10/01/2022
+        */
 		echo '<br>';
 		echo $langs->trans('AutoFillDateFrom').' ';
 		echo $form->selectyesno('date_start_fill', $line->date_start_fill, 1);
@@ -136,7 +151,11 @@ $coldisplay=0;
 	</td>
 
 	<?php
-	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier')	// We must have same test in printObjectLines
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier' || $object->element == 'invoice_supplier_rec')	// We must have same test in printObjectLines
 	{
 	    $coldisplay++;
 	?>

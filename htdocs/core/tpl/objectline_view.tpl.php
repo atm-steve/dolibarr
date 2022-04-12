@@ -147,7 +147,18 @@ $domData .= ' data-product_type="'.$line->product_type.'"';
 		}
 
 		// Show date range
-		if ($line->element == 'facturedetrec') {
+        /*
+        * BACKPORT - 10/01/2022
+        * Template supplier invoces
+        */
+        if ($line->element == 'facturedetrec' || $line->element == 'invoice_supplier_det_rec') {
+            if ($line->element == 'invoice_supplier_det_rec' && $line->product_type != Product::TYPE_PRODUCT){
+                $line->date_start_fill = $line->date_start;
+                $line->date_end_fill = $line->date_end;
+            }
+            /*
+            * FIN BACKPORT - 10/01/2022
+            */
 			if ($line->date_start_fill || $line->date_end_fill) echo '<br><div class="clearboth nowraponall">';
 			if ($line->date_start_fill) echo $langs->trans('AutoFillDateFromShort').': '.yn($line->date_start_fill);
 			if ($line->date_start_fill && $line->date_end_fill) echo ' - ';
@@ -162,7 +173,19 @@ $domData .= ' data-product_type="'.$line->product_type.'"';
 		// Add description in form
 		if ($line->fk_product > 0 && ! empty($conf->global->PRODUIT_DESC_IN_FORM))
 		{
-			print (! empty($line->description) && $line->description!=$line->product_label)?'<br>'.dol_htmlentitiesbr($line->description):'';
+            /*
+            * BACKPORT - 10/01/2022
+            * Template supplier invoces
+            */
+            if($line->element == 'invoice_supplier_det_rec') {
+                print (! empty($line->description) && $line->description != $line->label) ? ($line->date_start || $line->date_end ? '' : '<br>').'<br>'.dol_htmlentitiesbr($line->description) : '';
+            }
+            else {
+                print (! empty($line->description) && $line->description != $line->product_label) ? '<br>'.dol_htmlentitiesbr($line->description) : '';
+            }
+            /*
+            * BACKPORT - 10/01/2022
+            */
 		}
 	}
 
@@ -176,7 +199,11 @@ $domData .= ' data-product_type="'.$line->product_type.'"';
 	?>
 	</td>
 	<?php
-	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier')	// We must have same test in printObjectLines
+    /*
+    * BACKPORT - 10/01/2022
+    * Template supplier invoces
+    */
+	if ($object->element == 'supplier_proposal' || $object->element == 'order_supplier' || $object->element == 'invoice_supplier' || $object->element == 'invoice_supplier_rec')	// We must have same test in printObjectLines
 	{
 	?>
 		<td class="linecolrefsupplier"><?php

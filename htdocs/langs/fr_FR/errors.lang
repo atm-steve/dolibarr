@@ -74,6 +74,7 @@ ErrorLDAPSetupNotComplete=Le matching Dolibarr-LDAP est incomplet.
 ErrorLDAPMakeManualTest=Un fichier .ldif a été généré dans le répertoire %s. Essayez de charger ce fichier manuellement depuis la ligne de commande pour plus de détail sur l'erreur.
 ErrorCantSaveADoneUserWithZeroPercentage=Impossible de sauver une action à l'état "non commencé" si le champ "réalisé par" est aussi défini.
 ErrorRefAlreadyExists=La référence utilisée pour la création existe déjà
+ErrorTitleAlreadyExists=Le titre <b>%s</b> existe déjà.
 ErrorPleaseTypeBankTransactionReportName=Choisissez le nom du relevé bancaire sur lequel la ligne est rapportées (Format AAAAMM ou AAAAMMJJ)
 ErrorRecordHasChildren=Impossible de supprimer l'enregistrement car il possède des enregistrements fils.
 ErrorRecordHasAtLeastOneChildOfType=L'objet a au moins un enfant de type %s
