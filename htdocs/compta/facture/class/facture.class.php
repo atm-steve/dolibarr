@@ -151,7 +151,11 @@ class Facture extends CommonInvoice
 	//var $amount;
 	public $remise_absolue;
 	public $remise_percent;
-	public $total_ht = 0;
+	
+	//Issue ouverte sur GitHub #19562
+	//Besoin que total_ht soit égal à "null" et non à "0" pour que les modèles de mail fonctionnent avec les envois en masse 
+	//Code à supprimer en raison d'un merge différent en V15
+	public $total_ht;
 	public $total_tva = 0;
 	public $total_localtax1 = 0;
 	public $total_localtax2 = 0;
