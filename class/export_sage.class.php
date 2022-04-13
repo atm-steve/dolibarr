@@ -72,69 +72,75 @@ class TExportComptaSage extends TExportCompta {
 			if(!empty($facture['ref_client'])) $libelle.= ' - '.$facture['ref_client'];
 
 			// Lignes client
-			foreach($infosFacture['ligne_tiers'] as $code_compta => $montant) {
+			if(!empty($infosFacture['ligne_tiers']) && is_array($infosFacture['ligne_tiers'])) {
+				foreach ($infosFacture['ligne_tiers'] as $code_compta => $montant) {
 //var_dump($facture);exit;
-				$ligneFichier = array(
-					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $facture['ref'],
-					'numero_compte_general'			=> $compte_general_client,
-					'numero_compte_tiers'			=> $code_compta,
+					$ligneFichier = array(
+						'date_piece' => $facture['date'],
+						'numero_piece' => $facture['ref'],
+						'numero_compte_general' => $compte_general_client,
+						'numero_compte_tiers' => $code_compta,
 
-					'libelle'						=> $libelle,
-					'mode_rglt'						=> $facture['mode_reglement'],
-					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
-					'type_ecriture'					=> 'G'
-				);
+						'libelle' => $libelle,
+						'mode_rglt' => $facture['mode_reglement'],
+						'date_echeance' => $facture['date_lim_reglement'],
+						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+						'montant_credit' => ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+						'type_ecriture' => 'G'
+					);
 
-				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				$numLignes++;
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
+					$numLignes++;
+				}
 			}
 
 			// Lignes de produits
-			foreach($infosFacture['ligne_produit'] as $code_compta => $montant) {
-				$ligneFichier = array(
-					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $facture['ref'],
-					'numero_compte_general'			=> $code_compta,
+			if(!empty($infosFacture['ligne_produit']) && is_array($infosFacture['ligne_produit'])) {
+				foreach ($infosFacture['ligne_produit'] as $code_compta => $montant) {
+					$ligneFichier = array(
+						'date_piece' => $facture['date'],
+						'numero_piece' => $facture['ref'],
+						'numero_compte_general' => $code_compta,
 
-					'libelle'						=> $libelle,
-					'mode_rglt'						=> $facture['mode_reglement'],
-					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
-					'type_ecriture'					=> 'G'
-				);
+						'libelle' => $libelle,
+						'mode_rglt' => $facture['mode_reglement'],
+						'date_echeance' => $facture['date_lim_reglement'],
+						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+						'montant_credit' => ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+						'type_ecriture' => 'G'
+					);
 
-				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier);
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
 
-				// Ecriture analytique
-				//$ligneFichier['type_ecriture'] = 'A';
-				//$contenuFichier .= parent::get_line($format, $ligneFichier);
-				$numLignes++;
+					// Ecriture analytique
+					//$ligneFichier['type_ecriture'] = 'A';
+					//$contenuFichier .= parent::get_line($format, $ligneFichier);
+					$numLignes++;
+				}
 			}
 
 			// Lignes TVA
-			foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
-				$ligneFichier = array(
-					'date_piece'					=> $facture['date'],
-					'numero_piece'					=> $facture['ref'],
-					'numero_compte_general'			=> $code_compta,
+			if(!empty($infosFacture['ligne_tva']) && is_array($infosFacture['ligne_tva'])) {
+				foreach ($infosFacture['ligne_tva'] as $code_compta => $montant) {
+					$ligneFichier = array(
+						'date_piece' => $facture['date'],
+						'numero_piece' => $facture['ref'],
+						'numero_compte_general' => $code_compta,
 
-					'libelle'						=> $libelle,
-					'mode_rglt'						=> $facture['mode_reglement'],
-					'date_echeance'					=> $facture['date_lim_reglement'],
-					'montant_debit'					=> ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
-					'montant_credit'				=> ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
-					'type_ecriture'					=> 'G'
-				);
+						'libelle' => $libelle,
+						'mode_rglt' => $facture['mode_reglement'],
+						'date_echeance' => $facture['date_lim_reglement'],
+						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
+						'montant_credit' => ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
+						'type_ecriture' => 'G'
+					);
 
-				// Ecriture générale
-				$contenuFichier .= parent::get_line($format, $ligneFichier);
-				$numLignes++;
+					// Ecriture générale
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
+					$numLignes++;
+				}
 			}
 
 			$numEcriture++;
