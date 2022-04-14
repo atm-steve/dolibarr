@@ -267,6 +267,7 @@ class TExportComptaSage extends TExportCompta {
 			$tiers = &$infosNDF['tiers'];
 			$ndf = &$infosNDF['ndf'];
 
+			$codeAnalytique = '';
 			if(!empty($infosNDF['entity'])) {
 				$entity = $infosNDF['entity'];
 				$tmp = explode(";", $entity['description']);
@@ -315,8 +316,8 @@ class TExportComptaSage extends TExportCompta {
 				$contenuFichier .= parent::get_line($format, $ligneFichier);
 
 				// Ecriture analytique
-				//$ligneFichier['type_ecriture'] = 'A';
-				//$contenuFichier .= parent::get_line($format, $ligneFichier);
+				$ligneFichier['type_ecriture'] = 'A';
+				$contenuFichier .= parent::get_line($format, $ligneFichier);
 				$numLignes++;
 			}
 
