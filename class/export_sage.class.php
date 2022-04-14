@@ -68,7 +68,7 @@ class TExportComptaSage extends TExportCompta {
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
 
-			$libelle = $tiers['nom'];
+			$libelle = isset($entity) ? 'FC '.mb_substr($entity['label'],0,15,'UTF-8').' '.date('m/y', $facture['date']).' '.$tiers['nom'] : $tiers['nom'];
 			if(!empty($facture['ref_client'])) $libelle.= ' - '.$facture['ref_client'];
 
 			// Lignes client
@@ -78,10 +78,11 @@ class TExportComptaSage extends TExportCompta {
 					$ligneFichier = array(
 						'date_piece' => $facture['date'],
 						'numero_piece' => $facture['ref'],
+						'numero_plan'					=> '0',
 						'numero_compte_general' => $compte_general_client,
-						'numero_compte_tiers' => $code_compta,
+						'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 
-						'libelle' => $libelle,
+						'libelle'						=> $libelle,
 						'mode_rglt' => $facture['mode_reglement'],
 						'date_echeance' => $facture['date_lim_reglement'],
 						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? 0 : abs($montant),
@@ -102,8 +103,10 @@ class TExportComptaSage extends TExportCompta {
 						'date_piece' => $facture['date'],
 						'numero_piece' => $facture['ref'],
 						'numero_compte_general' => $code_compta,
+						'numero_plan'					=> '2',
+						'numero_section'				=> $codeAnalytique,
 
-						'libelle' => $libelle,
+						'libelle'						=> $libelle,
 						'mode_rglt' => $facture['mode_reglement'],
 						'date_echeance' => $facture['date_lim_reglement'],
 						'montant_debit' => ($facture['type'] == 2 || $montant < 0) ? abs($montant) : 0,
@@ -115,8 +118,8 @@ class TExportComptaSage extends TExportCompta {
 					$contenuFichier .= parent::get_line($format, $ligneFichier);
 
 					// Ecriture analytique
-					//$ligneFichier['type_ecriture'] = 'A';
-					//$contenuFichier .= parent::get_line($format, $ligneFichier);
+					$ligneFichier['type_ecriture'] = 'A';
+					$contenuFichier .= parent::get_line($format, $ligneFichier);
 					$numLignes++;
 				}
 			}
@@ -128,6 +131,7 @@ class TExportComptaSage extends TExportCompta {
 						'date_piece' => $facture['date'],
 						'numero_piece' => $facture['ref'],
 						'numero_compte_general' => $code_compta,
+						'numero_plan'					=> '0',
 
 						'libelle' => $libelle,
 						'mode_rglt' => $facture['mode_reglement'],
