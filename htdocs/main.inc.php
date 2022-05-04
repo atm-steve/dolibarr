@@ -173,7 +173,7 @@ function getEntityUser($username) {
 
     dol_include_once('/user/class/user.class.php');
     dol_include_once('/user/class/usergroup.class.php');
-
+/*
     $u = new User($db);
     $u->fetch('', $username);
     $u->getrights('financement');
@@ -183,7 +183,7 @@ function getEntityUser($username) {
     $ug = new UserGroup($db);
     $TGroups = $ug->listGroupsForUser($u->id, false);
     if(is_array($TGroups) && array_key_exists(591, $TGroups)) return 52;    // 591 => GSL_FINANCEMENT_ADMIN_koden_HLF, 635 => GSL_FINANCEMENT_ADMIN_HLF
-
+*/
     $TGroupEntities_conf = unserialize($conf->global->MULTICOMPANY_USER_GROUP_ENTITY);
     $TGroupEntities = array();
     if(! empty($TGroupEntities_conf)) {
