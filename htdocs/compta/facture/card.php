@@ -2365,7 +2365,7 @@ if (empty($reshook))
 	{
 	    $object->fetch($id,'', '','', true);
 
-	    if ($object->statut == Facture::STATUS_VALIDATED
+	    if (in_array($object->statut, array(Facture::STATUS_VALIDATED, Facture::STATUS_CLOSED))
 	        && $object->type == Facture::TYPE_SITUATION
 	        && $user->rights->facture->creer
 	        && !$objectidnext
@@ -3598,7 +3598,7 @@ else if ($id > 0 || ! empty($ref))
 	    $label = $langs->trans("ConfirmOuting");
 	    $formquestion = array();
 	    // remove situation from cycle
-	    if ($object->statut == Facture::STATUS_VALIDATED
+	    if (in_array($object->statut, array(Facture::STATUS_VALIDATED, Facture::STATUS_CLOSED))
 	        && $user->rights->facture->creer
 	        && !$objectidnext
 	        && $object->is_last_in_cycle()
@@ -5088,7 +5088,7 @@ else if ($id > 0 || ! empty($ref))
 			}
 
 			// remove situation from cycle
-			if ($object->statut > Facture::STATUS_DRAFT
+			if (in_array($object->statut, array(Facture::STATUS_VALIDATED, Facture::STATUS_CLOSED))
 			    && $object->type == Facture::TYPE_SITUATION
 			    && $user->rights->facture->creer
 			    && !$objectidnext
@@ -5098,7 +5098,7 @@ else if ($id > 0 || ! empty($ref))
 			        || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->invoice_advance->unvalidate)))
 			    )
 			{
-			    if(($object->total_ttc - $totalcreditnotes  ) == 0 )
+			    if(($object->total_ttc - $totalcreditnotes  ) == 0 || $object->statut == Facture::STATUS_CLOSED )
 			    {
 			        print '<div class="inline-block divButAction"><a id="butSituationOut" class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=situationout">' . $langs->trans("RemoveSituationFromCycle") . '</a></div>';
 			    }
