@@ -295,6 +295,7 @@ DefaultPrice=Prix par défaut
 DefaultPriceLog=Historique des prix par défaut
 ComposedProductIncDecStock=Augmenter/Réduire le stock sur changement du stock du père
 ComposedProduct=Produits fils
+OneComposedProduct=Produit fils
 MinSupplierPrice=Prix d'achat minimum
 MinCustomerPrice=Prix de vente minimum
 NoDynamicPrice=Pas de prix dynamique
@@ -408,3 +409,8 @@ mandatoryHelper=Message to the user on the need to enter a start date and an end
 DefaultBOM=Nomenclature par défaut
 DefaultBOMDesc=La nomenclature par défaut qu'il est recommandé d'utiliser pour fabriquer ce produit. Ce champ ne peut être défini que si la nature du produit est '%s'.
 Rank=Classement
+
+#
+# import product | update by id
+#
+ProductsRowid= Produit (modification par rowid)

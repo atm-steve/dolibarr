@@ -41,7 +41,7 @@
  */
 function societe_prepare_head(Societe $object)
 {
-	global $db, $langs, $conf, $user;
+	global $db, $langs, $conf, $user, $hookmanager;
 	$h = 0;
 	$head = array();
 
@@ -64,7 +64,15 @@ function societe_prepare_head(Societe $object)
 			} else {
 				$sql = "SELECT COUNT(p.rowid) as nb";
 				$sql .= " FROM ".MAIN_DB_PREFIX."socpeople as p";
+				// Add table from hooks
+				$parameters = array('contacttab' => true);
+				$reshook = $hookmanager->executeHooks('printFieldListFrom', $parameters, $object); // Note that $action and $object may have been modified by hook
+				$sql .= $hookmanager->resPrint;
 				$sql .= " WHERE p.fk_soc = ".$object->id;
+				// Add where from hooks
+				$parameters = array('contacttab' => true);
+				$reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters, $object); // Note that $action and $object may have been modified by hook
+				$sql .= $hookmanager->resPrint;
 				$resql = $db->query($sql);
 				if ($resql) {
 					$obj = $db->fetch_object($resql);
@@ -1083,7 +1091,7 @@ function show_contacts($conf, $langs, $db, $object, $backtopage = '')
 	$sql .= " t.civility as civility_id, t.address, t.zip, t.town";
 	$sql .= " FROM ".MAIN_DB_PREFIX."socpeople as t";
 	$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."socpeople_extrafields as ef on (t.rowid = ef.fk_object)";
-	$sql .= " WHERE t.fk_soc = ".$object->id;
+	$sql .= " WHERE t.fk_soc = ".((int) $object->id);
 	if ($search_status != '' && $search_status != '-1') {
 		$sql .= " AND t.statut = ".((int) $search_status);
 	}
@@ -1102,6 +1110,10 @@ function show_contacts($conf, $langs, $db, $object, $backtopage = '')
 	// Add where from extra fields
 	$extrafieldsobjectkey = $contactstatic->table_element;
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
+	// Add where from hooks
+	$parameters = array('socid' => $object->id);
+	$reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters, $object); // Note that $action and $object may have been modified by hook
+	$sql .= $hookmanager->resPrint;
 	if ($sortfield == "t.name") {
 		$sql .= " ORDER BY t.lastname $sortorder, t.firstname $sortorder";
 	} else {
