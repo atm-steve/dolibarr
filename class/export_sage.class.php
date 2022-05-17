@@ -419,6 +419,7 @@ class TExportComptaSage extends TExportCompta {
 		if(empty($compte_general_fournisseur)) $compte_general_fournisseur = '40100000';
 
 		foreach ($TabBank as $id_bank => $infosBank) {
+			$tiers = &$infosBank['tiers']; /**  SPE ARCOOP  */
 			$bankline = &$infosBank['bankline'];
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
@@ -438,6 +439,15 @@ class TExportComptaSage extends TExportCompta {
 				$codeCompteTiers = !empty($tmp[0]) ? $tmp[0] : '';
 				$codeAnalytique = !empty($tmp[1]) ? $tmp[1] : '';
 			}
+
+			/**  SPE ARCOOP  */
+			if($bankline['fk_type'] == 'CHQ') {
+				$label = 'RC '.number_format($infosBank['total_bordereau'],2,',',' ').' ';
+			} else {
+				$label = $bankline['fk_type'].' '.number_format($bankline['amount'],2,',',' ').' ';
+			}
+			$label.= isset($entity) ? $tiers['nom'].'/'.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'];
+			/** FIN SPE ARCOOP  */
 
 			$datepiece = $bankline['datev'];
 			$mode_rglt = $langs->getLabelFromKey($db, $bankline['fk_type'], 'c_paiement', 'code', 'libelle', '', 1);
