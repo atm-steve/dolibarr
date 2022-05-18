@@ -67,8 +67,7 @@ $fk_user = GETPOST('userid', 'int');
 $object = new ChargeSociales($db);
 $extrafields = new ExtraFields($db);
 $diroutputmassaction = $conf->tax->dir_output.'/temp/massgeneration/'.$user->id;
-/**BACKPORT_FROM_16.0 **/
-$hookmanager->initHooks(array('taxcard', 'taxsocialcontributioncard', 'globalcard'));
+$hookmanager->initHooks(array('taxcard', 'taxsocialcontributioncard', 'globalcard')); /**BACKPORT_FROM_16.0 **/
 if (empty($action) && empty($id) && empty($ref)) {
 	$action = 'view';
 }
@@ -98,7 +97,7 @@ $result = restrictedArea($user, 'tax', $object->id, 'chargesociales', 'charges')
  * Actions
  */
 
-$parameters = array('socid' => $socid);
+$parameters = array('socid' => $socid); /**BACKPORT_FROM_16.0 **/
 $reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) {
 	setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
@@ -467,7 +466,8 @@ if ($id > 0) {
 				$formquestion[] = array('type' => 'text', 'name' => 'amount', 'label' => $langs->trans("Amount"), 'value' => price($object->amount), 'morecss' => 'width100');
 			}
 			/**BACKPORT_FROM_16.0 **/
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneTax', $object->ref), 'confirm_clone', $formquestion, 'yes', 1, 240);
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneTax', $object->ref), 'confirm_clone', $formquestion, 'yes', 1, 280);
+			/**END BACKPORT_FROM_16.0 **/
 		}
 
 
@@ -475,6 +475,7 @@ if ($id > 0) {
 			$text = $langs->trans('ConfirmPaySocialContribution');
 			/**BACKPORT_FROM_16.0 **/
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id, $langs->trans('PaySocialContribution'), $text, "confirm_paid", '', '', 2);
+			/**END BACKPORT_FROM_16.0 **/
 		}
 
 		// Confirmation of the removal of the Social Contribution
@@ -482,6 +483,7 @@ if ($id > 0) {
 			$text = $langs->trans('ConfirmDeleteSocialContribution');
 			/**BACKPORT_FROM_16.0 **/
 			$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'].'?id='.$object->id, $langs->trans('DeleteSocialContribution'), $text, 'confirm_delete', '', '', 2);
+			/**END BACKPORT_FROM_16.0 **/
 		}
 
 		if ($action == 'edit') {
