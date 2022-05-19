@@ -62,12 +62,14 @@ $label = GETPOST('label', 'alpha');
 $actioncode = GETPOST('actioncode');
 $fk_user = GETPOST('userid', 'int');
 
-// Initialize technical objects
+// Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
+
 $object = new ChargeSociales($db);
 $extrafields = new ExtraFields($db);
 $diroutputmassaction = $conf->tax->dir_output.'/temp/massgeneration/'.$user->id;
-$hookmanager->initHooks(array('taxsocialcontributioncard', 'globalcard'));
-
+/**BACKPORT_FROM_16.0 **/
+$hookmanager->initHooks(array('taxcard', 'taxsocialcontributioncard', 'globalcard'));
+/**END BACKPORT_FROM_16.0 **/
 if (empty($action) && empty($id) && empty($ref)) {
 	$action = 'view';
 }
@@ -96,8 +98,9 @@ $result = restrictedArea($user, 'tax', $object->id, 'chargesociales', 'charges')
 /*
  * Actions
  */
-
-$parameters = array();
+/**BACKPORT_FROM_16.0 **/
+$parameters = array('socid' => $socid);
+/**END BACKPORT_FROM_16.0 **/
 $reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) {
 	setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
@@ -445,7 +448,9 @@ if ($action == 'create') {
 if ($id > 0) {
 	$object = new ChargeSociales($db);
 	$result = $object->fetch($id);
-
+	/**BACKPORT_FROM_16.0 **/
+	$formconfirm = '';
+	/** END_OF_BACKPORT_FROM_16.0 **/
 	if ($result > 0) {
 		$head = tax_prepare_head($object);
 
@@ -463,26 +468,44 @@ if ($id > 0) {
 				$formquestion[] = array('type' => 'date', 'name' => 'clone_period', 'label' => $langs->trans("PeriodEndDate"), 'value' => -1);
 				$formquestion[] = array('type' => 'text', 'name' => 'amount', 'label' => $langs->trans("Amount"), 'value' => price($object->amount), 'morecss' => 'width100');
 			}
-
-			print $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneTax', $object->ref), 'confirm_clone', $formquestion, 'yes', 1, 280);
+			/**BACKPORT_FROM_16.0 **/
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneTax', $object->ref), 'confirm_clone', $formquestion, 'yes', 1, 280);
+			/**END BACKPORT_FROM_16.0 **/
 		}
 
 
 		if ($action == 'paid') {
 			$text = $langs->trans('ConfirmPaySocialContribution');
-			print $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id, $langs->trans('PaySocialContribution'), $text, "confirm_paid", '', '', 2);
+			/**BACKPORT_FROM_16.0 **/
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id, $langs->trans('PaySocialContribution'), $text, "confirm_paid", '', '', 2);
+			/**END BACKPORT_FROM_16.0 **/
 		}
 
 		// Confirmation of the removal of the Social Contribution
 		if ($action == 'delete') {
 			$text = $langs->trans('ConfirmDeleteSocialContribution');
-			print $form->formconfirm($_SERVER['PHP_SELF'].'?id='.$object->id, $langs->trans('DeleteSocialContribution'), $text, 'confirm_delete', '', '', 2);
+			/**BACKPORT_FROM_16.0 **/
+			$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'].'?id='.$object->id, $langs->trans('DeleteSocialContribution'), $text, 'confirm_delete', '', '', 2);
+			/**END BACKPORT_FROM_16.0 **/
 		}
 
 		if ($action == 'edit') {
 			print "<form name=\"charge\" action=\"".$_SERVER["PHP_SELF"]."?id=$object->id&amp;action=update\" method=\"post\">";
 			print '<input type="hidden" name="token" value="'.newToken().'">';
 		}
+		/**BACKPORT_FROM_16.0 **/
+		// Call Hook formConfirm
+		$parameters = array('formConfirm' => $formconfirm, 'lineid' => $lineid);
+		$reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+		if (empty($reshook)) {
+			$formconfirm .= $hookmanager->resPrint;
+		} elseif ($reshook > 0) {
+			$formconfirm = $hookmanager->resPrint;
+		}
+
+		// Print form confirm
+		print $formconfirm;
+		/**END_OF_BACKPORT_FROM_16.0 **/
 
 		print dol_get_fiche_head($head, 'card', $langs->trans("SocialContribution"), -1, 'bill');
 
