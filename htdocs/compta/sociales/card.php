@@ -67,7 +67,9 @@ $fk_user = GETPOST('userid', 'int');
 $object = new ChargeSociales($db);
 $extrafields = new ExtraFields($db);
 $diroutputmassaction = $conf->tax->dir_output.'/temp/massgeneration/'.$user->id;
-$hookmanager->initHooks(array('taxcard', 'taxsocialcontributioncard', 'globalcard')); /**BACKPORT_FROM_16.0 **/
+/**BACKPORT_FROM_16.0 **/
+$hookmanager->initHooks(array('taxcard', 'taxsocialcontributioncard', 'globalcard'));
+/**END BACKPORT_FROM_16.0 **/
 if (empty($action) && empty($id) && empty($ref)) {
 	$action = 'view';
 }
@@ -96,8 +98,9 @@ $result = restrictedArea($user, 'tax', $object->id, 'chargesociales', 'charges')
 /*
  * Actions
  */
-
-$parameters = array('socid' => $socid); /**BACKPORT_FROM_16.0 **/
+/**BACKPORT_FROM_16.0 **/
+$parameters = array('socid' => $socid);
+/**END BACKPORT_FROM_16.0 **/
 $reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) {
 	setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
