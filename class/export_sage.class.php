@@ -423,6 +423,9 @@ class TExportComptaSage extends TExportCompta {
 			$bankline = &$infosBank['bankline'];
 			$bank = &$infosBank['bank'];
 			$object = &$infosBank['object'];
+			$codeAnalytique = '';
+			$codeCompteTiers = null;
+			$entity = null;
 
 			$label = $bankline['label'];
 			//pre($object, true);exit;
@@ -446,7 +449,7 @@ class TExportComptaSage extends TExportCompta {
 			} else {
 				$label = $bankline['fk_type'].' '.number_format($bankline['amount'],2,',',' ').' ';
 			}
-			$label.= isset($entity) ? $tiers['nom'].'/'.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'];
+			$label.= !empty($entity) ? $tiers['nom'].'/'.mb_substr($entity['label'],0,15,'UTF-8') : $tiers['nom'];
 			/** FIN SPE ARCOOP  */
 
 			$datepiece = $bankline['datev'];
@@ -460,7 +463,7 @@ class TExportComptaSage extends TExportCompta {
 					'numero_piece'					=> 'BK'.str_pad($bankline['id'],6,'0',STR_PAD_LEFT),
 					'numero_plan'					=> '0',
 					'numero_compte_general'			=> $bankline['label'] == '(SupplierInvoicePayment)' ? $compte_general_fournisseur : $compte_general_client,
-					'numero_compte_tiers'			=> empty($code_compta) ? (isset($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
+					'numero_compte_tiers'			=> empty($code_compta) ? (!empty($codeCompteTiers) ? $codeCompteTiers : '') : $code_compta,
 
 					'libelle'						=> $label,
 					'mode_rglt'						=> $mode_rglt,
