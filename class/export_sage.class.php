@@ -477,6 +477,13 @@ class TExportComptaSage extends TExportCompta {
 				$numLignes++;
 			}
 
+			/**  SPE ARCOOP  */
+			if($bankline['fk_type'] == 'CHQ') {
+				$label = 'RC '.number_format($bankline['amount'],2,',',' ').' ';
+				$label.= $tiers['nom'];
+			}
+			/** FIN SPE ARCOOP  */
+
 			// Lignes de banque
 			foreach($infosBank['ligne_banque'] as $code_compta => $montant) {
 				$ligneFichier = array(

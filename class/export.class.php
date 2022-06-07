@@ -205,9 +205,9 @@ class TExportCompta extends TObjetStd {
 		        ,'entity' => $obj->entity
 		        ,'id_propal_origin' => $obj->fk_source
 		    );
-		    
+
 		    if ($conf->agefodd->enabled)  $tmparray['type_session'] = $obj->type_session;
-		    
+
             $TIdFactures[] = $tmparray;
 		}
 
@@ -1344,11 +1344,15 @@ class TExportCompta extends TObjetStd {
 		$TExcludedBankAcount = !empty($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT) ? strtr($conf->global->EXPORT_COMPTA_EXCLUDED_BANK_ACOUNT, array(';'=>'","', ','=>'","')) : '';
 
 		// Requête de récupération des écritures bancaires
+		// Spécifique Arcoop, on va chercher tout sauf les chèques qui sont traités par la suite pas bordereau de remise de chèque
 		$sql = "SELECT DISTINCT b.rowid, ba.entity";
+		$sql.= ", p.rowid as 'id_paiement'";  /** SPE ARCOOP */
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.fk_bank = b.rowid"; /** SPE ARCOOP */
 		if(!$this->exportAllreadyExported) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank_class bc ON(b.rowid = bc.lineid)';
 		$sql.= " WHERE b.".$datefield." BETWEEN '$dt_deb' AND '$dt_fin'";
+		$sql.= " AND p.fk_paiement <> 7";  /** SPE ARCOOP */
 		if($onlyReconciled) $sql.= " AND b.rappro = 1";
 		if(!$allEntities) $sql.= " AND ba.entity = {$conf->entity}";
 		if(!empty($TExcludedBankAcount)) $sql.= ' AND ba.ref NOT IN("'.$TExcludedBankAcount.'")';
@@ -1411,6 +1415,10 @@ class TExportCompta extends TObjetStd {
 					}
 					$TCodeCompta[$codeCompta] = $bankline->amount;
 					$object = $tiers;
+
+					/** SPE ARCOOP */
+					if($links[$key]['type'] == 'company') $client = $links[$key]['label'];
+					/** FIN SPE ARCOOP */
 				}
 				// Cas de la charge sociale
 				if($lineType == 'sc') {
@@ -1496,6 +1504,10 @@ class TExportCompta extends TObjetStd {
 			$TBank[$bankline->id]['bank'] = get_object_vars($bank);
 			$TBank[$bankline->id]['bankline'] = get_object_vars($bankline);
 			$TBank[$bankline->id]['object'] = $object;
+
+			/** SPE ARCOOP */
+			$TBank[$bankline->id]['tiers'] = array('nom' => $client);
+			/** FIN SPE ARCOOP */
 
 			foreach($TCodeCompta as $codeCompta => $amount) {
 				if(empty($TBank[$bankline->id]['ligne_tiers'][$codeCompta])) $TBank[$bankline->id]['ligne_tiers'][$codeCompta] = 0;
