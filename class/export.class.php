@@ -1345,7 +1345,8 @@ class TExportCompta extends TObjetStd {
 
 		// Requête de récupération des écritures bancaires
 		// Spécifique Arcoop, on va chercher tout sauf les chèques qui sont traités par la suite pas bordereau de remise de chèque
-		$sql = "SELECT DISTINCT b.rowid, ba.entity";
+		// Spécifique Arcoop #2 = on prend l'entité de l'écriture et non du compte bancaire
+		$sql = "SELECT DISTINCT b.rowid, p.entity";
 		$sql.= ", p.rowid as 'id_paiement'";  /** SPE ARCOOP */
 		$sql.= " FROM ".MAIN_DB_PREFIX."bank b";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account ba ON b.fk_account = ba.rowid";
