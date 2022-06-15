@@ -482,3 +482,5 @@ RestOfEurope=Reste de l'Union Européenne (UE)
 OutOfEurope=Hors Union Européenne (UE)
 CurrentOutstandingBillLate=Montant impayé arrivé à échéance
 BecarefullChangeThirdpartyBeforeAddProductToInvoice=Attention : selon votre configuration des prix des produits/services, vous devriez changer le tiers avant d'ajouter le produit
+
+MAINTLOGFetchFoundSeveralRecords=Échec de la mise à jour du contact de facturation. L'adresse email "%s" existe sur plusieurs contacts, veuillez vous assurer qu'un seul contact possède cette adresse dans Dolibarr puis relancer l'import de cette commande.

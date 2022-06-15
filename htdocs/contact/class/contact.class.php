@@ -996,7 +996,15 @@ class Contact extends CommonObject
 		if ($resql) {
 			$num = $this->db->num_rows($resql);
 			if ($num > 1) {
-				$this->error = 'Fetch found several records. Rename one of contact to avoid duplicate.';
+
+				/**
+				 * SPE CLIENT MAINTLOG : Changement du message d'erreur
+				 */
+				$this->error = $langs->trans('MAINTLOGFetchFoundSeveralRecords', $this->email);
+				/**
+				* FIN SPE CLIENT MAINTLOG : Changement du message d'erreur
+				*/
+
 				dol_syslog($this->error, LOG_ERR);
 
 				return 2;
