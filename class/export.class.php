@@ -612,12 +612,12 @@ class TExportCompta extends TObjetStd {
                 foreach($infosFacture['ligne_tva'] as $code_compta => $montant) {
 
                     if($cpt_tva == $nb_tva) {
-                    	$montant = $montant_facture-$montant_produit-$montant_tva;
+                    	$montant = round($montant_facture-$montant_produit-$montant_tva, 2);
 						$infosFacture['ligne_tva'][$code_compta] = $montant;
 					}
                     // Ecriture générale
                     $cpt_tva++;
-                    $montant_tva+=round($montant,2);
+					$montant_tva += $montant;
 
                 }
 
