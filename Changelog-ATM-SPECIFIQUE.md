@@ -41,3 +41,7 @@ dolibarr/htdocs/core/modules/facture/mod_facture_mercure.php
 dolibarr/htdocs/expensereport/class/expensereport.class.php
     l 1259 - 1268 - 1269 - 1276 =>  Fix la validation d'une NDF créée depuis une entité
                                     avec l'entité maître.
+
+dolibarr/htdocs/expensereport/card.php
+    l 2632 - 2637 =>    Fix la modification d'une NDF par une entity si la NDF est au status
+                        brouillon
