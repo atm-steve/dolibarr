@@ -41,3 +41,7 @@ dolibarr/htdocs/core/modules/facture/mod_facture_mercure.php
 dolibarr/htdocs/expensereport/class/expensereport.class.php
     l 1259 - 1268 - 1269 - 1276 =>  Fix la validation d'une NDF créée depuis une entité
                                     avec l'entité maître.
+
+dolibarr/htdocs/compta/class/facture.class.php
+l 2873 - 2885 - 2886 =>  Fix la validation d'une facture créée depuis une entité
+avec l'entité maître.
