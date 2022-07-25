@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ## Version 1.3
+- FIX : nom de la conf pour $datefield à été corrigé, il manquait "FACTURES" - 1.3.4_arcoop
 - FIX : SPE ARCOOP NDF : l'arrondi sur total tva à été corrigé et est correctement appliqué - 1.3.3_arcoop
 - FIX : SPÉ ARCOOP écritures bancaires: utiliser entité de l'écriture plutôt 
   que du compte - *09/06/2022* - 1.3.2_arcoop
