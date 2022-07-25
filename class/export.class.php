@@ -838,7 +838,7 @@ class TExportCompta extends TObjetStd {
 		$defaultSupplierConfKey = (float) DOL_VERSION < 3.7 ? 'COMPTA_ACCOUNT_SUPPLIER' : 'ACCOUNTING_ACCOUNT_SUPPLIER';
 		$defaultVATBuyConfKey = (float) DOL_VERSION < 3.7 ? 'COMPTA_VAT_BUY_ACCOUNT' : 'ACCOUNTING_VAT_BUY_ACCOUNT';
 
-		$datefield = $conf->global->EXPORT_COMPTA_DATE_NDF;
+		$datefield = $conf->global->EXPORT_COMPTA_DATE_FACTURES_NDF;
 
 		if($datefield == 'dates') $datefield = 'date_debut';
 		if($datefield == 'datee') $datefield = 'date_fin';
