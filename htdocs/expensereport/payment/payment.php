@@ -180,7 +180,7 @@ if ($action == 'create' || empty($action)) {
 		print ' $(document).ready(function () {';
 		print ' 	$(".AutoFillAmount").on(\'click touchstart\', function(){
                         var amount = $(this).data("value");
-						document.getElementById($(this).data(\'rowid\')).value = amount ;
+						document.getElementById("amount_"+$(this).data(\'rowid\')).value = amount ;
 					});';
 		print "\t});\n";
 		print "</script>\n";
@@ -272,64 +272,77 @@ if ($action == 'create' || empty($action)) {
 
 	print '<br>';
 
-	// List of expenses ereport not already paid completely
-	$num = 1;
-	$i = 0;
+    /**
+     *  List of expenses ereport not already paid completely
+     */
+    //if (empty($page) || $page == -1) {
+    //    $page = 0;
+    //}
+    //$limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
+    //$offset = $limit * $page;
 
-	print '<table class="noborder centpercent">';
-	print '<tr class="liste_titre">';
-	print '<td>'.$langs->trans("ExpenseReport").'</td>';
-	print '<td class="right">'.$langs->trans("Amount").'</td>';
-	print '<td class="right">'.$langs->trans("AlreadyPaid").'</td>';
-	print '<td class="right">'.$langs->trans("RemainderToPay").'</td>';
-	print '<td class="center">'.$langs->trans("Amount").'</td>';
-	print "</tr>\n";
+    $sortorder = 'DESC';
+    $sortfield = 'pe.datep';
 
-	$total_ttc = 0;
-	$totalrecu = 0;
+    $sql = 'SELECT e.rowid, e.total_ttc, e.ref, SUM(pe.amount) as total_amount';
+    $sql.= ' FROM '.MAIN_DB_PREFIX.'expensereport as e';
+    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'payment_expensereport as pe ON pe.fk_expensereport = e.rowid';
+    $sql.= ' WHERE fk_user_author = '.$expensereport->fk_user_author;
+    $sql .= ' AND e.entity IN ('.getEntity('expensereport').')';
+    $sql .= ' AND e.fk_statut = '.ExpenseReport::STATUS_APPROVED;
+    $sql .= ' AND e.paid = 0';
+    $sql.= ' GROUP BY e.rowid, e.ref, e.total_ttc';
+    $resql = $db->query($sql);
 
-	while ($i < $num) {
-		$objp = $expensereport;
+    if($resql) {
+        $num = $db->num_rows($resql);
+        $i = 0;
 
-		print '<tr class="oddeven">';
+        print '<table class="noborder centpercent">';
+        print '<tr class="liste_titre">';
+        print '<td>'.$langs->trans("ExpenseReport").'</td>';
+        print '<td class="right">'.$langs->trans("Amount").'</td>';
+        print '<td class="right">'.$langs->trans("AlreadyPaid").'</td>';
+        print '<td class="right">'.$langs->trans("RemainderToPay").'</td>';
+        print '<td class="center">'.$langs->trans("Amount").'</td>';
+        print "</tr>\n";
 
-		print '<td>'.$expensereport->getNomUrl(1)."</td>";
-		print '<td class="right">'.price($objp->total_ttc)."</td>";
-		print '<td class="right">'.price($sumpaid)."</td>";
-		print '<td class="right">'.price($objp->total_ttc - $sumpaid)."</td>";
-		print '<td class="center">';
-		if ($sumpaid < $objp->total_ttc) {
-			$namef = "amount_".$objp->id;
-			$nameRemain = "remain_".$objp->id; // autofill remainder amount
-			if (!empty($conf->use_javascript_ajax)) { // autofill remainder amount
-					print img_picto("Auto fill", 'rightarrow', "class='AutoFillAmount' data-rowid='".$namef."' data-value='".($objp->total_ttc - $sumpaid)."'"); // autofill remainder amount
-			}
-			$remaintopay = $objp->total_ttc - $sumpaid; // autofill remainder amount
-			print '<input type=hidden class="sum_remain" name="'.$nameRemain.'" value="'.$remaintopay.'">'; // autofill remainder amount
-			print '<input type="text" class="width75" name="'.$namef.'" id="'.$namef.'" value="'.GETPOST($namef).'">';
-		} else {
-			print '-';
-		}
-		print "</td>";
+        while($i < $num) {
+            $objp = $db->fetch_object($resql);
+            $expensereport = new ExpenseReport($db);
+            $expensereport->id = $objp->rowid;
+            $expensereport->ref = $objp->ref;
+            $sumpaid = $objp->total_amount;
 
-		print "</tr>\n";
+            print '<td>'.$expensereport->getNomUrl(1).'</td>';
+            print '<td class="right">'.price($objp->total_ttc)."</td>";
+            print '<td class="right">'.price($sumpaid)."</td>";
+            print '<td class="right">'.price($objp->total_ttc - $sumpaid)."</td>";
+            print '<td class="center">';
+            if($sumpaid < $objp->total_ttc) {
+                $namef = "amount_".$expensereport->id;
+                $nameRemain = "remain_".$expensereport->id; // autofill remainder amount
+                if(! empty($conf->use_javascript_ajax)) { // autofill remainder amount
+                    print img_picto("Auto fill", 'rightarrow', "class='AutoFillAmount' data-rowid='".$expensereport->id."' data-value='".($objp->total_ttc - $sumpaid)."'"); // autofill remainder amount
+                }
+                $remaintopay = $objp->total_ttc - $sumpaid; // autofill remainder amount
+                print '<input type=hidden class="sum_remain" name="'.$nameRemain.'" value="'.$remaintopay.'">'; // autofill remainder amount
+                print '<input type="text" class="width75" name="'.$namef.'" id="'.$namef.'" value="'.GETPOST($namef).'">';
+            }
+            else {
+                print '-';
+            }
+            print "</td>";
 
-		$total_ttc += $objp->total_ttc;
-		$totalrecu += $sumpaid;
-		$i++;
-	}
-	if ($i > 1) {
-		// Print total
-		print '<tr class="oddeven">';
-		print '<td colspan="2" class="left">'.$langs->trans("Total").':</td>';
-		print '<td class="right"><b>'.price($total_ttc).'</b></td>';
-		print '<td class="right"><b>'.price($totalrecu).'</b></td>';
-		print '<td class="right"><b>'.price($total_ttc - $totalrecu).'</b></td>';
-		print '<td class="center">&nbsp;</td>';
-		print "</tr>\n";
-	}
+            print "</tr>\n";
 
-	print "</table>";
+            $parameters = array();
+            $reshook = $hookmanager->executeHooks('printObjectLine', $parameters, $objp, $action); // Note that $action and $object may have been modified by hook
+
+            $i++;
+        }
+        print '</table>';
+    }
 
 	print $form->buttonsSaveCancel();
 
